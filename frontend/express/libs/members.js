@@ -501,6 +501,21 @@ membersUtility.loginWithToken = function(req, callback) {
                 return callback(undefined);
             }
 
+            // A session grants the owner's full identity, so it may only be established
+            // from a full-permission token. A token restricted to specific apps or
+            // endpoints must never be redeemable for a session: that would escalate its
+            // scope to the owner's entire account. Legitimate session tokens are always
+            // created unrestricted (setLoggedInVariables, the renderer, and the ban-warning
+            // mail all save with no app and no endpoint), so this rejects only scoped
+            // tokens that should never have reached a login in the first place.
+            var isLoginScopeRestricted = function(scope) {
+                return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+            };
+            if (isLoginScopeRestricted(valid.app) || isLoginScopeRestricted(valid.endpoint)) {
+                plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "restricted_token"}});
+                return callback(undefined);
+            }
+
             membersUtility.db.collection('members').findOne({"_id": membersUtility.db.ObjectID(valid.owner)}, function(err, member) {
                 if (err || !member) {
                     plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner}});

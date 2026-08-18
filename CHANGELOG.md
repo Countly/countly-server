@@ -5,6 +5,9 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
+Security Fixes:
+- [core] A token restricted to specific apps or endpoints can no longer escalate its scope. Token creation is allowed only from a full-permission credential (an api_key, or a token with no app and no endpoint restriction), and a scoped token can no longer be redeemed for a dashboard session at /login/token. Previously a token scoped to one app could mint an unrestricted or login-capable token and take over the owner's full account
+
 ## Version 24.05.51
 
 Fixes:

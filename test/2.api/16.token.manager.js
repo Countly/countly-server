@@ -379,4 +379,110 @@ describe('Testing token manager', function() {
                 });
         });
     });
+
+    describe('Preventing scope escalation via token create', function() {
+        var restrictedToken = "";
+        var fullPermissionToken = "";
+
+        it('setup: create an app-scoped restricted token via api_key', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&apps=' + APP_ID + '&purpose=integration&multi=true&ttl=3600')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result');
+                    restrictedToken = ob.result;
+                    (restrictedToken !== "").should.equal(true);
+                    done();
+                });
+        });
+
+        it('a restricted token cannot create an unrestricted child (no app_id supplied)', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + restrictedToken + '&multi=true&ttl=300')
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'A restricted token cannot create tokens');
+                    done();
+                });
+        });
+
+        it('a restricted token cannot create a LoggedInAuth session child', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + restrictedToken + '&purpose=LoggedInAuth&multi=true&ttl=300')
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it('a restricted token is refused even when it supplies its own permitted app_id', function(done) {
+            request
+                .get('/i/token/create?auth_token=' + restrictedToken + '&app_id=' + APP_ID + '&apps=' + APP_ID + '&multi=true&ttl=300')
+                .expect(403)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+        });
+
+        it('api_key can still create a token', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=300')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result');
+                    testUtils.db.collection("auth_tokens").remove({_id: ob.result + ""}, function() {
+                        done();
+                    });
+                });
+        });
+
+        it('a full-permission (unrestricted) token can create a token, as the dashboard session does', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=300')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    fullPermissionToken = JSON.parse(res.text).result;
+                    request
+                        .get('/i/token/create?auth_token=' + fullPermissionToken + '&purpose=child&multi=true&ttl=300')
+                        .expect(200)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            var child = JSON.parse(res2.text).result;
+                            (child !== "").should.equal(true);
+                            testUtils.db.collection("auth_tokens").remove({_id: {$in: [fullPermissionToken + "", child + ""]}}, function() {
+                                done();
+                            });
+                        });
+                });
+        });
+
+        it('cleanup: remove the restricted token', function(done) {
+            testUtils.db.collection("auth_tokens").remove({_id: restrictedToken + ""}, function() {
+                done();
+            });
+        });
+    });
 });

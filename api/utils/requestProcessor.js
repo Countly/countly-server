@@ -2661,58 +2661,91 @@ const processRequest = (params) => {
                 */
                 case 'create':
                     validateUser(params, () => {
-                        let ttl, multi, endpoint, purpose, apps;
-                        if (params.qstring.ttl) {
-                            ttl = parseInt(params.qstring.ttl);
-                        }
-                        else {
-                            ttl = 1800;
-                        }
-                        multi = true;
-                        if (params.qstring.multi === false || params.qstring.multi === 'false') {
-                            multi = false;
-                        }
-                        apps = params.qstring.apps || "";
-                        if (params.qstring.apps) {
-                            apps = params.qstring.apps.split(',');
-                        }
+                        // Token creation is a privileged management operation. A token's app/endpoint
+                        // restriction scopes which app data it may read or write through data endpoints;
+                        // it does not gate this endpoint, which carries no app_id, so it cannot be relied
+                        // on to constrain what is created here. A scoped token must therefore not be able
+                        // to mint a token: it could create an unrestricted child, or a LoggedInAuth token
+                        // redeemable at /login/token/:token for a full session, and so escalate beyond its
+                        // own scope. Allow creation only from a full-permission credential: an api_key (the
+                        // member itself) or a token with no app and no endpoint restriction, such as the
+                        // dashboard session token. Future: enforce the child's permissions as a subset of
+                        // the creating credential's CRUD permissions.
+                        const creatorToken = params.qstring.auth_token || (params.req && params.req.headers && params.req.headers["countly-token"]) || "";
+                        /**
+                        * Parse the request and save the new token. Reached only once the caller is
+                        * allowed to create tokens.
+                        * @returns {void}
+                        */
+                        const proceedWithCreate = function() {
+                            let ttl, multi, endpoint, purpose, apps;
+                            if (params.qstring.ttl) {
+                                ttl = parseInt(params.qstring.ttl);
+                            }
+                            else {
+                                ttl = 1800;
+                            }
+                            multi = true;
+                            if (params.qstring.multi === false || params.qstring.multi === 'false') {
+                                multi = false;
+                            }
+                            apps = params.qstring.apps || "";
+                            if (params.qstring.apps) {
+                                apps = params.qstring.apps.split(',');
+                            }
 
-                        if (params.qstring.endpointquery && params.qstring.endpointquery !== "") {
-                            try {
-                                endpoint = JSON.parse(params.qstring.endpointquery); //structure with also info for qstring params.
-                            }
-                            catch (ex) {
-                                if (params.qstring.endpoint) {
-                                    endpoint = params.qstring.endpoint.split(',');
+                            if (params.qstring.endpointquery && params.qstring.endpointquery !== "") {
+                                try {
+                                    endpoint = JSON.parse(params.qstring.endpointquery); //structure with also info for qstring params.
                                 }
-                                else {
-                                    endpoint = "";
+                                catch (ex) {
+                                    if (params.qstring.endpoint) {
+                                        endpoint = params.qstring.endpoint.split(',');
+                                    }
+                                    else {
+                                        endpoint = "";
+                                    }
                                 }
                             }
-                        }
-                        else if (params.qstring.endpoint) {
-                            endpoint = params.qstring.endpoint.split(',');
-                        }
+                            else if (params.qstring.endpoint) {
+                                endpoint = params.qstring.endpoint.split(',');
+                            }
 
-                        if (params.qstring.purpose) {
-                            purpose = params.qstring.purpose;
-                        }
-                        authorize.save({
-                            db: common.db,
-                            ttl: ttl,
-                            multi: multi,
-                            owner: params.member._id + "",
-                            app: apps,
-                            endpoint: endpoint,
-                            purpose: purpose,
-                            callback: (err, token) => {
-                                if (err) {
-                                    common.returnMessage(params, 404, err);
-                                }
-                                else {
-                                    common.returnMessage(params, 200, token);
-                                }
+                            if (params.qstring.purpose) {
+                                purpose = params.qstring.purpose;
                             }
+                            authorize.save({
+                                db: common.db,
+                                ttl: ttl,
+                                multi: multi,
+                                owner: params.member._id + "",
+                                app: apps,
+                                endpoint: endpoint,
+                                purpose: purpose,
+                                callback: (err, token) => {
+                                    if (err) {
+                                        common.returnMessage(params, 404, err);
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, token);
+                                    }
+                                }
+                            });
+                        };
+                        if (!creatorToken) {
+                            //api_key authenticated: the member itself, full permission
+                            proceedWithCreate();
+                            return;
+                        }
+                        common.db.collection("auth_tokens").findOne({_id: creatorToken + ""}, function(tokenErr, creatorTokenDoc) {
+                            const isScopeRestricted = function(scope) {
+                                return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+                            };
+                            if (tokenErr || !creatorTokenDoc || isScopeRestricted(creatorTokenDoc.app) || isScopeRestricted(creatorTokenDoc.endpoint)) {
+                                common.returnMessage(params, 403, "A restricted token cannot create tokens");
+                                return;
+                            }
+                            proceedWithCreate();
                         });
                     });
                     break;
