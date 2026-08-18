@@ -6,6 +6,8 @@
 
 'use strict';
 
+const common = require('../../../../api/utils/common.js');
+
 /**
  * Restrict a find() projection to plain field inclusion / exclusion.
  *
@@ -23,20 +25,8 @@
  * @returns {object} changes - keys are the projection fields that were dropped
  */
 function sanitizeProjection(projection) {
-    var changes = {};
-    if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
-        return changes;
-    }
-    for (var key in projection) {
-        if (Object.prototype.hasOwnProperty.call(projection, key)) {
-            var value = projection[key];
-            if (value !== 0 && value !== 1 && value !== true && value !== false) {
-                changes[key] = true;
-                delete projection[key];
-            }
-        }
-    }
-    return changes;
+    //one implementation, in common, shared with the export paths
+    return common.sanitizeProjection(projection);
 }
 
 /**

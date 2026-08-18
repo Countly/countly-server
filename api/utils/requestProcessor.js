@@ -2266,6 +2266,12 @@ const processRequest = (params) => {
                                 params.qstring.projection = null;
                             }
                         }
+                        //The projection reaches find() as given, and the credential redaction
+                        //further down works by field name, so an expression that renames or
+                        //computes a field would carry a redacted value out under a name the
+                        //redaction does not know. Restrict it to plain include and exclude, the
+                        //same guard the DB Viewer applies to its own projections.
+                        common.sanitizeProjection(params.qstring.projection);
                         if (typeof params.qstring.sort === "string") {
                             try {
                                 params.qstring.sort = JSON.parse(params.qstring.sort);
