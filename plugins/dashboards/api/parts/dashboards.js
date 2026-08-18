@@ -1044,6 +1044,11 @@ async function getPushDataForApp(params, apps, appId, widget) {
             data = model.getTimelineData();
 
             for (var z in data) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (z === "__proto__" || z === "constructor" || z === "prototype") {
+                    continue;
+                }
                 if (!widgetData[z]) {
                     widgetData[z] = {};
                 }
