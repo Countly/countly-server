@@ -5,6 +5,9 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
+Security Fixes:
+- [star-rating] The `/o?method=star` ratings read now requires star-rating read access to the application it is asked about. It previously performed no authorization, so the platform and application-version combinations that had received ratings could be read for any application by a caller with no account, token or session
+
 ## Version 24.05.51
 
 Fixes:
