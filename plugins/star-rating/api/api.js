@@ -1577,79 +1577,85 @@ function uploadFile(myfile, id, callback) {
     plugins.register('/o', function(ob) {
         var params = ob.params;
         if (params.qstring.method === 'star') {
-            if (params.qstring.period) {
-                //check if period comes from datapicker
-                if (params.qstring.period.indexOf(",") !== -1) {
-                    try {
-                        params.qstring.period = JSON.parse(params.qstring.period);
-                    }
-                    catch (SyntaxError) {
-                        common.returnMessage(params, 400, 'Bad request parameter: period');
-                        return true;
-                    }
-                }
-                else {
-                    switch (params.qstring.period) {
-                    case "prevMonth":
-                    case "month":
-                    case "day":
-                    case "yesterday":
-                    case "hour":
-                        break;
-                    default:
-                        if (!/([0-9]+)days/.test(params.qstring.period)) {
+            //this read is app scoped: require the caller to hold star-rating
+            //read access on app_id, the same check the sibling reads in this
+            //file apply. Authorize before validating parameters so that an
+            //unauthorized caller cannot probe the endpoint.
+            validateRead(params, FEATURE_NAME, function() {
+                if (params.qstring.period) {
+                    //check if period comes from datapicker
+                    if (params.qstring.period.indexOf(",") !== -1) {
+                        try {
+                            params.qstring.period = JSON.parse(params.qstring.period);
+                        }
+                        catch (SyntaxError) {
                             common.returnMessage(params, 400, 'Bad request parameter: period');
                             return true;
                         }
-                        break;
+                    }
+                    else {
+                        switch (params.qstring.period) {
+                        case "prevMonth":
+                        case "month":
+                        case "day":
+                        case "yesterday":
+                        case "hour":
+                            break;
+                        default:
+                            if (!/([0-9]+)days/.test(params.qstring.period)) {
+                                common.returnMessage(params, 400, 'Bad request parameter: period');
+                                return true;
+                            }
+                            break;
+                        }
                     }
                 }
-            }
-            else {
-                common.returnMessage(params, 400, 'Missing request parameter: period');
-                return true;
-            }
-            countlyCommon.setPeriod(params.qstring.period, true);
-            var periodObj = countlyCommon.periodObj;
-            var collectionName = crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
-            var id_prefix = params.qstring.app_id + "_" + collectionName + "_";
-            var documents = [];
-            for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                for (var m = 0; m < common.base64.length; m++) {
-                    documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
-                }
-            }
-            common.db.collection("events_data").find({
-                '_id': {
-                    $in: documents
-                }
-            }).toArray(function(err, docs) {
-                if (!err) {
-                    var result = {};
-                    docs.forEach(function(doc) {
-                        if (!doc.meta) {
-                            doc.meta = {};
-                        }
-                        if (!doc.meta.platform_version_rate) {
-                            doc.meta.platform_version_rate = [];
-                        }
-                        if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
-                            common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
-                        }
-                        doc.meta.platform_version_rate.forEach(function(item) {
-                            var data = item.split('**');
-                            if (result[data[0]] === undefined) {
-                                result[data[0]] = [];
-                            }
-                            if (result[data[0]].indexOf(data[1]) === -1) {
-                                result[data[0]].push(data[1]);
-                            }
-                        });
-                    });
-                    common.returnOutput(params, result);
+                else {
+                    common.returnMessage(params, 400, 'Missing request parameter: period');
                     return true;
                 }
+                countlyCommon.setPeriod(params.qstring.period, true);
+                var periodObj = countlyCommon.periodObj;
+                var collectionName = crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
+                var id_prefix = params.qstring.app_id + "_" + collectionName + "_";
+                var documents = [];
+                for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                    documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                    for (var m = 0; m < common.base64.length; m++) {
+                        documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
+                }
+                common.db.collection("events_data").find({
+                    '_id': {
+                        $in: documents
+                    }
+                }).toArray(function(err, docs) {
+                    if (!err) {
+                        var result = {};
+                        docs.forEach(function(doc) {
+                            if (!doc.meta) {
+                                doc.meta = {};
+                            }
+                            if (!doc.meta.platform_version_rate) {
+                                doc.meta.platform_version_rate = [];
+                            }
+                            if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
+                                common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
+                            }
+                            doc.meta.platform_version_rate.forEach(function(item) {
+                                var data = item.split('**');
+                                if (result[data[0]] === undefined) {
+                                    result[data[0]] = [];
+                                }
+                                if (result[data[0]].indexOf(data[1]) === -1) {
+                                    result[data[0]].push(data[1]);
+                                }
+                            });
+                        });
+                        common.returnOutput(params, result);
+                        return true;
+                    }
+                });
             });
             return true;
         }
