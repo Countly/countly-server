@@ -15,7 +15,7 @@
                     <p class="text-big color-cool-gray-100">{{i18n('token_manager.permission.title')}}<i class="el-icon-question bu-ml-2"></i></p>
                 </div>
                 <p class="text-small color-cool-gray-50" style="margin-top: -10px;">{{i18n('token_manager.permission.description')}}</p>
-                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
+                <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned token-manager-drawer__choice bu-mt-0">
                     <el-radio v-model="tokenUsage" label="0" class="is-autosized is-multiline bu-p-4" border>
                         {{i18n('token_manager.permission.full-label')}}
                         <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.permission.full-text')}}</p>
@@ -36,10 +36,14 @@
                 <div class="bu-is-flex bu-mt-4">
                     <p class="text-small color-cool-gray-100">{{i18n('token_manager.select-apps')}}<i class="el-icon-question bu-ml-2"></i></p>
                 </div>
-                <el-select v-model="formScope.editedObject.selectApps" class="bu-is-block" :multiple="true"  placeholder="Select apps to allow token">
-                    <el-option v-for="item in constants.apps" :label="item.name" :key="item.value" :value="item.value">
-                    </el-option>
-                </el-select>
+                <cly-app-select
+                    style="width: 100%;"
+                    v-model="formScope.editedObject.selectApps"
+                    :multiple="true"
+                    :collapse-tags="false"
+                    show-app-image
+                    :placeholder="i18n('token_manager.select-apps')">
+                </cly-app-select>
             </cly-form-field>
             <cly-form-field v-if="tokenUsage === '1'" class="bu-p-0">
                 <div class="bu-is-flex bu-mt-4">
@@ -50,19 +54,38 @@
                     <i slot="prefix" class="el-input__icon el-icon-search"></i>
                     <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
                 </el-input>
-                <div class="bu-is-flex bu-is-justify-content-flex-end bu-mb-2">
-                    <el-checkbox class="bu-ml-4" @change="setPermissionByType('c')" v-model="allByType.c">{{i18n('management-users.create').toUpperCase()}}</el-checkbox>
-                    <el-checkbox class="bu-ml-4" @change="setPermissionByType('r')" v-model="allByType.r">{{i18n('management-users.read').toUpperCase()}}</el-checkbox>
-                    <el-checkbox class="bu-ml-4" @change="setPermissionByType('u')" v-model="allByType.u">{{i18n('management-users.update').toUpperCase()}}</el-checkbox>
-                    <el-checkbox class="bu-ml-4" @change="setPermissionByType('d')" v-model="allByType.d">{{i18n('management-users.delete').toUpperCase()}}</el-checkbox>
+                <div class="token-manager-drawer__permission-header">
+                    <div class="token-manager-drawer__feature-name"></div>
+                    <div class="token-manager-drawer__feature-permissions">
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByType('c')" v-model="allByType.c">{{i18n('management-users.create').toUpperCase()}}</el-checkbox>
+                        </div>
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByType('r')" v-model="allByType.r">{{i18n('management-users.read').toUpperCase()}}</el-checkbox>
+                        </div>
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByType('u')" v-model="allByType.u">{{i18n('management-users.update').toUpperCase()}}</el-checkbox>
+                        </div>
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByType('d')" v-model="allByType.d">{{i18n('management-users.delete').toUpperCase()}}</el-checkbox>
+                        </div>
+                    </div>
                 </div>
-                <div class="bu-is-flex bu-is-justify-content-space-between bu-mb-2" v-for="feature in filteredFeatures" :key="feature">
-                    <div class="text-small color-cool-gray-100">{{featureBeautifier(feature)}}</div>
-                    <div class="bu-is-flex">
-                        <el-checkbox class="bu-ml-4" @change="setPermissionByFeature('c', feature)" v-model="permissionSet.c.allowed[feature]"></el-checkbox>
-                        <el-checkbox class="bu-ml-4" @change="setPermissionByFeature('r', feature)" v-model="permissionSet.r.allowed[feature]"></el-checkbox>
-                        <el-checkbox class="bu-ml-4" @change="setPermissionByFeature('u', feature)" v-model="permissionSet.u.allowed[feature]"></el-checkbox>
-                        <el-checkbox class="bu-ml-4" @change="setPermissionByFeature('d', feature)" v-model="permissionSet.d.allowed[feature]"></el-checkbox>
+                <div class="token-manager-drawer__permission-row" v-for="feature in filteredFeatures" :key="feature">
+                    <div class="token-manager-drawer__feature-name text-small color-cool-gray-100">{{featureBeautifier(feature)}}</div>
+                    <div class="token-manager-drawer__feature-permissions">
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByFeature('c', feature)" v-model="permissionSet.c.allowed[feature]"></el-checkbox>
+                        </div>
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByFeature('r', feature)" v-model="permissionSet.r.allowed[feature]"></el-checkbox>
+                        </div>
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByFeature('u', feature)" v-model="permissionSet.u.allowed[feature]"></el-checkbox>
+                        </div>
+                        <div class="token-manager-drawer__permission-box">
+                            <el-checkbox @change="setPermissionByFeature('d', feature)" v-model="permissionSet.d.allowed[feature]"></el-checkbox>
+                        </div>
                     </div>
                 </div>
             </cly-form-field>

@@ -19,8 +19,7 @@
                         { label: CV.i18n('token_manager.limit.h'), value: "hours" },
                         { label: CV.i18n('token_manager.limit.d'), value: "days" },
                         { label: CV.i18n('token_manager.limit.m'), value: "months" }
-                    ],
-                    "apps": this.appsData(),
+                    ]
                 }
             };
         },
@@ -32,13 +31,6 @@
             });
         },
         methods: {
-            appsData: function() {
-                var apps = [];
-                for (var appId in countlyGlobal.apps) {
-                    apps.push({ value: appId, name: countlyGlobal.apps[appId].name });
-                }
-                return apps;
-            },
             featureBeautifier: function(feature) {
                 return countlyAuth.featureBeautifier(feature);
             },

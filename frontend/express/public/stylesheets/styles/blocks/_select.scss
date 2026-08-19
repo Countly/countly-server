@@ -5,7 +5,20 @@
 
 .cly-vue-select-x {
     &__pop {
-        .cly-vue-listbox {
+        // Optional prefix (an app icon, for example) in front of a multi-check option label. Rendered
+// only when the caller passes an option-prefix slot, so existing checklistboxes are unchanged.
+.cly-vue-checklistbox__item-content {
+    display: inline-flex;
+    align-items: center;
+}
+
+.cly-vue-checklistbox__item-prefix {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 6px;
+}
+
+.cly-vue-listbox {
             background-color: transparent !important;
         }
         .el-tabs {
