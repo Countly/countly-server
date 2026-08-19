@@ -11,6 +11,50 @@ var common = require('../../../api/utils/common.js'),
 
 const FEATURE_NAME = 'reports';
 
+//What a client may set on a report, taken from what the drawer binds plus the
+//metrics map it assembles on submit. Everything else on a report document is
+//the generator's own work at send time: messages, data, subject, mailTemplate,
+//properties, period, start, end, date, total_new, universe.
+//
+//The direction matters. Removing known-dangerous keys would leave every field
+//added later writable until somebody remembers to deny it, and the cost of
+//forgetting is unbounded, because these values are not only stored but consumed:
+//messages[].html is the string handed to the pdf renderer, so a request must
+//never be able to supply it. Declaring what the drawer sends fails the other
+//way, and the cost of forgetting is a setting that stops saving, which someone
+//notices and files.
+const REPORT_FIELDS = [
+    "title",
+    "report_type",
+    "apps",
+    "dashboards",
+    "date_range",
+    "emails",
+    "frequency",
+    "day",
+    "hour",
+    "minute",
+    "timezone",
+    "sendPdf",
+    "selectedEvents",
+    "metrics"
+];
+
+/**
+* Keep only what a client may set on a report.
+* @param {object} args - the submitted args object
+* @returns {object} a new object holding the allowed fields that were sent
+**/
+function publicReportFields(args) {
+    const props = {};
+    REPORT_FIELDS.forEach(function(field) {
+        if (typeof args[field] !== "undefined") {
+            props[field] = args[field];
+        }
+    });
+    return props;
+}
+
 (function() {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -236,8 +280,7 @@ const FEATURE_NAME = 'reports';
         case 'create':
             validateCreate(paramsInstance, FEATURE_NAME, function() {
                 var params = paramsInstance;
-                var props = {};
-                props = params.qstring.args;
+                var props = publicReportFields(params.qstring.args);
                 props.minute = (props.minute) ? parseInt(props.minute) : 0;
                 props.hour = (props.hour) ? parseInt(props.hour) : 0;
                 props.day = (props.day) ? parseInt(props.day) : 0;
@@ -301,16 +344,15 @@ const FEATURE_NAME = 'reports';
             break;
         case 'update':
             validateUpdate(paramsInstance, FEATURE_NAME, function() {
-                var props = {};
                 var params = paramsInstance;
-                props = params.qstring.args;
-                var id = props._id;
-                delete props._id;
-                //the report owner is set at creation and must not be changed on
-                //update: repointing it to an unresolvable id would make the
-                //scheduled sender fall back to a global admin and render the
-                //report (e.g. a dashboard) with elevated access
-                delete props.user;
+                //_id names the report to update and is not part of the document;
+                //user is set at creation and must not be changed on update, since
+                //repointing it to an unresolvable id would make the scheduled
+                //sender fall back to a global admin and render the report (e.g. a
+                //dashboard) with elevated access. Neither is in REPORT_FIELDS, so
+                //the allow-list drops both.
+                var id = params.qstring.args._id;
+                var props = publicReportFields(params.qstring.args);
                 if (props.frequency !== "daily" && props.frequency !== "weekly" && props.frequency !== "monthly") {
                     delete props.frequency;
                 }
@@ -506,6 +548,10 @@ const FEATURE_NAME = 'reports';
                             const filePath = '/tmp/email_report_' + new Date().getTime() + '.pdf';
                             const options = { "path": filePath, "width": "1028px", height: "1000px" };
 
+                            //the template loads its images from this host, and the
+                            //renderer refuses every other origin
+                            const renderOrigins = [res.message && res.message.data && res.message.data.host];
+
                             pdf.renderPDF(html, function() {
                                 //output created file to browser
                                 fs.readFile(filePath, function(err3, data) {
@@ -529,8 +575,11 @@ const FEATURE_NAME = 'reports';
                                     });
                                 });
                             }, options, {
+                                //kept for the same reason as the send path: a data:
+                                //url document cannot load its own origin's images
+                                //without it. renderOrigins is what bounds the requests.
                                 args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
-                            }, true);
+                            }, true, renderOrigins);
                         }
                         else {
                             common.returnMessage(params, 200, 'No data to report');

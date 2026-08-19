@@ -98,7 +98,23 @@ var metricProps = {
         });
     };
 
+    //Fields the generator derives while sending. They have no business arriving
+    //from the database: a document stored before the create/update allow-list
+    //existed may still hold them, and reports.send prefers a present
+    //messages[].html over rendering the trusted template.
+    //
+    //Stripped here rather than in loadReport because /o/reports/preview and
+    ///o/reports/pdf run their own findOne and call this directly, so this is the
+    //one point all three paths share.
+    const DERIVED_FIELDS = ["messages", "data", "subject", "mailTemplate", "properties",
+        "period", "start", "end", "date", "total_new", "universe"];
+
     reports.getReport = function(db, report, callback, cache) {
+        if (report) {
+            DERIVED_FIELDS.forEach(function(field) {
+                delete report[field];
+            });
+        }
         /**
          * find Member
          * @param {func} cb - callback function
@@ -688,12 +704,16 @@ var metricProps = {
 
                 if (report.sendPdf === true) {
                     let htmlForPdf = html;
+                    //the two origins the templates load their images from, passed so
+                    //the renderer can refuse everything else
+                    let renderOrigins = [message.data && message.data.host];
                     if (pdfHasTemplate) { // report from dashboard
                         let emailFiller = Object.assign({}, message.data);
                         //use localhost for pdf generation instead of domain
                         //it prevents the issue when one server has local files and loadbalancer sends the request to another server
                         emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
                         htmlForPdf = ejs.render(message.template, emailFiller);
+                        renderOrigins.push(emailFiller.localhost);
                     }
                     pdf.renderPDF(htmlForPdf, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
@@ -717,8 +737,15 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     }, options, {
+                        //--disable-web-security stays. The html is opened as a data:
+                        //url, whose origin is opaque, and Chromium refuses http
+                        //subresources from an opaque origin, so without this the
+                        //template's own images do not load at all. What made the flag
+                        //dangerous was that any request could be made in the first
+                        //place; renderOrigins is the control for that, and with it the
+                        //flag can only relax checks for Countly's own origin.
                         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
-                    }, true).catch(err => {
+                    }, true, renderOrigins).catch(err => {
                         log.d(err);
                     });
 
