@@ -117,8 +117,12 @@
     "uuid": "^11.1.1",
     "@tootallnate/once": "^2.0.1",
     "tar": "^7.5.22",
+    "immutable": "^5.1.8",
+    "brace-expansion@^1.0.0": "^1.1.16",
+    "brace-expansion@^2.0.0": "^2.1.2",
+    "brace-expansion@^5.0.0": "^5.0.7",
     "js-yaml@^3.0.0": "^3.15.0",
-    "js-yaml@^4.0.0": "^4.2.0"
+    "js-yaml@^4.0.0": "^4.3.0"
   },
   "jshintConfig": {
     "esversion": 6,
