@@ -1211,13 +1211,14 @@ describe('Testing token manager', function() {
                 });
         });
 
+        //removed directly rather than through /i/users/delete, whose result this block would have to
+        //ignore: a member left behind here is counted by the later cleanup suite, which asserts that
+        //exactly one user remains
         it('cleanup: remove the token and the member', function(done) {
-            testUtils.db.collection("auth_tokens").remove({_id: memberToken + ""}, function() {
-                request
-                    .get('/i/users/delete?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({user_ids: [memberId]}))
-                    .end(function() {
-                        done();
-                    });
+            testUtils.db.collection("auth_tokens").remove({owner: memberId + ""}, function() {
+                testUtils.db.collection("members").remove({username: username}, function() {
+                    done();
+                });
             });
         });
     });
