@@ -2616,6 +2616,15 @@ const processRequest = (params) => {
                 case 'delete':
                     validateUser(() => {
                         if (params.qstring.tokenid) {
+                            //the id is matched as a plain value, so it has to be
+                            //a scalar. A JSON request body can put an object
+                            //here, which Mongo would read as a query expression,
+                            //turning the removal of one token into the removal of
+                            //every token the caller owns
+                            if (!common.isQueryScalar(params.qstring.tokenid)) {
+                                common.returnMessage(params, 400, "Invalid parameter: tokenid");
+                                return;
+                            }
                             common.db.collection("auth_tokens").remove({
                                 "_id": params.qstring.tokenid,
                                 "owner": params.member._id + ""
