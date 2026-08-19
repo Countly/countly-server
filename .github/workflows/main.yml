@@ -115,8 +115,11 @@ jobs:
 
       - name: ESLint
         shell: bash
+        # This step installs its own eslint rather than using the repo devDependencies,
+        # so every plugin named in .eslintrc.json has to be listed here too or the run
+        # fails with "Failed to load plugin".
         run: |
-         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0
+         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0 eslint-plugin-security@3.0.1 eslint-plugin-no-unsanitized@4.0.2
          npx eslint .
 
       - name: Check for any external web resources
