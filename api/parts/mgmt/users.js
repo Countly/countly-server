@@ -1122,6 +1122,12 @@ usersApi.fetchNotes = async function(params) {
     }
 
     if (params.qstring.note_type) {
+        // Matched as a plain value, so it has to be a scalar. A JSON request
+        // body can put an object here, which Mongo would read as a query
+        // expression and which would widen the match instead of narrowing it.
+        if (!common.isQueryScalar(params.qstring.note_type)) {
+            return common.returnMessage(params, 400, 'Invalid parameter: note_type');
+        }
         query.noteType = params.qstring.note_type;
     }
 

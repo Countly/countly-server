@@ -1264,6 +1264,18 @@ function uploadFile(myfile, id, callback) {
         var limit = parseInt(params.qstring.iDisplayLength || 0);
         var colNames = ['rating', 'comment', 'email', 'ts'];
 
+        //these are matched as plain values in the query below, so they have to
+        //be scalars. A JSON request body can put an object here, which Mongo
+        //would read as a query expression and which would widen the match
+        //instead of narrowing it
+        var scalarParams = ['widget_id', 'version', 'platform', 'uid'];
+        for (var s = 0; s < scalarParams.length; s++) {
+            if (!common.isQueryScalar(params.qstring[scalarParams[s]])) {
+                common.returnMessage(params, 400, 'Invalid parameter: ' + scalarParams[s]);
+                return true;
+            }
+        }
+
         if (params.qstring.widget_id) {
             query.widget_id = params.qstring.widget_id;
         }
@@ -1423,6 +1435,12 @@ function uploadFile(myfile, id, callback) {
             var collectionName = 'feedback_widgets';
             var query = {type: "rating"};
             if (params.qstring.is_active) {
+                //matched as a plain value, so an object here would be read by
+                //Mongo as a query expression and would widen the match
+                if (!common.isQueryScalar(params.qstring.is_active)) {
+                    common.returnMessage(params, 400, 'Invalid parameter: is_active');
+                    return true;
+                }
                 query.is_active = params.qstring.is_active;
             }
 

@@ -88,6 +88,72 @@ describe('Heatmap', async() => {
         should(data[0].sg).eql(clickData);
     });
 
+    it('does not widen the match when view is not a scalar', async() => {
+        const db = await pluginManager.dbConnection('countly_drill');
+        const baseQuery = {
+            api_key: API_KEY_ADMIN,
+            app_id: APP_ID,
+            app_key: APP_KEY,
+            period: JSON.stringify([moment('2010-01-01').valueOf(), moment('2010-01-31').valueOf()]),
+            device: JSON.stringify({ type: 'all', displayText: 'All', minWidth: 0, maxWidth: 10240 }),
+            actionType: 'click',
+        };
+
+        // a second action on a different view, so a widened match would return
+        // two rows where a match on one view returns one
+        await db.collection('drill_events').insertOne({
+            did: 'heatmap_test',
+            a: APP_ID,
+            e: '[CLY]_action',
+            sg: { ...clickData, domain: 'https://doma.in', view: 'About' },
+            ts: moment('2010-01-02').valueOf(),
+            up: { lv: 'About' },
+        });
+
+        // a string view still returns only that view's action
+        const scoped = await request.post('/o/actions').send({ ...baseQuery, view: 'Home' });
+        should(scoped.status).equal(200);
+        should(scoped.body.data.length).equal(1);
+        should(scoped.body.data[0].sg).eql(clickData);
+
+        // an object view is refused rather than run as a query expression
+        const widened = await request.post('/o/actions').send({ ...baseQuery, view: { $ne: null } });
+        should(widened.status).equal(400);
+        should(widened.body.result).equal('Bad request parameter: view');
+        should.not.exist(widened.body.data);
+
+        await db.collection('drill_events').remove({ did: 'heatmap_test', 'up.lv': 'About' });
+
+        db.close();
+    });
+
+    it('refuses a non-scalar actionType or segment', async() => {
+        const baseQuery = {
+            api_key: API_KEY_ADMIN,
+            app_id: APP_ID,
+            app_key: APP_KEY,
+            view: 'Home',
+            period: JSON.stringify([moment('2010-01-01').valueOf(), moment('2010-01-31').valueOf()]),
+            device: JSON.stringify({ type: 'all', displayText: 'All', minWidth: 0, maxWidth: 10240 }),
+        };
+
+        const badActionType = await request.post('/o/actions')
+            .send({ ...baseQuery, actionType: { $ne: 'scroll' } });
+        should(badActionType.status).equal(400);
+        should(badActionType.body.result).equal('Bad request parameter: actionType');
+
+        const badSegment = await request.post('/o/actions')
+            .send({ ...baseQuery, actionType: 'click', segment: { $ne: null } });
+        should(badSegment.status).equal(400);
+        should(badSegment.body.result).equal('Bad request parameter: segment');
+
+        // a string segment is still accepted, it just matches nothing here
+        const goodSegment = await request.post('/o/actions')
+            .send({ ...baseQuery, actionType: 'click', segment: 'nosuchsegment' });
+        should(goodSegment.status).equal(200);
+        should(goodSegment.body.data.length).equal(0);
+    });
+
     it('gets heatmap data from old drill_events collection if union_with is true', async() => {
         const db = await pluginManager.dbConnection('countly_drill');
         const oldCollectionName = 'drill_events' + crypto.createHash('sha1').update('[CLY]_action' + APP_ID).digest('hex');

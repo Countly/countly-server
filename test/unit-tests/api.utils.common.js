@@ -425,6 +425,31 @@ describe("Common API utility functions", function() {
         });
     });
 
+    describe("isQueryScalar", function() {
+        it("accepts the values a scalar parameter legitimately arrives as", function() {
+            common.isQueryScalar("Home").should.equal(true);
+            common.isQueryScalar("").should.equal(true);
+            common.isQueryScalar("click").should.equal(true);
+            common.isQueryScalar(0).should.equal(true);
+            common.isQueryScalar(1777320900).should.equal(true);
+            common.isQueryScalar(true).should.equal(true);
+        });
+        it("treats an absent parameter as a scalar, leaving that to the call site", function() {
+            common.isQueryScalar(undefined).should.equal(true);
+            common.isQueryScalar(null).should.equal(true);
+        });
+        it("rejects an object, which Mongo would read as a query expression", function() {
+            common.isQueryScalar({ $ne: null }).should.equal(false);
+            common.isQueryScalar({ $regex: "." }).should.equal(false);
+            common.isQueryScalar({ $gt: "" }).should.equal(false);
+            common.isQueryScalar({}).should.equal(false);
+        });
+        it("rejects an array", function() {
+            common.isQueryScalar([]).should.equal(false);
+            common.isQueryScalar(["Home", "About"]).should.equal(false);
+        });
+    });
+
     describe("findUnsafeMongoOperator", function() {
         it("returns null for a clean query", function() {
             should.equal(common.findUnsafeMongoOperator({ lac: { $lt: 1777320900 } }), null);
