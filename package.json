@@ -45,7 +45,7 @@
     "all-the-cities": "3.1.0",
     "argon2": "0.41.1",
     "async": "3.2.6",
-    "basic-auth": "2.0.1",
+    "basic-auth": "3.0.0",
     "bluebird": "3.7.2",
     "body-parser": "2.3.0",
     "bunyan": "1.8.15",
