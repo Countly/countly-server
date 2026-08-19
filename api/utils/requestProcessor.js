@@ -2629,6 +2629,16 @@ const processRequest = (params) => {
                             }
                         }
 
+                        // A scoped credential has to say what it is granting. A token with no
+                        // token_permission is bounded only by its owner, so a child created without
+                        // one would reach everything the owner can - wider than the parent that
+                        // created it. The subset check above cannot catch this, because there is no
+                        // permission object to compare; the omission itself is the escalation.
+                        if (!tokenPermission && creatorToken && creatorToken.token_permission) {
+                            common.returnMessage(params, 403, "A scoped token must state the permissions it grants");
+                            return;
+                        }
+
                         // Login is a capability of the token, never of its purpose string, and it is
                         // only ever passed on by a credential that holds it, to a child that is not
                         // narrowed. That makes a scoped token unable to produce a session, which is
