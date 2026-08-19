@@ -822,4 +822,354 @@ describe('Testing token manager', function() {
         });
     });
 
+
+    // A token is created in a number of shapes - one feature, several features, several apps, a
+    // whole CRUD type - and whatever shape it was created in has to be the shape it is enforced in,
+    // on the ordinary validators every plugin goes through. alerts is a plugin feature carrying
+    // create/read/update, and events is a core feature carrying update/delete, so between them each
+    // CRUD type is exercised on a real endpoint of a real feature.
+    describe('Every shape a token is created in is the shape it is enforced in', function() {
+        var endpoints = {
+            alerts: {c: '/i/alert/save', r: '/o/alert/list', u: '/i/alert/status'},
+            events: {u: '/i/events/edit_map', d: '/i/events/delete_events'}
+        };
+        var created = [];
+
+        var grant = function(spec) {
+            var permission = {_: {a: [], u: [spec.apps]}, c: {}, r: {}, u: {}, d: {}};
+            spec.apps.forEach(function(appId) {
+                spec.types.forEach(function(type) {
+                    permission[type][appId] = {all: !!spec.all, allowed: {}};
+                    (spec.features || []).forEach(function(feature) {
+                        permission[type][appId].allowed[feature] = true;
+                    });
+                });
+            });
+            return encodeURIComponent(JSON.stringify(permission));
+        };
+
+        var mint = function(spec, cb) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=3600&permission=' + grant(spec))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    var token = JSON.parse(res.text).result;
+                    created.push(token);
+                    cb(null, token);
+                });
+        };
+
+        // What is asserted is the authorization outcome, not the handler's own result: a granted
+        // call has to get past the permission gate, a refused one has to be stopped by it. "Not 401"
+        // alone is too weak - an endpoint whose plugin is not loaded answers 400 "Invalid path",
+        // which would let a test pass without ever reaching a validator.
+        var expectAllowed = function(path, appId, token, done, extraQuery) {
+            request
+                .get(path + '?app_id=' + appId + '&auth_token=' + token + (extraQuery || ''))
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var body = {};
+                    try {
+                        body = JSON.parse(res.text);
+                    }
+                    catch (ignored) {
+                        body = {};
+                    }
+                    (body.result + "").should.not.equal('Invalid path');
+                    res.status.should.not.equal(401);
+                    done();
+                });
+        };
+
+        var expectRefused = function(path, appId, token, done, extraQuery) {
+            request
+                .get(path + '?app_id=' + appId + '&auth_token=' + token + (extraQuery || ''))
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'User does not have right');
+                    done();
+                });
+        };
+
+        //feature, the type it is granted, a type of the same feature it must not reach, and a
+        //different feature it must not reach at all
+        var cases = [
+            {feature: 'alerts', type: 'c', deniedSame: endpoints.alerts.r, deniedOther: endpoints.events.u},
+            {feature: 'alerts', type: 'r', deniedSame: endpoints.alerts.u, deniedOther: endpoints.events.u},
+            {feature: 'alerts', type: 'u', deniedSame: endpoints.alerts.r, deniedOther: endpoints.events.d},
+            {feature: 'events', type: 'u', deniedSame: endpoints.events.d, deniedOther: endpoints.alerts.r},
+            {feature: 'events', type: 'd', deniedSame: endpoints.events.u, deniedOther: endpoints.alerts.r}
+        ];
+
+        cases.forEach(function(testCase) {
+            var token = "";
+            var label = testCase.type + ' on ' + testCase.feature;
+
+            it('a token granted only ' + label + ' is created', function(done) {
+                mint({apps: [APP_ID], types: [testCase.type], features: [testCase.feature]}, function(err, minted) {
+                    token = minted;
+                    done(err);
+                });
+            });
+
+            it('...reaches the ' + label + ' endpoint', function(done) {
+                expectAllowed(endpoints[testCase.feature][testCase.type], APP_ID, token, done);
+            });
+
+            it('...but not another access type of ' + testCase.feature, function(done) {
+                expectRefused(testCase.deniedSame, APP_ID, token, done);
+            });
+
+            it('...and not another feature at all', function(done) {
+                expectRefused(testCase.deniedOther, APP_ID, token, done);
+            });
+        });
+
+        it('a token granted two features reaches both of them', function(done) {
+            mint({apps: [APP_ID], types: ['r'], features: ['alerts', 'core']}, function(err, token) {
+                if (err) {
+                    return done(err);
+                }
+                expectAllowed(endpoints.alerts.r, APP_ID, token, function(err2) {
+                    if (err2) {
+                        return done(err2);
+                    }
+                    expectAllowed('/o', APP_ID, token, done, '&method=get_events');
+                });
+            });
+        });
+
+        it('a token granted a whole CRUD type reaches features that were never named', function(done) {
+            //all:true is the "everything of this type" grant, so it covers features not listed
+            mint({apps: [APP_ID], types: ['r'], all: true}, function(err, token) {
+                if (err) {
+                    return done(err);
+                }
+                expectAllowed(endpoints.alerts.r, APP_ID, token, function(err2) {
+                    if (err2) {
+                        return done(err2);
+                    }
+                    expectAllowed('/o', APP_ID, token, done, '&method=get_events');
+                });
+            });
+        });
+
+        it('a token granted two apps reaches both, and still only the feature it was given', function(done) {
+            var params = {name: "Token shapes second app"};
+            request
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var secondApp = JSON.parse(res.text)._id;
+                    mint({apps: [APP_ID, secondApp], types: ['r'], features: ['alerts']}, function(err2, token) {
+                        if (err2) {
+                            return done(err2);
+                        }
+                        expectAllowed(endpoints.alerts.r, APP_ID, token, function(err3) {
+                            if (err3) {
+                                return done(err3);
+                            }
+                            expectAllowed(endpoints.alerts.r, secondApp, token, function(err4) {
+                                if (err4) {
+                                    return done(err4);
+                                }
+                                expectRefused('/i/events/edit_map', secondApp, token, function(err5) {
+                                    request
+                                        .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: secondApp}))
+                                        .end(function() {
+                                            done(err5);
+                                        });
+                                });
+                            });
+                        });
+                    });
+                });
+        });
+
+        it('cleanup: remove the tokens created here', function(done) {
+            testUtils.db.collection("auth_tokens").remove({_id: {$in: created}}, function() {
+                done();
+            });
+        });
+    });
+
+    // /login/token is the only path that turns a token into a dashboard session, and /session is
+    // what that session is then checked with. Both are reached without the api_key, so both are
+    // covered here rather than left to the login-permission checks on the create side alone.
+    describe('Login permission decides what can open a session', function() {
+        var agent = require('supertest').agent(testUtils.url);
+        var loginToken = "";
+        var scopedToken = "";
+
+        it('setup: api_key mints a token that carries login permission', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=600&can_login=true')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    loginToken = JSON.parse(res.text).result;
+                    done();
+                });
+        });
+
+        it('setup: api_key mints a token scoped to one feature', function(done) {
+            var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[APP_ID] = {all: false, allowed: {core: true}};
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=600&permission=' + encodeURIComponent(JSON.stringify(permission)))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    scopedToken = JSON.parse(res.text).result;
+                    done();
+                });
+        });
+
+        it('a scoped token cannot be redeemed for a session', function(done) {
+            request
+                .get('/login/token/' + scopedToken)
+                .expect(302)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    res.headers.location.should.not.containEql('/dashboard');
+                    done();
+                });
+        });
+
+        it('a token with login permission opens a session', function(done) {
+            agent
+                .get('/login/token/' + loginToken)
+                .expect(302)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    res.headers.location.should.containEql('/dashboard');
+                    done();
+                });
+        });
+
+        it('and the session it opened is a live one', function(done) {
+            //the session, not the token, is what /session checks - it reads req.session.auth_token
+            agent
+                .get('/session?check_session=true')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    res.text.should.equal('success');
+                    done();
+                });
+        });
+
+        it('cleanup: remove the tokens', function(done) {
+            testUtils.db.collection("auth_tokens").remove({_id: {$in: [loginToken, scopedToken]}}, function() {
+                done();
+            });
+        });
+    });
+
+    // The intersection is recomputed on every request rather than frozen into the token, so a token
+    // cannot keep reaching what its owner has since lost.
+    describe('A token never outlives the permissions of its owner', function() {
+        var memberId = "";
+        var memberKey = "";
+        var memberToken = "";
+        var username = "tokenowner" + Math.round(Math.random() * 100000);
+
+        it('setup: a member who may read core on the app', function(done) {
+            var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[APP_ID] = {all: false, allowed: {core: true}};
+            var params = {full_name: "Token Owner", username: username, password: testUtils.password, email: username + "@domain.com", permission: permission};
+            request
+                .get('/i/users/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('api_key');
+                    memberId = ob._id;
+                    memberKey = ob.api_key;
+                    done();
+                });
+        });
+
+        it('setup: that member mints a token with the permissions they hold', function(done) {
+            var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[APP_ID] = {all: false, allowed: {core: true}};
+            request
+                .get('/i/token/create?api_key=' + memberKey + '&multi=true&ttl=3600&permission=' + encodeURIComponent(JSON.stringify(permission)))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    memberToken = JSON.parse(res.text).result;
+                    done();
+                });
+        });
+
+        it('the token reads what its owner may read', function(done) {
+            request
+                .get('/o?app_id=' + APP_ID + '&method=get_events&auth_token=' + memberToken)
+                .expect(200)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('the owner loses access to the app', function(done) {
+            var params = {user_id: memberId, permission: {_: {a: [], u: [[]]}, c: {}, r: {}, u: {}, d: {}}};
+            request
+                .get('/i/users/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('and the token loses it with them, without being touched', function(done) {
+            request
+                .get('/o?app_id=' + APP_ID + '&method=get_events&auth_token=' + memberToken)
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'User does not have right');
+                    done();
+                });
+        });
+
+        it('cleanup: remove the token and the member', function(done) {
+            testUtils.db.collection("auth_tokens").remove({_id: memberToken + ""}, function() {
+                request
+                    .get('/i/users/delete?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({user_ids: [memberId]}))
+                    .end(function() {
+                        done();
+                    });
+            });
+        });
+    });
+
 });
