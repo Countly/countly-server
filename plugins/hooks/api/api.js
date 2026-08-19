@@ -303,6 +303,7 @@ plugins.register("/i/hook/save", function(ob) {
 
         try {
             hookConfig = JSON.parse(hookConfig);
+            common.stripRequestCredentials(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             if (hookConfig) {
                 // Null check for hookConfig
