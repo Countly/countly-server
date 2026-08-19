@@ -417,6 +417,11 @@ plugins.connectToAllDatabases().then(function() {
                 form.parse(req, (err, fields, files) => {
                     //handle bakcwards compatability with formiddble v1
                     for (let i in files) {
+                        // a key off a stored document or a parsed payload can be a prototype
+                        // member name; writing through one would reach Object.prototype
+                        if (i === "__proto__" || i === "constructor" || i === "prototype") {
+                            continue;
+                        }
                         if (files[i].filepath) {
                             files[i].path = files[i].filepath;
                         }

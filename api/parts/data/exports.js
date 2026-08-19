@@ -706,6 +706,11 @@ exports.fromRequest = function(options) {
                 }
                 if (options.columnNames || options.mapper) {
                     for (key in body) {
+                        // a key off a stored document or a parsed payload can be a prototype
+                        // member name; writing through one would reach Object.prototype
+                        if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                            continue;
+                        }
                         if (options.mapper) {
                             body[key] = transformValuesInObject(body[key], options.mapper);
                         }

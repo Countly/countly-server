@@ -547,6 +547,11 @@ countlyModel.create = function(fetchValue) {
             return obj;
         }, periodObject);
         for (let i in data) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (i === "__proto__" || i === "constructor" || i === "prototype") {
+                continue;
+            }
             if (sparkLines[i]) {
                 data[i].sparkline = sparkLines[i].split(",").map(function(item) {
                     return parseInt(item);

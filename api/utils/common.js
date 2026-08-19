@@ -2224,6 +2224,11 @@ common.recordMetric = function(params, props) {
         tmpSet = {};
 
     for (let i in props.metrics) {
+        // a key off a stored document or a parsed payload can be a prototype
+        // member name; writing through one would reach Object.prototype
+        if (i === "__proto__" || i === "constructor" || i === "prototype") {
+            continue;
+        }
         props.metrics[i].value = props.metrics[i].value || 1;
         recordMetric(params, i, props.metrics[i], tmpSet, updateUsersZero, updateUsersMonth);
     }
@@ -2328,6 +2333,19 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 }
 
 /**
+* Whether a string, used as a MongoDB field name, would name a member of
+* Object.prototype. Such a name survives storage as a literal field and, when the
+* document is later walked with for...in and merged, writes into the prototype of
+* the process. Segmentation values, metric values and event keys all become field
+* names, so each is checked against this before use.
+* @param {string} name - the candidate field name
+* @returns {boolean} true when the name must not be used as a field name as-is
+**/
+common.isForbiddenFieldName = function(name) {
+    return name === "__proto__" || name === "constructor" || name === "prototype";
+};
+
+/**
 * Record specific metric segment
 * @param {params} params - params object
 * @param {string} metric - metric to record
@@ -2343,6 +2361,12 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
     var escapedMetricVal = (val + "").replace(/^\$/, "").replace(/\./g, ":");
+    //escapedMetricVal is used below as a component of a d.<...> field name, so a
+    //value naming an Object.prototype member is prefixed the way forbidden day
+    //numbers already are
+    if (common.isForbiddenFieldName(escapedMetricVal)) {
+        escapedMetricVal = "[CLY]" + escapedMetricVal;
+    }
     if (!tmpSet["meta." + escapedMetricKey]) {
         tmpSet["meta." + escapedMetricKey] = [];
     }
@@ -3594,6 +3618,11 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
 common.mergeQuery = function(ob1, ob2) {
     if (ob2) {
         for (let key in ob2) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                continue;
+            }
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
@@ -3625,6 +3654,11 @@ common.mergeQuery = function(ob1, ob2) {
             }
             else if (key === "$push") {
                 for (let val in ob2[key]) {
+                    // a key off a stored document or a parsed payload can be a prototype
+                    // member name; writing through one would reach Object.prototype
+                    if (val === "__proto__" || val === "constructor" || val === "prototype") {
+                        continue;
+                    }
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]};
                     }
