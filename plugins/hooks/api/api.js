@@ -299,6 +299,7 @@ plugins.register("/i/hook/save", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            common.stripRequestCredentials(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 400, 'Not enough args');
@@ -804,6 +805,7 @@ plugins.register("/i/hook/test", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            common.stripRequestCredentials(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             const mockData = JSON.parse(params.qstring.mock_data);
 

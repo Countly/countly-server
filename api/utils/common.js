@@ -2852,6 +2852,32 @@ common.reqInfo = function(params) {
     return ctx ? " [" + ctx + "]" : "";
 };
 
+/**
+ * Remove the request's own authentication parameters from an object that is about
+ * to be stored. api_key and auth_token are both accepted as request parameters
+ * (see api/utils/rights.js), so a handler that keeps input it does not recognise
+ * persists the caller's credential, and a document read back later hands that
+ * credential to everyone allowed to read it.
+ *
+ * Top level only, and deliberately so. That is where a copy of the request puts
+ * them. A value the caller nested inside their own payload is their own to
+ * disclose, and descending to arbitrary depth would mean guessing at shapes.
+ *
+ * This is not a substitute for only storing declared fields. It is the floor: a
+ * handler that cannot enumerate its own shape can still refuse to keep a
+ * credential.
+ *
+ * @param {object} doc - the object about to be written, mutated in place
+ * @returns {object} the same object, so it can be used inline
+ */
+common.stripRequestCredentials = function(doc) {
+    if (doc && typeof doc === "object") {
+        delete doc.api_key;
+        delete doc.auth_token;
+    }
+    return doc;
+};
+
 common.clearClashingQueryOperations = function(query) {
     var map = {};
     var field;

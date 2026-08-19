@@ -383,6 +383,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             parameter = JSON.parse(params.qstring.parameter);
+            common.stripRequestCredentials(parameter);
         }
         catch (SyntaxError) {
             console.log('Parse parameter failed: ', params.qstring.parameter);
@@ -955,6 +956,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             parameter = JSON.parse(params.qstring.parameter);
+            common.stripRequestCredentials(parameter);
         }
         catch (SyntaxError) {
             console.log('Parse parameter failed: ', params.qstring.parameter);
@@ -1169,6 +1171,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             condition = JSON.parse(params.qstring.condition);
+            common.stripRequestCredentials(condition);
         }
         catch (SyntaxError) {
             console.log('Parse condition failed: ', params.qstring.condition);
@@ -1377,6 +1380,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             condition = JSON.parse(params.qstring.condition);
+            common.stripRequestCredentials(condition);
         }
         catch (SyntaxError) {
             console.log('Parse condition failed: ', params.qstring.condition);
