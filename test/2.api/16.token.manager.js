@@ -630,4 +630,196 @@ describe('Testing token manager', function() {
             });
         });
     });
+
+    // The checks above cover the token manager itself. These cover what the token can actually
+    // reach: the same validators every data endpoint in the product goes through. A token is
+    // scoped by app, by CRUD type and by feature, so each of those has to hold on a real
+    // endpoint, not just in the permission algebra.
+    describe('Scoped tokens are enforced on real data endpoints', function() {
+        var readCoreToken = "";
+        var updateEventsToken = "";
+        var OTHER_APP_ID = "";
+
+        //grant exactly one feature, for one app, under one CRUD type
+        var permissionFor = function(appId, type, feature) {
+            var permission = {_: {a: [], u: [[appId]]}, c: {}, r: {}, u: {}, d: {}};
+            permission[type][appId] = {all: false, allowed: {}};
+            permission[type][appId].allowed[feature] = true;
+            return encodeURIComponent(JSON.stringify(permission));
+        };
+
+        var createToken = function(permission, cb) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=3600&permission=' + permission)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb(null, JSON.parse(res.text).result);
+                });
+        };
+
+        var removeToken = function(id, done) {
+            if (!id) {
+                return done();
+            }
+            request
+                .get('/i/token/delete?api_key=' + API_KEY_ADMIN + '&tokenid=' + id)
+                .end(function() {
+                    done();
+                });
+        };
+
+        it('setup: a second app the tokens are not scoped to', function(done) {
+            var params = {name: "Token scope other app"};
+            request
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    OTHER_APP_ID = JSON.parse(res.text)._id;
+                    (OTHER_APP_ID !== "").should.equal(true);
+                    done();
+                });
+        });
+
+        it('setup: a token that may only read core on the first app', function(done) {
+            createToken(permissionFor(APP_ID, 'r', 'core'), function(err, token) {
+                if (err) {
+                    return done(err);
+                }
+                readCoreToken = token;
+                done();
+            });
+        });
+
+        it('setup: a token that may only update events on the first app', function(done) {
+            createToken(permissionFor(APP_ID, 'u', 'events'), function(err, token) {
+                if (err) {
+                    return done(err);
+                }
+                updateEventsToken = token;
+                done();
+            });
+        });
+
+        it('the read-core token reads core data on the app it was granted', function(done) {
+            request
+                .get('/o?app_id=' + APP_ID + '&method=get_events&auth_token=' + readCoreToken)
+                .expect(200)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        //Two layers refuse another app, and this one is caught by the first. The token's app list
+        //is derived from its permission, so verify_token rejects the token itself before a member
+        //is ever loaded - hence "Token not valid" rather than "User does not have right".
+        it('the read-core token cannot read that same data on another app of the same owner', function(done) {
+            request
+                .get('/o?app_id=' + OTHER_APP_ID + '&method=get_events&auth_token=' + readCoreToken)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'Token not valid');
+                    done();
+                });
+        });
+
+        //...and this one is caught by the second. Passing apps explicitly widens the token's app
+        //list to both apps without widening its permission, so the app check lets the request
+        //through and the permission intersection is what refuses it. Without that layer a token
+        //could reach any app its app list happens to name.
+        it('a token whose app list is wider than its permission is still refused by the permission', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=3600&apps=' + APP_ID + ',' + OTHER_APP_ID + '&permission=' + permissionFor(APP_ID, 'r', 'core'))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var widerToken = JSON.parse(res.text).result;
+                    request
+                        .get('/o?app_id=' + OTHER_APP_ID + '&method=get_events&auth_token=' + widerToken)
+                        .expect(401)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return removeToken(widerToken, function() {
+                                    done(err2);
+                                });
+                            }
+                            JSON.parse(res2.text).should.have.property('result', 'User does not have right');
+                            //and the app it was actually granted still works
+                            request
+                                .get('/o?app_id=' + APP_ID + '&method=get_events&auth_token=' + widerToken)
+                                .expect(200)
+                                .end(function(err3) {
+                                    removeToken(widerToken, function() {
+                                        done(err3);
+                                    });
+                                });
+                        });
+                });
+        });
+
+        it('the read-core token cannot update, only read', function(done) {
+            request
+                .get('/i/events/edit_map?app_id=' + APP_ID + '&auth_token=' + readCoreToken + '&event_order=' + JSON.stringify([]))
+                .expect(401)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('the update-events token cannot read core data, only update events', function(done) {
+            request
+                .get('/o?app_id=' + APP_ID + '&method=get_events&auth_token=' + updateEventsToken)
+                .expect(401)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('the update-events token cannot delete events, only update them', function(done) {
+            request
+                .get('/i/events/delete_events?app_id=' + APP_ID + '&auth_token=' + updateEventsToken + '&events=' + JSON.stringify(["nonexistent"]))
+                .expect(401)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        //the granted combination has to get past authorization. Whether the handler then finds an
+        //events document for this app depends on fixtures, so what is asserted is that the
+        //permission gate let it through rather than a particular success body.
+        it('the update-events token passes authorization for the update it was granted', function(done) {
+            request
+                .get('/i/events/edit_map?app_id=' + APP_ID + '&auth_token=' + updateEventsToken + '&event_order=' + JSON.stringify([]))
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    res.status.should.not.equal(401);
+                    done();
+                });
+        });
+
+        it('cleanup: remove the tokens and the second app', function(done) {
+            removeToken(readCoreToken, function() {
+                removeToken(updateEventsToken, function() {
+                    request
+                        .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: OTHER_APP_ID}))
+                        .end(function() {
+                            done();
+                        });
+                });
+            });
+        });
+    });
+
 });
