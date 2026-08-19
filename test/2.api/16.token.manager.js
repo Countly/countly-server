@@ -899,14 +899,35 @@ describe('Testing token manager', function() {
                 });
         };
 
+        // The alerts cases need that plugin installed. Where it is not, its endpoints answer
+        // "Invalid path" and those cases are skipped explicitly rather than passing against an
+        // endpoint that was never there. The core cases below do not depend on any plugin.
+        var alertsInstalled = false;
+
+        before(function(done) {
+            request
+                .get(endpoints.alerts.r + '?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
+                .end(function(err, res) {
+                    var body = {};
+                    try {
+                        body = JSON.parse(res.text);
+                    }
+                    catch (ignored) {
+                        body = {};
+                    }
+                    alertsInstalled = (body.result !== 'Invalid path');
+                    done();
+                });
+        });
+
         //feature, the type it is granted, a type of the same feature it must not reach, and a
         //different feature it must not reach at all
         var cases = [
             {feature: 'alerts', type: 'c', deniedSame: endpoints.alerts.r, deniedOther: endpoints.events.u},
             {feature: 'alerts', type: 'r', deniedSame: endpoints.alerts.u, deniedOther: endpoints.events.u},
             {feature: 'alerts', type: 'u', deniedSame: endpoints.alerts.r, deniedOther: endpoints.events.d},
-            {feature: 'events', type: 'u', deniedSame: endpoints.events.d, deniedOther: endpoints.alerts.r},
-            {feature: 'events', type: 'd', deniedSame: endpoints.events.u, deniedOther: endpoints.alerts.r}
+            {feature: 'events', type: 'u', deniedSame: endpoints.events.d, deniedOther: '/o', deniedOtherQuery: '&method=get_events'},
+            {feature: 'events', type: 'd', deniedSame: endpoints.events.u, deniedOther: '/o', deniedOtherQuery: '&method=get_events'}
         ];
 
         cases.forEach(function(testCase) {
@@ -914,6 +935,9 @@ describe('Testing token manager', function() {
             var label = testCase.type + ' on ' + testCase.feature;
 
             it('a token granted only ' + label + ' is created', function(done) {
+                if (testCase.feature === 'alerts' && !alertsInstalled) {
+                    return this.skip();
+                }
                 mint({apps: [APP_ID], types: [testCase.type], features: [testCase.feature]}, function(err, minted) {
                     token = minted;
                     done(err);
@@ -921,19 +945,31 @@ describe('Testing token manager', function() {
             });
 
             it('...reaches the ' + label + ' endpoint', function(done) {
+                if (testCase.feature === 'alerts' && !alertsInstalled) {
+                    return this.skip();
+                }
                 expectAllowed(endpoints[testCase.feature][testCase.type], APP_ID, token, done);
             });
 
             it('...but not another access type of ' + testCase.feature, function(done) {
+                if (testCase.feature === 'alerts' && !alertsInstalled) {
+                    return this.skip();
+                }
                 expectRefused(testCase.deniedSame, APP_ID, token, done);
             });
 
             it('...and not another feature at all', function(done) {
-                expectRefused(testCase.deniedOther, APP_ID, token, done);
+                if (testCase.feature === 'alerts' && !alertsInstalled) {
+                    return this.skip();
+                }
+                expectRefused(testCase.deniedOther, APP_ID, token, done, testCase.deniedOtherQuery);
             });
         });
 
         it('a token granted two features reaches both of them', function(done) {
+            if (!alertsInstalled) {
+                return this.skip();
+            }
             mint({apps: [APP_ID], types: ['r'], features: ['alerts', 'core']}, function(err, token) {
                 if (err) {
                     return done(err);
@@ -948,6 +984,9 @@ describe('Testing token manager', function() {
         });
 
         it('a token granted a whole CRUD type reaches features that were never named', function(done) {
+            if (!alertsInstalled) {
+                return this.skip();
+            }
             //all:true is the "everything of this type" grant, so it covers features not listed
             mint({apps: [APP_ID], types: ['r'], all: true}, function(err, token) {
                 if (err) {
@@ -963,6 +1002,9 @@ describe('Testing token manager', function() {
         });
 
         it('a token granted two apps reaches both, and still only the feature it was given', function(done) {
+            if (!alertsInstalled) {
+                return this.skip();
+            }
             var params = {name: "Token shapes second app"};
             request
                 .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
