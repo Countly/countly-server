@@ -835,6 +835,14 @@ describe('Testing token manager', function() {
         };
         var created = [];
 
+        // Some handlers only answer once their own parameters are present - /i/alert/status parses
+        // qstring.status and, on branches where that parse is not guarded, never replies without it.
+        // Authorization is what these cases are about, so each endpoint is given whatever it needs
+        // to reply, and the assertion is on the authorization outcome rather than the reply itself.
+        var handlerQuery = {
+            '/i/alert/status': '&status=' + encodeURIComponent('{}')
+        };
+
         var grant = function(spec) {
             var permission = {_: {a: [], u: [spec.apps]}, c: {}, r: {}, u: {}, d: {}};
             spec.apps.forEach(function(appId) {
@@ -868,7 +876,7 @@ describe('Testing token manager', function() {
         // which would let a test pass without ever reaching a validator.
         var expectAllowed = function(path, appId, token, done, extraQuery) {
             request
-                .get(path + '?app_id=' + appId + '&auth_token=' + token + (extraQuery || ''))
+                .get(path + '?app_id=' + appId + '&auth_token=' + token + (handlerQuery[path] || '') + (extraQuery || ''))
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
@@ -888,7 +896,7 @@ describe('Testing token manager', function() {
 
         var expectRefused = function(path, appId, token, done, extraQuery) {
             request
-                .get(path + '?app_id=' + appId + '&auth_token=' + token + (extraQuery || ''))
+                .get(path + '?app_id=' + appId + '&auth_token=' + token + (handlerQuery[path] || '') + (extraQuery || ''))
                 .expect(401)
                 .end(function(err, res) {
                     if (err) {
