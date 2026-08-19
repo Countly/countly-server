@@ -184,3 +184,43 @@ describe("star-rating image-utils", function() {
         });
     });
 });
+
+// The logo upload identifier becomes the name of the stored file, and it used to be
+// concatenated into the upload path unchecked. These cases cover the shapes that would
+// have chosen a write location instead of a file name.
+describe("safeLogoIdentifier", function() {
+    it("keeps the identifier the dashboard actually sends", function() {
+        // the dropzone sends Date.now()
+        imageUtils.safeLogoIdentifier(1755100000000).should.equal("1755100000000");
+        imageUtils.safeLogoIdentifier("1755100000000").should.equal("1755100000000");
+    });
+    it("keeps plain names with underscores and dashes", function() {
+        imageUtils.safeLogoIdentifier("feedback_logo").should.equal("feedback_logo");
+        imageUtils.safeLogoIdentifier("my-logo_2").should.equal("my-logo_2");
+    });
+    it("refuses traversal out of the images directory", function() {
+        should.not.exist(imageUtils.safeLogoIdentifier("../../../../../../../../tmp/final_poc"));
+        should.not.exist(imageUtils.safeLogoIdentifier("../../frontend/express/public/appimages/6a41837e902bfd5369ddc610"));
+        should.not.exist(imageUtils.safeLogoIdentifier(".."));
+        should.not.exist(imageUtils.safeLogoIdentifier("..%2f..%2ftmp%2fx"));
+    });
+    it("refuses separators and absolute paths in any form", function() {
+        should.not.exist(imageUtils.safeLogoIdentifier("/tmp/x"));
+        should.not.exist(imageUtils.safeLogoIdentifier("sub/dir"));
+        should.not.exist(imageUtils.safeLogoIdentifier("sub\\dir"));
+        should.not.exist(imageUtils.safeLogoIdentifier("C:x"));
+    });
+    it("refuses names that are not plain identifiers", function() {
+        should.not.exist(imageUtils.safeLogoIdentifier(""));
+        should.not.exist(imageUtils.safeLogoIdentifier("."));
+        should.not.exist(imageUtils.safeLogoIdentifier("a.b")); // the extension is server chosen
+        should.not.exist(imageUtils.safeLogoIdentifier("a b"));
+        // a NUL is the classic path truncation trick, so pin it explicitly
+        should.not.exist(imageUtils.safeLogoIdentifier("a\u0000b"));
+        should.not.exist(imageUtils.safeLogoIdentifier("a\u0009b"));
+        should.not.exist(imageUtils.safeLogoIdentifier(undefined));
+        should.not.exist(imageUtils.safeLogoIdentifier(null));
+        should.not.exist(imageUtils.safeLogoIdentifier({}));
+        should.not.exist(imageUtils.safeLogoIdentifier(NaN));
+    });
+});

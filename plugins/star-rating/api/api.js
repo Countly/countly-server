@@ -258,14 +258,26 @@ var SNIFFED_TYPE_TO_EXT = {
 * Used for file upload
 * @param {object} myfile - file object(if empty - returns)
 * @param {string} id - unique identifier
+* @param {string} appId - id of the app the caller was authorized for
 * @param {function} callback = callback function
 **/
-function uploadFile(myfile, id, callback) {
+function uploadFile(myfile, id, appId, callback) {
     if (!myfile) {
         callback(true);
         return;
     }
     var tmp_path = myfile.path;
+
+    //The identifier is request supplied and is concatenated into the path below, so refuse
+    //anything that is not a plain name before it can pick the write location.
+    var safeId = imageUtils.safeLogoIdentifier(id);
+    //appId comes from the request that was just authorized, so if it is missing something
+    //upstream changed: refuse rather than compare widgets against the string "undefined"
+    if (!safeId || !appId) {
+        fs.unlink(tmp_path, function() { });
+        callback("Invalid identifier");
+        return;
+    }
 
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
@@ -284,21 +296,49 @@ function uploadFile(myfile, id, callback) {
                 callback("Invalid image format. Must be png, jpeg, or gif");
                 return;
             }
-            try {
-                var pp = path.resolve(__dirname, './../images/' + id + "." + detectedExt);
-                countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
+            //The images directory is shared by every app and a widget's logo field holds
+            //just this file name, so the name alone decides whose logo is replaced. This
+            //request was authorized against the caller's own app, so a name that another
+            //app's widget already points at is not ours to overwrite. The sibling
+            ///i/feedback/upload route decodes its target app out of the name for the same
+            //reason. Matching on the full name including the extension is deliberate: a
+            //different extension is a different file and overwrites nothing.
+            var storedName = safeId + "." + detectedExt;
+            common.db.collection('feedback_widgets').findOne({logo: storedName, app_id: {$ne: appId + ""}}, {projection: {_id: 1}}, function(ownerErr, otherAppWidget) {
+                if (ownerErr) {
                     fs.unlink(tmp_path, function() { });
-                    if (err3) {
-                        callback("Failed to upload image");
-                    }
-                    else {
-                        callback(true, id + "." + detectedExt);
-                    }
-                });
-            }
-            catch (SyntaxError) {
-                fs.unlink(tmp_path, function() { });
-                callback("Failed to upload image");
+                    callback("Failed to upload image");
+                    return;
+                }
+                if (otherAppWidget) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Identifier is in use by another application");
+                    return;
+                }
+                doSave();
+            });
+
+            /**
+            * Store the image once the name is known to be free
+            * @returns {void} void
+            **/
+            function doSave() {
+                try {
+                    var pp = path.resolve(__dirname, './../images/' + safeId + "." + detectedExt);
+                    countlyFs.saveData("star-rating", pp, data, { id: "" + storedName, writeMode: "overwrite" }, function(err3) {
+                        fs.unlink(tmp_path, function() { });
+                        if (err3) {
+                            callback("Failed to upload image");
+                        }
+                        else {
+                            callback(true, storedName);
+                        }
+                    });
+                }
+                catch (SyntaxError) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Failed to upload image");
+                }
             }
         });
     });
@@ -977,7 +1017,7 @@ function uploadFile(myfile, id, callback) {
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
         validateCreate(params, FEATURE_NAME, function() {
-            uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+            uploadFile(params.files.logo, params.qstring.identifier, params.qstring.app_id, function(good, filename) { //will return as good if no file
                 if (typeof good === 'boolean' && good) {
                     common.returnMessage(params, 200, filename);
                 }
