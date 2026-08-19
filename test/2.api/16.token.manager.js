@@ -201,10 +201,14 @@ describe('Testing token manager', function() {
         validate_token(token1, {"app": [APP_ID], "multi": true, "ttl": 300, "endpoint": ["/o/token"], "purpose": "My test token"}, 1, done);
     });
 
+    //Deliberate change of behaviour: /o/token/list returns whole token documents, and a
+    //document's _id is the token itself, so listing hands the caller credentials that may be
+    //wider than the one it used. Token listing is therefore restricted to a full-permission
+    //credential, and this endpoint-scoped token is refused even though its endpoint matches.
     it('using token' + token1, function(done) {
         request
             .get('/o/token/list?auth_token=' + token1)
-            .expect(200)
+            .expect(403)
             .end(function(err, res) {
                 if (err) {
                     return done(err);
@@ -491,8 +495,10 @@ describe('Testing token manager', function() {
         });
 
         it('the limited token cannot be granted login permission', function(done) {
+            //the permission the token already holds is supplied, so a narrowing child is the only
+            //thing being asked for beyond login - what is refused here is the login grant itself
             request
-                .get('/i/token/create?auth_token=' + limitedToken + '&multi=true&ttl=300&can_login=true')
+                .get('/i/token/create?auth_token=' + limitedToken + '&multi=true&ttl=300&can_login=true&permission=' + readCorePermission(APP_ID))
                 .expect(403)
                 .end(function(err, res) {
                     if (err) {
