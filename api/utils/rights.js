@@ -31,10 +31,14 @@ function validate_token_if_exists(params) {
                 qstring: params.qstring,
                 token: token,
                 req_path: params.fullPath,
+                //the whole token document is needed, not just the owner, so the token's own
+                //permissions can bound what the resolved member is allowed to do
+                return_data: true,
                 callback: function(valid) {
-                //false or owner.id
+                //false or the token document
                     if (valid) {
-                        resolve(valid);
+                        params.token_data = valid;
+                        resolve(valid.owner);
                     }
                     else {
                         resolve('token-invalid');
@@ -47,6 +51,28 @@ function validate_token_if_exists(params) {
             resolve("token-not-given");
         }
     });
+}
+
+/**
+* Bound a member by the permissions of the token used to authenticate as them.
+*
+* Authenticating with a token resolves to the token's owner, and every validator then decides
+* what to allow from that member. Without this step the member is loaded at full strength, so a
+* token deliberately scoped to one app authorizes everything its owner can do - the escalation
+* this model exists to prevent. Applied as soon as the member is loaded, so that the validators'
+* own permission checks already see the bounded member.
+*
+* A token with no token_permission (an api_key request, a dashboard session token, or a token
+* created before this model) is returned unchanged, so existing integrations are unaffected.
+* @param {params} params - {@link params} object, carrying token_data when a token was used
+* @param {object} member - member document loaded for the token owner
+* @returns {object} the member, bounded by the token's permissions when the token is scoped
+*/
+function applyTokenScope(params, member) {
+    if (params.token_data && params.token_data.token_permission) {
+        return exports.intersectPermission(member, params.token_data.token_permission);
+    }
+    return member;
 }
 /**
 * Validate user for read access by api_key for provided app_id (both required parameters for the request). 
@@ -86,6 +112,9 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                     reject('User does not exist');
                     return false;
                 }
+
+                //bound the member by the token used to authenticate, before anything is authorized
+                member = applyTokenScope(params, member);
 
                 if (typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
@@ -183,6 +212,9 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
 
+                //bound the member by the token used to authenticate, before anything is authorized
+                member = applyTokenScope(params, member);
+
                 if (!(module.exports.hasAdminAccess(member, params.qstring.app_id))) {
                     common.returnMessage(params, 401, 'User does not have right');
                     reject('User does not have right');
@@ -272,6 +304,9 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
                     return false;
                 }
 
+                //bound the member by the token used to authenticate, before anything is authorized
+                member = applyTokenScope(params, member);
+
                 if (!member.global_admin) {
                     common.returnMessage(params, 401, 'User does not have right');
                     reject('User does not have right');
@@ -342,6 +377,9 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
                     reject('User does not exist');
                     return false;
                 }
+
+                //bound the member by the token used to authenticate, before anything is authorized
+                member = applyTokenScope(params, member);
 
                 if (!params.qstring.app_id) {
                     common.returnMessage(params, 400, 'No app id provided');
@@ -427,6 +465,9 @@ exports.validateUser = function(params, callback, callbackParam) {
                     reject('User does not exist');
                     return false;
                 }
+
+                //bound the member by the token used to authenticate, before anything is authorized
+                member = applyTokenScope(params, member);
 
                 if (member && member.locked) {
                     common.returnMessage(params, 401, 'User is locked');
@@ -826,6 +867,9 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
                     return false;
                 }
 
+                //bound the member by the token used to authenticate, before anything is authorized
+                member = applyTokenScope(params, member);
+
                 if (!member.global_admin && typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
@@ -980,6 +1024,9 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
                     return false;
                 }
 
+                //bound the member by the token used to authenticate, before anything is authorized
+                member = applyTokenScope(params, member);
+
                 if (!member.global_admin && /*appIdExceptions.indexOf(feature) === -1 && */ typeof params.qstring.app_id === "undefined") {
                     common.returnMessage(params, 401, 'No app_id provided');
                     reject('No app_id provided');
@@ -1130,14 +1177,25 @@ exports.hasAdminAccess = function(member, app_id, type) {
         return true;
     }
 
-    var isAdmin = true;
+    var isAdmin = false;
     // check users who has permission property
     if (hasPermissionObject) {
         var types = type ? [type] : ["c", "r", "u", "d"];
+        // an app the member has no permission entry for is not an app they administer: assuming
+        // admin from the absence of a rule granted access to every app the member was never given
+        var passesAllRules = true;
         for (var i = 0; i < types.length; i++) {
-            if (member.permission[types[i]] && member.permission[types[i]][app_id] && !member.permission[types[i]][app_id].all) {
-                isAdmin = false;
+            if (member.permission[types[i]] && member.permission[types[i]][app_id]) {
+                if (!member.permission[types[i]][app_id].all) {
+                    passesAllRules = false;
+                }
             }
+            else {
+                passesAllRules = false;
+            }
+        }
+        if (passesAllRules) {
+            isAdmin = true;
         }
     }
     // check legacy users who has admin_of property
@@ -1174,6 +1232,374 @@ exports.hasDeleteRight = function(feature, app_id, member) {
     var hasGlobalAdminRight = member.global_admin;
     var hasAppAdminRight = exports.hasAdminAccess(member, app_id, "d");
     return hasAppSpecificRight || hasGlobalAdminRight || hasAppAdminRight;
+};
+
+/**
+* Access types in a permission object, in their canonical order.
+*/
+var PERMISSION_TYPES = ["c", "r", "u", "d"];
+
+/**
+* Whether a principal grants a single feature on an app for one access type.
+*
+* A principal is anything holding authority: a member (with global_admin / permission, or the
+* legacy admin_of / user_of arrays), or a bare token permission set wrapped as {permission: obj}.
+* This is the same rule the hasCreateRight / hasReadRight / hasUpdateRight / hasDeleteRight
+* helpers apply to a member, expressed once so it can also be applied to a token.
+* @param {object} principal - object with permission (and optionally global_admin)
+* @param {string} type - access type (c, r, u, d)
+* @param {string} appId - id of the app
+* @param {string} feature - feature name
+* @returns {boolean} true if the principal allows that feature
+*/
+function principalAllows(principal, type, appId, feature) {
+    if (!principal) {
+        return false;
+    }
+    if (principal.global_admin) {
+        return true;
+    }
+    var permission = principal.permission;
+    if (typeof permission === "undefined") {
+        //legacy member: admin_of grants everything on the app, user_of grants reads
+        if (Array.isArray(principal.admin_of) && principal.admin_of.indexOf(appId) !== -1) {
+            return true;
+        }
+        return type === "r" && Array.isArray(principal.user_of) && principal.user_of.indexOf(appId) !== -1;
+    }
+    if (permission._ && Array.isArray(permission._.a) && permission._.a.indexOf(appId) !== -1) {
+        return true;
+    }
+    var forType = permission[type];
+    if (!forType || !forType[appId]) {
+        return false;
+    }
+    if (forType[appId].all === true) {
+        return true;
+    }
+    return !!(forType[appId].allowed && forType[appId].allowed[feature] === true);
+}
+
+/**
+* Whether a principal grants every feature on an app for one access type.
+*
+* Distinct from principalAllows because "all" also covers features that do not exist yet, so it
+* may only be granted by a principal that itself holds "all".
+* @param {object} principal - object with permission (and optionally global_admin)
+* @param {string} type - access type (c, r, u, d)
+* @param {string} appId - id of the app
+* @returns {boolean} true if the principal allows everything for that app and type
+*/
+function principalAllowsAll(principal, type, appId) {
+    if (!principal) {
+        return false;
+    }
+    if (principal.global_admin) {
+        return true;
+    }
+    var permission = principal.permission;
+    if (typeof permission === "undefined") {
+        if (Array.isArray(principal.admin_of) && principal.admin_of.indexOf(appId) !== -1) {
+            return true;
+        }
+        return type === "r" && Array.isArray(principal.user_of) && principal.user_of.indexOf(appId) !== -1;
+    }
+    if (permission._ && Array.isArray(permission._.a) && permission._.a.indexOf(appId) !== -1) {
+        return true;
+    }
+    var forType = permission[type];
+    return !!(forType && forType[appId] && forType[appId].all === true);
+}
+
+/**
+* Every app id a principal refers to, whether through the _ grouping or a c/r/u/d entry.
+* @param {object} principal - object with permission (and optionally the legacy arrays)
+* @returns {string[]} list of app ids
+*/
+function principalApps(principal) {
+    var apps = [];
+    /**
+    * Add an app id once.
+    * @param {string} appId - id of the app
+    * @returns {void}
+    */
+    var push = function(appId) {
+        if (apps.indexOf(appId) === -1) {
+            apps.push(appId);
+        }
+    };
+    if (!principal) {
+        return apps;
+    }
+    var permission = principal.permission;
+    if (typeof permission === "undefined") {
+        (principal.admin_of || []).forEach(push);
+        (principal.user_of || []).forEach(push);
+        return apps;
+    }
+    if (permission._) {
+        if (Array.isArray(permission._.a)) {
+            permission._.a.forEach(push);
+        }
+        if (Array.isArray(permission._.u)) {
+            for (var g = 0; g < permission._.u.length; g++) {
+                (permission._.u[g] || []).forEach(push);
+            }
+        }
+    }
+    for (var t = 0; t < PERMISSION_TYPES.length; t++) {
+        var forType = permission[PERMISSION_TYPES[t]];
+        for (var appId in forType || {}) {
+            push(appId);
+        }
+    }
+    return apps;
+}
+
+/**
+* App ids a permission object actually grants something on.
+*
+* Distinct from principalApps: the permission editor emits an entry for every app the editing user
+* can see, most of them granting nothing, and an empty entry is not a grant. Apps listed under _.u
+* do count, because some validators authorize on app membership alone.
+* @param {object} permission - permission object
+* @returns {string[]} list of app ids the permission grants something on
+*/
+function grantingApps(permission) {
+    var apps = [];
+    /**
+    * Add an app id once.
+    * @param {string} appId - id of the app
+    * @returns {void}
+    */
+    var push = function(appId) {
+        if (apps.indexOf(appId) === -1) {
+            apps.push(appId);
+        }
+    };
+    if (!permission) {
+        return apps;
+    }
+    if (permission._) {
+        if (Array.isArray(permission._.a)) {
+            permission._.a.forEach(push);
+        }
+        if (Array.isArray(permission._.u)) {
+            for (var g = 0; g < permission._.u.length; g++) {
+                (permission._.u[g] || []).forEach(push);
+            }
+        }
+    }
+    for (var t = 0; t < PERMISSION_TYPES.length; t++) {
+        var forType = permission[PERMISSION_TYPES[t]] || {};
+        for (var appId in forType) {
+            var entry = forType[appId];
+            if (!entry) {
+                continue;
+            }
+            if (entry.all === true) {
+                push(appId);
+                continue;
+            }
+            for (var feature in entry.allowed || {}) {
+                if (entry.allowed[feature] === true) {
+                    push(appId);
+                    break;
+                }
+            }
+        }
+    }
+    return apps;
+}
+
+/**
+* Feature names a principal explicitly allows for an app and access type.
+* @param {object} principal - object with permission
+* @param {string} type - access type (c, r, u, d)
+* @param {string} appId - id of the app
+* @returns {string[]} list of feature names
+*/
+function principalFeatures(principal, type, appId) {
+    var features = [];
+    var permission = principal && principal.permission;
+    var entry = permission && permission[type] && permission[type][appId];
+    if (entry && entry.allowed) {
+        for (var feature in entry.allowed) {
+            if (entry.allowed[feature] === true) {
+                features.push(feature);
+            }
+        }
+    }
+    return features;
+}
+
+/**
+* Whether one permission set grants nothing beyond what a ceiling principal already holds.
+*
+* This is what bounds a grant to the credential that creates it: a token may only pass on
+* authority it holds itself. The ceiling is the member for an api_key or an unrestricted session,
+* and the parent token's own permissions when a token creates a token - so a token scoped to app A
+* cannot produce a child that reaches app B, even though their common owner can.
+* @param {object} childPermission - permission object being granted
+* @param {object} ceiling - principal that must already hold everything the child grants
+* @returns {boolean} true if childPermission is a subset of the ceiling's authority
+*/
+exports.isPermissionSubset = function(childPermission, ceiling) {
+    //a malformed permission grants nothing recognisable, and an empty-looking value must not be
+    //mistaken for "grants nothing, therefore a subset"
+    if (!childPermission || typeof childPermission !== "object" || Array.isArray(childPermission)) {
+        return false;
+    }
+    var t, appId, i;
+    //an app the child administers implies every feature of every type, present and future
+    var childAdminApps = (childPermission._ && Array.isArray(childPermission._.a)) ? childPermission._.a : [];
+    for (i = 0; i < childAdminApps.length; i++) {
+        for (t = 0; t < PERMISSION_TYPES.length; t++) {
+            if (!principalAllowsAll(ceiling, PERMISSION_TYPES[t], childAdminApps[i])) {
+                return false;
+            }
+        }
+    }
+    //an app the child can see at all must be an app the ceiling can see, since some validators
+    //authorize on app membership alone
+    var ceilingApps = principalApps(ceiling);
+    var childApps = grantingApps(childPermission);
+    for (i = 0; i < childApps.length; i++) {
+        if (!ceiling.global_admin && ceilingApps.indexOf(childApps[i]) === -1) {
+            return false;
+        }
+    }
+    for (t = 0; t < PERMISSION_TYPES.length; t++) {
+        var forType = childPermission[PERMISSION_TYPES[t]];
+        for (appId in forType || {}) {
+            var entry = forType[appId];
+            if (!entry) {
+                continue;
+            }
+            if (entry.all === true && !principalAllowsAll(ceiling, PERMISSION_TYPES[t], appId)) {
+                return false;
+            }
+            for (var feature in entry.allowed || {}) {
+                if (entry.allowed[feature] === true && !principalAllows(ceiling, PERMISSION_TYPES[t], appId, feature)) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+};
+
+/**
+* Whether the credential that authenticated this request is narrower than its owner.
+*
+* True for a token carrying token_permission, and for a token restricted by the legacy
+* app/endpoint scope. False for an api_key (the member itself) and for an unrestricted token such
+* as a dashboard session token. Used to keep credential management - which hands out and revokes
+* the owner's other credentials - to credentials that are not themselves narrowed.
+* @param {params} params - {@link params} object
+* @returns {boolean} true if a scoped credential authenticated the request
+*/
+exports.isScopedCredential = function(params) {
+    var token = params && params.token_data;
+    if (!token) {
+        return false;
+    }
+    if (token.token_permission) {
+        return true;
+    }
+    /**
+    * Whether a legacy scope value restricts anything.
+    * @param {string|Array} scope - the app or endpoint field of a token
+    * @returns {boolean} true if restricted
+    */
+    var isScopeRestricted = function(scope) {
+        return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+    };
+    return isScopeRestricted(token.app) || isScopeRestricted(token.endpoint);
+};
+
+/**
+* Every app id referenced by a permission object.
+* @param {object} permission - permission object ({_:{a,u}, c/r/u/d:{appId:...}})
+* @returns {string[]} list of app ids
+*/
+exports.getPermissionApps = function(permission) {
+    return principalApps({permission: permission});
+};
+
+/**
+* Bound a member by a token's permissions, returning a member that holds only what both allow.
+*
+* The subset check at creation time bounds a token to its creator, but the owner's own
+* permissions can be reduced afterwards, so the intersection is recomputed on every request.
+* The returned member never carries global_admin: that is precisely the authority a scoped token
+* was narrowed away from, and leaving it set would let every global_admin check bypass the scope.
+* @param {object} member - member document for the token owner
+* @param {object} tokenPermission - permission object stored on the token
+* @returns {object} a copy of the member holding only the intersection
+*/
+exports.intersectPermission = function(member, tokenPermission) {
+    var scoped = Object.assign({}, member);
+    scoped.global_admin = false;
+    //the legacy arrays are an alternative expression of authority, so they cannot be carried over
+    delete scoped.admin_of;
+    delete scoped.user_of;
+
+    var result = {_: {a: [], u: [[]]}, c: {}, r: {}, u: {}, d: {}};
+    var tokenPrincipal = {permission: tokenPermission};
+    var userApps = [];
+    var memberApps = principalApps(member);
+    var tokenAdminApps = (tokenPermission._ && Array.isArray(tokenPermission._.a)) ? tokenPermission._.a : [];
+    var tokenUserApps = [];
+    if (tokenPermission._ && Array.isArray(tokenPermission._.u)) {
+        for (var g = 0; g < tokenPermission._.u.length; g++) {
+            tokenUserApps = tokenUserApps.concat(tokenPermission._.u[g] || []);
+        }
+    }
+
+    grantingApps(tokenPermission).forEach(function(appId) {
+        //an app the owner can no longer reach grants the token nothing, whatever the token says
+        if (!member.global_admin && memberApps.indexOf(appId) === -1) {
+            return;
+        }
+        var grantsAnything = false;
+        for (var t = 0; t < PERMISSION_TYPES.length; t++) {
+            var type = PERMISSION_TYPES[t];
+            var tokenAll = principalAllowsAll(tokenPrincipal, type, appId);
+            if (tokenAll && principalAllowsAll(member, type, appId)) {
+                result[type][appId] = {all: true, allowed: {}};
+                grantsAnything = true;
+                continue;
+            }
+            //whichever side is not "all" has a finite feature list, and that is what to walk
+            var candidates = tokenAll ? principalFeatures(member, type, appId) : principalFeatures(tokenPrincipal, type, appId);
+            var allowed = {};
+            var any = false;
+            candidates.forEach(function(feature) {
+                if (principalAllows(tokenPrincipal, type, appId, feature) && principalAllows(member, type, appId, feature)) {
+                    allowed[feature] = true;
+                    any = true;
+                }
+            });
+            if (any) {
+                result[type][appId] = {all: false, allowed: allowed};
+                grantsAnything = true;
+            }
+        }
+        var isAdmin = tokenAdminApps.indexOf(appId) !== -1 && exports.hasAdminAccess(member, appId);
+        if (isAdmin) {
+            result._.a.push(appId);
+        }
+        else if (grantsAnything || tokenUserApps.indexOf(appId) !== -1) {
+            //app membership alone is what some validators check, so an app the token grants
+            //anything on - or names as a user app - stays visible
+            userApps.push(appId);
+        }
+    });
+
+    result._.u = [userApps];
+    scoped.permission = result;
+    return scoped;
 };
 
 exports.getUserApps = function(member) {

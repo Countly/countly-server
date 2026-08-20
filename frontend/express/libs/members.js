@@ -225,6 +225,9 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
         tryReuse: reuse,
         ttl: getSessionTimeoutInMs(req) / 1000,
         purpose: "LoggedInAuth",
+        //the server is establishing an interactive session here, which is the one place login
+        //permission originates; the token is unscoped, so it stays as capable as the session it is
+        can_login: true,
         callback: function(err2, token) {
             if (err2) {
                 console.log(err2);
@@ -487,17 +490,27 @@ membersUtility.loginWithToken = function(req, callback) {
                 return callback(undefined);
             }
 
-            // Only allow tokens whose purpose is explicitly "log this member in".
-            //   - "LoggedInAuth"   — legitimate session tokens (set by setLoggedInVariables;
-            //                        mail.sendTimeBanWarning).
-            //   - "LoginAuthToken" — short-lived (TTL=300, multi:false) tokens used by the
-            //                        server-side Puppeteer renderer to authenticate the
-            //                        headless Chrome session at /login/token/:token.
-            // Any other purpose — including arbitrary purposes settable via /i/token/create
-            // by a global admin — MUST NOT be redeemable here.
-            var allowedLoginPurposes = ["LoggedInAuth", "LoginAuthToken"];
-            if (allowedLoginPurposes.indexOf(valid.purpose) === -1) {
-                plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "wrong_purpose"}});
+            // Redeeming a token here grants the owner's full dashboard session, so it is allowed
+            // only for a token that explicitly carries login permission. can_login is set by the
+            // server where a session is established or propagated (setLoggedInVariables, the
+            // renderer, the ban-warning mail, OIDC), and by /i/token/create only when the creating
+            // credential already holds it and the child is not narrowed. Purpose is a description,
+            // not a capability: it used to be the gate here while being freely settable at create
+            // time, which is what let a scoped token forge its way into a full session.
+            var canLogin = valid.can_login === true;
+            if (!canLogin && typeof valid.can_login === "undefined") {
+                // Tokens minted before this model have no can_login field. Honour the ones that
+                // were legitimately redeemable then - a login purpose and no restriction at all -
+                // so live sessions and existing login-token integrations keep working. Scoped
+                // legacy tokens stay locked out.
+                var isLoginScopeRestricted = function(scope) {
+                    return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+                };
+                var legacyLoginPurposes = ["LoggedInAuth", "LoginAuthToken"];
+                canLogin = legacyLoginPurposes.indexOf(valid.purpose) !== -1 && !isLoginScopeRestricted(valid.app) && !isLoginScopeRestricted(valid.endpoint) && !valid.token_permission;
+            }
+            if (!canLogin) {
+                plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "no_login_permission"}});
                 return callback(undefined);
             }
 
