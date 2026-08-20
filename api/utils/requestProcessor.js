@@ -374,6 +374,15 @@ const processRequest = (params) => {
             }
             case '/o/render': {
                 validateUserForRead(params, function() {
+                    //The render endpoint mints an owner-authority login token and drives a headless
+                    //session with it, so it must only be reachable by a credential that already holds
+                    //the owner's full authority. A scoped token (or a legacy app/endpoint-restricted
+                    //one) would otherwise have a view rendered with more authority than the token
+                    //itself carries. Same rule as the token management endpoints.
+                    if (isScopedCredential(params)) {
+                        common.returnMessage(params, 403, "A restricted token cannot render a view");
+                        return;
+                    }
                     var options = {};
                     var view = params.qstring.view || "";
                     var route = params.qstring.route || "";

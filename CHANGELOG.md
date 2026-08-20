@@ -9,6 +9,7 @@ Enterprise Fixes:
 
 Security Fixes:
 - [core] Auth tokens are now granted explicit create/read/update/delete permissions per app and feature, enforced on every request as the intersection of the token's permissions and its owner's. A token can only be granted permissions that the credential creating it already holds. Permission to sign in to the dashboard is a separate property of the token, assigned by the server, instead of being inferred from the token's purpose. Token creation, listing and deletion require a full-permission credential. Tokens created before this change keep working under the previous app and endpoint restrictions
+- [core] The server-side view render endpoint (`/o/render`) now requires a full-permission credential, consistent with the token management endpoints
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
