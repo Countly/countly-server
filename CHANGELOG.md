@@ -8,6 +8,7 @@ Enterprise Fixes:
 Security Fixes:
 - [core] A user is no longer treated as an administrator of an app when no permission is defined for them on it (already fixed in later versions, backported here)
 - [core] Auth tokens are now granted explicit create/read/update/delete permissions per app and feature, enforced on every request as the intersection of the token's permissions and its owner's. A token can only be granted permissions that the credential creating it already holds. Permission to sign in to the dashboard is a separate property of the token, assigned by the server, instead of being inferred from the token's purpose. Token creation, listing and deletion require a full-permission credential. Tokens created before this change keep working under the previous app and endpoint restrictions
+- [core] The server-side view render endpoint (`/o/render`) now requires a full-permission credential, consistent with the token management endpoints
 
 ## Version 24.05.51
 
