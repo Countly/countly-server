@@ -176,9 +176,65 @@ describe("pluginManager secret configs", function() {
         });
     });
 
-    // Which keys this codebase actually declares is deliberately not asserted here: a
-    // unit test requiring pluginManager directly never loads api/api.js or the plugin
-    // modules that declare them, so every such assertion would pass or fail for the
-    // wrong reason. That belongs in plugins/plugins/tests.js, which runs against a
-    // started server with the declarations in place.
+    // The core declarations are in api/utils/configMetadata.js rather than in
+    // api/api.js, precisely so a second process can make them too, and that also makes
+    // them loadable from here. This is the regression it guards: the metadata is
+    // process local, so registering only from api/api.js left the dashboard's
+    // omitSecretConfigs() with nothing registered to omit, and the stored proxy
+    // credentials went into the page source served to every logged in user.
+    //
+    // What the plugins declare is still not asserted here: a unit test requiring
+    // pluginManager directly never loads the plugin modules, so those assertions would
+    // pass or fail for the wrong reason. That belongs in plugins/plugins/tests.js,
+    // which runs against a started server.
+    describe("core configuration metadata", function() {
+        before(function() {
+            require("../../api/utils/configMetadata.js").register(plugins);
+        });
+
+        it("marks the outbound proxy credentials secret", function() {
+            plugins.isSecretConfig("security", "proxy_username").should.equal(true);
+            plugins.isSecretConfig("security", "proxy_password").should.equal(true);
+        });
+
+        it("drops them from what the dashboard puts in the page, keeping the password policy", function() {
+            // the call frontend/express/app.js makes when it renders countlyGlobal.security
+            var exposed = plugins.omitSecretConfigs("security", {
+                password_min: 8,
+                password_char: true,
+                proxy_username: "operator",
+                proxy_password: "REAL_PASSWORD"
+            });
+            exposed.should.have.property("password_min", 8);
+            exposed.should.have.property("password_char", true);
+            exposed.should.not.have.property("proxy_username");
+            exposed.should.not.have.property("proxy_password");
+        });
+
+        it("is registered by every entry point, not just the API", function() {
+            // the regression itself: the dashboard is a separate process with its own
+            // pluginManager, so a declaration made only in api/api.js does not exist
+            // there and its omitSecretConfigs() call has nothing to omit
+            var fs = require("fs");
+            var path = require("path");
+            var root = path.resolve(__dirname, "../..");
+            ["api/api.js", "frontend/express/app.js"].forEach(function(entry) {
+                var src = fs.readFileSync(path.join(root, entry), "utf8");
+                src.should.match(/configMetadata\.js'\)\.register\(plugins\)/);
+            });
+        });
+
+        it("declares the password policy readable, and nothing else in the namespace", function() {
+            var readable = plugins.filterReadableConfigs({
+                security: {
+                    password_min: 8,
+                    proxy_username: "operator",
+                    login_tries: 3
+                }
+            });
+            readable.security.should.have.property("password_min", 8);
+            readable.security.should.not.have.property("proxy_username");
+            readable.security.should.not.have.property("login_tries");
+        });
+    });
 });

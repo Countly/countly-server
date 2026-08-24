@@ -165,6 +165,12 @@ plugins.setConfigs("security", {
     dashboard_rate_limit_requests: 500
 });
 
+//the same declarations the API process makes. secretConfigs is process local, so
+//without this omitSecretConfigs() below has nothing registered to omit and the
+//stored proxy credentials go into the page source of every logged in user.
+require('../../api/utils/configMetadata.js').register(plugins);
+
+
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
     if (log && log.e) {
