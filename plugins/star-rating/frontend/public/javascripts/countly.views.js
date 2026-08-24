@@ -186,14 +186,25 @@ function isSafeConsentLink(value) {
                 var finalText = inpFinalText;
 
                 if (links && !Array.isArray(links) && typeof links.finalText === 'string') {
-                    finalText = links.finalText;
+                    //also rendered with v-html, and with no anchors to add: encode and return
+                    finalText = countlyCommon.encodeHtml(links.finalText);
                 }
                 else if (Array.isArray(links) && typeof finalText === 'string') {
+                    //The whole sentence is rendered with v-html, so it is encoded here and the
+                    //anchors are added afterwards. That makes the anchors the only markup in the
+                    //string, which is the reason v-html is used at all, and it covers the labels
+                    //as well: a stored label such as `&lt;img src=x onerror=...&gt;` was being
+                    //written back into the string verbatim for the browser to decode.
+                    //
+                    //Matching then has to happen on the encoded label, because the sentence it is
+                    //searched in is encoded too. For an ordinary label encoding changes nothing.
+                    finalText = countlyCommon.encodeHtml(finalText);
                     links.forEach(link => {
-                        //textValue goes into a RegExp, so its metacharacters have to be escaped:
+                        const label = countlyCommon.encodeHtml(link.textValue);
+                        //the label goes into a RegExp, so its metacharacters have to be escaped:
                         //an unescaped value IS a pattern, and one like `(a+)+$` makes this hang
                         //on a long enough finalText.
-                        const regex = new RegExp(`\\b${escapeForRegExp(link.textValue)}\\b`, 'g');
+                        const regex = new RegExp(`\\b${escapeForRegExp(label)}\\b`, 'g');
                         //Refuse a destination that is not a usable href rather than trusting it
                         //because the endpoint now rejects it: widgets saved before that check
                         //still carry whatever was stored, and this drawer also renders values
@@ -204,7 +215,7 @@ function isSafeConsentLink(value) {
                         //This string is rendered with v-html, so escape the href: a value that
                         //passes the scheme check can still carry a quote and close the attribute.
                         const escHref = countlyCommon.encodeHtml(href);
-                        finalText = finalText.replace(regex, `<a href="${escHref}" target="_blank" rel="noopener noreferrer">${link.textValue}</a>`);
+                        finalText = finalText.replace(regex, `<a href="${escHref}" target="_blank" rel="noopener noreferrer">${label}</a>`);
                     });
                 }
 
