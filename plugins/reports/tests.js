@@ -709,6 +709,12 @@ describe('Testing Reports after access is revoked', function() {
         return Object.assign({}, newReport, {
             title: title,
             apps: apps,
+            //only a metric the reports plugin resolves itself. Anything it does not own
+            //goes out over /email/report, and when no plugin answers - which is what
+            //star-rating and performance do in the plugin test run - the render sits on
+            //the 30s cancel timeout before giving up. The happy path below renders twice,
+            //once to send and once to preview, which is over mocha's 50s cap.
+            metrics: {analytics: true},
             emails: ["revoked-" + uniq + "@mail.test"]
         });
     }
@@ -899,7 +905,10 @@ describe('Testing Reports after access is revoked', function() {
                     return r._id + "" === reportOnA;
                 })[0];
                 should.exist(found);
-                found.enabled.should.not.equal(true);
+                //a report that was never switched on carries no enabled field at all -
+                //create does not write one - so compare rather than dereference. Reading
+                //.should off undefined turned this into a TypeError instead of a verdict.
+                (found.enabled === true).should.equal(false);
                 done();
             });
     });
