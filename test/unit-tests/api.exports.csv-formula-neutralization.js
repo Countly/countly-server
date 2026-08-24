@@ -13,6 +13,11 @@ var exportsApi = require("../../api/parts/data/exports.js");
 // Both directions matter. A dangerous cell must be defanged, and an ordinary cell must
 // come through untouched, or every export quietly grows stray characters.
 describe("csv formula neutralization on export", function() {
+    // The marker the implementation prepends. Kept in one place because the assertions
+    // below were written against a backtick while the code prepends an apostrophe, which
+    // made the only case that checked the marker fail and left the "leaves ordinary
+    // values alone" ones passing for any output at all.
+    var MARKER = "'";
     /**
      * Run the streamed CSV writer over one document and return the raw output.
      * @param {object} doc - the document to stream
@@ -102,12 +107,12 @@ describe("csv formula neutralization on export", function() {
         it("neutralizes the header cells too, since segment keys are attacker supplied", async function() {
             var csv = await streamCsv({ok: "x"}, {"=EVILHEADER()": 1, ok: 1});
             noFormulaCells(csv);
-            csv.split("\r\n")[0].should.match(/`=EVILHEADER\(\)/);
+            csv.split("\r\n")[0].indexOf(MARKER + "=EVILHEADER()").should.be.above(-1);
         });
 
         it("leaves ordinary values alone", async function() {
             var csv = await streamCsv({a: "plain", b: "user@example.com", c: "a=b"}, {a: 1, b: 1, c: 1});
-            csv.indexOf("`").should.equal(-1);
+            csv.indexOf(MARKER).should.equal(-1);
         });
     });
 
@@ -117,14 +122,14 @@ describe("csv formula neutralization on export", function() {
             // marker must not be applied twice
             var csv = await streamCsv({v: '=WEBSERVICE("http://x")', t: "\t=Y()"});
             noFormulaCells(csv);
-            (csv.match(/`+/g) || []).forEach(function(run) {
+            (csv.match(new RegExp(MARKER + "+", "g")) || []).forEach(function(run) {
                 run.length.should.equal(1);
             });
         });
 
         it("does not add a second marker to a value that already begins with one", async function() {
-            var csv = await streamCsv({v: "`=already"});
-            (csv.match(/`+/g) || []).forEach(function(run) {
+            var csv = await streamCsv({v: MARKER + "=already"});
+            (csv.match(new RegExp(MARKER + "+", "g")) || []).forEach(function(run) {
                 run.length.should.equal(1);
             });
         });
@@ -143,7 +148,19 @@ describe("csv formula neutralization on export", function() {
 
         it("leaves ordinary values alone", function() {
             var csv = exportsApi.convertData([{a: "plain", b: "user@example.com"}], "csv");
-            csv.indexOf("`").should.equal(-1);
+            csv.indexOf(MARKER).should.equal(-1);
+        });
+    });
+
+    describe("formats that are not csv", function() {
+        // flattenObject feeds xls, xlsx and json as well, and it used to neutralize for
+        // all of them: an xlsx cell or a json string came out with a marker it has no use
+        // for, because those writers emit typed cells rather than anything parsed as a
+        // formula.
+        it("leaves the value alone in json", function() {
+            var json = exportsApi.convertData([{a: "=WEBSERVICE(\"http://x\")", b: "\t=Y()"}], "json");
+            json.indexOf(MARKER).should.equal(-1);
+            JSON.parse(json)[0].a.should.equal("=WEBSERVICE(\"http://x\")");
         });
     });
 
@@ -152,7 +169,7 @@ describe("csv formula neutralization on export", function() {
             // a JS number cannot introduce a formula, and prefixing it would corrupt the
             // exported figure
             var csv = await streamCsv({n: -5, z: 0, b: true}, {n: 1, z: 1, b: 1});
-            csv.indexOf("`").should.equal(-1);
+            csv.indexOf(MARKER).should.equal(-1);
             csv.should.match(/-5/);
         });
     });

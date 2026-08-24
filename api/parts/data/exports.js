@@ -80,14 +80,14 @@ function flattenObject(ob, fields) {
                 if (fields) {
                     fields[i] = true;
                 }
-                toReturn[i] = ob[i].map(preventCSVInjection).join(", "); //just join values
+                toReturn[i] = ob[i].join(", "); //just join values
             }
             else {
                 for (let p = 0; p < ob[i].length; p++) {
                     if (fields) {
                         fields[i + delimiter + p] = true;
                     }
-                    toReturn[i + delimiter + p] = preventCSVInjection(JSON.stringify(ob[i][p])); //stringify values
+                    toReturn[i + delimiter + p] = JSON.stringify(ob[i][p]); //stringify values
                 }
             }
 
@@ -96,7 +96,7 @@ function flattenObject(ob, fields) {
             if (fields) {
                 fields[i] = true;
             }
-            toReturn[i] = preventCSVInjection(ob[i]);
+            toReturn[i] = ob[i];
         }
     }
     return toReturn;
@@ -112,10 +112,14 @@ var CSV_FORMULA_MARKER = "'";
 /**
  *  Escape values that can cause CSV injection
  *
- *  Values reach this from two directions. flattenObject calls it while building a row,
- *  and processCSVvalue calls it again for every cell it writes, so it has to be safe to
- *  apply twice: a value already carrying the marker is returned untouched. A cell that
- *  genuinely began with the marker is not a formula either way.
+ *  CSV only. flattenObject feeds the xls, xlsx and json paths as well, and those writers
+ *  emit typed cells or JSON strings rather than anything a spreadsheet parses as a
+ *  formula, so neutralizing there would put a marker into values that need none. This is
+ *  called where CSV text is produced instead: processCSVvalue for the streamed writer,
+ *  and convertData's csv branch for the buffered one.
+ *
+ *  Safe to apply twice - a value already carrying the marker is returned untouched -
+ *  because a cell can reach it from a row and again from a serializer.
  *
  *  @param {varies} val - value to escape
  *  @returns {varies} escaped value
@@ -186,7 +190,17 @@ exports.convertData = function(data, type) {
         return JSON.stringify(data);
     case "csv":
         obj = flattenArray(data);
-        return json2csv.parse(obj.data, {fields: obj.fields, excelStrings: false});
+        //the buffered csv writer. json2csv quotes but does not neutralize, and quoting is
+        //the text qualifier rather than protection: the client strips it while parsing.
+        //Field names are attacker controlled too when they come from event segmentation,
+        //and json2csv writes them as the header row.
+        return json2csv.parse(obj.data.map(function(row) {
+            var neutralized = {};
+            for (var key in row) {
+                neutralized[key] = preventCSVInjection(row[key]);
+            }
+            return neutralized;
+        }), {fields: obj.fields.map(preventCSVInjection), excelStrings: false});
     case "xls":
     case "xlsx":
         obj = flattenArray(data);
@@ -447,23 +461,21 @@ exports.stream = function(params, stream, options) {
         });
         xc.pipe(params.res);
         if (listAtEnd === false) {
-            xc.write(paramList.map(preventCSVInjection));
+            xc.write(paramList);
         }
         stream.stream(options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
-            //getValues only neutralizes by way of flattenObject, which its collectProp=false
-            //branch skips, so a projected export would otherwise write formulas into the sheet
-            //verbatim. Headers go through the same guard, since a column name is attacker
-            //controlled too when it comes from event segmentation.
-            xc.write(values.map(preventCSVInjection));
+            //no CSV neutralization here: this is the xlsx writer, which emits typed cells
+            //rather than CSV text, so a formula introducer is not one
+            xc.write(values);
         });
 
         stream.once('close', function() {
             setTimeout(function() {
                 if (listAtEnd) {
-                    xc.write(paramList.map(preventCSVInjection));
+                    xc.write(paramList);
                 }
                 xc.end();
             }, 100);
