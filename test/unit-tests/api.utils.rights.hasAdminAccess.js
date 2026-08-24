@@ -75,21 +75,34 @@ describe("rights.hasAdminAccess", function() {
                 c: {appA: {all: false, allowed: {alerts: true}}},
                 r: {appA: {all: false, allowed: {alerts: true}}},
                 u: {appA: {all: false, allowed: {alerts: true}}},
-                d: {}
+                d: {appA: {all: false, allowed: {alerts: true}}}
             }
         };
         it("keeps the right on the app the member holds it for", function() {
             Boolean(rights.hasUpdateRight("alerts", "appA", member)).should.equal(true);
             Boolean(rights.hasReadRight("alerts", "appA", member)).should.equal(true);
             Boolean(rights.hasCreateRight("alerts", "appA", member)).should.equal(true);
+            Boolean(rights.hasDeleteRight("alerts", "appA", member)).should.equal(true);
         });
         it("refuses the right on an app the member holds nothing for", function() {
             Boolean(rights.hasUpdateRight("alerts", "appB", member)).should.equal(false);
             Boolean(rights.hasReadRight("alerts", "appB", member)).should.equal(false);
             Boolean(rights.hasCreateRight("alerts", "appB", member)).should.equal(false);
+            //delete goes through the same hasAdminAccess(..., "d") fall-through, and a
+            //delete granted by a fail-open is the most expensive of the four
+            Boolean(rights.hasDeleteRight("alerts", "appB", member)).should.equal(false);
         });
         it("refuses a feature the member was not granted on an app they do hold", function() {
             Boolean(rights.hasUpdateRight("dbviewer", "appA", member)).should.equal(false);
+            Boolean(rights.hasDeleteRight("dbviewer", "appA", member)).should.equal(false);
+        });
+
+        it("answers with a real boolean rather than undefined", function() {
+            // global_admin is usually absent rather than false, and `isAdmin ||
+            // member.global_admin` then evaluated to undefined: the JSDoc promises a
+            // boolean and a caller comparing strictly would have been surprised
+            rights.hasAdminAccess(member, "appB", "d").should.equal(false);
+            rights.hasAdminAccess(member, "appB").should.equal(false);
         });
     });
 });

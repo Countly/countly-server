@@ -1160,7 +1160,10 @@ exports.hasAdminAccess = function(member, app_id, type) {
     else {
         isAdmin = typeof member.admin_of !== "undefined" && member.admin_of.indexOf(app_id) > -1;
     }
-    return isAdmin || member.global_admin;
+    //coerced: global_admin is often simply absent, and `isAdmin || undefined` is
+    //undefined rather than false. The JSDoc promises a boolean, and a caller comparing
+    //strictly or serialising the result should not have to know the difference.
+    return !!(isAdmin || member.global_admin);
 };
 
 exports.hasCreateRight = function(feature, app_id, member) {
