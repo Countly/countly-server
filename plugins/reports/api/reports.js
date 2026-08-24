@@ -95,7 +95,16 @@ var metricProps = {
         if (member.global_admin) {
             return true;
         }
-        if (!Array.isArray(apps) || apps.length === 0) {
+        if (typeof apps === "undefined" || apps === null) {
+            return true;
+        }
+        //a value that is not a list is not a list of no apps either: it cannot be
+        //authorized app by app, so it must not be sent rather than pass as empty
+        if (!Array.isArray(apps)) {
+            log.d("Not sending a report whose apps is not a list");
+            return false;
+        }
+        if (apps.length === 0) {
             return true;
         }
         //members created before the permission object reach apps through user_of, and
@@ -158,7 +167,11 @@ var metricProps = {
             //judged against the caller making the request instead.
             reports.ownerMayStillSend(db, report, function(maySend) {
                 if (!maySend) {
-                    return callback(null, null);
+                    //not an error, but not a send either. Reported as a third argument
+                    //so /i/reports/send does not answer "Success" for a report it
+                    //deliberately did not send, while existing callers that only read
+                    //(err, res) keep working unchanged.
+                    return callback(null, null, true);
                 }
                 reports.sendLoadedReport(db, report, callback);
             });
@@ -182,7 +195,9 @@ var metricProps = {
                 });
             }
             else if (callback) {
-                callback(err2, ob.message);
+                //getReport reports some failures with the error alone, so there is not
+                //always a second argument to read a message off
+                callback(err2, ob && ob.message);
             }
         });
     };
