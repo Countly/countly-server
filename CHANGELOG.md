@@ -8,10 +8,12 @@ Enterprise Fixes:
 ## Version 24.05.51
 
 Fixes:
+- [reports] Non-core reports, such as dashboard reports, now authorize the object they target on create and update
 - [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
 
 Security Fixes:
 - [star-rating] Consent link destinations are now checked as URLs, on save and again when rendered, so a link can only point at an http(s) url. HTML escaping never covered this, since a `javascript:` url contains no character that escaping touches. Link labels are also escaped before being used to build a regular expression
+- [reports] Enabling, sending or rendering a report now checks that the apps it covers are still readable by the caller, and scheduled reports stop being emailed once the member they are scheduled as loses access to those apps
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
