@@ -1,4 +1,6 @@
-FROM centos:8
+# centos:8 -- final archived CentOS 8 base image (8.4.2105, build-date 20210915).
+# Multi-arch manifest list digest, resolved 2026-08-03.
+FROM centos:8@sha256:a27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 # Countly Enterprise:

@@ -1,4 +1,6 @@
-FROM node:iron-bookworm-slim
+# node:iron-bookworm-slim -- Node.js 20.20.2 (Iron LTS) on Debian bookworm-slim.
+# Multi-arch manifest list digest, resolved 2026-08-03.
+FROM node:iron-bookworm-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 # Countly Enterprise:
