@@ -9,7 +9,7 @@ const { validateCreate, validateRead, validateUpdate, hasCreateRight, hasUpdateR
 const FEATURE_NAME = 'alerts';
 const commonLib = require("./parts/common-lib.js");
 const moment = require('moment-timezone');
-const { memberHasRightForAllApps } = require('./parts/app-authorization.js');
+const { memberHasRightForAllApps, legacyApps } = require('./parts/app-authorization.js');
 
 
 //the alert drawer reads concurrent_users.alert_interval to bound the interval it
@@ -252,7 +252,12 @@ function getScheduleTextExpression(period, offset) {
                 if (alertConfig._id) {
                     const id = alertConfig._id;
                     delete alertConfig._id;
-                    alertConfig.createdBy = params.member._id;
+                    //createdBy is the creator, not the last editor, and it is what
+                    //ownership, list visibility and the send-time authorization added
+                    //here are all judged by. Setting it to the caller on update handed a
+                    //global admin the alerts of anybody whose alert they edited, and it
+                    //is not the request's to set in any case.
+                    delete alertConfig.createdBy;
                     var query = { _id: common.db.ObjectID(id) };
                     //If not global admin, limit update to own alerts only
                     if (params.member.global_admin !== true) {
@@ -263,7 +268,12 @@ function getScheduleTextExpression(period, offset) {
                     //and authorize the apps it currently targets before changing it,
                     //otherwise an alert for an app the caller has since lost access to
                     //stays editable through any app they do still hold.
-                    return common.db.collection("alerts").findOne({_id: common.db.ObjectID(id)}, function(findErr, existingAlert) {
+                    //loaded with the same selector the write uses, ownership included.
+                    //By _id alone this answered a non-owner with a 403 derived from
+                    //somebody else's selectedApps, which both says the alert exists and
+                    //describes what it targets; without it the write was, and remains, a
+                    //silent no-op for them.
+                    return common.db.collection("alerts").findOne(query, function(findErr, existingAlert) {
                         if (findErr) {
                             common.returnMessage(params, 500, "Failed to save an alert");
                             return;
@@ -481,6 +491,12 @@ function getScheduleTextExpression(period, offset) {
                 common.readBatcher.invalidate("alerts", {}, {}, true);
                 updatedAlerts.map(alert => plugins.dispatch("/updateAlert", { method: "alertTrigger", alert }));
                 common.returnOutput(params, true);
+            }).catch(function(batchErr) {
+                //one failing findAndModify used to reject this chain with nothing
+                //attached to it: no response was ever sent and the process saw an
+                //unhandled rejection
+                log.e("Failed to change alert status", batchErr);
+                common.returnMessage(params, 500, "Failed to change alert status");
             });
         });
         return true;
@@ -546,11 +562,13 @@ function getScheduleTextExpression(period, offset) {
                     var allowedApps = (getAdminApps(params.member) || [])
                         .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
                     //legacy members (no permission object) are not covered by
-                    //getUserAppsForFeaturePermission, so include their user_of
-                    //apps too, otherwise they would see none of their own alerts
-                    if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
-                        allowedApps = allowedApps.concat(params.member.user_of);
-                    }
+                    //getUserAppsForFeaturePermission, so include their user_of apps too,
+                    //otherwise they would see none of their own alerts. Through the
+                    //shared helper because it maps them through String: an older member
+                    //document can hold ObjectIds there, selectedApps is stored as
+                    //strings, and $in does not compare the two - which would have hidden
+                    //every alert from exactly the members this branch exists for.
+                    allowedApps = allowedApps.concat(legacyApps(params.member));
                     query = { createdBy: params.member._id, selectedApps: { $in: allowedApps } };
                     count_query = {_id: 'email:' + params.member.email};
                 }
