@@ -35,7 +35,16 @@
 /* eslint-disable no-undef */
 'use strict';
 
-var probeDb = db.getSiblingDB("dbviewer_operator_probe");
+// A fresh database per run, and dropped only if this run created it. The usage
+// above takes any connection string, so a fixed name meant that a cluster which
+// already had a database called "dbviewer_operator_probe" lost all of it to the
+// dropDatabase() at the end, not merely the probe collection.
+var PROBE_DB_NAME = "dbviewer_operator_probe_" + new Date().getTime() + "_" + Math.floor(Math.random() * 1000000);
+var probeDb = db.getSiblingDB(PROBE_DB_NAME);
+if (probeDb.getCollectionNames().length) {
+    print("Refusing to run: " + PROBE_DB_NAME + " already exists and is not empty.");
+    quit(1);
+}
 probeDb.probe.insertOne({ a: 1, arr: [1, 2], s: "x" });
 
 /**
@@ -85,7 +94,33 @@ function expressionExists(op) {
 }
 
 /**
+ * Run a find, bounded, and report the outcome the same way attempt() does.
+ *
+ * runCommand reports a failed command as a document with ok: 0 and only raises for
+ * some failures, so "it did not throw" says nothing. Reading it as success made
+ * every name look recognised, including the deliberately fake control, which left
+ * the query half of this script reporting nothing at all.
+ *
+ * @param {object} filter - find filter to attempt
+ * @returns {object} { ok, errmsg }
+ */
+function attemptFind(filter) {
+    try {
+        var res = probeDb.runCommand({ find: "probe", filter: filter, limit: 1, maxTimeMS: 400 });
+        return { ok: res.ok === 1, errmsg: res.errmsg };
+    }
+    catch (e) {
+        return { ok: false, errmsg: e.message };
+    }
+}
+
+/**
  * Whether MongoDB recognises a query operator.
+ *
+ * Identified by the message rather than the code: an unknown query operator is
+ * BadValue, which many other filter errors also are, so the code alone does not
+ * separate "no such operator" from "wrong argument for a real operator".
+ *
  * @param {string} op - operator name
  * @returns {boolean} true when recognised
  */
@@ -94,14 +129,13 @@ function queryExists(op) {
     candidates[0].f[op] = 1;
     candidates[1][op] = 1;
     for (var i = 0; i < candidates.length; i++) {
-        try {
-            probeDb.runCommand({ find: "probe", filter: candidates[i], limit: 1, maxTimeMS: 400 });
+        var res = attemptFind(candidates[i]);
+        if (res.ok) {
             return true;
         }
-        catch (e) {
-            if (!/unknown operator|unknown top level operator/i.test(e.message)) {
-                return true;
-            }
+        if (!/unknown operator|unknown top level operator/i.test(res.errmsg || "")) {
+            // it failed for some other reason, which means the name is real
+            return true;
         }
     }
     return false;
@@ -163,4 +197,6 @@ var wronglyAllowed = EXCLUDED.filter(function(op) {
 });
 print("excluded operators present in the allow-list (must be none): " + (wronglyAllowed.length ? wronglyAllowed.join(" ") : "(none)"));
 
+//safe to drop unconditionally: PROBE_DB_NAME is unique to this run and was
+//verified empty before anything was written to it
 probeDb.dropDatabase();

@@ -13,12 +13,18 @@
  *
  * Two properties make that both safe and complete:
  *
- *  - MongoDB will not let a "$"-prefixed key be anything other than an operator.
- *    A document may store a field named "$price", but it can only be read through
- *    $getField, where the name is a VALUE. {$match:{"$price":5}} is an error
- *    ("unknown top level operator"), as is projecting or sorting on it. So every
- *    "$"-prefixed key in a valid pipeline is an operator, and there is no
- *    legitimate query this rejects.
+ *  - MongoDB will not let a "$"-prefixed key be an ordinary field. A document may
+ *    store a field named "$price", but it can only be read through $getField,
+ *    where the name is a VALUE. {$match:{"$price":5}} is an error ("unknown top
+ *    level operator"), as is projecting or sorting on it. So a "$"-prefixed key in
+ *    a valid pipeline is always part of the query language rather than data.
+ *
+ *    It is not always an OPERATOR, though, which an earlier version of this file
+ *    assumed and was wrong about: the geospatial and text query operators spell
+ *    their options with a "$" too, and {$geoWithin: {$centerSphere: [...]}} is
+ *    ordinary MongoDB that Countly itself builds. Those option keys are declared in
+ *    OPERATOR_OPTION_KEYS and accepted only directly inside the operator that owns
+ *    them, so nothing is widened for a key appearing anywhere else.
  *  - A stage only executes if its name appears as a literal key in the submitted
  *    pipeline. Computed values never become stages: an object built with $setField
  *    whose key is "$lookup" is data, and joins nothing. So checking literal keys
@@ -87,6 +93,8 @@ const EXPRESSION_OPERATORS = [
     "$abs", "$add", "$ceil", "$divide", "$exp", "$floor", "$ln", "$log",
     "$log10", "$mod", "$multiply", "$pow", "$round", "$sqrt", "$subtract",
     "$trunc",
+    // bitwise, added in MongoDB 6.3/8.0
+    "$bitAnd", "$bitNot", "$bitOr", "$bitXor",
     // array
     "$arrayElemAt", "$arrayToObject", "$concatArrays", "$filter", "$first",
     "$firstN", "$in", "$indexOfArray", "$isArray", "$last", "$lastN", "$map",
@@ -106,7 +114,7 @@ const EXPRESSION_OPERATORS = [
     "$week", "$year", "$tsIncrement", "$tsSecond",
     // literal, object, variable and misc
     "$literal", "$getField", "$rand", "$setField", "$unsetField",
-    "$mergeObjects", "$let",
+    "$mergeObjects", "$let", "$toHashedIndexKey",
     // set
     "$allElementsTrue", "$anyElementTrue", "$setDifference", "$setEquals",
     "$setIntersection", "$setIsSubset", "$setUnion",
@@ -141,8 +149,43 @@ const QUERY_OPERATORS = [
     "$text", "$geoIntersects", "$geoWithin", "$near", "$nearSphere",
     "$all", "$elemMatch", "$size",
     "$bitsAllClear", "$bitsAllSet", "$bitsAnyClear", "$bitsAnySet",
-    "$comment"
+    "$comment", "$sampleRate"
 ];
+
+// Dollar-prefixed keys that are OPTIONS of a particular operator rather than
+// operators in their own right. MongoDB spells the options of the geospatial and
+// text query operators with a "$", and they are legal only directly inside the
+// operator that owns them.
+//
+// Scoped to that operator rather than added to the allow-list above, because
+// {$match: {loc: {$geometry: ...}}} is not valid MongoDB and must stay rejected -
+// widening the flat list would accept it. This is a declared table, not structure
+// inferred from the contents: an option key is recognised because its parent key
+// says so, one level, and nowhere else.
+const OPERATOR_OPTION_KEYS = {
+    "$geoWithin": ["$box", "$center", "$centerSphere", "$geometry", "$polygon"],
+    "$geoIntersects": ["$geometry"],
+    "$near": ["$geometry", "$maxDistance", "$minDistance"],
+    "$nearSphere": ["$geometry", "$maxDistance", "$minDistance"],
+    "$text": ["$search", "$language", "$caseSensitive", "$diacriticSensitive"]
+};
+
+/**
+ * Build the option-key lookup for one operator.
+ * @param {string} operator - the owning operator name
+ * @returns {object|null} map of permitted option key to true, or null
+ */
+function optionKeysFor(operator) {
+    if (!Object.prototype.hasOwnProperty.call(OPERATOR_OPTION_KEYS, operator)) {
+        return null;
+    }
+    var names = OPERATOR_OPTION_KEYS[operator];
+    var map = {};
+    for (var i = 0; i < names.length; i++) {
+        map[names[i]] = true;
+    }
+    return map;
+}
 
 /**
  * Build a lookup object from operator name lists.
@@ -252,20 +295,33 @@ function findProtectedJoin(node) {
 }
 
 /**
- * Deep-scan for a "$"-prefixed KEY that is not on the allow-list.
+ * Deep-scan for a "$"-prefixed KEY that is neither on the allow-list nor a declared
+ * option of the operator it sits directly inside.
  *
  * Blind traversal: no assumption about which arrays are sub-pipelines. Keys only,
  * never values. Exact match, so $mergeObjects is not confused with $merge.
  *
+ * Two things are not operators and are treated accordingly:
+ *
+ *  - the option keys in OPERATOR_OPTION_KEYS, permitted only directly inside their
+ *    own operator. {$geoWithin: {$centerSphere: [...]}} is ordinary MongoDB, and
+ *    Countly itself builds it (plugins/geo/api/geo.js); a flat scan rejected it.
+ *  - the value of $literal, which is data returned unevaluated. Descending into it
+ *    contradicted this module's own "keys only, never values" rule: {$literal:
+ *    {$lookup: 1}} is the object {$lookup: 1}, not a join.
+ *
  * @param {*} node - pipeline / stage / expression node (not mutated)
  * @param {object} allowedOperators - allow-list for the caller's role
  * @param {string} path - position of the current node, for the error message
+ * @param {object|null} optionKeys - option keys the owning operator permits here
  * @returns {object|null} { name, where } of the first offending key, or null
  */
-function findDisallowedOperator(node, allowedOperators, path) {
+function findDisallowedOperator(node, allowedOperators, path, optionKeys) {
     if (Array.isArray(node)) {
         for (var i = 0; i < node.length; i++) {
-            var inArr = findDisallowedOperator(node[i], allowedOperators, path + "[" + i + "]");
+            //an array is the operator's value, so its elements sit in the same
+            //position and keep the same option context
+            var inArr = findDisallowedOperator(node[i], allowedOperators, path + "[" + i + "]", optionKeys);
             if (inArr) {
                 return inArr;
             }
@@ -279,10 +335,13 @@ function findDisallowedOperator(node, allowedOperators, path) {
             }
             // require an explicit `true` so inherited Object.prototype keys
             // (constructor, __proto__, ...) are never treated as allow-listed
-            if (key.charAt(0) === "$" && allowedOperators[key] !== true) {
+            if (key.charAt(0) === "$" && allowedOperators[key] !== true && !(optionKeys && optionKeys[key] === true)) {
                 return { name: key, where: path + "." + key };
             }
-            var inVal = findDisallowedOperator(node[key], allowedOperators, path + "." + key);
+            if (key === "$literal") {
+                continue;
+            }
+            var inVal = findDisallowedOperator(node[key], allowedOperators, path + "." + key, optionKeysFor(key));
             if (inVal) {
                 return inVal;
             }
@@ -307,7 +366,7 @@ function sanitizeAggregation(pipeline, allowedOperators) {
     if (join) {
         return { changes: {}, error: { type: "join", name: join.name } };
     }
-    var operator = findDisallowedOperator(pipeline, allowedOperators, "pipeline");
+    var operator = findDisallowedOperator(pipeline, allowedOperators, "pipeline", null);
     if (operator) {
         return { changes: {}, error: { type: "operator", name: operator.name, where: operator.where } };
     }

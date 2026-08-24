@@ -194,6 +194,79 @@ describe("dbviewer aggregation guard", function() {
         });
     });
 
+    describe("dollar-prefixed keys that are not operators", function() {
+        it("accepts the geospatial predicate Countly itself builds", function() {
+            // plugins/geo/api/geo.js: {'loc.geo': {$geoWithin: {$centerSphere: [coords, r]}}}
+            var p = [{$match: {"loc.geo": {$geoWithin: {$centerSphere: [[27.1, 38.4], 0.0015]}}}}];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+        });
+        it("accepts the other geospatial shape and distance options", function() {
+            [
+                {$match: {loc: {$geoWithin: {$box: [[0, 0], [1, 1]]}}}},
+                {$match: {loc: {$geoWithin: {$center: [[0, 0], 1]}}}},
+                {$match: {loc: {$geoWithin: {$polygon: [[0, 0], [1, 0], [1, 1]]}}}},
+                {$match: {loc: {$geoIntersects: {$geometry: {type: "Point", coordinates: [0, 0]}}}}},
+                {$match: {loc: {$near: {$geometry: {type: "Point", coordinates: [0, 0]}, $maxDistance: 10, $minDistance: 1}}}},
+                {$match: {loc: {$nearSphere: {$geometry: {type: "Point", coordinates: [0, 0]}, $maxDistance: 10}}}}
+            ].forEach(function(stage) {
+                var res = guard.sanitizeAggregation([stage], USER);
+                (res.error === null).should.equal(true);
+            });
+        });
+        it("accepts the $text options", function() {
+            var p = [{$match: {$text: {$search: "countly", $language: "en", $caseSensitive: false, $diacriticSensitive: false}}}];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+        });
+        it("accepts an object carried through $literal, whatever keys it has", function() {
+            // $literal returns its argument unevaluated, so those keys are data
+            var p = [{$project: {x: {$literal: {$lookup: 1, $function: "not called", $notAnOperator: true}}}}];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+        });
+        it("still rejects an option key used outside its own operator", function() {
+            // {$geometry: ...} on its own is not valid MongoDB and must not be let
+            // through just because $geoWithin may contain it
+            var res = guard.sanitizeAggregation([{$match: {loc: {$geometry: {type: "Point", coordinates: [0, 0]}}}}], USER);
+            res.error.type.should.equal("operator");
+            res.error.name.should.equal("$geometry");
+            guard.sanitizeAggregation([{$match: {loc: {$maxDistance: 5}}}], USER).error.name.should.equal("$maxDistance");
+            guard.sanitizeAggregation([{$match: {t: {$language: "en"}}}], USER).error.name.should.equal("$language");
+        });
+        it("still rejects an unknown key nested inside an operator that has options", function() {
+            var res = guard.sanitizeAggregation([{$match: {loc: {$geoWithin: {$notAShape: [1, 2]}}}}], USER);
+            res.error.name.should.equal("$notAShape");
+        });
+        it("does not let an option context leak into a nested document", function() {
+            // $geometry permits no options of its own, so the scan resets there
+            var res = guard.sanitizeAggregation([{$match: {loc: {$geoIntersects: {$geometry: {type: "Point", $centerSphere: [[0, 0], 1]}}}}}], USER);
+            res.error.name.should.equal("$centerSphere");
+        });
+    });
+
+    describe("operators MongoDB 8 added", function() {
+        it("accepts the bitwise expressions", function() {
+            var p = [{
+                $project: {
+                    a: {$bitAnd: ["$flags", 4]},
+                    o: {$bitOr: ["$flags", 4]},
+                    x: {$bitXor: ["$flags", 4]},
+                    n: {$bitNot: "$flags"}
+                }
+            }];
+            var res = guard.sanitizeAggregation(p, USER);
+            (res.error === null).should.equal(true);
+        });
+        it("accepts $toHashedIndexKey and $sampleRate", function() {
+            (guard.sanitizeAggregation([{$project: {h: {$toHashedIndexKey: "$s"}}}], USER).error === null).should.equal(true);
+            (guard.sanitizeAggregation([{$match: {$sampleRate: 0.1}}], USER).error === null).should.equal(true);
+        });
+        it("still rejects a name no MongoDB has", function() {
+            guard.sanitizeAggregation([{$project: {x: {$bitShiftLeft: ["$a", 1]}}}], USER).error.name.should.equal("$bitShiftLeft");
+        });
+    });
+
     describe("global admin allow-list", function() {
         it("allows $lookup into a non-protected collection", function() {
             var p = [{$lookup: {from: "events", pipeline: [{$match: {a: 1}}], as: "e"}}, {$limit: 5}];
