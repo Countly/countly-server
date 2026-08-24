@@ -80,7 +80,9 @@ class ReportsJob extends job.Job {
                                     });
                                 }
                                 else {
-                                    log.d(err2, ob.report);
+                                    //getReport reports some failures with the error
+                                    //alone, so ob is not always there to log from
+                                    log.d(err2, ob && ob.report);
                                     done(null, null);
                                 }
                             }, cache);
