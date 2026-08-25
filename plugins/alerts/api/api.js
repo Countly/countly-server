@@ -11,6 +11,14 @@ const commonLib = require("./parts/common-lib.js");
 const { memberHasRightForAllApps, legacyApps } = require('./parts/app-authorization.js');
 const moment = require('moment-timezone');
 
+//the alert drawer reads concurrent_users.alert_interval to bound the interval it
+//offers, falling back to a hardcoded 3 minutes when it cannot. The namespace belongs
+//to an enterprise plugin, so it is declared here by the consumer that needs it rather
+//than by its owner.
+plugins.setReadableConfigs("concurrent_users", {
+    alert_interval: true
+});
+
 /**
  * Alerts that can be triggered when an event is received.
  * see module file for details.
