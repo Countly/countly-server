@@ -36,4 +36,31 @@ describe("common.stripRequestCredentials", function() {
             common.stripRequestCredentials("a string");
         }).should.not.throw();
     });
+
+    describe("unsetRequestCredentials", function() {
+        it("adds both fields to $unset", function() {
+            var update = common.unsetRequestCredentials({$set: {name: "x"}});
+            update.$set.should.have.property("name", "x");
+            update.$unset.should.have.property("api_key", "");
+            update.$unset.should.have.property("auth_token", "");
+        });
+        it("keeps an existing $unset", function() {
+            var update = common.unsetRequestCredentials({$set: {a: 1}, $unset: {stale: ""}});
+            update.$unset.should.have.property("stale", "");
+            update.$unset.should.have.property("api_key", "");
+        });
+        it("does not put the same field in $set and $unset, which mongo refuses", function() {
+            // the two helpers are meant to be used together: the strip is what makes
+            // the unset legal
+            var doc = common.stripRequestCredentials({name: "x", api_key: "SECRET", auth_token: "T"});
+            var update = common.unsetRequestCredentials({$set: doc});
+            update.$set.should.not.have.property("api_key");
+            update.$set.should.not.have.property("auth_token");
+            update.$unset.should.have.property("api_key", "");
+        });
+        it("tolerates being called with nothing", function() {
+            var update = common.unsetRequestCredentials();
+            update.$unset.should.have.property("api_key", "");
+        });
+    });
 });

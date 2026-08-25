@@ -2616,6 +2616,28 @@ common.stripRequestCredentials = function(doc) {
     return doc;
 };
 
+/**
+ * Add the removal of stored request credentials to an update document.
+ *
+ * stripRequestCredentials keeps a credential out of a document being written, which
+ * does nothing for one already saved: an update sends $set, and a field absent from
+ * $set is left exactly as it was. So a document created before that helper existed
+ * keeps handing out the credential until something removes it, and the update that
+ * would have been the natural moment to do so does not.
+ *
+ * Use together with stripRequestCredentials, never instead of it. The strip is what
+ * makes this legal: MongoDB refuses an update naming the same field in $set and
+ * $unset, so the fields have to be gone from the document first.
+ *
+ * @param {Object<string, any>} update - the update document, e.g. {$set: doc}
+ * @returns {Object<string, any>} the same update, with the credentials unset
+ */
+common.unsetRequestCredentials = function(update) {
+    update = update || {};
+    update.$unset = Object.assign({}, update.$unset, {api_key: "", auth_token: ""});
+    return update;
+};
+
 common.clearClashingQueryOperations = function(query) {
     var map = {};
     var field;

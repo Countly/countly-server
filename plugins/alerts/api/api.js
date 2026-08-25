@@ -290,7 +290,9 @@ function getScheduleTextExpression(period, offset) {
                         common.db.collection("alerts").findAndModify(
                             query,
                             {},
-                            {$set: alertConfig},
+                            //also clears a credential stored before this was fixed: $set
+                            //leaves a field it does not name exactly as it was
+                            common.unsetRequestCredentials({$set: alertConfig}),
                             function(err, result) {
                                 if (!err) {
                                     if (result && result.value) {
