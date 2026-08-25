@@ -6,27 +6,41 @@
 
 'use strict';
 
-const common = require('../../../../api/utils/common.js');
 
 /**
- * Restrict a find() projection to plain field inclusion / exclusion.
+ * Check that a find() projection is plain field inclusion / exclusion.
  *
- * A projection value is only allowed to be 0, 1 or a boolean (strict
- * include/exclude). Any other value is dropped:
+ * A projection value may only be 0, 1 or a boolean (strict include/exclude).
+ * Anything else rejects the request:
  *  - expressions and field-path aliases — e.g. { leak: "$password" } or
- *    { x: { $function: ... } } — would compute new fields from, or rename,
- *    fields the viewer otherwise removes from the response (MongoDB 4.4+ find()
+ *    { x: { $function: ... } } — would compute new fields from, or rename, fields
+ *    the viewer otherwise removes from the response (MongoDB 4.4+ find()
  *    projections accept expressions);
- *  - other numbers (2, NaN, …) are not valid include/exclude values and can
- *    make the query throw.
- * Keeping projections to strict include/exclude removes that whole avenue.
+ *  - other numbers (2, NaN, …) are not valid include/exclude values and can make
+ *    the query throw.
  *
- * @param {object} projection - parsed projection object (mutated in place)
- * @returns {object} changes - keys are the projection fields that were dropped
+ * The offending field used to be deleted from the projection and the query run
+ * anyway, which meant a caller asking for something they may not have silently got
+ * different results instead of being told. The projection is now left untouched and
+ * the caller is rejected, matching how the aggregation guard behaves.
+ *
+ * @param {object} projection - parsed projection object (not mutated)
+ * @returns {object|null} { name } of the first offending field, or null when the
+ *          projection is acceptable
  */
-function sanitizeProjection(projection) {
-    //one implementation, in common, shared with the export paths
-    return common.sanitizeProjection(projection);
+function findDisallowedProjectionValue(projection) {
+    if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
+        return null;
+    }
+    for (var key in projection) {
+        if (Object.prototype.hasOwnProperty.call(projection, key)) {
+            var value = projection[key];
+            if (value !== 0 && value !== 1 && value !== true && value !== false) {
+                return { name: key };
+            }
+        }
+    }
+    return null;
 }
 
 /**
@@ -42,6 +56,6 @@ function escapeRegExp(str) {
 }
 
 module.exports = {
-    sanitizeProjection,
+    findDisallowedProjectionValue,
     escapeRegExp
 };
