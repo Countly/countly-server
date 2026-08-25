@@ -1621,7 +1621,12 @@ function uploadFile(myfile, id, callback) {
                     }
                 }).toArray(function(err, docs) {
                     if (!err) {
-                        var result = {};
+                        //A null prototype map: the keys are platform names taken from the public
+                        //star rating event's platform_version_rate segmentation, so they can be
+                        //"__proto__", "constructor" or "toString". On a plain object those read back
+                        //as inherited members rather than as undefined, so the array below is never
+                        //created and the indexOf that follows throws, failing this read for everyone.
+                        var result = Object.create(null);
                         docs.forEach(function(doc) {
                             if (!doc.meta) {
                                 doc.meta = {};
