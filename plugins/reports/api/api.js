@@ -226,6 +226,48 @@ const FEATURE_NAME = 'reports';
             return query;
         };
 
+        /**
+         * Whether the member may use a report covering every app in a list.
+         *
+         * The same allow-list the create and update paths build inline, extracted so the
+         * paths below can share it rather than repeat it. An empty or absent list is
+         * permitted: a non-core report legitimately has no apps, and its target is
+         * authorized by its own plugin through /report/authorize instead.
+         *
+         * Legacy members have no permission object and reach apps through user_of, so
+         * they are allowed for those, matching /o/reports/all.
+         *
+         * @param {object} params - request params object, for member and global_admin
+         * @param {Array} apps - app ids the report covers
+         * @returns {boolean} true when every app is permitted
+         */
+        const appsArePermitted = function(params, apps) {
+            if (params.member.global_admin) {
+                return true;
+            }
+            if (typeof apps === "undefined" || apps === null) {
+                return true;
+            }
+            //a value that is not a list cannot be authorized app by app. Passing it
+            //through as if it were "no apps" let a non-core report store an unchecked
+            //list, which an update flipping report_type to "core" then started using.
+            if (!Array.isArray(apps)) {
+                return false;
+            }
+            if (apps.length === 0) {
+                return true;
+            }
+            let allowedApps = (getAdminApps(params.member) || [])
+                .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
+            if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                allowedApps = allowedApps.concat(params.member.user_of);
+            }
+            allowedApps = allowedApps.map(String);
+            return apps.every(function(appId) {
+                return allowedApps.indexOf(appId + "") > -1;
+            });
+        };
+
         switch (paths[3]) {
         case 'create':
             validateCreate(paramsInstance, FEATURE_NAME, function() {
@@ -237,6 +279,10 @@ const FEATURE_NAME = 'reports';
                 props.day = (props.day) ? parseInt(props.day) : 0;
                 props.timezone = props.timezone || "Etc/GMT";
                 props.user = params.member._id;
+                //authorized is how /report/authorize reports its result back, so the
+                //request must not be able to supply one: it would both answer the
+                //non-core check for the caller and be written onto the report below
+                delete props.authorized;
 
                 if (props.frequency !== "weekly") {
                     if (props.frequency !== "monthly") {
@@ -259,38 +305,58 @@ const FEATURE_NAME = 'reports';
                 //report for arbitrary apps.
                 props.report_type = props.report_type || "core";
 
+                /**
+                 * Insert the authorized report document
+                 * @returns {void}
+                 */
+                function insertReport() {
+                    common.db.collection('reports').insert(props, function(err0, result) {
+                        result = result.ops;
+                        if (err0) {
+                            err0 = err0.err;
+                            common.returnMessage(params, 200, err0);
+                        }
+                        else {
+                            plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
+                            common.returnMessage(params, 200, "Success");
+                        }
+                    });
+                }
+
+                //apps is authorized whatever the report type. It used to be checked
+                //only for core reports, so a non-core report could be stored with an
+                //arbitrary apps list, and a later update flipping report_type to "core"
+                //would start using that list without it ever having been checked. The
+                //dashboards drawer hides the app picker, so a legitimate non-core report
+                //carries an empty apps and is unaffected by this.
+                if (typeof props.apps !== "undefined" && props.apps !== null && !Array.isArray(props.apps)) {
+                    return common.returnMessage(params, 400, 'Invalid apps');
+                }
+                if (!appsArePermitted(params, props.apps)) {
+                    return common.returnMessage(params, 401, 'User does not have right to access this information');
+                }
+
                 if (props.report_type === "core") {
                     if (!props.apps || !Array.isArray(props.apps) || props.apps.length === 0) {
                         common.returnMessage(params, 400, 'Invalid or missing apps');
                         return;
                     }
-
-                    if (!params.member.global_admin) {
-                        let allowedApps = (getAdminApps(params.member) || [])
-                            .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
-                        if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
-                            allowedApps = allowedApps.concat(params.member.user_of);
-                        }
-                        let notPermitted = props.apps.some(function(appId) {
-                            return allowedApps.indexOf(appId) === -1;
-                        });
-                        if (notPermitted) {
+                    insertReport();
+                }
+                else {
+                    //a non-core report targets another plugin's object - a
+                    //"dashboards" report renders the dashboard named in
+                    //props.dashboards - and only that plugin knows whether the
+                    //member may use it. Previously nothing checked this, so any
+                    //member with reports-create rights could schedule a report
+                    //against an arbitrary dashboard id.
+                    validateNonCoreUser(params, props, function(authErr, authorized) {
+                        if (!authorized) {
                             return common.returnMessage(params, 401, 'User does not have right to access this information');
                         }
-                    }
+                        insertReport();
+                    });
                 }
-
-                common.db.collection('reports').insert(props, function(err0, result) {
-                    result = result.ops;
-                    if (err0) {
-                        err0 = err0.err;
-                        common.returnMessage(params, 200, err0);
-                    }
-                    else {
-                        plugins.dispatch("/systemlogs", {params: params, action: "reports_create", data: result[0]});
-                        common.returnMessage(params, 200, "Success");
-                    }
-                });
             });
             break;
         case 'update':
@@ -305,6 +371,9 @@ const FEATURE_NAME = 'reports';
                 //scheduled sender fall back to a global admin and render the
                 //report (e.g. a dashboard) with elevated access
                 delete props.user;
+                //see create: the authorize flag comes back through the object passed to
+                //the dispatch, so a submitted one must reach neither that nor $set
+                delete props.authorized;
                 if (props.frequency !== "daily" && props.frequency !== "weekly" && props.frequency !== "monthly") {
                     delete props.frequency;
                 }
@@ -339,35 +408,57 @@ const FEATURE_NAME = 'reports';
                     //treated as a non-core type to skip the per-app check.
                     var effectiveType = props.report_type || report.report_type || "core";
 
-                    if (effectiveType === "core" && typeof props.apps !== "undefined") {
-                        if (!Array.isArray(props.apps) || props.apps.length === 0) {
-                            return common.returnMessage(params, 400, 'Invalid or missing apps');
-                        }
-                        if (!params.member.global_admin) {
-                            let allowedApps = (getAdminApps(params.member) || [])
-                                .concat(getUserAppsForFeaturePermission(params.member, FEATURE_NAME, 'r') || []);
-                            if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
-                                allowedApps = allowedApps.concat(params.member.user_of);
+                    /**
+                     * Apply the authorized update
+                     * @returns {void}
+                     */
+                    function applyUpdate() {
+                        common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
+                            if (err_update2) {
+                                err_update2 = err_update2.err;
+                                common.returnMessage(params, 200, err_update2);
                             }
-                            let notPermitted = props.apps.some(function(appId) {
-                                return allowedApps.indexOf(appId) === -1;
-                            });
-                            if (notPermitted) {
-                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            else {
+                                plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
+                                common.returnMessage(params, 200, "Success");
                             }
-                        }
+                        });
                     }
 
-                    common.db.collection('reports').update(recordUpdateOrDeleteQuery(params, id), {$set: props}, function(err_update2) {
-                        if (err_update2) {
-                            err_update2 = err_update2.err;
-                            common.returnMessage(params, 200, err_update2);
+                    //Authorize the apps the report will actually have, which is the
+                    //submitted list when one is sent and the stored list otherwise.
+                    //Checking only the submitted list let an update omit apps to keep a
+                    //stored list that was never checked, and flip report_type to "core"
+                    //so that list started being used.
+                    if (typeof props.apps !== "undefined" && props.apps !== null && !Array.isArray(props.apps)) {
+                        return common.returnMessage(params, 400, 'Invalid apps');
+                    }
+                    var effectiveApps = (typeof props.apps !== "undefined") ? props.apps : report.apps;
+                    if (!appsArePermitted(params, effectiveApps)) {
+                        return common.returnMessage(params, 401, 'User does not have right to access this information');
+                    }
+
+                    if (effectiveType === "core") {
+                        if (typeof props.apps !== "undefined" && (!Array.isArray(props.apps) || props.apps.length === 0)) {
+                            return common.returnMessage(params, 400, 'Invalid or missing apps');
                         }
-                        else {
-                            plugins.dispatch("/systemlogs", {params: params, action: "reports_edited", data: {_id: id, before: report, update: props}});
-                            common.returnMessage(params, 200, "Success");
-                        }
-                    });
+                        applyUpdate();
+                    }
+                    else {
+                        //authorize the merged report, not just the payload: a
+                        //partial update may leave the target (props.dashboards)
+                        //in the stored document, and repointing an existing
+                        //report at another dashboard must be checked too. A copy
+                        //is passed so the authorize flag never reaches $set.
+                        var mergedReport = Object.assign({}, report, props);
+                        mergedReport.report_type = effectiveType;
+                        validateNonCoreUser(params, mergedReport, function(authErr, authorized) {
+                            if (!authorized) {
+                                return common.returnMessage(params, 401, 'User does not have right to access this information');
+                            }
+                            applyUpdate();
+                        });
+                    }
                 });
             });
             break;
@@ -417,10 +508,27 @@ const FEATURE_NAME = 'reports';
                         return false;
                     }
 
-                    reports.sendReport(common.db, id, function(err2) {
+                    //Owning a report does not mean still being allowed to read the apps
+                    //it covers. Without this check somebody who lost access to an app
+                    //could send themselves that app's figures on demand, which is the
+                    //most direct form of the problem the scheduled path also has.
+                    if (!appsArePermitted(params, result.apps)) {
+                        log.d("Rejected report send: report " + id + " targets apps the caller may not read");
+                        common.returnMessage(params, 401, 'User does not have right to access this information');
+                        return false;
+                    }
+
+                    reports.sendReport(common.db, id, function(err2, res2, skipped) {
                         if (err2) {
-                            log.d("Error occurred while sending out report.", err);
+                            log.d("Error occurred while sending out report.", err2);
                             common.returnMessage(params, 200, err2);
+                        }
+                        else if (skipped) {
+                            //deliberately not sent: the member the report is scheduled as
+                            //may no longer read the apps it covers. Saying "Success" here
+                            //would report an email that never went out.
+                            log.d("Report " + id + " was not sent: its owner may no longer read the apps it covers");
+                            common.returnMessage(params, 200, "Report not sent: its owner no longer has access to the apps it covers");
                         }
                         else {
                             common.returnMessage(params, 200, "Success");
@@ -449,6 +557,15 @@ const FEATURE_NAME = 'reports';
 
                     // TODO: Handle report type check
 
+                    //renders the report's contents straight into the response, so the
+                    //apps it covers have to be readable by the caller now, not merely
+                    //at the time they created it
+                    if (!appsArePermitted(params, result.apps)) {
+                        log.d("Rejected report preview: report " + id + " targets apps the caller may not read");
+                        common.returnMessage(params, 401, 'User does not have right to access this information');
+                        return false;
+                    }
+
                     reports.getReport(common.db, result, function(err2, res) {
                         if (err2) {
                             common.returnMessage(params, 200, err2);
@@ -468,27 +585,94 @@ const FEATURE_NAME = 'reports';
             });
             break;
         case 'status':
-            validateUpdate(paramsInstance, FEATURE_NAME, function() {
+            validateUpdate(paramsInstance, FEATURE_NAME, async function() {
                 var params = paramsInstance;
-                const statusList = params.qstring.args;
+                const statusList = (params.qstring.args && typeof params.qstring.args === "object") ? params.qstring.args : {};
 
-                console.log(statusList, 'status-list');
+                /**
+                 * The enabled state a status change asks for, as a strict boolean.
+                 *
+                 * The authorization below and the write further down have to read the
+                 * request the same way. The sender only tests `enabled + "" !== "false"`,
+                 * so a truthy value that is not exactly true - a 1, say - would leave the
+                 * report enabled while skipping the authorization, which is the whole
+                 * point of it. Anything else is stored as false, and switching a report
+                 * off needs no authorization.
+                 *
+                 * @param {*} value - the value submitted for one report id
+                 * @returns {boolean} true when the change asks for the report to be enabled
+                 */
+                function asksToEnable(value) {
+                    return value === true || value === "true" || value === 1 || value === "1";
+                }
+
+                //Owning a report is not the same as being allowed to act on the apps it
+                //targets, so enabling one is authorized against its *stored* apps.
+                //Without this, somebody who lost access to an app could switch their old
+                //report back on and keep that app's figures arriving by email.
+                //
+                //Switching one off stays allowed. It only reduces what the report does,
+                //and refusing would leave them unable to stop mail they no longer want.
+                const requestedIds = Object.keys(statusList);
+                const enablingIds = requestedIds.filter(function(id) {
+                    return asksToEnable(statusList[id]);
+                });
+                if (enablingIds.length > 0 && !params.member.global_admin) {
+                    let toEnable = [];
+                    try {
+                        //scoped to records the caller may modify, the same as the write
+                        //below. An id belonging to somebody else must stay the silent
+                        //no-op it already was, rather than returning a 403 that would
+                        //confirm a report with those apps exists.
+                        toEnable = await common.db.collection("reports").find({
+                            _id: {
+                                $in: enablingIds.map(function(id) {
+                                    return common.db.ObjectID(id);
+                                })
+                            },
+                            user: common.db.ObjectID(params.member._id)
+                        }, { projection: { apps: 1 } }).toArray();
+                    }
+                    catch (e) {
+                        log.e("Failed to load reports for a status change", e);
+                        common.returnMessage(params, 500, "Failed to change report status");
+                        return;
+                    }
+                    const unauthorized = toEnable.filter(function(report) {
+                        return !appsArePermitted(params, report.apps);
+                    });
+                    if (unauthorized.length > 0) {
+                        log.d("Rejected report status change: report(s) "
+                            + unauthorized.map(function(r) {
+                                return r._id;
+                            }).join(", ") + " target apps the caller may not read");
+                        common.returnMessage(params, 401, 'User does not have right to access this information');
+                        return;
+                    }
+                }
+
+                //nothing to act on: answer, rather than leaving the request open,
+                //which is what happened while the write below was the only responder
+                if (requestedIds.length === 0) {
+                    common.returnMessage(params, 400, 'Invalid or missing args');
+                    return;
+                }
 
                 var bulk = common.db.collection("reports").initializeUnorderedBulkOp();
-                for (const id in statusList) {
+                requestedIds.forEach(function(id) {
                     //scope to records the caller may modify (owner / global
                     //admin); otherwise any report's enabled state could be
                     //toggled by _id alone.
-                    bulk.find(recordUpdateOrDeleteQuery(params, id)).updateOne({ $set: { enabled: statusList[id] } });
-                }
-                if (bulk.length > 0) {
-                    bulk.execute(function(err) {
-                        if (err) {
-                            common.returnMessage(params, 200, err);
-                        }
-                        common.returnMessage(params, 200, "Success");
-                    });
-                }
+                    bulk.find(recordUpdateOrDeleteQuery(params, id)).updateOne({ $set: { enabled: asksToEnable(statusList[id]) } });
+                });
+                bulk.execute(function(err) {
+                    if (err) {
+                        log.e("Failed to change report status", err);
+                        common.returnMessage(params, 200, err);
+                        return;
+                    }
+                    common.returnMessage(params, 200, "Success");
+                });
             });
             break;
         default:
@@ -551,40 +735,36 @@ const FEATURE_NAME = 'reports';
     }
 
     /**
-     * validation function for verifing user have permission to access infomation or not for core type of report
+     * Verify the member may use a non-core report's target.
+     *
+     * A non-core report_type names the plugin that owns the report, and that
+     * plugin authorizes the target through the /report/authorize event: the
+     * dashboards plugin checks view access to report.dashboards there. This
+     * fails closed, so a report type whose plugin does not answer the event is
+     * not authorized. A plugin adding a new report type must implement
+     * /report/authorize for it.
+     *
+     * Core reports are authorized inline against the member's per-app reports
+     * permission instead, so they never reach this.
+     *
      * @param {object} params - request params object
-     * @param {object} props  - report related props
-     * @param {func} cb - callback function
-     * @return {func} cb - callback function
-    
-    function validateCoreUser(params, props, cb) {
-        var userApps = getUserApps(params.member);
-        var apps = props.apps;
-        var isAppUser = apps.every(function(app) {
-            return userApps && userApps.indexOf(app) > -1;
-        });
-
-        if (!params.member.global_admin && !isAppUser) {
-            return cb(null, false);
-        }
-        else {
-            return cb(null, true);
-        }
-
-    }
-    */
-
-    /**
-     * validation function for verifing user have permission to access infomation or not for not core type of report
-     * @param {object} params - request params object
-     * @param {object} props  - report related props
-     * @param {func} cb - callback function
-     
+     * @param {object} props - report related props
+     * @param {function} cb - callback receiving (err, authorized)
+     */
     function validateNonCoreUser(params, props, cb) {
+        //the flag is only how the dispatch reports its result back, and props is built
+        //from the request, so a submitted authorized:true has to be cleared before the
+        //dispatch runs. Any path where no plugin overwrites it - an unrecognised report
+        //type, a disabled plugin, the dashboards handler's missing-dashboard and error
+        //paths - would otherwise read the caller's own value and fail open, which is
+        //what this check exists to prevent.
+        delete props.authorized;
         plugins.dispatch("/report/authorize", { params: params, report: props }, function() {
-            var authorized = props.authorized || false;
+            //only an explicit true from a plugin that recognised the type authorizes
+            var authorized = props.authorized === true;
+            //and it must not be persisted onto the report document either
+            delete props.authorized;
             cb(null, authorized);
         });
     }
-    */
 }());
