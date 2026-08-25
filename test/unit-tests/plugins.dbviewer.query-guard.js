@@ -1,46 +1,41 @@
 require("should");
 var qguard = require("../../plugins/dbviewer/api/parts/query_guard.js");
 
+// findDisallowedProjectionValue(projection) -> { name } | null
+//
+// A find() projection may only include or exclude fields. It used to have offending
+// entries deleted and the query run anyway, which returned something other than what
+// was asked for without saying so. It now returns the first offending field and the
+// caller rejects the request, matching the aggregation guard.
 describe("dbviewer query guard", function() {
-    describe("sanitizeProjection", function() {
-        it("keeps plain include/exclude projections", function() {
+    describe("findDisallowedProjectionValue", function() {
+        it("accepts plain include/exclude projections", function() {
             var p = {name: 1, _id: 0, "a.b": 1, ok: true, no: false};
-            var changes = qguard.sanitizeProjection(p);
-            Object.keys(changes).length.should.equal(0);
-            p.should.have.property("name", 1);
-            p.should.have.property("a.b", 1);
+            (qguard.findDisallowedProjectionValue(p) === null).should.equal(true);
         });
-        it("drops a field-path alias value (e.g. {leak: \"$password\"})", function() {
-            var p = {leak: "$password", k: "$api_key", name: 1};
-            var changes = qguard.sanitizeProjection(p);
-            changes.should.have.property("leak");
-            changes.should.have.property("k");
-            p.should.not.have.property("leak");
-            p.should.not.have.property("k");
-            p.should.have.property("name", 1);
+        it("rejects a field-path alias value (e.g. {leak: \"$password\"})", function() {
+            qguard.findDisallowedProjectionValue({leak: "$password", name: 1}).name.should.equal("leak");
+            qguard.findDisallowedProjectionValue({name: 1, k: "$api_key"}).name.should.equal("k");
         });
-        it("drops an expression-object value (e.g. {x: {$function: ...}})", function() {
-            var p = {x: {$function: {body: "f", args: [], lang: "js"}}, y: {$concat: ["$password", ""]}, name: 1};
-            var changes = qguard.sanitizeProjection(p);
-            changes.should.have.property("x");
-            changes.should.have.property("y");
-            p.should.not.have.property("x");
-            p.should.not.have.property("y");
-            p.should.have.property("name", 1);
+        it("rejects an expression-object value (e.g. {x: {$function: ...}})", function() {
+            qguard.findDisallowedProjectionValue({x: {$function: {body: "f", args: [], lang: "js"}}, name: 1}).name.should.equal("x");
+            qguard.findDisallowedProjectionValue({y: {$concat: ["$password", ""]}}).name.should.equal("y");
         });
-        it("drops numeric values that are not strictly 0 or 1", function() {
-            var p = {a: 2, b: NaN, c: -1, ok: 1, off: 0, t: true, f: false};
-            var changes = qguard.sanitizeProjection(p);
-            changes.should.have.property("a");
-            changes.should.have.property("b");
-            changes.should.have.property("c");
-            p.should.not.have.property("a");
-            p.should.not.have.property("b");
-            p.should.not.have.property("c");
-            p.should.have.property("ok", 1);
-            p.should.have.property("off", 0);
-            p.should.have.property("t", true);
-            p.should.have.property("f", false);
+        it("rejects numeric values that are not strictly 0 or 1", function() {
+            [2, NaN, -1, "1"].forEach(function(bad) {
+                qguard.findDisallowedProjectionValue({ok: 1, a: bad}).name.should.equal("a");
+            });
+        });
+        it("does not modify the projection it rejects", function() {
+            var p = {leak: "$password", name: 1};
+            qguard.findDisallowedProjectionValue(p);
+            p.should.have.property("leak", "$password");
+            Object.keys(p).length.should.equal(2);
+        });
+        it("accepts a missing or non-object projection", function() {
+            (qguard.findDisallowedProjectionValue(undefined) === null).should.equal(true);
+            (qguard.findDisallowedProjectionValue(null) === null).should.equal(true);
+            (qguard.findDisallowedProjectionValue({}) === null).should.equal(true);
         });
     });
 
