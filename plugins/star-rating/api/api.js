@@ -29,6 +29,14 @@ if (!surveysEnabled) {
         feedback_logo: ""
 
     });
+
+    //the ratings and surveys widget previews style themselves from these when the app
+    //has no per-app override, so a non global admin needs to read them
+    plugins.setReadableConfigs("feedback", {
+        main_color: true,
+        font_color: true,
+        feedback_logo: true
+    });
 }
 
 const FEATURE_NAME = 'star_rating';
