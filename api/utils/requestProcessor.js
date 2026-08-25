@@ -1727,24 +1727,19 @@ const processRequest = (params) => {
                         //applications has no business reading it. Without this an app limited
                         //token still reached account level data, because the app restriction in
                         //verify_token is only compared when the request itself names an app.
-                        var authToken = params.qstring.auth_token || params.req.headers["countly-token"] || "";
-                        if (!authToken) {
-                            return countlyApi.mgmt.users.getCurrentUser(params);
+                        //
+                        //params.token_data is the document the validation above already read.
+                        //It is deliberately not looked up again: verify_token consumes a single
+                        //use token, so a second read finds nothing, and absence would then read
+                        //as "unrestricted" - the restriction would be dropped for exactly the
+                        //tokens that are meant to be the most limited. A request authorized by
+                        //an api_key carries no token_data and has no restriction to honour.
+                        var tokenData = params.token_data;
+                        if (tokenData && tokenData.app && tokenData.app.length) {
+                            common.returnMessage(params, 401, 'Token is restricted to specific applications');
+                            return false;
                         }
-                        authorize.read({
-                            db: common.db,
-                            token: authToken,
-                            callback: function(tokenErr, tokenData) {
-                                //save() stores app as "" when unrestricted and as an array
-                                //otherwise, so a non empty length is what marks a restriction
-                                if (tokenData && tokenData.app && tokenData.app.length) {
-                                    common.returnMessage(params, 401, 'Token is restricted to specific applications');
-                                    return false;
-                                }
-                                return countlyApi.mgmt.users.getCurrentUser(params);
-                            }
-                        });
-                        return true;
+                        return countlyApi.mgmt.users.getCurrentUser(params);
                     }, params);
                     break;
                 case 'id':
