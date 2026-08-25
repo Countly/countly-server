@@ -331,6 +331,7 @@ plugins.register("/i/hook/save", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            common.stripRequestCredentials(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 400, 'Not enough args');
@@ -388,7 +389,9 @@ plugins.register("/i/hook/save", function(ob) {
                     common.db.collection("hooks").findAndModify(
                         { _id: common.db.ObjectID(id) },
                         {},
-                        {$set: hookConfig},
+                        //also clears a credential stored before this was fixed: $set
+                        //leaves a field it does not name exactly as it was
+                        common.unsetRequestCredentials({$set: hookConfig}),
                         {new: true},
                         function(err, result) {
                             if (!err) {
@@ -859,6 +862,7 @@ plugins.register("/i/hook/test", function(ob) {
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
+            common.stripRequestCredentials(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             const mockData = JSON.parse(params.qstring.mock_data);
 
