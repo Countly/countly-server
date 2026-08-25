@@ -958,6 +958,9 @@
                         if (json.data && json.appID === countlyCommon.ACTIVE_APP_ID) {
                             json = json.data;
                             for (var k in json) {
+                                if (countlyCommon.isForbiddenFieldName(k)) {
+                                    continue;
+                                }
                                 if (k.indexOf("_name") > -1) {
                                     _graphDataObj[k] = json[k]; //copy new name
                                 }
