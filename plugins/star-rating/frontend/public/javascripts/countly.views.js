@@ -1,4 +1,39 @@
 /*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyPlugins, countlyCommon,  CV, countlyVue, moment, countlyCohorts*/
+
+/**
+ * Escape regular expression metacharacters in a literal.
+ *
+ * textValue is interpolated into a RegExp below. Unescaped, the value IS a pattern,
+ * so one like `(a+)+$` turns matching into catastrophic backtracking on a long
+ * enough finalText.
+ *
+ * @param {string} value - literal to be matched
+ * @returns {string} the literal, safe to embed in a pattern
+ */
+function escapeForRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Whether a consent link destination is usable as an href.
+ *
+ * HTML escaping is no protection here: `javascript:alert(1)` contains no HTML
+ * metacharacter, so it survives escaping unchanged and runs when the link is clicked.
+ * Only http(s) is accepted, matching the widget endpoint, the public popup, and the surveys
+ * widget that renders the same kind of consent link. The test is anchored at the start of the
+ * trimmed value, so a scheme hidden behind whitespace or mixed case fails it rather than
+ * having to be enumerated.
+ *
+ * @param {string} value - the stored link destination
+ * @returns {boolean} true when it may be used as an href
+ */
+function isSafeConsentLink(value) {
+    if (typeof value !== 'string') {
+        return false;
+    }
+    return /^https?:\/\//i.test(value.trim());
+}
+
 (function() {
     var FEATURE_NAME = 'star_rating';
     var CLY_X_INT = 'cly_x_int';
@@ -143,12 +178,36 @@
                 var finalText = inpFinalText;
 
                 if (links && !Array.isArray(links) && typeof links.finalText === 'string') {
-                    finalText = links.finalText;
+                    //also rendered with v-html, and with no anchors to add: encode and return
+                    finalText = countlyCommon.encodeHtml(links.finalText);
                 }
                 else if (Array.isArray(links) && typeof finalText === 'string') {
+                    //The whole sentence is rendered with v-html, so it is encoded here and the
+                    //anchors are added afterwards. That makes the anchors the only markup in the
+                    //string, which is the reason v-html is used at all, and it covers the labels
+                    //as well: a stored label such as `&lt;img src=x onerror=...&gt;` was being
+                    //written back into the string verbatim for the browser to decode.
+                    //
+                    //Matching then has to happen on the encoded label, because the sentence it is
+                    //searched in is encoded too. For an ordinary label encoding changes nothing.
+                    finalText = countlyCommon.encodeHtml(finalText);
                     links.forEach(link => {
-                        const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
-                        finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
+                        const label = countlyCommon.encodeHtml(link.textValue);
+                        //the label goes into a RegExp, so its metacharacters have to be escaped:
+                        //an unescaped value IS a pattern, and one like `(a+)+$` makes this hang
+                        //on a long enough finalText.
+                        const regex = new RegExp(`\\b${escapeForRegExp(label)}\\b`, 'g');
+                        //Refuse a destination that is not a usable href rather than trusting it
+                        //because the endpoint now rejects it: widgets saved before that check
+                        //still carry whatever was stored, and this drawer also renders values
+                        //that have not been saved at all.
+                        //about:blank rather than an empty href, which would point the link back
+                        //at the dashboard and reload it on click.
+                        const href = isSafeConsentLink(link.linkValue) ? link.linkValue.trim() : 'about:blank';
+                        //This string is rendered with v-html, so escape the href: a value that
+                        //passes the scheme check can still carry a quote and close the attribute.
+                        const escHref = countlyCommon.encodeHtml(href);
+                        finalText = finalText.replace(regex, `<a href="${escHref}" target="_blank" rel="noopener noreferrer">${label}</a>`);
                     });
                 }
 
