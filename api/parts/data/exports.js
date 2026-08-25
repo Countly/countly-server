@@ -740,19 +740,30 @@ exports.fromRequest = function(options) {
  * hidden one level down. Names are matched as object keys, which is the only place a stage
  * operator appears.
  *
+ * The node budget is a stop on runaway work, not a verdict. Exhausting it means the
+ * pipeline could not be verified, which is a reason to refuse rather than to proceed:
+ * returning "nothing found" there would let a large enough structure in front of an
+ * $out carry the write through.
+ *
  * @param {Array} pipeline - aggregation pipeline to inspect
- * @returns {string|null} the offending stage name, or null when there is none
+ * @returns {string|null} why the pipeline must be refused, or null when it is safe
  */
 function findWriteStage(pipeline) {
     var WRITE_STAGES = ["$out", "$merge"];
+    var MAX_NODES = 10000;
     var seen = 0;
+    var exhausted = false;
 
     /**
      * @param {*} node - value to walk
      * @returns {string|null} offending stage name or null
      */
     function walk(node) {
-        if (seen++ > 10000 || !node || typeof node !== "object") {
+        if (seen++ > MAX_NODES) {
+            exhausted = true;
+            return null;
+        }
+        if (!node || typeof node !== "object") {
             return null;
         }
         if (Array.isArray(node)) {
@@ -775,7 +786,12 @@ function findWriteStage(pipeline) {
         }
         return null;
     }
-    return walk(pipeline);
+    var found = walk(pipeline);
+    if (found) {
+        return "write stage " + found;
+    }
+    //fail closed: unverified is not the same as verified safe
+    return exhausted ? "pipeline too large to verify (over " + MAX_NODES + " nodes)" : null;
 }
 
 exports.fromRequestQuery = function(options) {
@@ -814,7 +830,7 @@ exports.fromRequestQuery = function(options) {
                 //or tampered spec from turning a read into a write.
                 var writeStage = findWriteStage(body.pipeline);
                 if (writeStage) {
-                    log.e("Refusing export query containing a write stage: " + writeStage);
+                    log.e("Refusing export query: " + writeStage);
                     var refused = new Transform({
                         objectMode: true,
                         transform: (data, _, done) => {
