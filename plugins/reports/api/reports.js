@@ -27,6 +27,13 @@ plugins.setConfigs("reports", {
     secretKey: countlyApiConfig?.encryption?.reports_key || "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
 });
 
+//this key signs the subscribe/unsubscribe tokens, and /subscribe_report and
+///unsubscribe_report accept those without authentication. It self-generates, so
+//unlike the other secrets it is always set on every install.
+plugins.setSecretConfigs("reports", {
+    secretKey: true
+});
+
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
 var metrics = {
