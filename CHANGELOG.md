@@ -13,6 +13,7 @@ Fixes:
 - [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
 
 Security Fixes:
+- [star-rating] Consent link destinations are now checked as URLs, on save and again when rendered, so a link can only point at an http(s) url. HTML escaping never covered this, since a `javascript:` url contains no character that escaping touches. Link labels are also escaped before being used to build a regular expression
 - [core] CSV exports now neutralize cells that a spreadsheet client would read as a formula, in the streamed export path and in its header row as well as the values, and including values that begin with a tab or carriage return
 - [reports] Enabling, sending or rendering a report now checks that the apps it covers are still readable by the caller, and scheduled reports stop being emailed once the member they are scheduled as loses access to those apps
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
