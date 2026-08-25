@@ -75,8 +75,41 @@ function safeLogoIdentifier(id) {
     return id;
 }
 
+// An app id as it appears in a request: the 24 hex characters of an ObjectID. Checked
+// because the id is concatenated into the stored name below, and a name is a path.
+var APP_ID_RE = /^[a-f0-9]{24}$/i;
+
+/**
+ * The name a logo is stored under.
+ *
+ * Namespaced by app. The images directory is shared by every app and a widget's logo
+ * field holds only this name, so an un-namespaced name lets any app pick a name another
+ * app is using, or is about to use, and overwrite it. Checking first and writing second
+ * cannot fix that: the two apps can interleave, and an upload happens before the widget
+ * that will point at it exists, so there is nothing to check against yet. Putting the
+ * app id in the name removes the shared namespace instead of racing over it.
+ *
+ * The same shape the sibling /i/feedback/upload route uses, where the target app is
+ * likewise carried by the name rather than taken from the query string.
+ * @param {string} appId - id of the app the caller was authorized for
+ * @param {string|number} id - request supplied identifier
+ * @param {string} ext - extension decided by sniffing the file, never by the request
+ * @returns {string|null} the stored name, or null when either part is not a plain name
+ */
+function logoStorageName(appId, id, ext) {
+    var safeId = safeLogoIdentifier(id);
+    if (!safeId || typeof appId !== "string" || !APP_ID_RE.test(appId)) {
+        return null;
+    }
+    if (typeof ext !== "string" || !/^[a-z]{3,4}$/.test(ext)) {
+        return null;
+    }
+    return appId + "_" + safeId + "." + ext;
+}
+
 module.exports = {
     sniffImageType: sniffImageType,
     parseFeedbackLogoName: parseFeedbackLogoName,
-    safeLogoIdentifier: safeLogoIdentifier
+    safeLogoIdentifier: safeLogoIdentifier,
+    logoStorageName: logoStorageName
 };
