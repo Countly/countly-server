@@ -102,6 +102,18 @@ const FEATURE_NAME = 'populator';
         return true;
     };
 
+    //Custom templates are a server-wide shared library: any member holding the populator feature
+    //on any app can list, use, edit and remove them, and that is intended rather than a missing
+    //app filter. A template describes how to generate synthetic data (event names, property
+    //distributions) and holds no collected data of its own, so it is deliberately not bound to an
+    //app. Environments are the opposite and are always app-scoped, because each records the
+    //synthetic users actually generated into one specific app.
+
+    //How long a template deletion mark stays authoritative. Long enough that a normal
+    //check-and-remove finishes inside it, short enough that a process dying mid-delete
+    //does not leave a template that nobody can remove.
+    const TEMPLATE_DELETE_LOCK_MS = 60000;
+
     const removeTemplate = function(ob) {
         const obParams = ob.params;
         validateDelete(obParams, FEATURE_NAME, function(params) {
@@ -115,34 +127,110 @@ const FEATURE_NAME = 'populator';
                 return false;
             }
 
-            common.db.collection('populator_templates').remove({"_id": templateId }, function(removeTemplateErr) {
-                if (!removeTemplateErr) {
-                    plugins.dispatch("/systemlogs", {params: params, action: "populator_template_removed", data: {templateId: templateId}});
-                    common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + params.qstring.app_id + "_" + ob.params.qstring.template_id) }}, function(errEnvUsers) {
-                        if (errEnvUsers) {
-                            log.e("Error deleting populator environment users while deleting template", errEnvUsers);
-                            common.returnMessage(ob.params, 500, errEnvUsers.message);
-                            return false;
-                        }
-                        else {
-                            common.db.collection('populator_environments').deleteMany({ "templateId": ob.params.qstring.template_id }, function(errEnvs) {
-                                if (errEnvs) {
-                                    log.e("Error deleting populator environments while deleting template", errEnvs);
-                                    common.returnMessage(ob.params, 500, errEnvs.message);
+            //Because the template is shared, other apps may have generated environments from it.
+            //An environment is only ever reachable through its template: the templates table
+            //marks which ones have environments, and the environment view is routed by template
+            //id. So removing the template would leave those rows with nothing able to list,
+            //reuse or delete them. Deleting them here instead would discard another app's
+            //records at the request of someone who has no access to that app. Refuse instead,
+            //and let each app remove its own environment first, through
+            ///o/populator/environment/remove.
+            /**
+             * Clear the deletion mark taken below, whatever the outcome.
+             * @param {function} done - called once the mark is cleared
+             * @returns {void}
+             */
+            function unlockTemplate(done) {
+                common.db.collection('populator_templates').updateOne({_id: templateId}, {$unset: {deletingAt: ""}}, function(unlockErr) {
+                    if (unlockErr) {
+                        log.e("Error clearing the deletion mark on populator template", unlockErr);
+                    }
+                    done();
+                });
+            }
+
+            /**
+             * Check no other application has an environment from this template, then remove it.
+             * @returns {void}
+             */
+            function checkAndRemove() {
+                common.db.collection('populator_environments').find({
+                    "templateId": ob.params.qstring.template_id,
+                    "appId": {$ne: params.qstring.app_id + ""}
+                }).toArray(function(errOtherEnvs, otherEnvs) {
+                    if (errOtherEnvs) {
+                        log.e("Error checking populator environments before deleting template", errOtherEnvs);
+                        return unlockTemplate(function() {
+                            common.returnMessage(obParams, 500, errOtherEnvs.message);
+                        });
+                    }
+                    if (otherEnvs && otherEnvs.length) {
+                        return unlockTemplate(function() {
+                            common.returnMessage(obParams, 400, "Cannot remove this template: " + otherEnvs.length + " environment(s) in other applications were generated from it. Those applications have to remove their environments first.");
+                        });
+                    }
+                    common.db.collection('populator_templates').remove({"_id": templateId }, function(removeTemplateErr) {
+                        if (!removeTemplateErr) {
+                            plugins.dispatch("/systemlogs", {params: params, action: "populator_template_removed", data: {templateId: templateId}});
+                            common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + params.qstring.app_id + "_" + ob.params.qstring.template_id) }}, function(errEnvUsers) {
+                                if (errEnvUsers) {
+                                    log.e("Error deleting populator environment users while deleting template", errEnvUsers);
+                                    common.returnMessage(ob.params, 500, errEnvUsers.message);
                                     return false;
                                 }
-                                common.returnMessage(ob.params, 200, 'Success');
-                                plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_removed_through_template", data: {templateId: ob.params.qstring.template_id, appId: ob.params.qstring.app_id}});
-                                return true;
+                                else {
+                                    //Scoped to this app, like every other query against this
+                                    //collection. The check above means no other app has one; if one
+                                    //appears in between, leaving it is better than deleting it.
+                                    common.db.collection('populator_environments').deleteMany({ "templateId": ob.params.qstring.template_id, "appId": params.qstring.app_id + "" }, function(errEnvs) {
+                                        if (errEnvs) {
+                                            log.e("Error deleting populator environments while deleting template", errEnvs);
+                                            common.returnMessage(ob.params, 500, errEnvs.message);
+                                            return false;
+                                        }
+                                        common.returnMessage(ob.params, 200, 'Success');
+                                        plugins.dispatch("/systemlogs", {params: params, action: "populator_environment_removed_through_template", data: {templateId: ob.params.qstring.template_id, appId: ob.params.qstring.app_id}});
+                                        return true;
+                                    });
+                                }
                             });
                         }
+                        else {
+                            common.returnMessage(ob.params, 500, removeTemplateErr.message);
+                            return false;
+                        }
                     });
+                });
+            }
+
+            //The check and the removal are separate operations, so another application
+            //could create an environment from this template in between and be left with a
+            //row nothing can reach - the state this check exists to prevent. Mark the
+            //template first: environment creation refuses a template that is being
+            //removed, so anything that gets past that mark is already visible to the
+            //check below.
+            //
+            //The mark carries a timestamp and a stale one can be taken over, so a process
+            //that dies between marking and removing cannot leave a template locked out of
+            //deletion forever.
+            common.db.collection('populator_templates').findOneAndUpdate(
+                {_id: templateId, $or: [{deletingAt: {$exists: false}}, {deletingAt: {$lt: Date.now() - TEMPLATE_DELETE_LOCK_MS}}]},
+                {$set: {deletingAt: Date.now()}},
+                function(lockErr, locked) {
+                    if (lockErr) {
+                        log.e("Error marking populator template for removal", lockErr);
+                        common.returnMessage(obParams, 500, lockErr.message);
+                        return false;
+                    }
+                    if (!locked || !locked.value) {
+                        //either it is gone, or another removal of the same template is in
+                        //flight; both mean this request has nothing to do
+                        common.returnMessage(obParams, 400, "Cannot remove this template: it is already being removed, or no longer exists.");
+                        return false;
+                    }
+                    checkAndRemove();
                 }
-                else {
-                    common.returnMessage(ob.params, 500, removeTemplateErr.message);
-                    return false;
-                }
-            });
+            );
         });
         return true;
     };
@@ -252,6 +340,26 @@ const FEATURE_NAME = 'populator';
             }
 
             if (setEnviromentInformationOnce) {
+                //refuse while the template is being removed: the removal checks for
+                //environments in other applications and then deletes, and an environment
+                //created between those two steps would be left unreachable
+                common.db.collection('populator_templates').findOne({_id: common.db.ObjectID(users[0].templateId), deletingAt: {$gt: Date.now() - TEMPLATE_DELETE_LOCK_MS}}, {projection: {_id: 1}}, function(lockedErr, lockedTemplate) {
+                    if (lockedErr) {
+                        log.e("Error checking whether the populator template is being removed", lockedErr);
+                    }
+                    if (lockedTemplate) {
+                        common.returnMessage(ob.params, 400, "This template is being removed.");
+                        return false;
+                    }
+                    createEnvironmentRecord();
+                });
+            }
+
+            /**
+             * Write the environment row itself.
+             * @returns {void}
+             */
+            function createEnvironmentRecord() {
                 common.db.collection('populator_environments').insertOne({
                     _id: environmentId,
                     name: users[0].environmentName,
@@ -797,6 +905,16 @@ const FEATURE_NAME = 'populator';
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
         common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + appId) }}, function(err) {
+            if (err) {
+                log.e("Error deleting populator environments for " + appId + " application", err);
+            }
+        });
+        //the environments themselves too, as the clear, clear_all and reset hooks below
+        //already do. Left behind they are unreachable - nothing can list or remove an
+        //environment belonging to an app that no longer exists - while still counting as
+        //another app's environment when a shared template is deleted, which would make
+        //that template undeletable by anybody.
+        common.db.collection('populator_environments').deleteMany({ appId: appId }, function(err) {
             if (err) {
                 log.e("Error deleting populator environments for " + appId + " application", err);
             }
