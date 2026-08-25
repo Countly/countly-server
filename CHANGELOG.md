@@ -10,6 +10,7 @@ Enterprise Fixes:
 
 Security Fixes:
 - [star-rating] `/i/feedback/input` now forwards only the parameters the feedback widget sends. Because that endpoint replays its request with checksum verification disabled, unrelated write parameters supplied by the caller (such as `old_device_id`, which merges app users, or `token_session`, which binds a push token) were previously processed without a checksum on apps that have a checksum salt configured
+- [core] CSV exports now neutralize cells that a spreadsheet client would read as a formula, in the streamed export path and in its header row as well as the values, and including values that begin with a tab or carriage return
 - [reports] Enabling, sending or rendering a report now checks that the apps it covers are still readable by the caller, and scheduled reports stop being emailed once the member they are scheduled as loses access to those apps
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
