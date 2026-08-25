@@ -84,10 +84,20 @@ function withoutAppSecrets(app) {
     return copy;
 }
 
+//Fields of a dispatch payload that hold an app document. /i/apps/update sends two of
+//them: data.app is the document before the change, and data.update is what was written.
+//data.update is not the smaller of the two for this purpose - the accepted key list is
+//rebuilt on EVERY update, so data.update.keys carries every key the app has ever had,
+//data.update.key appears whenever the key is rotated, and data.update.id_key is filled in
+//the first time an app that predates it is touched.
+const APP_SHAPED_FIELDS = ["app", "update"];
+
 /**
- * Copy trigger params with any app document's credentials removed. Keyed off the event
- * type rather than by sniffing field names, because "key" is an ordinary field elsewhere:
- * events have one, and scrubbing those would break hooks that reference it.
+ * Copy trigger params with any app document's credentials removed. Keyed off field names
+ * that are known to hold an app document, and off the event type for the payloads that
+ * are an app document, rather than by looking for a field called "key" anywhere: "key" is
+ * an ordinary field elsewhere - events have one - and scrubbing those would break hooks
+ * that reference it.
  * @param {object} params - params about to be handed to the effect pipeline
  * @param {string} eventType - internal event being processed
  * @returns {object} params safe to hand onwards
@@ -98,13 +108,26 @@ function withoutSecrets(params, eventType) {
     }
     const out = Object.assign({}, params);
     if (out.data && typeof out.data === "object") {
-        //crashes/new and /i/apps/update nest the app document under data.app
-        if (out.data.app && typeof out.data.app === "object") {
-            out.data = Object.assign({}, out.data, {app: withoutAppSecrets(out.data.app)});
+        let data = out.data;
+        let replaced = false;
+        //crashes/new and /i/apps/update nest app documents under named fields
+        APP_SHAPED_FIELDS.forEach(function(field) {
+            if (data[field] && typeof data[field] === "object") {
+                if (!replaced) {
+                    data = Object.assign({}, data);
+                    replaced = true;
+                }
+                data[field] = withoutAppSecrets(data[field]);
+            }
+        });
+        //while /i/apps/create, /i/apps/delete and /i/apps/reset pass the app document as
+        //data itself. A payload carrying one of the fields above is not itself an app.
+        if (!replaced && typeof eventType === "string" && eventType.indexOf("/i/apps/") === 0) {
+            data = withoutAppSecrets(data);
+            replaced = true;
         }
-        //while /i/apps/delete and /i/apps/reset pass the app document as data itself
-        else if (typeof eventType === "string" && eventType.indexOf("/i/apps/") === 0) {
-            out.data = withoutAppSecrets(out.data);
+        if (replaced) {
+            out.data = data;
         }
     }
     if (out.app && typeof out.app === "object") {
