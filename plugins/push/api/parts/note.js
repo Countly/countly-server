@@ -515,6 +515,12 @@ class Note {
             }
             if (data) {
                 for (let k in data) {
+                    //data comes off a stored message, so k can be a literal "__proto__".
+                    //compiled is built here, so compiled[k] would be Object.prototype,
+                    //which satisfies every test below and would be written into.
+                    if (k === "__proto__" || k === "constructor" || k === "prototype") {
+                        continue;
+                    }
                     if (compiled[k] && typeof compiled[k] === 'object' && !Array.isArray(compiled[k]) && typeof data[k] === 'object') {
                         for (let kk in data[k]) {
                             compiled[k][kk] = data[k][kk];
