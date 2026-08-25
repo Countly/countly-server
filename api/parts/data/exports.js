@@ -775,7 +775,14 @@ function findWriteStage(pipeline) {
             }
             return null;
         }
-        for (var key in node) {
+        //Object.keys rather than for...in: node is a parsed request payload, and an
+        //inherited enumerable key is not part of the pipeline the caller sent. Walking
+        //one would let a poisoned prototype decide what this scan looks at, which is the
+        //opposite of what a guard should allow. The platform copy of this function
+        //already reads it this way.
+        var keys = Object.keys(node);
+        for (var k = 0; k < keys.length; k++) {
+            var key = keys[k];
             if (WRITE_STAGES.indexOf(key) !== -1) {
                 return key;
             }
