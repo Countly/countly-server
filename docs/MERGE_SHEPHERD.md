@@ -59,7 +59,10 @@ PR page.
   anything the event triggers missed.
 - For each batch PR: updates the branch via the API if behind, enables
   GitHub **native auto-merge** (merge commit), so no bot action is needed
-  at the moment of green.
+  at the moment of green. Auto-merge is armed in every non-terminal state —
+  while updating, while waiting on checks, and while retrying failed ones —
+  so the instant required checks pass, the PR merges without waiting for
+  the next bot cycle.
 - Retry state is stored in a bot comment on the PR
   (`merge-shepherd-state` marker); pushing new commits resets the count.
 - Logic lives in `.github/scripts/merge-shepherd.js`; unit tests in
