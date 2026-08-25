@@ -98,6 +98,11 @@ plugins.connectToAllDatabases().then(function() {
         trim_trailing_ending_spaces: false
     });
 
+    //declared in a module both this process and the dashboard require, because the
+    //metadata is process local and the dashboard serializes the security namespace
+    //into every page it renders
+    require('./utils/configMetadata.js').register(plugins);
+
     /**
     * Set Plugins APPs Config
     */
