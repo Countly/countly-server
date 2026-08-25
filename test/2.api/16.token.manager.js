@@ -1234,6 +1234,23 @@ describe('Testing token manager', function() {
         // can reach.
         var scopedToken = "";
 
+        // /i/two-factor-auth exists only where the plugin is enabled. Where it is not,
+        // requestProcessor answers 400 "Invalid path", which says nothing about the guard,
+        // so the cases below skip rather than pass on a status that proves nothing.
+        var twoFactorAvailable = false;
+
+        it('setup: whether the two-factor-auth plugin is present in this build', function(done) {
+            request
+                .get('/i/two-factor-auth?method=generate-qr-code&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    twoFactorAvailable = !(res.status === 400 && /Invalid path/i.test(res.text || ''));
+                    done();
+                });
+        });
+
         it('setup: a token that may only read core on one app', function(done) {
             var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
             permission.r[APP_ID] = {all: false, allowed: {core: true}};
@@ -1253,6 +1270,9 @@ describe('Testing token manager', function() {
 
         ['disable', 'enable', 'generate-qr-code'].forEach(function(method) {
             it('refuses /i/two-factor-auth?method=' + method, function(done) {
+                if (!twoFactorAvailable) {
+                    return this.skip();
+                }
                 request
                     .get('/i/two-factor-auth?method=' + method + '&auth_token=' + scopedToken
                         + '&app_id=' + APP_ID + '&auth_code=123456&secret_token=AAAAAAAAAAAAAAAA')
@@ -1260,13 +1280,9 @@ describe('Testing token manager', function() {
                         if (err) {
                             return done(err);
                         }
-                        // 403 for the guard; a build without the two-factor-auth plugin
-                        // answers 404, which is also not a way in
-                        [403, 404].indexOf(res.status).should.not.equal(-1,
-                            'expected 403 or 404, got ' + res.status + ': ' + res.text);
-                        if (res.status === 403) {
-                            res.text.indexOf('restricted token').should.not.equal(-1);
-                        }
+                        res.status.should.equal(403,
+                            'expected the guard to refuse, got ' + res.status + ': ' + res.text);
+                        res.text.indexOf('restricted token').should.not.equal(-1);
                         done();
                     });
             });
@@ -1275,17 +1291,16 @@ describe('Testing token manager', function() {
         it('still allows the same call with an unrestricted credential', function(done) {
             // the api_key is unscoped, so the guard must not stand in its way. generate-qr-code
             // is the read only one of the three, so it is the safe one to prove this with.
+            if (!twoFactorAvailable) {
+                return this.skip();
+            }
             request
                 .get('/i/two-factor-auth?method=generate-qr-code&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    [200, 404, 500].indexOf(res.status).should.not.equal(-1,
-                        'expected the guard not to fire, got ' + res.status + ': ' + res.text);
-                    if (res.status === 403) {
-                        throw new Error('an unrestricted credential was refused');
-                    }
+                    res.status.should.not.equal(403, 'an unrestricted credential was refused');
                     done();
                 });
         });
