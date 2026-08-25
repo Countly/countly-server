@@ -1366,12 +1366,30 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         //query expression instead of a value: the query would then match far
         //more than the one view asked for, with no bound on how much of the
         //drill collection it has to scan.
-        var scalarParams = ["view", "actionType", "segment"];
+        var scalarParams = ["segment"];
         for (var sp = 0; sp < scalarParams.length; sp++) {
             if (!common.isQueryScalar(params.qstring[scalarParams[sp]])) {
                 common.returnMessage(params, 400, 'Bad request parameter: ' + scalarParams[sp]);
                 return false;
             }
+        }
+
+        //view and actionType get a stronger check than isQueryScalar, which accepts null
+        //and undefined on purpose: whether an absent parameter belongs in the query is
+        //the caller's decision, and here it does not. Both are assigned into the match
+        //unconditionally below, and an equality predicate against null also matches every
+        //document where the field is absent. Ingestion accepts [CLY]_action events with
+        //no sg.type and users with no up.lv, so an omitted value selects those rather
+        //than nothing, and the $unionWith across the drill collections then has no bound
+        //on how much it scans. Both callers in heatmap.js always send a concrete value.
+        var ACTION_TYPES = ["click", "scroll"];
+        if (ACTION_TYPES.indexOf(params.qstring.actionType) === -1) {
+            common.returnMessage(params, 400, 'Bad request parameter: actionType');
+            return false;
+        }
+        if (typeof params.qstring.view !== "string" || !params.qstring.view.length) {
+            common.returnMessage(params, 400, 'Bad request parameter: view');
+            return false;
         }
 
         var actionType = params.qstring.actionType;
