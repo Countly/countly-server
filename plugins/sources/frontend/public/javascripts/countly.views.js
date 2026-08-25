@@ -67,10 +67,17 @@
                 var source;
                 for (var i in cleanData) {
                     source = countlySources.getSourceName(cleanData[i].sources);
+                    // source is a value read out of the response, so it can be a prototype
+                    // member name; skip it before it is used as a key
+                    if (countlyCommon.isForbiddenFieldName(source)) {
+                        continue;
+                    }
                     if (!self.dataMap[source]) {
                         self.dataMap[source] = {};
                     }
-                    self.dataMap[source][cleanData[i].sources] = cleanData[i];
+                    // write onto the already-selected bucket, never through self.dataMap[source]
+                    var sourceBucket = self.dataMap[source];
+                    sourceBucket[cleanData[i].sources] = cleanData[i];
                 }
                 this.sourcesDetailData = self.dataMap;
             },
