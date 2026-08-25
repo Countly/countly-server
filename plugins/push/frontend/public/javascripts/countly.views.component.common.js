@@ -7,7 +7,7 @@
     // text, so a stored message cannot introduce active markup when the editor is populated.
     var PUSH_MESSAGE_EDITOR_XSS_OPTIONS = {
         whiteList: {
-            span: ["class", "id", "contenteditable", "data-user-property-label", "data-user-property-value", "data-user-property-fallback"]
+            span: ["class", "id", "contenteditable", "data-user-property-label", "data-user-property-value", "data-user-property-type", "data-user-property-fallback"]
         }
     };
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
