@@ -3,6 +3,7 @@ Fixes:
 - [reports] Non-core reports, such as dashboard reports, now authorize the object they target on create and update
 - [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
 - [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
+- [core] Chart tooltips now show label text as text, so a label is never treated as markup, and the dashboard undoes the same key substitutions the api applies (`&#36;`, `&#46;`, `&#9647;` and their url encoded forms) instead of only two of them
 - [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`, `"`, `'`)
 
 Enterprise Fixes:
