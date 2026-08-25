@@ -125,6 +125,31 @@ function getJSON(val) {
 }
 
 /**
+ * Whether a value is a plain object or an array, and so should be walked rather than escaped
+ * as a scalar.
+ *
+ * Tested by prototype identity rather than by reading value.constructor. `constructor` is an
+ * ordinary property name, so a JSON body can carry its own: {"constructor": true, ...} makes
+ * value.constructor evaluate to true, which used to fail the check and return the object with
+ * its keys and values unescaped. Since escape_html_entities is the replacer for every
+ * returnOutput and returnMessage, that turned any user controlled property name into markup
+ * wherever a response is rendered.
+ *
+ * Prototype identity cannot be spoofed by an own property, and it keeps the original intent:
+ * ObjectIDs, Dates and other class instances are still escaped as scalars rather than walked.
+ *
+ * @param {Any} value - value under inspection
+ * @returns {boolean} true when it should be recursed into
+ */
+function isPlainContainer(value) {
+    if (Array.isArray(value)) {
+        return true;
+    }
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+}
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {any} value - value to escape
@@ -132,7 +157,7 @@ function getJSON(val) {
 * @returns {any} escaped value
 **/
 function escape_html_entities(key, value, more) {
-    if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
+    if (typeof value === 'object' && value && isPlainContainer(value)) {
         if (Array.isArray(value)) {
             let replacement = [];
             for (let k = 0; k < value.length; k++) {
@@ -2618,6 +2643,54 @@ common.reqInfo = function(params) {
         ctx = (reqPath + reqMethod).trim();
     }
     return ctx ? " [" + ctx + "]" : "";
+};
+
+/**
+ * Remove the request's own authentication parameters from an object that is about
+ * to be stored. api_key and auth_token are both accepted as request parameters
+ * (see api/utils/rights.js), so a handler that keeps input it does not recognise
+ * persists the caller's credential, and a document read back later hands that
+ * credential to everyone allowed to read it.
+ *
+ * Top level only, and deliberately so. That is where a copy of the request puts
+ * them. A value the caller nested inside their own payload is their own to
+ * disclose, and descending to arbitrary depth would mean guessing at shapes.
+ *
+ * This is not a substitute for only storing declared fields. It is the floor: a
+ * handler that cannot enumerate its own shape can still refuse to keep a
+ * credential.
+ *
+ * @param {object} doc - the object about to be written, mutated in place
+ * @returns {object} the same object, so it can be used inline
+ */
+common.stripRequestCredentials = function(doc) {
+    if (doc && typeof doc === "object") {
+        delete doc.api_key;
+        delete doc.auth_token;
+    }
+    return doc;
+};
+
+/**
+ * Add the removal of stored request credentials to an update document.
+ *
+ * stripRequestCredentials keeps a credential out of a document being written, which
+ * does nothing for one already saved: an update sends $set, and a field absent from
+ * $set is left exactly as it was. So a document created before that helper existed
+ * keeps handing out the credential until something removes it, and the update that
+ * would have been the natural moment to do so does not.
+ *
+ * Use together with stripRequestCredentials, never instead of it. The strip is what
+ * makes this legal: MongoDB refuses an update naming the same field in $set and
+ * $unset, so the fields have to be gone from the document first.
+ *
+ * @param {Object<string, any>} update - the update document, e.g. {$set: doc}
+ * @returns {Object<string, any>} the same update, with the credentials unset
+ */
+common.unsetRequestCredentials = function(update) {
+    update = update || {};
+    update.$unset = Object.assign({}, update.$unset, {api_key: "", auth_token: ""});
+    return update;
 };
 
 common.clearClashingQueryOperations = function(query) {

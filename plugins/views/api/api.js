@@ -15,6 +15,18 @@ const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
 (function() {
+    //Declares this plugin as an export query producer. /o/export/requestQuery re-runs the
+    //endpoint named here and executes the collection and pipeline it returns, so only endpoints
+    //that build such a query and authorize it themselves may be named. `require` pins the
+    //parameters that select the branch below which returns the query rather than the rows.
+    plugins.register("/export/query/producers", function(ob) {
+        ob.producers.push({
+            path: "/o",
+            require: {method: "views", action: "getExportQuery"},
+            db: "countly"
+        });
+    });
+
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
