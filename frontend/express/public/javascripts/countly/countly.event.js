@@ -68,6 +68,9 @@
                                 _activeEvents = json;
                                 _eventGroupsTable = groups_json;
                                 for (var group in groups_json) {
+                                    if (countlyCommon.isForbiddenFieldName(group)) {
+                                        continue;
+                                    }
                                     if (groups_json[group].status) {
                                         _eventGroups[groups_json[group]._id] = {
                                             label: groups_json[group].name,
@@ -427,6 +430,9 @@
                                 _activeEvents = json;
                                 _eventGroupsTable = groups_json;
                                 for (var group in groups_json) {
+                                    if (countlyCommon.isForbiddenFieldName(group)) {
+                                        continue;
+                                    }
                                     if (groups_json[group].status) {
                                         _eventGroups[groups_json[group]._id] = {
                                             label: groups_json[group].name,
@@ -823,6 +829,9 @@
             eventNames = [];
 
         for (var event in eventSegmentations) {
+            if (countlyCommon.isForbiddenFieldName(event)) {
+                continue;
+            }
             var mapKey = event.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e');
             if (eventMap[mapKey] && eventMap[mapKey].name) {
                 eventNames.push({
@@ -950,6 +959,9 @@
                     tmpPrevSum = 0,
                     tmpPrevDur = 0;
                     for (segment in tmp_x) {
+                        if (countlyCommon.isForbiddenFieldName(segment)) {
+                            continue;
+                        }
                         tmpCurrCount += tmp_x[segment].c || 0;
                         tmpCurrSum += tmp_x[segment].s || 0;
                         tmpCurrDur += tmp_x[segment].dur || 0;
@@ -996,6 +1008,9 @@
                 tmpPrevSum = 0,
                 tmpPrevDur = 0;
                 for (segment in tmp_x) {
+                    if (countlyCommon.isForbiddenFieldName(segment)) {
+                        continue;
+                    }
                     if (typeof tmp_x[segment].c === 'number') {
                         tmpCurrCount += tmp_x[segment].c || 0;
                     }
@@ -1230,6 +1245,9 @@
     /** function extend meta */
     function extendMeta() {
         for (var metaObj in _activeEventDb.meta) {
+            if (countlyCommon.isForbiddenFieldName(metaObj)) {
+                continue;
+            }
             if (_activeSegmentationObj[metaObj] && _activeEventDb.meta[metaObj] && _activeSegmentationObj[metaObj].length !== _activeEventDb.meta[metaObj].length) {
                 _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb.meta[metaObj]);
             }
@@ -1292,6 +1310,9 @@
                             success: function(groups_json) {
                                 if (groups_json) {
                                     for (var group in groups_json) {
+                                        if (countlyCommon.isForbiddenFieldName(group)) {
+                                            continue;
+                                        }
                                         if (groups_json[group].status) {
                                             data.list = data.list || [];
                                             data.list.push(groups_json[group]._id);

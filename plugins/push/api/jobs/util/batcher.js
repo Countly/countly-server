@@ -90,6 +90,11 @@ class Batcher extends DoFinish {
 
             let { PLATFORM } = require('../../send/platforms');
             for (let p in PLATFORM) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (p === "__proto__" || p === "constructor" || p === "prototype") {
+                    continue;
+                }
                 if (!this.ids[app._id][p]) {
                     this.ids[app._id][p] = {};
                 }

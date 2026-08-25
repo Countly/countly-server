@@ -368,7 +368,13 @@ var AppRouter = Backbone.Router.extend({
     */
     _removeUnfinishedRequests: function() {
         for (var url in this._myRequests) {
+            if (countlyCommon.isForbiddenFieldName(url)) {
+                continue;
+            }
             for (var data in this._myRequests[url]) {
+                if (countlyCommon.isForbiddenFieldName(data)) {
+                    continue;
+                }
                 //4 means done, less still in progress
                 if (parseInt(this._myRequests[url][data].readyState) !== 4) {
                     this._myRequests[url][data].abort_reason = "view_change";

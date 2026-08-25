@@ -184,3 +184,94 @@ describe("star-rating image-utils", function() {
         });
     });
 });
+
+// The logo upload identifier becomes the name of the stored file, and it used to be
+// concatenated into the upload path unchecked. These cases cover the shapes that would
+// have chosen a write location instead of a file name.
+describe("safeLogoIdentifier", function() {
+    it("keeps the identifier the dashboard actually sends", function() {
+        // the dropzone sends Date.now()
+        imageUtils.safeLogoIdentifier(1755100000000).should.equal("1755100000000");
+        imageUtils.safeLogoIdentifier("1755100000000").should.equal("1755100000000");
+    });
+    it("keeps plain names with underscores and dashes", function() {
+        imageUtils.safeLogoIdentifier("feedback_logo").should.equal("feedback_logo");
+        imageUtils.safeLogoIdentifier("my-logo_2").should.equal("my-logo_2");
+    });
+    it("refuses traversal out of the images directory", function() {
+        should.not.exist(imageUtils.safeLogoIdentifier("../../../../../../../../tmp/final_poc"));
+        should.not.exist(imageUtils.safeLogoIdentifier("../../frontend/express/public/appimages/6a41837e902bfd5369ddc610"));
+        should.not.exist(imageUtils.safeLogoIdentifier(".."));
+        should.not.exist(imageUtils.safeLogoIdentifier("..%2f..%2ftmp%2fx"));
+    });
+    it("refuses separators and absolute paths in any form", function() {
+        should.not.exist(imageUtils.safeLogoIdentifier("/tmp/x"));
+        should.not.exist(imageUtils.safeLogoIdentifier("sub/dir"));
+        should.not.exist(imageUtils.safeLogoIdentifier("sub\\dir"));
+        should.not.exist(imageUtils.safeLogoIdentifier("C:x"));
+    });
+    it("refuses names that are not plain identifiers", function() {
+        should.not.exist(imageUtils.safeLogoIdentifier(""));
+        should.not.exist(imageUtils.safeLogoIdentifier("."));
+        should.not.exist(imageUtils.safeLogoIdentifier("a.b")); // the extension is server chosen
+        should.not.exist(imageUtils.safeLogoIdentifier("a b"));
+        // a NUL is the classic path truncation trick, so pin it explicitly
+        should.not.exist(imageUtils.safeLogoIdentifier("a\u0000b"));
+        should.not.exist(imageUtils.safeLogoIdentifier("a\u0009b"));
+        should.not.exist(imageUtils.safeLogoIdentifier(undefined));
+        should.not.exist(imageUtils.safeLogoIdentifier(null));
+        should.not.exist(imageUtils.safeLogoIdentifier({}));
+        should.not.exist(imageUtils.safeLogoIdentifier(NaN));
+    });
+});
+
+describe("logoStorageName", function() {
+    var APP = "6a41837e902bfd5369ddc610";
+    var OTHER = "6a41837e902bfd5369ddc611";
+
+    it("puts the app id in front of the identifier", function() {
+        imageUtils.logoStorageName(APP, "1755000000000", "png")
+            .should.equal(APP + "_1755000000000.png");
+    });
+
+    it("gives two apps different names for the same identifier", function() {
+        // this is the whole point: the images directory is shared, so an un-namespaced
+        // name lets one app overwrite another's logo, and no amount of checking before
+        // writing closes that - the two can interleave, and an upload happens before the
+        // widget that will point at it exists, so there is nothing to check against yet
+        var mine = imageUtils.logoStorageName(APP, "shared", "png");
+        var theirs = imageUtils.logoStorageName(OTHER, "shared", "png");
+        mine.should.not.equal(theirs);
+    });
+
+    it("refuses an app id that is not an ObjectID", function() {
+        // the id is concatenated into the stored name, and a name is a path
+        should.not.exist(imageUtils.logoStorageName("../../etc", "x", "png"));
+        should.not.exist(imageUtils.logoStorageName("6a41837e902bfd5369ddc61", "x", "png"));
+        should.not.exist(imageUtils.logoStorageName(APP + "0", "x", "png"));
+        should.not.exist(imageUtils.logoStorageName("", "x", "png"));
+        should.not.exist(imageUtils.logoStorageName(undefined, "x", "png"));
+        should.not.exist(imageUtils.logoStorageName(null, "x", "png"));
+        should.not.exist(imageUtils.logoStorageName({}, "x", "png"));
+    });
+
+    it("refuses an identifier safeLogoIdentifier would refuse", function() {
+        should.not.exist(imageUtils.logoStorageName(APP, "../x", "png"));
+        should.not.exist(imageUtils.logoStorageName(APP, "a.b", "png"));
+        should.not.exist(imageUtils.logoStorageName(APP, "", "png"));
+        should.not.exist(imageUtils.logoStorageName(APP, "a b", "png"));
+    });
+
+    it("refuses an extension that did not come from sniffing", function() {
+        should.not.exist(imageUtils.logoStorageName(APP, "x", "phtml"));
+        should.not.exist(imageUtils.logoStorageName(APP, "x", "../png"));
+        should.not.exist(imageUtils.logoStorageName(APP, "x", ""));
+        should.not.exist(imageUtils.logoStorageName(APP, "x", undefined));
+    });
+
+    it("accepts the three extensions sniffing can produce", function() {
+        ["png", "jpeg", "gif"].forEach(function(ext) {
+            imageUtils.logoStorageName(APP, "x", ext).should.equal(APP + "_x." + ext);
+        });
+    });
+});
