@@ -307,14 +307,26 @@ var SNIFFED_TYPE_TO_EXT = {
 * Used for file upload
 * @param {object} myfile - file object(if empty - returns)
 * @param {string} id - unique identifier
+* @param {string} appId - id of the app the caller was authorized for
 * @param {function} callback = callback function
 **/
-function uploadFile(myfile, id, callback) {
+function uploadFile(myfile, id, appId, callback) {
     if (!myfile) {
         callback(true);
         return;
     }
     var tmp_path = myfile.path;
+
+    //The identifier is request supplied and is concatenated into the path below, so refuse
+    //anything that is not a plain name before it can pick the write location.
+    var safeId = imageUtils.safeLogoIdentifier(id);
+    //appId comes from the request that was just authorized, so if it is missing something
+    //upstream changed: refuse rather than build a name around the string "undefined"
+    if (!safeId || !appId) {
+        fs.unlink(tmp_path, function() { });
+        callback("Invalid identifier");
+        return;
+    }
 
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
@@ -333,21 +345,55 @@ function uploadFile(myfile, id, callback) {
                 callback("Invalid image format. Must be png, jpeg, or gif");
                 return;
             }
-            try {
-                var pp = path.resolve(__dirname, './../images/' + id + "." + detectedExt);
-                countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
-                    fs.unlink(tmp_path, function() { });
-                    if (err3) {
-                        callback("Failed to upload image");
-                    }
-                    else {
-                        callback(true, id + "." + detectedExt);
-                    }
-                });
-            }
-            catch (SyntaxError) {
+            //The stored name is namespaced by app, so no two apps can choose the same one
+            //and there is nothing to race over. See imageUtils.logoStorageName.
+            var storedName = imageUtils.logoStorageName(appId + "", safeId, detectedExt);
+            if (!storedName) {
                 fs.unlink(tmp_path, function() { });
-                callback("Failed to upload image");
+                callback("Invalid identifier");
+                return;
+            }
+            //Second layer, for names that predate the namespacing: a legacy widget's logo
+            //is a bare "<identifier>.<ext>", and an identifier may contain "_", so an
+            //identifier crafted to look like "<other app id>_<name>" could still land on
+            //one. A name another app's widget points at is not ours to overwrite. Matching
+            //on the full name including the extension is deliberate: a different extension
+            //is a different file and overwrites nothing.
+            common.db.collection('feedback_widgets').findOne({logo: storedName, app_id: {$ne: appId + ""}}, {projection: {_id: 1}}, function(ownerErr, otherAppWidget) {
+                if (ownerErr) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Failed to upload image");
+                    return;
+                }
+                if (otherAppWidget) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Identifier is in use by another application");
+                    return;
+                }
+                doSave();
+            });
+
+            /**
+            * Store the image once the name is known to be free
+            * @returns {void} void
+            **/
+            function doSave() {
+                try {
+                    var pp = path.resolve(__dirname, './../images/' + storedName);
+                    countlyFs.saveData("star-rating", pp, data, { id: "" + storedName, writeMode: "overwrite" }, function(err3) {
+                        fs.unlink(tmp_path, function() { });
+                        if (err3) {
+                            callback("Failed to upload image");
+                        }
+                        else {
+                            callback(true, storedName);
+                        }
+                    });
+                }
+                catch (SyntaxError) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Failed to upload image");
+                }
             }
         });
     });
@@ -1035,7 +1081,7 @@ function uploadFile(myfile, id, callback) {
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
         validateCreate(params, FEATURE_NAME, function() {
-            uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+            uploadFile(params.files.logo, params.qstring.identifier, params.qstring.app_id, function(good, filename) { //will return as good if no file
                 if (typeof good === 'boolean' && good) {
                     common.returnMessage(params, 200, filename);
                 }
