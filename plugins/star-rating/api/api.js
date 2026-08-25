@@ -280,7 +280,7 @@ function uploadFile(myfile, id, appId, callback) {
     //anything that is not a plain name before it can pick the write location.
     var safeId = imageUtils.safeLogoIdentifier(id);
     //appId comes from the request that was just authorized, so if it is missing something
-    //upstream changed: refuse rather than compare widgets against the string "undefined"
+    //upstream changed: refuse rather than build a name around the string "undefined"
     if (!safeId || !appId) {
         fs.unlink(tmp_path, function() { });
         callback("Invalid identifier");
@@ -304,14 +304,20 @@ function uploadFile(myfile, id, appId, callback) {
                 callback("Invalid image format. Must be png, jpeg, or gif");
                 return;
             }
-            //The images directory is shared by every app and a widget's logo field holds
-            //just this file name, so the name alone decides whose logo is replaced. This
-            //request was authorized against the caller's own app, so a name that another
-            //app's widget already points at is not ours to overwrite. The sibling
-            ///i/feedback/upload route decodes its target app out of the name for the same
-            //reason. Matching on the full name including the extension is deliberate: a
-            //different extension is a different file and overwrites nothing.
-            var storedName = safeId + "." + detectedExt;
+            //The stored name is namespaced by app, so no two apps can choose the same one
+            //and there is nothing to race over. See imageUtils.logoStorageName.
+            var storedName = imageUtils.logoStorageName(appId + "", safeId, detectedExt);
+            if (!storedName) {
+                fs.unlink(tmp_path, function() { });
+                callback("Invalid identifier");
+                return;
+            }
+            //Second layer, for names that predate the namespacing: a legacy widget's logo
+            //is a bare "<identifier>.<ext>", and an identifier may contain "_", so an
+            //identifier crafted to look like "<other app id>_<name>" could still land on
+            //one. A name another app's widget points at is not ours to overwrite. Matching
+            //on the full name including the extension is deliberate: a different extension
+            //is a different file and overwrites nothing.
             common.db.collection('feedback_widgets').findOne({logo: storedName, app_id: {$ne: appId + ""}}, {projection: {_id: 1}}, function(ownerErr, otherAppWidget) {
                 if (ownerErr) {
                     fs.unlink(tmp_path, function() { });
@@ -332,7 +338,7 @@ function uploadFile(myfile, id, appId, callback) {
             **/
             function doSave() {
                 try {
-                    var pp = path.resolve(__dirname, './../images/' + safeId + "." + detectedExt);
+                    var pp = path.resolve(__dirname, './../images/' + storedName);
                     countlyFs.saveData("star-rating", pp, data, { id: "" + storedName, writeMode: "overwrite" }, function(err3) {
                         fs.unlink(tmp_path, function() { });
                         if (err3) {
