@@ -1,6 +1,7 @@
 ## Version 24.05.52
 Fixes:
 - [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`, `"`, `'`)
+- [core] Chart tooltips now show label text as text, so a label is never treated as markup, and the dashboard undoes the same key substitutions the api applies (`&#36;`, `&#46;`, `&#9647;` and their url encoded forms) instead of only two of them
 
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
