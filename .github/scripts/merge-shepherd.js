@@ -191,7 +191,13 @@ function planForBatchMember(pr) {
         if (retries >= CONFIG.MAX_RETRIES) {
             return [{ type: 'eject', number: pr.number, reason: 'failed-checks' }];
         }
-        return [{ type: 'retry', number: pr.number, nextRetries: retries + 1 }];
+        // arm while retrying too, so a green re-run merges the instant it completes
+        // instead of waiting for the next bot cycle to reach the wait branch
+        if (!pr.autoMergeEnabled) {
+            actions.push({ type: 'enable-automerge', number: pr.number });
+        }
+        actions.push({ type: 'retry', number: pr.number, nextRetries: retries + 1 });
+        return actions;
     }
     if (pr.mergeStateStatus === 'clean' || pr.mergeStateStatus === 'unstable') {
         return [{ type: 'merge', number: pr.number }];
