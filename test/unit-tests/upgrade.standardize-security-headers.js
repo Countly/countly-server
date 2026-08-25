@@ -49,6 +49,36 @@ describe("upgrade: standardize security headers", function() {
         });
     });
 
+    describe("what it leaves to the operator", function() {
+        it("keeps preload on an HSTS line that is not the one we seeded", function() {
+            // an operator who added preload has the domain on the browser preload list;
+            // dropping the token does not undo that and can cost them their place
+            var out = rewrite("Strict-Transport-Security: max-age=63072000; includeSubDomains; preload");
+            out.should.match(/preload/);
+        });
+        it("still drops it from the seeded line whatever the spacing", function() {
+            var out = rewrite("Strict-Transport-Security: max-age=31536000;  includeSubDomains;  preload");
+            out.should.not.match(/preload/);
+            out.should.match(/max-age=31536000/);
+        });
+    });
+
+    describe("the dashboard block only", function() {
+        it("adds Cross-Origin-Opener-Policy when rewriting the dashboard headers", function() {
+            var out = rewrite("X-Frame-Options:deny\nX-XSS-Protection:1", "dashboard_additional_headers");
+            out.should.match(/Cross-Origin-Opener-Policy: same-origin-allow-popups/);
+        });
+        it("does not add it to the api headers", function() {
+            var out = rewrite("X-Frame-Options:deny\nX-XSS-Protection:1", "api_additional_headers");
+            out.should.not.match(/Cross-Origin-Opener-Policy/i);
+        });
+        it("does not duplicate one the operator already set", function() {
+            var out = rewrite("X-XSS-Protection:1\nCross-Origin-Opener-Policy: same-origin", "dashboard_additional_headers");
+            (out.match(/Cross-Origin-Opener-Policy/gi) || []).length.should.equal(1);
+            out.should.match(/Cross-Origin-Opener-Policy: same-origin\b/);
+        });
+    });
+
     describe("what it adds", function() {
         it("appends the three missing headers", function() {
             var out = rewrite("X-Frame-Options:deny");

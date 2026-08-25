@@ -170,6 +170,12 @@ plugins.setConfigs("security", {
     dashboard_rate_limit_requests: 500
 });
 
+//the same declarations the API process makes. secretConfigs is process local, so
+//without this omitSecretConfigs() below has nothing registered to omit and the
+//stored proxy credentials go into the page source of every logged in user.
+require('../../api/utils/configMetadata.js').register(plugins);
+
+
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
     if (log && log.e) {
@@ -1038,9 +1044,15 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     csrf_token: req.csrfToken(),
                     auth_token: req.session.auth_token,
                     member: member,
-                    config: req.config,
-                    security: plugins.getConfig("security"),
-                    tracking: plugins.getConfig("tracking"),
+                    //these namespaces are serialized into the page, so every logged in
+                    //user can read them in the source regardless of their permissions.
+                    //Secret values are dropped rather than masked: the page has no use
+                    //for a placeholder. Anything the browser genuinely needs must not
+                    //be marked secret, since masking what is already in page source
+                    //would achieve nothing.
+                    config: plugins.omitSecretConfigs("frontend", req.config),
+                    security: plugins.omitSecretConfigs("security", plugins.getConfig("security")),
+                    tracking: plugins.omitSecretConfigs("tracking", plugins.getConfig("tracking")),
                     plugins: plugins.getPlugins(),
                     pluginsFull: plugins.getPlugins(true),
                     path: countlyConfig.path || "",
