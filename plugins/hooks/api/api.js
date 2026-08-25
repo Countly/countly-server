@@ -335,6 +335,7 @@ plugins.register("/i/hook/save", function(ob) {
 
         try {
             hookConfig = JSON.parse(hookConfig);
+            common.stripRequestCredentials(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             if (hookConfig) {
                 // Null check for hookConfig
@@ -393,7 +394,9 @@ plugins.register("/i/hook/save", function(ob) {
                     return common.db.collection("hooks").findAndModify(
                         { _id: common.db.ObjectID(id) },
                         {},
-                        {$set: hookConfig},
+                        //also clears a credential stored before this was fixed: $set
+                        //leaves a field it does not name exactly as it was
+                        common.unsetRequestCredentials({$set: hookConfig}),
                         {new: true},
                         function(err, result) {
                             if (!err) {
