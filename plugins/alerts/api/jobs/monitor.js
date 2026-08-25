@@ -4,7 +4,46 @@ const { TRIGGERED_BY_EVENT } = require('../parts/common-lib.js');
 
 const { Job } = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('alert:monitor'),
-    common = require('../../../../api/utils/common.js');
+    common = require('../../../../api/utils/common.js'),
+    { hasReadRight } = require('../../../../api/utils/rights.js');
+
+const { memberMayReadApp } = require('../parts/app-authorization.js');
+
+/**
+ * Whether the member who created an alert may still read the app it is about.
+ *
+ * The endpoints authorize a request, but nothing re-checked anything once an alert was
+ * enabled, so one created before access was revoked kept emailing that app's metrics
+ * indefinitely with no further action by anybody.
+ *
+ * @param {object} alert - the stored alert
+ * @param {string} appID - app the scheduled job is about
+ * @returns {Promise<boolean>} true when the alert may still be sent
+ */
+async function ownerMayStillReadApp(alert, appID) {
+    if (!alert.createdBy) {
+        //alerts predating the field cannot be attributed, and refusing to send them would
+        //silently stop alerts that have worked for years, so they are reported and left be
+        log.w("Alert " + alert._id + " has no createdBy, so its owner's current access cannot be checked. Sending anyway.");
+        return true;
+    }
+    let owner;
+    try {
+        owner = await common.db.collection("members").findOne(
+            { _id: common.db.ObjectID(alert.createdBy + "") },
+            { projection: { global_admin: 1, permission: 1, user_of: 1, admin_of: 1 } }
+        );
+    }
+    catch (e) {
+        log.e("Could not resolve the owner of alert " + alert._id + ", not sending", e);
+        return false;
+    }
+    if (!owner) {
+        log.d("Owner of alert " + alert._id + " no longer exists, not sending");
+        return false;
+    }
+    return memberMayReadApp(hasReadRight, owner, appID);
+}
 
 const ALERT_MODULES = {
     "views": require("../alertModules/views.js"),
@@ -43,6 +82,10 @@ class MonitorJob extends Job {
                 _id: common.db.ObjectID(appID),
             });
             log.d("alert job info:", this._json, alert, app);
+            if (alert && app && !await ownerMayStillReadApp(alert, appID)) {
+                log.d("Not sending alert " + alertID + " for app " + appID + ": its owner no longer has access to that app");
+                return;
+            }
             if (!alert || !app) {
                 throw new Error("Alert", alertID, "or App", appID, "couldn't be found");
             }
