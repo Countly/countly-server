@@ -1387,6 +1387,19 @@ function uploadFile(myfile, id, callback) {
      * @apiDescription: Get feedback widgets with or without filters 
      * @apiParam: 'app_key', app_key of related application provided by sdk request
      */
+    //These two lookups serve the sdk, so they answer without a session and without an
+    //app_id to scope by, and they have to keep doing that or widgets stop rendering.
+    //What they must not do is hand out the fields the app-scoped /feedback/widgets
+    //deliberately withholds: targeting, which is the audience segmentation query, and
+    //cohortID, which that handler fetches only to test membership and then deletes with
+    //the comment "no need to return more data than needed".
+    //
+    //Excluded rather than allow-listed on purpose. These endpoints render every widget
+    //type, so an allow-list drawn from the rating-only projection above would drop the
+    //fields surveys and nps need, and the caller is an sdk in the field that cannot be
+    //redeployed. Naming the internal fields cannot break rendering.
+    const WIDGET_INTERNAL_FIELDS = {targeting: 0, cohortID: 0};
+
     plugins.register('/o/feedback/multiple-widgets-by-id', function(ob) {
         var params = ob.params;
         var collectionName = 'feedback_widgets';
@@ -1405,7 +1418,7 @@ function uploadFile(myfile, id, callback) {
                 _id: {
                     $in: widgetIdsArray
                 }
-            }).toArray(function(err, docs) {
+            }, {projection: WIDGET_INTERNAL_FIELDS}).toArray(function(err, docs) {
                 if (!err) {
                     if (docs.length) {
                         common.returnOutput(params, docs);
@@ -1567,7 +1580,7 @@ function uploadFile(myfile, id, callback) {
 
         common.db.collection(collectionName).findOne({
             "_id": widgetId
-        }, function(err, doc) {
+        }, {projection: WIDGET_INTERNAL_FIELDS}, function(err, doc) {
             if (err) {
                 common.returnMessage(params, 500, err.message);
             }
