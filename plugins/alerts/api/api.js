@@ -221,6 +221,7 @@ function getScheduleTextExpression(period, offset) {
             }
             try {
                 alertConfig = JSON.parse(alertConfig);
+                common.stripRequestCredentials(alertConfig);
                 var checkProps = {
                     'alertName': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
                     'alertDataType': { 'required': alertConfig._id ? false : true, 'type': 'String', 'min-length': 1 },
@@ -289,7 +290,9 @@ function getScheduleTextExpression(period, offset) {
                         common.db.collection("alerts").findAndModify(
                             query,
                             {},
-                            {$set: alertConfig},
+                            //also clears a credential stored before this was fixed: $set
+                            //leaves a field it does not name exactly as it was
+                            common.unsetRequestCredentials({$set: alertConfig}),
                             function(err, result) {
                                 if (!err) {
                                     if (result && result.value) {
