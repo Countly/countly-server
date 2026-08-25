@@ -1,5 +1,6 @@
-/*global describe,it */
+/*global describe,it,before,after */
 var request = require('supertest');
+var should = require('should');
 var testUtils = require("../../test/testUtils");
 request = request(testUtils.url);
 
@@ -35,6 +36,280 @@ describe('Testing Plugins', function() {
                         ob[i].should.have.property("code", "plugins");
                     }
                 }
+                done();
+            });
+    });
+});
+
+// Configuration read by someone who is not a global admin is reduced twice over.
+//
+// The allow-list is the control: setReadableConfigs declares what some part of the
+// dashboard needs, and nothing else is returned. A setting added tomorrow is private
+// until somebody declares it, so forgetting costs a missing input rather than a leak.
+//
+// Masking is the backstop: a value marked with setSecretConfigs is withheld even if it
+// is declared readable by mistake.
+//
+// /o/configs is validateAppAdmin, so an app admin reaches it; /i/configs is
+// validateGlobalAdmin, so only a global admin can write. That is why masking needs no
+// write guard: the only callers who can write are the only callers who see real values.
+describe('Testing configs read reduction', function() {
+    var MASK = "********";
+    var API_KEY_ADMIN = "";
+    var APP_ID = "";
+    var memberApiKey = "";
+    var memberUserId = "";
+    var uniq = Date.now();
+
+    it('should give a global admin the full configuration', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
+        request
+            .get('/o/configs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                // the signing key self-generates, so it is always set
+                ob.should.have.property("reports");
+                ob.reports.secretKey.should.not.equal(MASK);
+                ob.reports.secretKey.length.should.be.above(0);
+                // and the namespaces a non-global admin will not get
+                ob.should.have.property("security");
+                ob.security.should.have.property("proxy_password");
+                done();
+            });
+    });
+
+    it('should create an app admin who is not a global admin', function(done) {
+        var permission = {
+            _: {a: [APP_ID], u: [[APP_ID]]},
+            c: {},
+            r: {},
+            u: {},
+            d: {}
+        };
+        var userParams = {
+            full_name: "cfgadmin" + uniq,
+            username: "cfgadmin" + uniq,
+            password: "p4ssw0rD!",
+            email: "cfgadmin" + uniq + "@mail.test",
+            permission: permission
+        };
+        request
+            .get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                memberApiKey = res.body.api_key;
+                memberUserId = res.body._id;
+                memberApiKey.should.not.equal(API_KEY_ADMIN);
+                done();
+            });
+    });
+
+    it('should withhold undeclared namespaces from an app admin entirely', function(done) {
+        request
+            .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                // nothing in these is needed by the dashboard, so the whole namespace
+                // goes, credential or not
+                ob.should.not.have.property("reports");
+                ob.should.not.have.property("push");
+                ob.should.not.have.property("recaptcha");
+                // no value anywhere in the response looks like the signing key
+                JSON.stringify(ob).should.not.match(/secretKey/);
+                done();
+            });
+    });
+
+    it('should withhold the proxy credentials while keeping the password policy', function(done) {
+        request
+            .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                ob.should.have.property("security");
+                ob.security.should.not.have.property("proxy_password");
+                ob.security.should.not.have.property("proxy_username");
+                // the dashboard validates a new password against these before sending it
+                ob.security.should.have.property("password_min");
+                ob.security.password_min.should.not.equal(MASK);
+                done();
+            });
+    });
+
+    it('should still return every setting App Management renders', function(done) {
+        // App Management infers each input's widget from the type of the value here, so
+        // a key missing from the allow-list makes that setting disappear from the screen
+        // with no error. The list is read from the frontend rather than duplicated, so
+        // adding a key there without declaring it readable fails this test.
+        var fs = require('fs');
+        var path = require('path');
+        var viewsFile = path.resolve(__dirname, 'frontend/public/javascripts/countly.views.js');
+        var src = fs.readFileSync(viewsFile, 'utf8');
+        var block = /var showInAppManagment\s*=\s*\{\s*"api"\s*:\s*\{([\s\S]*?)\}/.exec(src);
+        should.exist(block);
+        var wanted = (block[1].match(/"([a-z_]+)"\s*:\s*true/g) || []).map(function(m) {
+            return /"([a-z_]+)"/.exec(m)[1];
+        });
+        wanted.length.should.be.above(0);
+
+        request
+            .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                ob.should.have.property("api");
+                wanted.forEach(function(key) {
+                    ob.api.should.have.property(key);
+                });
+                done();
+            });
+    });
+
+    // Happy paths. The reduction is only correct if everything that legitimately reads
+    // configuration still works, so these assert the values actually arrive, with their
+    // real contents, rather than merely that secrets are gone.
+
+    it('should give the app admin real values, not placeholders, for what it may read', function(done) {
+        request
+            .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                // types matter: App Management infers each input's widget from them, so a
+                // masked or missing value would render the wrong control
+                ob.api.event_limit.should.be.a.Number();
+                ob.api.session_duration_limit.should.be.a.Number();
+                ob.api.country_data.should.be.a.Boolean();
+                ob.api.safe.should.be.a.Boolean();
+                ob.security.password_min.should.be.a.Number();
+                JSON.stringify(ob).should.not.match(/\*{8}/);
+                done();
+            });
+    });
+
+    it('should agree with the global admin on every value the app admin can read', function(done) {
+        // the app settings screen shows how an app differs from the server default, which
+        // is only meaningful if the defaults it sees are the real ones
+        request
+            .get('/o/configs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, adminRes) {
+                if (err) {
+                    return done(err);
+                }
+                var full = JSON.parse(adminRes.text);
+                request
+                    .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+                    .expect(200)
+                    .end(function(err2, memberRes) {
+                        if (err2) {
+                            return done(err2);
+                        }
+                        var reduced = JSON.parse(memberRes.text);
+                        Object.keys(reduced).forEach(function(ns) {
+                            Object.keys(reduced[ns]).forEach(function(key) {
+                                JSON.stringify(reduced[ns][key])
+                                    .should.equal(JSON.stringify(full[ns][key]));
+                            });
+                        });
+                        done();
+                    });
+            });
+    });
+
+    it('should give the app admin a plugin namespace it declared, when that plugin is on', function(done) {
+        // feedback belongs to star-rating. getAllConfigs omits a namespace whose plugin
+        // is not enabled, so in a test run without star-rating there is nothing to
+        // reduce and nothing to assert. Asserting the namespace exists would be
+        // asserting which plugins the run enabled, which is not what this covers.
+        request
+            .get('/o/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var ob = JSON.parse(res.text);
+                if (!ob.feedback) {
+                    return done();
+                }
+                // present, so the declared keys must have arrived with real values
+                ob.feedback.should.have.property("main_color");
+                ob.feedback.should.have.property("font_color");
+                ob.feedback.main_color.length.should.be.above(0);
+                ob.feedback.main_color.should.not.equal(MASK);
+                done();
+            });
+    });
+
+    it('should let a global admin still write configuration', function(done) {
+        // masking needs no write guard only because writing stays global-admin only, so
+        // that has to keep working. Writes the value back unchanged, to avoid leaving the
+        // test environment altered.
+        request
+            .get('/o/configs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var current = JSON.parse(res.text).api.event_limit;
+                var payload = {api: {event_limit: current}};
+                request
+                    .get('/i/configs?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&configs=' + encodeURIComponent(JSON.stringify(payload)))
+                    .expect(200)
+                    .end(function(err2, res2) {
+                        if (err2) {
+                            return done(err2);
+                        }
+                        var after = JSON.parse(res2.text);
+                        after.api.event_limit.should.equal(current);
+                        done();
+                    });
+            });
+    });
+
+    it('should not let the app admin write configuration', function(done) {
+        // the reason a mask can never be saved back over a real value
+        request
+            .get('/i/configs?api_key=' + memberApiKey + '&app_id=' + APP_ID + '&configs=' + encodeURIComponent(JSON.stringify({api: {event_limit: 1}})))
+            .expect(401)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
+    after(function(done) {
+        if (!memberUserId) {
+            return done();
+        }
+        request
+            .get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [memberUserId]})))
+            .end(function() {
                 done();
             });
     });
