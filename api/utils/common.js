@@ -114,6 +114,31 @@ common.decode_html = function(string) {
 };
 
 /**
+ * Whether a value is a plain object or an array, and so should be walked rather than escaped
+ * as a scalar.
+ *
+ * Tested by prototype identity rather than by reading value.constructor. `constructor` is an
+ * ordinary property name, so a JSON body can carry its own: {"constructor": true, ...} makes
+ * value.constructor evaluate to true, which used to fail the check and return the object with
+ * its keys and values unescaped. Since escape_html_entities is the replacer for every
+ * returnOutput and returnMessage, that turned any user controlled property name into markup
+ * wherever a response is rendered.
+ *
+ * Prototype identity cannot be spoofed by an own property, and it keeps the original intent:
+ * ObjectIDs, Dates and other class instances are still escaped as scalars rather than walked.
+ *
+ * @param {Any} value - value under inspection
+ * @returns {boolean} true when it should be recursed into
+ */
+function isPlainContainer(value) {
+    if (Array.isArray(value)) {
+        return true;
+    }
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+}
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {vary} value - value to escape
@@ -121,7 +146,7 @@ common.decode_html = function(string) {
 * @returns {vary} escaped value
 **/
 function escape_html_entities(key, value, more) {
-    if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
+    if (typeof value === 'object' && value && isPlainContainer(value)) {
         if (Array.isArray(value)) {
             let replacement = [];
             for (let k = 0; k < value.length; k++) {
