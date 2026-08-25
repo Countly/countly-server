@@ -9,6 +9,12 @@ plugins.setConfigs("recaptcha", {
     secret_key: ""
 });
 
+//only secret_key. site_key is public by design: it goes to the browser to render the
+//challenge, so marking it secret would achieve nothing.
+plugins.setSecretConfigs("recaptcha", {
+    secret_key: true
+});
+
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
         plugins.loadConfigs(countlyDb, function() {
