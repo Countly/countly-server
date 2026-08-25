@@ -2877,8 +2877,20 @@
                 url: countlyCommon.API_URL + "/i/populator/templates/remove",
                 data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
-                error: function() {
-                    CountlyHelpers.notify({message: CV.i18n("populator.failed-to-remove-template", templateId), type: "error"});
+                error: function(xhr) {
+                    //the endpoint explains what blocked the removal - environments in other
+                    //applications have to go first - and that instruction is the whole point
+                    //of the message. Falling straight to the generic notification threw it
+                    //away and left the user with nothing to act on.
+                    var reason = "";
+                    try {
+                        var body = JSON.parse(xhr && xhr.responseText);
+                        reason = (body && (body.result || body.message)) || "";
+                    }
+                    catch (ignored) {
+                        reason = "";
+                    }
+                    CountlyHelpers.notify({message: reason || CV.i18n("populator.failed-to-remove-template", templateId), type: "error"});
                 }
             });
         }
