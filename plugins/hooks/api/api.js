@@ -56,6 +56,7 @@ class Hooks {
         this._effects = {};
         this._queue = [];
 
+        this.ensureEndpointPathIndex();
         this.fetchRules();
         setInterval(() => {
             this.fetchRules();
@@ -96,6 +97,37 @@ class Hooks {
             const t = new Effects[type]();
             this._effects[type] = t;
         }
+    }
+
+    /**
+     * Keep api endpoint paths unique at the database level.
+     *
+     * Saving already refuses a path another hook holds, but that check is a read followed by a
+     * write, so two saves racing can still slip a duplicate through. A unique index closes
+     * that, and costs nothing at dispatch since rules are served from cache.
+     *
+     * Partial, so it constrains only api endpoint hooks: every other trigger type has no path
+     * and would otherwise collide on null. Instances that already hold a duplicate cannot build
+     * it, and that is deliberate rather than handled: the error is logged and everything carries
+     * on working, with the save-time check still preventing new duplicates. Nothing breaks, and
+     * the collision is resolved at dispatch by serving the older hook.
+     *
+     * @returns {void}
+     */
+    ensureEndpointPathIndex() {
+        common.db.collection("hooks").createIndex(
+            {"trigger.configuration.path": 1},
+            {
+                unique: true,
+                name: "hooks_api_endpoint_path_unique",
+                partialFilterExpression: {"trigger.type": "APIEndPointTrigger"}
+            },
+            function(err) {
+                if (err) {
+                    log.w("Could not create the unique index on api endpoint paths, most likely because two hooks already share one. New duplicates are still refused on save. %j", err.message || err);
+                }
+            }
+        );
     }
 
     /**
@@ -346,7 +378,8 @@ plugins.register("/i/hook/save", function(ob) {
                     //change only the trigger or only the apps
                     const updatedTriggerValidation = await validateTriggerConfiguration(
                         hookConfig.trigger || existingHook.trigger,
-                        hookConfig.apps || existingHook.apps
+                        hookConfig.apps || existingHook.apps,
+                        existingHook._id
                     );
                     if (!updatedTriggerValidation.valid) {
                         common.returnMessage(params, 400, updatedTriggerValidation.error);
@@ -402,7 +435,8 @@ plugins.register("/i/hook/save", function(ob) {
 });
 
 /**
- * Validate an InternalEventTrigger's configuration against the hook's own apps.
+ * Validate a trigger's configuration: an APIEndPointTrigger's path must be unused, and an
+ * InternalEventTrigger's event type must be known and scoped to the hook's own apps.
  *
  * The event type itself was never checked, so any string was accepted and stored.
  * More importantly, the events that name a target object matched on that id alone
@@ -418,9 +452,30 @@ plugins.register("/i/hook/save", function(ob) {
  *
  * @param {object} trigger - the effective trigger, payload merged over stored
  * @param {array} apps - the effective app ids the hook is scoped to
+ * @param {ObjectID} [hookId] - the hook being updated, so it does not clash with itself
  * @returns {Promise<object>} {valid, error}
  */
-async function validateTriggerConfiguration(trigger, apps) {
+async function validateTriggerConfiguration(trigger, apps, hookId) {
+    if (trigger && trigger.type === "APIEndPointTrigger") {
+        //Endpoint paths are global while hooks belong to apps, so nothing stops a hook on
+        //one app claiming a path already used by a hook on another. Dispatch matches on the
+        //path alone, so a second claimant receives the first one's callback parameters and
+        //the first one stops firing. Keep paths unique instead.
+        const path = (trigger.configuration || {}).path;
+        if (!path) {
+            return {valid: false, error: "Missing path for this trigger type"};
+        }
+        const clash = {"trigger.type": "APIEndPointTrigger", "trigger.configuration.path": path + ""};
+        if (hookId) {
+            //an update must not collide with the hook it is updating
+            clash._id = {$ne: hookId};
+        }
+        const taken = await common.db.collection("hooks").findOne(clash, {projection: {_id: 1}});
+        if (taken) {
+            return {valid: false, error: "This endpoint path is already in use. Choose another path."};
+        }
+        return {valid: true};
+    }
     if (!trigger || trigger.type !== "InternalEventTrigger") {
         return {valid: true};
     }

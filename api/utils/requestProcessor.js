@@ -2382,64 +2382,119 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "path"');
                             return false;
                         }
-                        if (typeof params.qstring.data === "string") {
+
+                        //The endpoint named here supplies the collection and pipeline that get
+                        //executed, so it decides what this export reads. That is only safe for
+                        //endpoints written to build an export query, which authorize the request
+                        //and construct the query themselves. Those endpoints say so by answering
+                        //this hook; anything else is refused rather than re-run.
+                        var exportProducers = {params: params, producers: []};
+                        plugins.dispatch("/export/query/producers", exportProducers, function() {
+                            var requested;
                             try {
-                                params.qstring.data = JSON.parse(params.qstring.data);
+                                //parse rather than match on substrings: a repeated parameter
+                                //makes "method=views" present in a string whose effective value
+                                //is something else entirely
+                                requested = new URL(params.qstring.path + "", "http://localhost");
                             }
                             catch (ex) {
-                                console.log("Error parsing export request data", params.qstring.data, ex);
-                                params.qstring.data = {};
+                                common.returnMessage(params, 400, 'Invalid parameter "path"');
+                                return false;
                             }
+                            //a write endpoint is never an export query producer
+                            if (requested.pathname !== "/o" && requested.pathname.indexOf("/o/") !== 0) {
+                                common.returnMessage(params, 400, "Path is not an export query producer");
+                                return false;
+                            }
+                            var producer = exportProducers.producers.filter(function(candidate) {
+                                if (!candidate || candidate.path !== requested.pathname) {
+                                    return false;
+                                }
+                                var required = candidate.require || {};
+                                return Object.keys(required).every(function(key) {
+                                    return requested.searchParams.get(key) === required[key];
+                                });
+                            })[0];
+                            if (!producer) {
+                                common.returnMessage(params, 400, "Path is not an export query producer");
+                                return false;
+                            }
+                            //pin the values that select the producer's export branch, so the
+                            //caller cannot steer it into a different mode
+                            Object.keys(producer.require || {}).forEach(function(key) {
+                                requested.searchParams.set(key, producer.require[key]);
+                            });
+                            params.qstring.path = requested.pathname + "?" + requested.searchParams.toString();
+                            runExportQuery(producer);
+                        });
+
+                        /**
+                         * Re-run the producer and stream its query's results.
+                         *
+                         * @param {object} producer - the matched producer declaration
+                         * @returns {void}
+                         */
+                        function runExportQuery(producer) {
+                            var exportDbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb};
+                            if (typeof params.qstring.data === "string") {
+                                try {
+                                    params.qstring.data = JSON.parse(params.qstring.data);
+                                }
+                                catch (ex) {
+                                    console.log("Error parsing export request data", params.qstring.data, ex);
+                                    params.qstring.data = {};
+                                }
+                            }
+                            var my_name = JSON.stringify(params.qstring);
+
+                            var ff = taskmanager.longtask({
+                                db: common.db,
+                                threshold: plugins.getConfig("api").request_threshold,
+                                force: true,
+                                gridfs: true,
+                                binary: true,
+                                app_id: params.qstring.app_id,
+                                params: params,
+                                type: params.qstring.type_name || "tableExport",
+                                report_name: params.qstring.filename + "." + params.qstring.type,
+                                meta: JSON.stringify({
+                                    "app_id": params.qstring.app_id,
+                                    "query": params.qstring.query || {}
+                                }),
+                                name: my_name,
+                                view: "#/exportedData/tableExport/",
+                                processData: function(err, res, callback) {
+                                    if (!err) {
+                                        callback(null, res);
+                                    }
+                                    else {
+                                        callback(err, '');
+                                    }
+                                },
+                                outputData: function(err, data) {
+                                    if (err) {
+                                        common.returnMessage(params, 400, err);
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, data);
+                                    }
+                                }
+                            });
+
+                            countlyApi.data.exports.fromRequestQuery({
+                                db: exportDbs[producer.db] || common.db,
+                                params: params,
+                                path: params.qstring.path,
+                                data: params.qstring.data,
+                                method: params.qstring.method,
+                                prop: params.qstring.prop,
+                                type: params.qstring.type,
+                                filename: params.qstring.filename + "." + params.qstring.type,
+                                output: function(data) {
+                                    ff(null, data);
+                                }
+                            });
                         }
-                        var my_name = JSON.stringify(params.qstring);
-
-                        var ff = taskmanager.longtask({
-                            db: common.db,
-                            threshold: plugins.getConfig("api").request_threshold,
-                            force: true,
-                            gridfs: true,
-                            binary: true,
-                            app_id: params.qstring.app_id,
-                            params: params,
-                            type: params.qstring.type_name || "tableExport",
-                            report_name: params.qstring.filename + "." + params.qstring.type,
-                            meta: JSON.stringify({
-                                "app_id": params.qstring.app_id,
-                                "query": params.qstring.query || {}
-                            }),
-                            name: my_name,
-                            view: "#/exportedData/tableExport/",
-                            processData: function(err, res, callback) {
-                                if (!err) {
-                                    callback(null, res);
-                                }
-                                else {
-                                    callback(err, '');
-                                }
-                            },
-                            outputData: function(err, data) {
-                                if (err) {
-                                    common.returnMessage(params, 400, err);
-                                }
-                                else {
-                                    common.returnMessage(params, 200, data);
-                                }
-                            }
-                        });
-
-                        countlyApi.data.exports.fromRequestQuery({
-                            db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
-                            params: params,
-                            path: params.qstring.path,
-                            data: params.qstring.data,
-                            method: params.qstring.method,
-                            prop: params.qstring.prop,
-                            type: params.qstring.type,
-                            filename: params.qstring.filename + "." + params.qstring.type,
-                            output: function(data) {
-                                ff(null, data);
-                            }
-                        });
                     }, params);
                     break;
                 case 'download': {
