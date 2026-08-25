@@ -1598,9 +1598,15 @@ common.fixEventKey = function(eventKey) {
     if (shortEventName.length >= 128) {
         return false;
     }
-    else {
-        return shortEventName;
+    //the key is stored as a field name (d.<day>.<key>.<metric> on the totals
+    //document, and as part of the per-event collection hash), so a key naming an
+    //Object.prototype member is prefixed the same way a forbidden segmentation
+    //value is. Every caller derives its collection name and its stored paths from
+    //this return value, so prefixing here keeps write and read agreeing.
+    if (common.isForbiddenFieldName(shortEventName)) {
+        return "[CLY]" + shortEventName;
     }
+    return shortEventName;
 };
 
 /**
@@ -2249,6 +2255,11 @@ common.recordMetric = function(params, props) {
         tmpSet = {};
 
     for (let i in props.metrics) {
+        // a key off a stored document or a parsed payload can be a prototype
+        // member name; writing through one would reach Object.prototype
+        if (common.isForbiddenFieldName(i)) {
+            continue;
+        }
         props.metrics[i].value = props.metrics[i].value || 1;
         recordMetric(params, i, props.metrics[i], tmpSet, updateUsersZero, updateUsersMonth);
     }
@@ -2353,6 +2364,19 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 }
 
 /**
+* Whether a string, used as a MongoDB field name, would name a member of
+* Object.prototype. Such a name survives storage as a literal field and, when the
+* document is later walked with for...in and merged, writes into the prototype of
+* the process. Segmentation values, metric values and event keys all become field
+* names, so each is checked against this before use.
+* @param {string} name - the candidate field name
+* @returns {boolean} true when the name must not be used as a field name as-is
+**/
+common.isForbiddenFieldName = function(name) {
+    return name === "__proto__" || name === "constructor" || name === "prototype";
+};
+
+/**
 * Record specific metric segment
 * @param {params} params - params object
 * @param {string} metric - metric to record
@@ -2368,6 +2392,12 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
     var escapedMetricVal = (val + "").replace(/^\$/, "").replace(/\./g, ":");
+    //escapedMetricVal is used below as a component of a d.<...> field name, so a
+    //value naming an Object.prototype member is prefixed the way forbidden day
+    //numbers already are
+    if (common.isForbiddenFieldName(escapedMetricVal)) {
+        escapedMetricVal = "[CLY]" + escapedMetricVal;
+    }
     if (!tmpSet["meta." + escapedMetricKey]) {
         tmpSet["meta." + escapedMetricKey] = [];
     }
@@ -3664,19 +3694,36 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
  *  @param {object} ob2 - addition to database update query
  *  @returns {object} merged database update query
  */
+/**
+* Own enumerable keys of a source object that may be used as a field name on a merge
+* target. for...in also yields inherited keys, and a key naming an Object.prototype
+* member resolves to the target's prototype instead of an own slot when the target is
+* indexed with it, so both are removed here once rather than at each operator loop.
+* @param {object} source - object whose keys are about to be walked
+* @returns {string[]} keys that are safe to write through
+**/
+function mergeableKeys(source) {
+    if (!source || typeof source !== "object") {
+        return [];
+    }
+    return Object.keys(source).filter(function(key) {
+        return !common.isForbiddenFieldName(key);
+    });
+}
+
 common.mergeQuery = function(ob1, ob2) {
     if (ob2) {
-        for (let key in ob2) {
+        for (let key of mergeableKeys(ob2)) {
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
             else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob2[key][val];
                 }
             }
             else if (key === "$addToSet") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
                     }
@@ -3697,7 +3744,7 @@ common.mergeQuery = function(ob1, ob2) {
 
             }
             else if (key === "$push") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]};
                     }
@@ -3707,7 +3754,7 @@ common.mergeQuery = function(ob1, ob2) {
                             ob1[key][val].$each.push(ob2[key][val].$each[p]);
                         }
                         //copy other push modifiers
-                        for (let modifier in ob2[key][val]) {
+                        for (let modifier of mergeableKeys(ob2[key][val])) {
                             if (modifier !== "$each") {
                                 ob1[key][val][modifier] = ob2[key][val][modifier];
                             }
@@ -3719,25 +3766,25 @@ common.mergeQuery = function(ob1, ob2) {
                 }
             }
             else if (key === "$inc") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || 0;
                     ob1[key][val] += ob2[key][val];
                 }
             }
             else if (key === "$mul") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || 0;
                     ob1[key][val] *= ob2[key][val];
                 }
             }
             else if (key === "$min") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.min(ob1[key][val], ob2[key][val]);
                 }
             }
             else if (key === "$max") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
                 }

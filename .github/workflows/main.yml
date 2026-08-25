@@ -104,9 +104,12 @@ jobs:
 
       - name: ESLint
         shell: bash
+        # --rulesdir loads the in-repo rules in bin/eslint-rules. Grunt passes it too;
+        # without it here, eslint 8 fails every file matched by the
+        # no-prototype-pollution-sink override with "Definition for rule ... was not found".
         run: |
          npm install eslint@8.57.0
-         npx eslint .
+         npx eslint . --rulesdir bin/eslint-rules
 
       - name: NPM install
         shell: bash

@@ -2096,6 +2096,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var addToSetRules = {};
         if (currEvent.segmentation) {
             for (let segKey in currEvent.segmentation) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (segKey === "__proto__" || segKey === "constructor" || segKey === "prototype") {
+                    continue;
+                }
                 let tmpSegKey = "";
                 if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
                     tmpSegKey = segKey.replace(/^\$|\./g, "");
