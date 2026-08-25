@@ -13,6 +13,13 @@
             this.$store.dispatch("countlyConsentManager/fetchUserDataResource");
         },
         methods: {
+            // Consent feature names are sdk supplied and rendered as text. The api
+            // escapes them on the way out, so undo that to keep the label readable.
+            consentFeatures: function(features) {
+                return (features || []).map(function(name) {
+                    return countlyCommon.unescapeHtml(name);
+                }).join(",");
+            },
             deleteUserData: function(uid) {
                 var self = this;
                 CountlyHelpers.confirm(this.i18n("app-users.delete-userdata-confirm"), "popStyleGreen", function(result) {
