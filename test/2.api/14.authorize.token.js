@@ -257,6 +257,52 @@ describe('Token restricted to an application cannot read account information', f
     });
 });
 
+describe('A single use token restricted to an application cannot read it either', function() {
+    // The restriction is on the token document, and verify_token deletes that document
+    // as it validates a token with multi false. Anything that reads the token back
+    // afterwards finds nothing, so a check written that way sees no restriction on
+    // exactly the tokens meant to be the most limited. The restriction is carried out
+    // of the validation instead, and this is the case that tells the two apart.
+    var singleUseToken = "";
+
+    it('creating a single use token restricted to one application', function(done) {
+        authorize.save({
+            db: testUtils.db,
+            multi: false,
+            owner: testowner,
+            app: [APP_ID],
+            callback: function(err, token) {
+                if (err) {
+                    return done(err);
+                }
+                if (!token) {
+                    return done("token not created");
+                }
+                singleUseToken = token;
+                done();
+            }
+        });
+    });
+
+    it('should refuse /o/users/me on the one use it gets', function(done) {
+        request
+            .get('/o/users/me?auth_token=' + singleUseToken)
+            .expect(401)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
+    it('cleaning up, if the token survived at all', function(done) {
+        testUtils.db.collection("auth_tokens").remove({_id: singleUseToken}, function() {
+            done();
+        });
+    });
+});
+
 describe('Creating token to allow only paths under /o/users/', function() {
     it('creating token for user', function(done) {
         authorize.save({
