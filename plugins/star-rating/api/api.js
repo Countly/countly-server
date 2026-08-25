@@ -1276,7 +1276,7 @@ function uploadFile(myfile, id, callback) {
         //be scalars. A JSON request body can put an object here, which Mongo
         //would read as a query expression and which would widen the match
         //instead of narrowing it
-        var scalarParams = ['widget_id', 'version', 'platform', 'uid'];
+        var scalarParams = ['widget_id', 'version', 'platform', 'device_id', 'sSearch', 'uid'];
         for (var s = 0; s < scalarParams.length; s++) {
             if (!common.isQueryScalar(params.qstring[scalarParams[s]])) {
                 common.returnMessage(params, 400, 'Invalid parameter: ' + scalarParams[s]);

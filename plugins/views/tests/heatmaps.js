@@ -154,6 +154,57 @@ describe('Heatmap', async() => {
         should(goodSegment.body.data.length).equal(0);
     });
 
+    it('requires a concrete actionType and view, not merely a scalar one', async() => {
+        // being a scalar is not enough for these two: both are assigned into the match
+        // unconditionally, and an equality predicate against null also matches every
+        // document where the field is absent. Ingestion accepts [CLY]_action events with
+        // no sg.type and users with no up.lv, so omitting either selects those rows over
+        // the caller's whole period rather than selecting nothing.
+        const baseQuery = {
+            api_key: API_KEY_ADMIN,
+            app_id: APP_ID,
+            app_key: APP_KEY,
+            view: 'Home',
+            period: JSON.stringify([moment('2010-01-01').valueOf(), moment('2010-01-31').valueOf()]),
+            device: JSON.stringify({ type: 'all', displayText: 'All', minWidth: 0, maxWidth: 10240 }),
+        };
+
+        const omitted = await request.post('/o/actions').send({ ...baseQuery });
+        should(omitted.status).equal(400);
+        should(omitted.body.result).equal('Bad request parameter: actionType');
+
+        const nulled = await request.post('/o/actions').send({ ...baseQuery, actionType: null });
+        should(nulled.status).equal(400);
+        should(nulled.body.result).equal('Bad request parameter: actionType');
+
+        // and only the two the client actually sends
+        const unsupported = await request.post('/o/actions').send({ ...baseQuery, actionType: 'swipe' });
+        should(unsupported.status).equal(400);
+        should(unsupported.body.result).equal('Bad request parameter: actionType');
+
+        const noView = await request.post('/o/actions')
+            .send({
+                api_key: API_KEY_ADMIN,
+                app_id: APP_ID,
+                app_key: APP_KEY,
+                actionType: 'click',
+                period: baseQuery.period,
+                device: baseQuery.device
+            });
+        should(noView.status).equal(400);
+        should(noView.body.result).equal('Bad request parameter: view');
+
+        const emptyView = await request.post('/o/actions').send({ ...baseQuery, actionType: 'click', view: '' });
+        should(emptyView.status).equal(400);
+        should(emptyView.body.result).equal('Bad request parameter: view');
+
+        // both supported types are still accepted
+        for (const actionType of ['click', 'scroll']) {
+            const good = await request.post('/o/actions').send({ ...baseQuery, actionType });
+            should(good.status).equal(200);
+        }
+    });
+
     it('gets heatmap data from old drill_events collection if union_with is true', async() => {
         const db = await pluginManager.dbConnection('countly_drill');
         const oldCollectionName = 'drill_events' + crypto.createHash('sha1').update('[CLY]_action' + APP_ID).digest('hex');
