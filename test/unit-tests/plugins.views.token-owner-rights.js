@@ -1,4 +1,4 @@
-var should = require("should");
+require("should");
 var viewsUtils = require("../../plugins/views/api/parts/viewsUtils.js");
 
 // The heatmap token branch used to serve whatever app the caller's app_key resolved to,
