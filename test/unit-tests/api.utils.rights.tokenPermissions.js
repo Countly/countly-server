@@ -156,4 +156,57 @@ describe("token permissions", function() {
             rights.isScopedCredential({token_data: {app: "", endpoint: ["^/o/users"]}}).should.equal(true);
         });
     });
+
+    describe("applyTokenScope, for a route that resolves its own token", function() {
+        // Most routes never call this directly: rights.js bounds the member before any
+        // handler runs. /o/actions is the exception - it takes the countly-token header,
+        // calls authorize.verify_return itself and never reaches a rights validator - so
+        // it has to apply the same bounding, or the token's permissions are simply not
+        // consulted and only its app restriction is.
+        var scopedToRead = permission({
+            adminApps: [],
+            userApps: [APP_A],
+            grants: [{type: "r", app: APP_A, allowed: {core: true}}]
+        });
+
+        it("returns the member unchanged when the token carries no permissions", function() {
+            // a legacy token inherits its owner's authority, which is the documented
+            // absent-means-unrestricted behaviour
+            rights.applyTokenScope({token_data: {app: [APP_A]}}, member).should.equal(member);
+            rights.applyTokenScope({}, member).should.equal(member);
+            rights.applyTokenScope({token_data: null}, member).should.equal(member);
+        });
+
+        it("bounds the member by the token when it does", function() {
+            var scoped = rights.applyTokenScope({token_data: {token_permission: scopedToRead}}, member);
+            scoped.should.not.equal(member);
+            // core read on A survives, because both allow it
+            rights.hasReadRight("core", APP_A, scoped).should.equal(true);
+            // events read on A does not, though the OWNER has it: the token does not
+            rights.hasReadRight("events", APP_A, scoped).should.equal(false);
+            // and nothing at all on B, which the token never mentions
+            rights.hasReadRight("core", APP_B, scoped).should.equal(false);
+        });
+
+        it("cannot widen a member, only narrow it", function() {
+            var wider = permission({
+                adminApps: [APP_A, APP_B],
+                userApps: [APP_A, APP_B],
+                grants: [
+                    {type: "r", app: APP_A, all: true},
+                    {type: "r", app: APP_B, all: true},
+                    {type: "d", app: APP_A, all: true}
+                ]
+            });
+            var scoped = rights.applyTokenScope({token_data: {token_permission: wider}}, member);
+            rights.hasDeleteRight("core", APP_A, scoped).should.equal(false);
+        });
+
+        it("leaves a global admin's own token scope in force", function() {
+            var scoped = rights.applyTokenScope(
+                {token_data: {token_permission: scopedToRead}}, globalAdmin);
+            rights.hasReadRight("events", APP_A, scoped).should.equal(false);
+        });
+    });
+
 });

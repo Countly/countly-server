@@ -1223,4 +1223,80 @@ describe('Testing token manager', function() {
         });
     });
 
+
+    describe('Account level credential management is closed to a scoped token', function() {
+        // Deleting and listing tokens is already refused. The second factor is the same
+        // kind of thing and was not: /i/two-factor-auth enable, disable and
+        // generate-qr-code go through validateUser, which bounds what a scoped token may
+        // touch per app but does not reject the request - and an account level route has
+        // no app to bound. disable asks for no current code, so a token narrowed to one
+        // feature on one app could switch off the factor protecting everything its owner
+        // can reach.
+        var scopedToken = "";
+
+        it('setup: a token that may only read core on one app', function(done) {
+            var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[APP_ID] = {all: false, allowed: {core: true}};
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=3600&permission='
+                    + encodeURIComponent(JSON.stringify(permission)))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    scopedToken = JSON.parse(res.text).result;
+                    (scopedToken !== "").should.equal(true);
+                    done();
+                });
+        });
+
+        ['disable', 'enable', 'generate-qr-code'].forEach(function(method) {
+            it('refuses /i/two-factor-auth?method=' + method, function(done) {
+                request
+                    .get('/i/two-factor-auth?method=' + method + '&auth_token=' + scopedToken
+                        + '&app_id=' + APP_ID + '&auth_code=123456&secret_token=AAAAAAAAAAAAAAAA')
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        // 403 for the guard; a build without the two-factor-auth plugin
+                        // answers 404, which is also not a way in
+                        [403, 404].indexOf(res.status).should.not.equal(-1,
+                            'expected 403 or 404, got ' + res.status + ': ' + res.text);
+                        if (res.status === 403) {
+                            res.text.indexOf('restricted token').should.not.equal(-1);
+                        }
+                        done();
+                    });
+            });
+        });
+
+        it('still allows the same call with an unrestricted credential', function(done) {
+            // the api_key is unscoped, so the guard must not stand in its way. generate-qr-code
+            // is the read only one of the three, so it is the safe one to prove this with.
+            request
+                .get('/i/two-factor-auth?method=generate-qr-code&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    [200, 404, 500].indexOf(res.status).should.not.equal(-1,
+                        'expected the guard not to fire, got ' + res.status + ': ' + res.text);
+                    if (res.status === 403) {
+                        throw new Error('an unrestricted credential was refused');
+                    }
+                    done();
+                });
+        });
+
+        it('cleanup: remove the scoped token', function(done) {
+            request
+                .get('/i/token/delete?api_key=' + API_KEY_ADMIN + '&tokenid=' + scopedToken)
+                .end(function() {
+                    done();
+                });
+        });
+    });
+
 });

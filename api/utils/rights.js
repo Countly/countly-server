@@ -74,6 +74,10 @@ function applyTokenScope(params, member) {
     }
     return member;
 }
+
+//exported so a route that resolves its own token can apply the same bounding rights.js
+//applies for every other route
+exports.applyTokenScope = applyTokenScope;
 /**
 * Validate user for read access by api_key for provided app_id (both required parameters for the request). 
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least user access to the provided app (which also must exist).
