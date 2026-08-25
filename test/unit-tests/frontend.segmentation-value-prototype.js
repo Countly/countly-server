@@ -100,6 +100,16 @@ countlyCommon.union = function(a, b) {
     return a.concat(b);
 };
 
+// moment, jQuery and _ above are read by the lifted source at eval() time, from this
+// scope. Static analysis cannot see through eval and reports them as unused, so assert
+// they are present: the reads are real, and a missing stand-in should say so here rather
+// than as a ReferenceError from inside an eval'd function body.
+[moment, jQuery, _].forEach(function(standIn, at) {
+    if (!standIn) {
+        throw new Error("browser stand-in " + at + " is missing");
+    }
+});
+
 /* eslint-disable no-eval */
 eval(methodSrc("isForbiddenFieldName"));
 eval(methodSrc("mergeMetricsByName"));
