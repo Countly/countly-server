@@ -1,5 +1,6 @@
 ## Version 25.03.51
 Fixes:
+- [reports] Non-core reports, such as dashboard reports, now authorize the object they target on create and update
 - [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
 - [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
 - [core] Chart tooltips now show label text as text, so a label is never treated as markup, and the dashboard undoes the same key substitutions the api applies (`&#36;`, `&#46;`, `&#9647;` and their url encoded forms) instead of only two of them
@@ -9,6 +10,8 @@ Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
 Security Fixes:
+- [core] CSV exports now neutralize cells that a spreadsheet client would read as a formula, in the streamed export path and in its header row as well as the values, and including values that begin with a tab or carriage return
+- [reports] Enabling, sending or rendering a report now checks that the apps it covers are still readable by the caller, and scheduled reports stop being emailed once the member they are scheduled as loses access to those apps
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
