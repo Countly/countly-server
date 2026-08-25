@@ -8,7 +8,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    { validateRead, validateUpdate, validateDelete, hasReadRight } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
 
 const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
@@ -1592,7 +1592,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 //Apply the owner's read right here, the way validateRead does for the
                                 //api_key branch below.
                                 common.db.collection('members').findOne({_id: common.db.ObjectID(owner + "")}, function(memberErr, member) {
-                                    if (memberErr || !member || !hasReadRight(FEATURE_NAME, app._id + "", member)) {
+                                    if (memberErr || !member || !viewsUtils.ownerCanRead(member, app._id + "", FEATURE_NAME)) {
                                         common.returnMessage(params, 401, 'User does not have view right for this application');
                                         return false;
                                     }
