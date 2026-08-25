@@ -57,6 +57,28 @@ function appDoc() {
     };
 }
 
+/**
+ * The update object /i/apps/update dispatches alongside the app document.
+ *
+ * Built the way api/parts/mgmt/apps.js builds it: the accepted key list is rebuilt on
+ * EVERY update, so keys is always present; key appears whenever the key is rotated; and
+ * id_key is filled in the first time an app that predates it is touched. The one thing
+ * apps.js does delete is checksum_salt.
+ * @returns {object} update object as dispatched
+ */
+function appUpdateDoc() {
+    return {
+        name: 'renamed',
+        edited_at: 1755000000,
+        key: 'ROTATED_APP_KEY',
+        id_key: 'IMMUTABLE_KEY',
+        keys: [
+            {key: 'SDK_APP_KEY', added_at: 1, last_data: 0},
+            {key: 'ROTATED_APP_KEY', added_at: 2, last_data: 0}
+        ]
+    };
+}
+
 describe('Hooks internal event payload', function() {
     describe('removes app credentials before the effect pipeline', function() {
         var cases = [
@@ -64,8 +86,10 @@ describe('Hooks internal event payload', function() {
             ['/crashes/new', function() {
                 return {data: {crash: {_id: 'c1'}, user: {uid: 'u1'}, app: appDoc()}, eventType: '/crashes/new'};
             }],
+            // /i/apps/update sends two app shaped objects, and the update is not the
+            // safer of the two: it carries the whole accepted key list on every update
             ['/i/apps/update', function() {
-                return {data: {app: appDoc(), update: {name: 'renamed'}}, appId: appDoc()._id, eventType: '/i/apps/update'};
+                return {data: {app: appDoc(), update: appUpdateDoc()}, appId: appDoc()._id, eventType: '/i/apps/update'};
             }],
             // while delete and reset pass the app document as data itself
             ['/i/apps/delete', function() {
@@ -96,6 +120,17 @@ describe('Hooks internal event payload', function() {
                 // need the whole document
                 should(secretsIn(params).length).equal(before);
             });
+        });
+
+        it('strips data.update even though data.app is present beside it', function() {
+            // the two are not alternatives: an early version scrubbed whichever it found
+            // first, which left every key in data.update on every single app update
+            var params = {data: {app: appDoc(), update: appUpdateDoc()}, eventType: '/i/apps/update'};
+            var out = withoutSecrets(params, '/i/apps/update');
+            should(secretsIn(out.data.app)).eql([]);
+            should(secretsIn(out.data.update)).eql([]);
+            should(out.data.update).have.property('name', 'renamed');
+            should(out.data.update).have.property('edited_at', 1755000000);
         });
 
         it('keeps the fields an effect actually uses', function() {
