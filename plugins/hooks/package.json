@@ -23,5 +23,9 @@
     "ipaddr.js": "^2.3.0",
     "v8-sandbox": "3.2.12"
   },
+  "overrides": {
+    "tar": "^7.5.22",
+    "brace-expansion": "^2.1.2"
+  },
   "private": true
 }
