@@ -9,6 +9,50 @@ var common = require('../../../api/utils/common.js'),
 
 const FEATURE_NAME = 'reports';
 
+//What a client may set on a report, taken from what the drawer binds plus the
+//metrics map it assembles on submit. Everything else on a report document is
+//the generator's own work at send time: messages, data, subject, mailTemplate,
+//properties, period, start, end, date, total_new, universe.
+//
+//The direction matters. Removing known-dangerous keys would leave every field
+//added later writable until somebody remembers to deny it, and the cost of
+//forgetting is unbounded, because these values are not only stored but consumed:
+//messages[].html is the string handed to the pdf renderer, so a request must
+//never be able to supply it. Declaring what the drawer sends fails the other
+//way, and the cost of forgetting is a setting that stops saving, which someone
+//notices and files.
+const REPORT_FIELDS = [
+    "title",
+    "report_type",
+    "apps",
+    "dashboards",
+    "date_range",
+    "emails",
+    "frequency",
+    "day",
+    "hour",
+    "minute",
+    "timezone",
+    "sendPdf",
+    "selectedEvents",
+    "metrics"
+];
+
+/**
+* Keep only what a client may set on a report.
+* @param {object} args - the submitted args object
+* @returns {object} a new object holding the allowed fields that were sent
+**/
+function publicReportFields(args) {
+    const props = {};
+    REPORT_FIELDS.forEach(function(field) {
+        if (typeof args[field] !== "undefined") {
+            props[field] = args[field];
+        }
+    });
+    return props;
+}
+
 (function() {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -272,8 +316,7 @@ const FEATURE_NAME = 'reports';
         case 'create':
             validateCreate(paramsInstance, FEATURE_NAME, function() {
                 var params = paramsInstance;
-                var props = {};
-                props = params.qstring.args;
+                var props = publicReportFields(params.qstring.args);
                 props.minute = (props.minute) ? parseInt(props.minute) : 0;
                 props.hour = (props.hour) ? parseInt(props.hour) : 0;
                 props.day = (props.day) ? parseInt(props.day) : 0;
@@ -361,19 +404,19 @@ const FEATURE_NAME = 'reports';
             break;
         case 'update':
             validateUpdate(paramsInstance, FEATURE_NAME, function() {
-                var props = {};
                 var params = paramsInstance;
-                props = params.qstring.args;
-                var id = props._id;
-                delete props._id;
-                //the report owner is set at creation and must not be changed on
-                //update: repointing it to an unresolvable id would make the
-                //scheduled sender fall back to a global admin and render the
-                //report (e.g. a dashboard) with elevated access
-                delete props.user;
-                //see create: the authorize flag comes back through the object passed to
-                //the dispatch, so a submitted one must reach neither that nor $set
-                delete props.authorized;
+                //_id names the report to update and is not part of the document;
+                //user is set at creation and must not be changed on update, since
+                //repointing it to an unresolvable id would make the scheduled
+                //sender fall back to a global admin and render the report (e.g. a
+                //dashboard) with elevated access; and the authorize flag comes back
+                //through the object passed to the dispatch, so a submitted one must
+                //reach neither that nor $set. None of the three is in REPORT_FIELDS,
+                //so the allow-list drops all of them - it replaces the deletes that
+                //used to name them one at a time, and covers the next such field
+                //without anyone having to remember it.
+                var id = params.qstring.args._id;
+                var props = publicReportFields(params.qstring.args);
                 if (props.frequency !== "daily" && props.frequency !== "weekly" && props.frequency !== "monthly") {
                     delete props.frequency;
                 }
