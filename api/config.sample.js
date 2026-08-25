@@ -94,6 +94,18 @@ var countlyConfig = {
         default: "warn"
     },
     /**
+    * Settings for the headless renderer used by screenshots, emailed reports and PDFs
+    * @type {object=}
+    * @property {array=} allowedOrigins - extra origins the rendered dashboard may fetch
+    *   assets from. The dashboard's own origin, the configured cdn and the map tile
+    *   provider are allowed already; add an entry only for an asset host of your own,
+    *   for example a self hosted tile server. Everything else is refused, which is what
+    *   stops a rendered page from reaching what the server itself can reach.
+    */
+    render: {
+        allowedOrigins: [/*"https://tiles.example.com"*/]
+    },
+    /**
     * Default proxy settings, if provided then countly uses ip address from the right side of x-forwarded-for header ignoring list of provided proxy ip addresses
     * @type {array=} 
     */
