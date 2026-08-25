@@ -18,9 +18,11 @@ var tracker = {},
     FormData = require('form-data'),
     { Readable } = require('node:stream'),
     versionInfo = require('../../../frontend/express/version.info'),
-    server = "9c28c347849f2c03caf1b091ec7be8def435e85e",
+    // Telemetry target. Defaults to the production stats server; overridable via env so a local
+    // instance can loop its own license/server telemetry back to itself for testing.
+    server = process.env.COUNTLY_TRACKING_APP_KEY || "9c28c347849f2c03caf1b091ec7be8def435e85e",
     user = "fa6e9ae7b410cb6d756e8088c5f3936bf1fab5f3",
-    url = "https://stats.count.ly",
+    url = process.env.COUNTLY_TRACKING_URL || "https://stats.count.ly",
     plugins = require('../../../plugins/pluginManager.js');
 
 var IS_FLEX = false;
@@ -134,6 +136,68 @@ tracker.getBulkUser = function(serverInstance) {
 tracker.reportEvent = function(event) {
     if (isEnabled && plugins.getConfig("tracking").server_events) {
         Countly.add_event(event);
+    }
+};
+
+/**
+* Report a license lifecycle event with the shared segmentation core (license v2 design §6).
+* Events are edge-triggered by the caller (License.check transition tracking) — this helper only
+* stamps the shared core and forwards through the standard gates (isEnabled + server_events).
+* @param {string} name - event key, e.g. "license_expired"
+* @param {object} license - decoded license content (may be empty for license_removed)
+* @param {object} [extra] - event-specific segmentation
+**/
+tracker.reportLicenseEvent = function(name, license, extra) {
+    license = license || {};
+    if (license.disable_tracking === true) {
+        return;
+    }
+    tracker.reportEvent({
+        key: name,
+        count: 1,
+        timestamp: Date.now(),
+        segmentation: Object.assign({
+            license_id: license._id || license.license_id,
+            client_name: license.name,
+            license_version: license.license_version || 1,
+            rule: license.rule,
+            start: license.start,
+            end: license.end,
+            stage: license.license_stage,
+            hosting: license.license_hosting
+        }, extra || {})
+    });
+};
+
+/**
+* Upsert the current license state as user properties on this server's tracked user
+* (license v2 design §7) — slow-changing current-state props, so the whole fleet is
+* segmentable by license on the tracking server.
+* @param {object} license - decoded license content
+* @param {object} [extra] - additional current-state props (e.g. license_status, apps)
+**/
+tracker.reportLicenseState = function(license, extra) {
+    license = license || {};
+    if (license.disable_tracking === true) {
+        return;
+    }
+    if (isEnabled && plugins.getConfig("tracking").server_user_details) {
+        var custom = Object.assign({
+            license_id: license._id || license.license_id,
+            license_version: license.license_version || 1,
+            client_name: license.name,
+            license_rule: license.rule,
+            license_stage: license.license_stage,
+            license_start: license.start,
+            license_end: license.end
+        }, extra || {});
+        if (license.entitlement) {
+            custom.included_prod_apps = license.entitlement.included_prod_apps;
+            custom.max_prod_apps = license.entitlement.max_prod_apps;
+            custom.instance_allowance = license.entitlement.instance_allowance;
+            custom.support_dp_tier = license.entitlement.support_dp_tier;
+        }
+        Countly.user_details({custom: custom});
     }
 };
 
