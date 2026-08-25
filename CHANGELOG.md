@@ -14,6 +14,7 @@ Security Fixes:
 - [core] The dashboard escapes `<` when serializing the exposed `countlyGlobal` object into the inline page script, so an application name (or any exposed value) containing a `</script>` end tag in any spelling can no longer break out of the script block and run in another user's session; the active-app name is now rendered with `.text()` instead of `.html()`
 - [compliance-hub] The export/purge history table now HTML-encodes the application name before it is placed in the action cell, so an application name is shown as text rather than markup
 - [populator] The populator confirmation dialog bodies are now rendered as text instead of HTML
+- [core] CSV exports now neutralize cells that a spreadsheet client would read as a formula, in the streamed export path and in its header row as well as the values, and including values that begin with a tab or carriage return
 - [reports] Enabling, sending or rendering a report now checks that the apps it covers are still readable by the caller, and scheduled reports stop being emailed once the member they are scheduled as loses access to those apps
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
