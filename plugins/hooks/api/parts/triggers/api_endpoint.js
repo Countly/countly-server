@@ -3,6 +3,34 @@ const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log('hooks:api_endpoint_trigger');
 /**
+ * When a hook was created, in milliseconds.
+ *
+ * created_at is absent on hooks predating it, and an ObjectId's leading four bytes are
+ * the creation time in seconds, so the id stands in. Both are reduced to the same unit
+ * before anything is compared: a number against an id string coerces the string to NaN,
+ * every comparison is then false, and the hook already held would keep winning - which is
+ * the opposite of the oldest-wins rule, and only for the legacy hooks the fallback exists
+ * to serve.
+ *
+ * An age that cannot be determined at all sorts last rather than first, so an unknown
+ * does not displace a hook whose age is known.
+ *
+ * @param {object} rule - hook document
+ * @returns {number} creation time in milliseconds
+ */
+function hookCreatedAt(rule) {
+    const createdAt = Number(rule && rule.created_at);
+    if (Number.isFinite(createdAt) && createdAt > 0) {
+        return createdAt;
+    }
+    const id = String((rule && rule._id) || "");
+    if (/^[a-f0-9]{24}$/i.test(id)) {
+        return parseInt(id.substring(0, 8), 16) * 1000;
+    }
+    return Infinity;
+}
+
+/**
  * Index rules by their endpoint path, so dispatch is a lookup rather than a scan.
  *
  * The path is global while a hook belongs to apps, so two hooks can claim the same one.
@@ -27,11 +55,7 @@ function indexRulesByPath(rules) {
             byPath.set(path, rule);
             return;
         }
-        //created_at is absent on hooks predating it, so fall back to the id, whose leading
-        //bytes are the creation time anyway
-        const heldAge = held.created_at || String(held._id);
-        const ruleAge = rule.created_at || String(rule._id);
-        const winner = ruleAge < heldAge ? rule : held;
+        const winner = hookCreatedAt(rule) < hookCreatedAt(held) ? rule : held;
         const loser = winner === rule ? held : rule;
         log.e("Two hooks claim endpoint path %j: serving %j, ignoring %j. Give each hook its own path.",
             path, String(winner._id), String(loser._id));
