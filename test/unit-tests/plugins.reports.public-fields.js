@@ -154,12 +154,36 @@ describe("reports, the pdf renderer refuses requests off the countly origin", fu
         });
     });
 
-    it("is what the report renderer actually passes", function() {
-        // the predicate above only protects anything if the origins reach renderPDF,
-        // and they are built from the send-time data rather than the stored document
+    // The predicate above only protects anything if the origins reach renderPDF. There
+    // are two renderers - the scheduled send and the on-demand download - and both relax
+    // web security for the same reason, so neither may do it without the allow-list.
+    var RENDERERS = ["plugins/reports/api/reports.js", "plugins/reports/api/api.js"];
+
+    RENDERERS.forEach(function(file) {
+        it("bounds what chromium may request in " + file, function() {
+            var fs = require("fs");
+            var src = fs.readFileSync(__dirname + "/../../" + file, "utf8");
+            var flag = "'--disable-web-security'";
+            var relaxed = 0;
+            var index = src.indexOf(flag);
+            while (index !== -1) {
+                relaxed++;
+                // the allow-list is the trailing argument of the same renderPDF call
+                src.slice(index, index + 400).should.match(/renderOrigins/,
+                    file + " relaxes web security without an allow-list");
+                index = src.indexOf(flag, index + 1);
+            }
+            relaxed.should.be.above(0, file + " no longer launches a renderer; drop it from this list");
+        });
+    });
+
+    it("builds the origins from send-time data, not from the stored document", function() {
+        // a report document is attacker-writable in the shape this suite guards against,
+        // so an origin taken from it would put the allow-list under the same control
         var fs = require("fs");
-        var src = fs.readFileSync(__dirname + "/../../plugins/reports/api/reports.js", "utf8");
-        src.should.match(/let renderOrigins = \[message\.data && message\.data\.host\]/);
-        src.should.match(/renderPDF\([\s\S]*?,\s*true,\s*renderOrigins\)/);
+        var send = fs.readFileSync(__dirname + "/../../plugins/reports/api/reports.js", "utf8");
+        send.should.match(/let renderOrigins = \[message\.data && message\.data\.host\]/);
+        var download = fs.readFileSync(__dirname + "/../../plugins/reports/api/api.js", "utf8");
+        download.should.match(/const renderOrigins = \[res\.message && res\.message\.data && res\.message\.data\.host\]/);
     });
 });
