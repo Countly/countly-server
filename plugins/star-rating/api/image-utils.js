@@ -53,7 +53,63 @@ function parseFeedbackLogoName(name) {
     return {valid: true, isGlobal: !m[1], appId: m[1] || null};
 }
 
+// Allowed logo identifiers. The dashboard sends Date.now() as the identifier, so a plain
+// filename fragment covers every real upload. This matters because the identifier is
+// concatenated into the upload path: separators or leading dots in it would choose where
+// the file lands rather than just what it is called. Kept here beside
+// parseFeedbackLogoName, and dependency free so this module stays unit testable.
+var LOGO_IDENTIFIER_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
+ * Validate a logo upload identifier, which becomes the stored file's name.
+ * @param {string|number} id - candidate identifier, straight from the request
+ * @returns {string|null} the identifier when it is a plain name, otherwise null
+ */
+function safeLogoIdentifier(id) {
+    if (typeof id === "number" && isFinite(id)) {
+        id = String(id);
+    }
+    if (typeof id !== "string" || !LOGO_IDENTIFIER_RE.test(id)) {
+        return null;
+    }
+    return id;
+}
+
+// An app id as it appears in a request: the 24 hex characters of an ObjectID. Checked
+// because the id is concatenated into the stored name below, and a name is a path.
+var APP_ID_RE = /^[a-f0-9]{24}$/i;
+
+/**
+ * The name a logo is stored under.
+ *
+ * Namespaced by app. The images directory is shared by every app and a widget's logo
+ * field holds only this name, so an un-namespaced name lets any app pick a name another
+ * app is using, or is about to use, and overwrite it. Checking first and writing second
+ * cannot fix that: the two apps can interleave, and an upload happens before the widget
+ * that will point at it exists, so there is nothing to check against yet. Putting the
+ * app id in the name removes the shared namespace instead of racing over it.
+ *
+ * The same shape the sibling /i/feedback/upload route uses, where the target app is
+ * likewise carried by the name rather than taken from the query string.
+ * @param {string} appId - id of the app the caller was authorized for
+ * @param {string|number} id - request supplied identifier
+ * @param {string} ext - extension decided by sniffing the file, never by the request
+ * @returns {string|null} the stored name, or null when either part is not a plain name
+ */
+function logoStorageName(appId, id, ext) {
+    var safeId = safeLogoIdentifier(id);
+    if (!safeId || typeof appId !== "string" || !APP_ID_RE.test(appId)) {
+        return null;
+    }
+    if (typeof ext !== "string" || !/^[a-z]{3,4}$/.test(ext)) {
+        return null;
+    }
+    return appId + "_" + safeId + "." + ext;
+}
+
 module.exports = {
     sniffImageType: sniffImageType,
-    parseFeedbackLogoName: parseFeedbackLogoName
+    parseFeedbackLogoName: parseFeedbackLogoName,
+    safeLogoIdentifier: safeLogoIdentifier,
+    logoStorageName: logoStorageName
 };
