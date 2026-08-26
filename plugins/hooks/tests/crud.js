@@ -47,6 +47,79 @@ describe('Testing Hooks', function() {
                     });
             });
 
+            it('should save an email effect that carries no template', function(done) {
+                const APP_ID = testUtils.get("APP_ID");
+                //an email effect without a template is supported - the effect formats the
+                //trigger payload instead - but sanitizeConfig read .emailTemplate off the
+                //effect and handed it to sanitizeHTML unguarded, so the read threw, the
+                //catch around the save answered 500, and this could not be stored at all
+                const hookConfig = Object.assign({}, newHookConfig, {
+                    apps: [APP_ID],
+                    name: "test-email-effect-no-template",
+                    trigger: {
+                        type: "APIEndPointTrigger",
+                        configuration: {path: "email-no-template-" + Date.now(), method: "get"}
+                    },
+                    effects: [{type: "EmailEffect", configuration: {address: ["a@test.com"]}}]
+                });
+
+                request.post(getRequestURL('/i/hook/save'))
+                    .send({hook_config: JSON.stringify(hookConfig)})
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        res.status.should.equal(200,
+                            "a template-less email effect should save, got " + res.status + ": " + res.text);
+                        newHookIds.push(res.body);
+                        done();
+                    });
+            });
+
+            it('should sanitize the template of every email effect, not only the first', function(done) {
+                const APP_ID = testUtils.get("APP_ID");
+                //sanitizeConfig used to locate the email effect with findIndex, which stops
+                //at the first match, so a hook carrying two of them stored the second one's
+                //template exactly as it arrived
+                const hookConfig = Object.assign({}, newHookConfig, {
+                    apps: [APP_ID],
+                    name: "test-two-email-effects",
+                    trigger: {
+                        type: "APIEndPointTrigger",
+                        configuration: {path: "two-email-effects-" + Date.now(), method: "get"}
+                    },
+                    effects: [
+                        {type: "EmailEffect", configuration: {address: ["a@test.com"], emailTemplate: "first<script>alert(1)</script>"}},
+                        {type: "EmailEffect", configuration: {address: ["b@test.com"], emailTemplate: "second<script>alert(2)</script>"}}
+                    ]
+                });
+
+                request.post(getRequestURL('/i/hook/save'))
+                    .send({hook_config: JSON.stringify(hookConfig)})
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        newHookIds.push(res.body);
+                        getHookRecord(res.body, function(listErr, listRes) {
+                            if (listErr) {
+                                return done(listErr);
+                            }
+                            const hook = listRes.body.hooksList.find(function(item) {
+                                return item._id === res.body;
+                            });
+                            should.exist(hook, "the saved hook was not returned by /o/hook/list");
+                            hook.effects.length.should.equal(2);
+                            hook.effects.forEach(function(effect, index) {
+                                effect.configuration.emailTemplate.should.not.match(/<script/i,
+                                    "email effect " + index + " kept its script markup");
+                            });
+                            done();
+                        });
+                    });
+            });
+
 
             it('should fail to create hook with invalid required params', function(done) {
                 const APP_ID = testUtils.get("APP_ID");

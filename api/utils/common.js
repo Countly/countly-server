@@ -125,6 +125,31 @@ function getJSON(val) {
 }
 
 /**
+ * Whether a value is a plain object or an array, and so should be walked rather than escaped
+ * as a scalar.
+ *
+ * Tested by prototype identity rather than by reading value.constructor. `constructor` is an
+ * ordinary property name, so a JSON body can carry its own: {"constructor": true, ...} makes
+ * value.constructor evaluate to true, which used to fail the check and return the object with
+ * its keys and values unescaped. Since escape_html_entities is the replacer for every
+ * returnOutput and returnMessage, that turned any user controlled property name into markup
+ * wherever a response is rendered.
+ *
+ * Prototype identity cannot be spoofed by an own property, and it keeps the original intent:
+ * ObjectIDs, Dates and other class instances are still escaped as scalars rather than walked.
+ *
+ * @param {Any} value - value under inspection
+ * @returns {boolean} true when it should be recursed into
+ */
+function isPlainContainer(value) {
+    if (Array.isArray(value)) {
+        return true;
+    }
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+}
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {any} value - value to escape
@@ -132,7 +157,7 @@ function getJSON(val) {
 * @returns {any} escaped value
 **/
 function escape_html_entities(key, value, more) {
-    if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
+    if (typeof value === 'object' && value && isPlainContainer(value)) {
         if (Array.isArray(value)) {
             let replacement = [];
             for (let k = 0; k < value.length; k++) {
@@ -1369,9 +1394,15 @@ common.fixEventKey = function(eventKey) {
     if (shortEventName.length >= 128) {
         return false;
     }
-    else {
-        return shortEventName;
+    //the key is stored as a field name (d.<day>.<key>.<metric> on the totals
+    //document, and as part of the per-event collection hash), so a key naming an
+    //Object.prototype member is prefixed the same way a forbidden segmentation
+    //value is. Every caller derives its collection name and its stored paths from
+    //this return value, so prefixing here keeps write and read agreeing.
+    if (common.isForbiddenFieldName(shortEventName)) {
+        return "[CLY]" + shortEventName;
     }
+    return shortEventName;
 };
 
 common.blockResponses = function(params) {
@@ -1910,6 +1941,11 @@ common.recordMetric = function(params, props) {
         tmpSet = {};
 
     for (let i in props.metrics) {
+        // a key off a stored document or a parsed payload can be a prototype
+        // member name; writing through one would reach Object.prototype
+        if (common.isForbiddenFieldName(i)) {
+            continue;
+        }
         props.metrics[i].value = props.metrics[i].value || 1;
         recordMetric(params, i, props.metrics[i], tmpSet, updateUsersZero, updateUsersMonth);
     }
@@ -2014,6 +2050,19 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 }
 
 /**
+* Whether a string, used as a MongoDB field name, would name a member of
+* Object.prototype. Such a name survives storage as a literal field and, when the
+* document is later walked with for...in and merged, writes into the prototype of
+* the process. Segmentation values, metric values and event keys all become field
+* names, so each is checked against this before use.
+* @param {string} name - the candidate field name
+* @returns {boolean} true when the name must not be used as a field name as-is
+**/
+common.isForbiddenFieldName = function(name) {
+    return name === "__proto__" || name === "constructor" || name === "prototype";
+};
+
+/**
 * Record specific metric segment
 * @param {Params} params - params object
 * @param {string} metric - metric to record
@@ -2029,6 +2078,12 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
     var escapedMetricVal = (val + "").replace(/^\$/, "").replace(/\./g, ":");
+    //escapedMetricVal is used below as a component of a d.<...> field name, so a
+    //value naming an Object.prototype member is prefixed the way forbidden day
+    //numbers already are
+    if (common.isForbiddenFieldName(escapedMetricVal)) {
+        escapedMetricVal = "[CLY]" + escapedMetricVal;
+    }
     if (!tmpSet["meta." + escapedMetricKey]) {
         tmpSet["meta." + escapedMetricKey] = [];
     }
@@ -2588,6 +2643,54 @@ common.reqInfo = function(params) {
         ctx = (reqPath + reqMethod).trim();
     }
     return ctx ? " [" + ctx + "]" : "";
+};
+
+/**
+ * Remove the request's own authentication parameters from an object that is about
+ * to be stored. api_key and auth_token are both accepted as request parameters
+ * (see api/utils/rights.js), so a handler that keeps input it does not recognise
+ * persists the caller's credential, and a document read back later hands that
+ * credential to everyone allowed to read it.
+ *
+ * Top level only, and deliberately so. That is where a copy of the request puts
+ * them. A value the caller nested inside their own payload is their own to
+ * disclose, and descending to arbitrary depth would mean guessing at shapes.
+ *
+ * This is not a substitute for only storing declared fields. It is the floor: a
+ * handler that cannot enumerate its own shape can still refuse to keep a
+ * credential.
+ *
+ * @param {object} doc - the object about to be written, mutated in place
+ * @returns {object} the same object, so it can be used inline
+ */
+common.stripRequestCredentials = function(doc) {
+    if (doc && typeof doc === "object") {
+        delete doc.api_key;
+        delete doc.auth_token;
+    }
+    return doc;
+};
+
+/**
+ * Add the removal of stored request credentials to an update document.
+ *
+ * stripRequestCredentials keeps a credential out of a document being written, which
+ * does nothing for one already saved: an update sends $set, and a field absent from
+ * $set is left exactly as it was. So a document created before that helper existed
+ * keeps handing out the credential until something removes it, and the update that
+ * would have been the natural moment to do so does not.
+ *
+ * Use together with stripRequestCredentials, never instead of it. The strip is what
+ * makes this legal: MongoDB refuses an update naming the same field in $set and
+ * $unset, so the fields have to be gone from the document first.
+ *
+ * @param {Object<string, any>} update - the update document, e.g. {$set: doc}
+ * @returns {Object<string, any>} the same update, with the credentials unset
+ */
+common.unsetRequestCredentials = function(update) {
+    update = update || {};
+    update.$unset = Object.assign({}, update.$unset, {api_key: "", auth_token: ""});
+    return update;
 };
 
 common.clearClashingQueryOperations = function(query) {
@@ -3297,19 +3400,36 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
 
 };
 
+/**
+* Own enumerable keys of a source object that may be used as a field name on a merge
+* target. for...in also yields inherited keys, and a key naming an Object.prototype
+* member resolves to the target's prototype instead of an own slot when the target is
+* indexed with it, so both are removed here once rather than at each operator loop.
+* @param {object} source - object whose keys are about to be walked
+* @returns {string[]} keys that are safe to write through
+**/
+function mergeableKeys(source) {
+    if (!source || typeof source !== "object") {
+        return [];
+    }
+    return Object.keys(source).filter(function(key) {
+        return !common.isForbiddenFieldName(key);
+    });
+}
+
 common.mergeQuery = function(ob1, ob2) {
     if (ob2) {
-        for (let key in ob2) {
+        for (let key of mergeableKeys(ob2)) {
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
             else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob2[key][val];
                 }
             }
             else if (key === "$addToSet") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
                     }
@@ -3330,7 +3450,7 @@ common.mergeQuery = function(ob1, ob2) {
 
             }
             else if (key === "$push") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]};
                     }
@@ -3340,7 +3460,7 @@ common.mergeQuery = function(ob1, ob2) {
                             ob1[key][val].$each.push(ob2[key][val].$each[p]);
                         }
                         //copy other push modifiers
-                        for (let modifier in ob2[key][val]) {
+                        for (let modifier of mergeableKeys(ob2[key][val])) {
                             if (modifier !== "$each") {
                                 ob1[key][val][modifier] = ob2[key][val][modifier];
                             }
@@ -3352,25 +3472,25 @@ common.mergeQuery = function(ob1, ob2) {
                 }
             }
             else if (key === "$inc") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || 0;
                     ob1[key][val] += ob2[key][val];
                 }
             }
             else if (key === "$mul") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || 0;
                     ob1[key][val] *= ob2[key][val];
                 }
             }
             else if (key === "$min") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.min(ob1[key][val], ob2[key][val]);
                 }
             }
             else if (key === "$max") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
                 }
