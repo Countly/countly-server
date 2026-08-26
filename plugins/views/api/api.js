@@ -15,6 +15,18 @@ const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
 (function() {
+    //Declares this plugin as an export query producer. /o/export/requestQuery re-runs the
+    //endpoint named here and executes the collection and pipeline it returns, so only endpoints
+    //that build such a query and authorize it themselves may be named. `require` pins the
+    //parameters that select the branch below which returns the query rather than the rows.
+    plugins.register("/export/query/producers", function(ob) {
+        ob.producers.push({
+            path: "/o",
+            require: {method: "views", action: "getExportQuery"},
+            db: "countly"
+        });
+    });
+
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
@@ -1546,31 +1558,44 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         callback: function(owner, expires_after) {
                             if (owner) {
                                 var token = params.req.headers["countly-token"];
-                                if (expires_after < 600 && expires_after > -1) {
-                                    authorize.extend_token({
-                                        extendTill: Date.now() + 600000, //10 minutes
-                                        token: params.req.headers["countly-token"],
-                                        callback: function(/*err,res*/) {
-                                            params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
-                                            params.app_id = app._id;
-                                            params.app_cc = app.country;
-                                            params.appTimezone = app.timezone;
-                                            params.app = app;
-                                            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                                            getHeatmap(params);
-                                        }
-                                    });
+                                //A token acts as its owner: everywhere else it is resolved to the
+                                //member who created it and that member's own rights decide what the
+                                //request may read, while the token's app and endpoint fields only narrow
+                                //it further. This branch used to skip that step, so the app resolved from
+                                //the caller's app_key was served without consulting the owner at all.
+                                //Apply the owner's read right here, the way validateRead does for the
+                                //api_key branch below.
+                                common.db.collection('members').findOne({_id: common.db.ObjectID(owner + "")}, function(memberErr, member) {
+                                    if (memberErr || !member || !viewsUtils.ownerCanRead(member, app._id + "", FEATURE_NAME)) {
+                                        common.returnMessage(params, 401, 'User does not have view right for this application');
+                                        return false;
+                                    }
+                                    if (expires_after < 600 && expires_after > -1) {
+                                        authorize.extend_token({
+                                            extendTill: Date.now() + 600000, //10 minutes
+                                            token: params.req.headers["countly-token"],
+                                            callback: function(/*err,res*/) {
+                                                params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                                params.app_id = app._id;
+                                                params.app_cc = app.country;
+                                                params.appTimezone = app.timezone;
+                                                params.app = app;
+                                                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                                getHeatmap(params);
+                                            }
+                                        });
 
-                                }
-                                else {
-                                    params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
-                                    params.app_id = app._id;
-                                    params.app_cc = app.country;
-                                    params.appTimezone = app.timezone;
-                                    params.app = app;
-                                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                                    getHeatmap(params);
-                                }
+                                    }
+                                    else {
+                                        params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
+                                        params.app_id = app._id;
+                                        params.app_cc = app.country;
+                                        params.appTimezone = app.timezone;
+                                        params.app = app;
+                                        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                                        getHeatmap(params);
+                                    }
+                                });
                             }
                             else {
                                 common.returnMessage(params, 401, 'User does not have view right for this application');
@@ -2084,6 +2109,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var addToSetRules = {};
         if (currEvent.segmentation) {
             for (let segKey in currEvent.segmentation) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (segKey === "__proto__" || segKey === "constructor" || segKey === "prototype") {
+                    continue;
+                }
                 let tmpSegKey = "";
                 if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
                     tmpSegKey = segKey.replace(/^\$|\./g, "");
