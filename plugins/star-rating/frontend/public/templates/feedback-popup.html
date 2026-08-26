@@ -303,6 +303,30 @@
                     next();
                 }
 
+                //A consent link's destination is put into an anchor's href. encodeHtml below
+                //is no protection for that: `javascript:alert(1)` has no HTML metacharacter,
+                //so it comes through escaping unchanged and runs when the link is clicked.
+                //Only http(s) is accepted, matching the widget endpoint, the dashboard drawer
+                //and the surveys widget that renders the same kind of consent link. The test is
+                //anchored at the start of the trimmed value, so "\tjavascript:..." and
+                //"JaVaScRiPt:..." fail it rather than having to be enumerated.
+
+                var isSafeLinkUrl = function (value) {
+                    if (typeof value !== 'string') {
+                        return false;
+                    }
+                    return /^https?:\/\//i.test(value.trim());
+                };
+
+                //The label is interpolated into a RegExp below, where an unescaped value IS a
+                //pattern: `A+B` then stops matching its own literal text, so the deployed widget
+                //disagrees with the dashboard preview, and `(a+)+$` turns matching into
+                //catastrophic backtracking against a long consent sentence and freezes the
+                //visitor's browser. Same escaping the dashboard does.
+                var escapeForRegExp = function (value) {
+                    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                };
+
                 var encodeHtml = function (html) {
                     var div = document.createElement('div');
 
@@ -409,10 +433,12 @@
                             //sanitize the text and links
                             finalText = encodeHtml(finalText);
                             links.forEach(function (link) {
-                                link.linkValue = encodeHtml(link.linkValue);
+                                //refuse a destination that is not a usable href; widgets saved before
+                                //the endpoint check still carry whatever was stored
+                                link.linkValue = encodeHtml(isSafeLinkUrl(link.linkValue) ? link.linkValue.trim() : 'about:blank');
                                 link.textValue = encodeHtml(link.textValue);
-                                var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
-                                finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+                                var regex = new RegExp('\\b' + escapeForRegExp(link.textValue) + '\\b', 'g');
+                                finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank" rel="noopener noreferrer">' + link.textValue + '</a>');
                             });
                         }
 
