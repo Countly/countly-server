@@ -383,6 +383,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             parameter = JSON.parse(params.qstring.parameter);
+            common.stripRequestCredentials(parameter);
         }
         catch (SyntaxError) {
             console.log('Parse parameter failed: ', params.qstring.parameter);
@@ -955,6 +956,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             parameter = JSON.parse(params.qstring.parameter);
+            common.stripRequestCredentials(parameter);
         }
         catch (SyntaxError) {
             console.log('Parse parameter failed: ', params.qstring.parameter);
@@ -1028,14 +1030,16 @@ plugins.setConfigs("remote-config", {
         var valuesList = JSON.parse(JSON.stringify(parameter.valuesList));
         delete parameter.valuesList;
 
-        var update = {
+        //unsetRequestCredentials also clears a credential stored before this was fixed:
+        //$set leaves a field it does not name exactly as it was
+        var update = common.unsetRequestCredentials({
             $set: parameter,
             $addToSet: {
                 valuesList: {
                     $each: valuesList
                 }
             }
-        };
+        });
 
         common.outDb.collection(collectionName).findOne({"_id": common.outDb.ObjectID(parameterId)}, function(err, beforeData) {
             if (!err) {
@@ -1073,9 +1077,9 @@ plugins.setConfigs("remote-config", {
                         'filter': {
                             '_id': id
                         },
-                        'update': {
+                        'update': common.unsetRequestCredentials({
                             '$set': parameter.parameter
-                        }
+                        })
                     },
                 });
             });
@@ -1169,6 +1173,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             condition = JSON.parse(params.qstring.condition);
+            common.stripRequestCredentials(condition);
         }
         catch (SyntaxError) {
             console.log('Parse condition failed: ', params.qstring.condition);
@@ -1377,6 +1382,7 @@ plugins.setConfigs("remote-config", {
 
         try {
             condition = JSON.parse(params.qstring.condition);
+            common.stripRequestCredentials(condition);
         }
         catch (SyntaxError) {
             console.log('Parse condition failed: ', params.qstring.condition);
@@ -1451,7 +1457,7 @@ plugins.setConfigs("remote-config", {
         function updateConditionInDb(callback) {
             var collectionName = "remoteconfig_conditions" + appId;
             common.outDb.collection(collectionName).findOne({_id: common.outDb.ObjectID(conditionId)}, function(err, beforeData) {
-                common.outDb.collection(collectionName).update({_id: common.outDb.ObjectID(conditionId)}, {$set: condition}, function(updateErr) {
+                common.outDb.collection(collectionName).update({_id: common.outDb.ObjectID(conditionId)}, common.unsetRequestCredentials({$set: condition}), function(updateErr) {
                     plugins.dispatch("/systemlogs", {params: params, action: "rc_condition_edited", data: {before: beforeData, after: condition} });
                     return callback(updateErr);
                 });
