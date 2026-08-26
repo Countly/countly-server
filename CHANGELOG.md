@@ -6,9 +6,6 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
-Security Fixes:
-- [star-rating] `/i/feedback/input` now forwards only the parameters the feedback widget sends. Because that endpoint replays its request with checksum verification disabled, unrelated write parameters supplied by the caller (such as `old_device_id`, which merges app users, or `token_session`, which binds a push token) were previously processed without a checksum on apps that have a checksum salt configured
-
 ## Version 24.05.51
 
 Fixes:
