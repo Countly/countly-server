@@ -391,6 +391,11 @@ function fetchDatapoints(db, filter, options, callback) {
             delete toReturn["all-apps"];
         }
         for (var z in toReturn) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (z === "__proto__" || z === "constructor" || z === "prototype") {
+                continue;
+            }
             toReturn[z].change = toReturn[z].dp - toReturn[z].change;
         }
         callback(toReturn);

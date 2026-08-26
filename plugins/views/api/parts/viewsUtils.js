@@ -35,7 +35,6 @@ module.exports = {
         return !!hasReadRight(feature, appId, member);
     },
 
-
     ommit_segments: function(options, callback) {
         var db = options.db || common.db;
         var omit = options.omit || [];
