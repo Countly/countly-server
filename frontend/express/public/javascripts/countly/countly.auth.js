@@ -223,7 +223,13 @@
         };
 
         for (var countlyApp in countlyGlobal.apps) {
+            if (countlyCommon.isForbiddenFieldName(countlyApp)) {
+                continue;
+            }
             for (var accessType in permissionObject) {
+                if (countlyCommon.isForbiddenFieldName(accessType)) {
+                    continue;
+                }
                 permissionObject[accessType][countlyApp] = {};
                 permissionObject[accessType][countlyApp].all = false;
                 permissionObject[accessType][countlyApp].allowed = {};

@@ -230,6 +230,11 @@ class TopEventsJob extends job.Job {
                 }
 
                 for (var event in data) {
+                    // a key off a stored document or a parsed payload can be a prototype
+                    // member name; writing through one would reach Object.prototype
+                    if (event === "__proto__" || event === "constructor" || event === "prototype") {
+                        continue;
+                    }
                     //Calculating trend
                     var trend = countlyCommon.getPercentChange(data[event].data.count["prev-total"], data[event].data.count.total);
                     data[event].data.count.change = trend.percent;
