@@ -330,7 +330,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     continue;
                 }
                 //skip keys that map to object prototype members when used as field names
-                if (segKey === "__proto__" || segKey === "constructor" || segKey === "prototype") {
+                if (common.isForbiddenFieldName(segKey)) {
                     continue;
                 }
 
@@ -368,6 +368,15 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
 
                     if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                        tmpSegVal = "[CLY]" + tmpSegVal;
+                    }
+
+                    //the value becomes a field name at d.<day>.<value>.<metric>; a value
+                    //naming an Object.prototype member is prefixed like the day numbers
+                    //above, so a later deepMerge of the stored document cannot walk it
+                    //into the prototype. The key is already guarded above; this is the
+                    //value path four lines down that the key guard does not reach.
+                    if (common.isForbiddenFieldName(tmpSegVal)) {
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
 
@@ -590,6 +599,14 @@ function mergeEvents(firstObj, secondObj) {
     for (let firstLevel in secondObj) {
 
         if (!Object.prototype.hasOwnProperty.call(secondObj, firstLevel)) {
+            continue;
+        }
+
+        //a stored event document can carry "__proto__" as an OWN key, which the check
+        //above accepts. firstObj[firstLevel] is then Object.prototype, which is truthy,
+        //so the "if (!firstObj[firstLevel])" branch below does not fire either and the
+        //two writes land on the prototype for the life of the worker.
+        if (common.isForbiddenFieldName(firstLevel)) {
             continue;
         }
 
