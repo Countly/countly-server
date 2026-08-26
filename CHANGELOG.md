@@ -6,13 +6,6 @@ Fixes:
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
-Security Fixes:
-- [core] The graph note tooltip now HTML-encodes the application name before rendering, so an application name is shown as text rather than markup
-- [push] The message editor now sanitizes message content before rendering it into the editor, allowing only the user-property token element and rendering any other markup as text
-- [compliance-hub] The export/purge history table now HTML-encodes the application name before it is placed in the action cell, so an application name is shown as text rather than markup
-- [populator] The populator confirmation dialog bodies are now rendered as text instead of HTML
-- [core] The dashboard escapes `<` when serializing the exposed `countlyGlobal` object into the inline page script, so an application name (or any exposed value) containing a `</script>` end tag in any spelling can no longer break out of the script block and run in another user's session; the active-app name is now rendered with `.text()` instead of `.html()`
-
 ## Version 24.05.51
 
 Fixes:
