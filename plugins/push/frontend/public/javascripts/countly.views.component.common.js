@@ -453,6 +453,9 @@
                 if (this.search) {
                     var obj = {};
                     for (var category in this.emojiTable) {
+                        if (countlyCommon.isForbiddenFieldName(category)) {
+                            continue;
+                        }
                         obj[category] = {};
                         for (var emoji in this.emojiTable[category]) {
                             if (new RegExp(".*" + this.escapeRegExp(this.search) + ".*").test(emoji)) {

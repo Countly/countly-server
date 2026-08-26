@@ -66,7 +66,13 @@ window.countlyView = Backbone.View.extend({
     },
     _removeMyRequests: function() {
         for (var url in this._myRequests) {
+            if (countlyCommon.isForbiddenFieldName(url)) {
+                continue;
+            }
             for (var data in this._myRequests[url]) {
+                if (countlyCommon.isForbiddenFieldName(data)) {
+                    continue;
+                }
                 //4 means done, less still in progress
                 if (parseInt(this._myRequests[url][data].readyState, 10) !== 4) {
                     this._myRequests[url][data].abort_reason = "app_remove_reqs";
