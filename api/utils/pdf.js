@@ -63,6 +63,38 @@ function renderOrigins(extra) {
     });
     return origins;
 }
+exports.renderOrigins = renderOrigins;
+
+/**
+* Whether a rendered document may fetch the given url.
+*
+* Split out from the interception handler so the decision can be exercised
+* without launching Chromium: the handler does nothing but call this and
+* continue or abort.
+*
+* data:, blob: and about: carry no network request anywhere, so they pass
+* through - the document itself is opened as a data: url. Everything else is
+* compared by full origin, and anything that will not parse is refused.
+* @param {string} url - the url the document asked for
+* @param {Set} origins - the allowed origins, from renderOrigins()
+* @returns {boolean} true if the request may proceed
+**/
+function isAllowedRenderUrl(url, origins) {
+    if (/^(data|blob|about):/.test(url)) {
+        return true;
+    }
+    let origin;
+    try {
+        origin = new URL(url).origin;
+    }
+    catch (error) {
+        return false;
+    }
+    //a url with no meaningful origin parses to the string "null"; it is not a
+    //Countly origin, so it is refused like anything else off the list
+    return !!origin && origins.has(origin);
+}
+exports.isAllowedRenderUrl = isAllowedRenderUrl;
 /**
   * Function to generate pdf from html
   * @param {string} html - html text to be converted to html
@@ -114,17 +146,7 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         await page.setRequestInterception(true);
         page.on('request', (request) => {
             const url = request.url();
-            if (/^(data|blob|about):/.test(url)) {
-                return request.continue();
-            }
-            let origin;
-            try {
-                origin = new URL(url).origin;
-            }
-            catch (error) {
-                origin = null;
-            }
-            if (origin && origins.has(origin)) {
+            if (isAllowedRenderUrl(url, origins)) {
                 return request.continue();
             }
             log.w('pdf render refused a request outside the countly origin', url);

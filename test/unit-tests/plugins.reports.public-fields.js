@@ -81,14 +81,85 @@ describe("reports, derived fields are not taken from storage", function() {
 
 });
 
-describe("reports, the pdf renderer keeps the same origin policy", function() {
-    it("does not launch chromium with web security disabled", function() {
+// --disable-web-security stays on the launch line, deliberately: the html is opened
+// as a data: url, whose origin is opaque, and Chromium refuses http subresources from
+// an opaque origin, so without the flag the template's own images do not load. What
+// made the flag dangerous was that the document could reach anything the server can -
+// loopback, the private network, a metadata service. The control for that is the
+// origin allow-list the renderer enforces per request, so that is what is asserted
+// here. An earlier version of this file asserted the flag had been removed, which was
+// the design before the allow-list replaced it.
+describe("reports, the pdf renderer refuses requests off the countly origin", function() {
+    var pdf = require("../../api/utils/pdf.js");
+
+    // The allowed set is built explicitly here rather than through renderOrigins(),
+    // because that function also adds whatever frontend/express/config.js names, and
+    // on a developer machine or a CI runner that is usually a loopback origin - which
+    // is exactly what several of these cases need to be outside the set.
+    var ALLOWED = new Set(["https://countly.example.test", "http://localhost:6001"]);
+
+    it("allows an origin on the list", function() {
+        pdf.isAllowedRenderUrl("https://countly.example.test/images/logo.png", ALLOWED)
+            .should.equal(true);
+    });
+
+    it("refuses the server's own network position", function() {
+        [
+            "http://169.254.169.254/latest/meta-data/",
+            "http://127.0.0.1:27017/",
+            "http://localhost:3001/i/apps/all",
+            "http://10.0.0.5/internal",
+            "https://attacker.example.test/collect"
+        ].forEach(function(url) {
+            pdf.isAllowedRenderUrl(url, ALLOWED).should.equal(false, url + " was allowed");
+        });
+    });
+
+    it("separates origins by scheme and port, not host alone", function() {
+        // countly is often on loopback itself, so every other service there would come
+        // along with it if the host were compared on its own
+        pdf.isAllowedRenderUrl("http://localhost:6001/x", ALLOWED).should.equal(true);
+        pdf.isAllowedRenderUrl("http://localhost:27017/x", ALLOWED).should.equal(false);
+        pdf.isAllowedRenderUrl("https://localhost:6001/x", ALLOWED).should.equal(false);
+    });
+
+    it("lets the document itself through", function() {
+        // the html is opened as a data: url and inline resources carry no network
+        // request, so refusing these would stop the render rather than protect it
+        var empty = new Set();
+        ["data:text/html,<p>x</p>", "blob:null/abc", "about:blank"].forEach(function(url) {
+            pdf.isAllowedRenderUrl(url, empty).should.equal(true, url + " was refused");
+        });
+    });
+
+    it("refuses a url it cannot parse", function() {
+        pdf.isAllowedRenderUrl("http://[", ALLOWED).should.equal(false);
+        pdf.isAllowedRenderUrl("://nonsense", ALLOWED).should.equal(false);
+    });
+
+    it("collects the origins a caller declares, and drops what will not parse", function() {
+        // asserted as a superset: renderOrigins also adds the configured countly
+        // origin, which differs between a developer machine and a runner
+        var origins = pdf.renderOrigins([
+            "https://countly.example.test/reports/x?y=1",
+            "not a url",
+            null,
+            undefined,
+            ""
+        ]);
+        origins.has("https://countly.example.test").should.equal(true);
+        origins.has("not a url").should.equal(false);
+        [...origins].forEach(function(origin) {
+            origin.should.match(/^[a-z]+:\/\//, origin + " is not an origin");
+        });
+    });
+
+    it("is what the report renderer actually passes", function() {
+        // the predicate above only protects anything if the origins reach renderPDF,
+        // and they are built from the send-time data rather than the stored document
         var fs = require("fs");
         var src = fs.readFileSync(__dirname + "/../../plugins/reports/api/reports.js", "utf8");
-        // the comment above the call records why the flag went, so match the array
-        var args = src.match(/args: \[[^\]]*\]/g) || [];
-        args.forEach(function(argList) {
-            argList.should.not.match(/disable-web-security/);
-        });
+        src.should.match(/let renderOrigins = \[message\.data && message\.data\.host\]/);
+        src.should.match(/renderPDF\([\s\S]*?,\s*true,\s*renderOrigins\)/);
     });
 });
