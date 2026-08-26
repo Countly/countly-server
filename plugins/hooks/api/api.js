@@ -464,7 +464,9 @@ plugins.register("/i/hook/save", function(ob) {
             );
         }
         catch (err) {
-            log.e('Parse hook failed', hookConfig);
+            //the error itself was dropped here, so every failure in this block looked alike
+            //from the logs - which is how the sanitizeConfig throw above went unnoticed
+            log.e('Parse hook failed', hookConfig, err);
             common.returnMessage(params, 500, "Failed to create an hook");
         }
     }, paramsInstance);
@@ -649,13 +651,21 @@ function getVisibilityQuery(query, params) {
  * @returns {sanitizedHookConfig} - sanitized hook config
  */
 function sanitizeConfig(hookConfig) {
-    if (hookConfig && hookConfig.effects) {
-        let emailEffectIndex = hookConfig.effects.findIndex(item => item.type === "EmailEffect");
-        if (emailEffectIndex > -1) {
-            let emailEffect = hookConfig.effects[emailEffectIndex];
-            let sanitizedTemplate = common.sanitizeHTML(emailEffect.configuration.emailTemplate);
-            emailEffect.configuration.emailTemplate = sanitizedTemplate;
-        }
+    if (hookConfig && Array.isArray(hookConfig.effects)) {
+        //every email effect, not just the first one findIndex stops at: a hook may carry
+        //several, and the ones after the first were reaching the database unsanitized
+        hookConfig.effects.forEach(function(effect) {
+            if (!effect || effect.type !== "EmailEffect" || !effect.configuration) {
+                return;
+            }
+            //an email effect without a template is a supported configuration - the effect
+            //falls back to a formatted dump of the trigger payload - but sanitizeHTML reads
+            //.replace off whatever it is given, so passing undefined threw and the save
+            //answered 500, making that configuration impossible to store
+            if (typeof effect.configuration.emailTemplate === "string") {
+                effect.configuration.emailTemplate = common.sanitizeHTML(effect.configuration.emailTemplate);
+            }
+        });
     }
     return hookConfig;
 
