@@ -2,8 +2,36 @@ var common = require('../../../../api/utils/common.js');
 var plugins = require('../../../pluginManager.js');
 var log = common.log('views:api');
 var crypto = require('crypto');
+var { hasReadRight } = require('../../../../api/utils/rights.js');
 
 module.exports = {
+    /**
+    * Whether a token's owner may read a feature for an app.
+    *
+    * hasReadRight covers feature permissions, an app admin and a global admin, but not
+    * the legacy membership validateRead still honours: a member stored before permission
+    * objects existed has no `permission` at all and is granted read through `user_of`.
+    * Refusing those would take away access the same member's api_key still has, so the
+    * fallback is applied here too, and a locked account is refused as validateRead
+    * refuses it.
+    * @param {object} member - the member a token resolved to
+    * @param {string} appId - id of the app the request resolved to
+    * @param {string} feature - feature being read
+    * @returns {boolean} true when this owner may read
+    **/
+    ownerCanRead: function(member, appId, feature) {
+        if (!member || member.locked) {
+            return false;
+        }
+        if (member.global_admin) {
+            return true;
+        }
+        if (typeof member.permission === "undefined") {
+            return Array.isArray(member.user_of) && member.user_of.indexOf(appId) !== -1;
+        }
+        return !!hasReadRight(feature, appId, member);
+    },
+
     ommit_segments: function(options, callback) {
         var db = options.db || common.db;
         var omit = options.omit || [];
