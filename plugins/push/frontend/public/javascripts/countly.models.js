@@ -900,13 +900,39 @@
                     return map[m];
                 });
             },
+            /**
+             * Escape text so it cannot contribute markup once the result reaches innerHTML.
+             *
+             * Deliberately a string replacement rather than countlyCommon.encodeHtml, which
+             * round-trips through innerText and would normalise newlines into <br>, changing
+             * the text and the offsets the personalization indexes rely on.
+             *
+             * @param {string} str - untrusted text
+             * @returns {string} the text, safe to place in an html string
+             */
+            escapeMessageText: function(str) {
+                return String(str)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;");
+            },
             buildMessageText: function(message, userPropertiesDto) {
                 var self = this;
                 if (!message) {
                     message = "";
                 }
                 if (!userPropertiesDto) {
-                    return message;
+                    //the same round trip the personalization path makes below, for the same
+                    //reason: the result is handed to innerHTML in
+                    //getPreviewMessageComponentsList. Returning the value untouched relied on
+                    //the api having escaped it, which holds for a stored notification and not
+                    //for text typed into the editor, whose state this preview also renders.
+                    //
+                    //Decode then escape rather than escape alone: escaping an already escaped
+                    //message would show &lt;b&gt; to the user instead of what they wrote.
+                    return self.escapeMessageText(self.decodeHtml(message));
                 }
                 // var html = '',
                 //     keys = this.sortUserProperties(userPropertiesDto),
@@ -936,11 +962,31 @@
                 //     }
                 // });
                 // return html;
+                //The indexes in userPropertiesDto are offsets into the message as it was typed,
+                //so the escaping the api applied has to come off before they can line up. The
+                //result is handed to innerHTML further along, in
+                //getPreviewMessageComponentsList, which is what made a tag in the message run.
+                //
+                //So the placeholders go in as opaque tokens first, the whole string is escaped,
+                //and the tokens are swapped for their elements afterwards. The arithmetic below
+                //is untouched: a token takes the element's place and is the same string for
+                //length purposes, so every position it computes is the position it computed
+                //before. Only markup generated here survives the escape.
                 var messageInHTMLString = this.decodeHtml(message);
+                //A fixed token could be typed into the message. Then the replacement below
+                //cannot tell the author's text from ours: it becomes an extra personalization
+                //span, or disappears when the index is out of range, and the edit state carries
+                //that corruption back on save. A per call nonce cannot be guessed or typed.
+                //
+                //Length is not constrained - the arithmetic below measures the token it
+                //actually inserted - so this changes nothing about the offsets.
+                var tokenNonce = "CLYPERS" + Math.random().toString(36).slice(2, 10);
+                var placeholderElements = [];
                 var buildMessageLength = 0;
                 var previousIndex = undefined;
                 this.sortUserProperties(userPropertiesDto).forEach(function(currentUserPropertyIndex, index) {
-                    var userPropertyStringElement = self.getUserPropertyElement(currentUserPropertyIndex, userPropertiesDto[currentUserPropertyIndex]);
+                    var userPropertyStringElement = "@@" + tokenNonce + "_" + placeholderElements.length + "@@";
+                    placeholderElements.push(self.getUserPropertyElement(currentUserPropertyIndex, userPropertiesDto[currentUserPropertyIndex]));
                     if (index === 0) {
                         messageInHTMLString = self.insertUserPropertyAtIndex(messageInHTMLString, currentUserPropertyIndex, userPropertyStringElement);
                         buildMessageLength = Number(currentUserPropertyIndex) + userPropertyStringElement.length;
@@ -956,7 +1002,10 @@
                     }
                     previousIndex = currentUserPropertyIndex;
                 });
-                return messageInHTMLString;
+                //The token has no character the escape touches, so it comes through intact.
+                return self.escapeMessageText(messageInHTMLString).replace(new RegExp("@@" + tokenNonce + "_(\\d+)@@", "g"), function(match, tokenIndex) {
+                    return placeholderElements[Number(tokenIndex)] || "";
+                });
             },
             mapType: function(dto) {
                 if (dto.triggers[0].kind === 'plain') {
