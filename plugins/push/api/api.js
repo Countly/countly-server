@@ -71,6 +71,12 @@ plugins.setConfigs(FEATURE_NAME, {
     message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
 });
 
+//outbound proxy credentials for sending pushes
+plugins.setSecretConfigs(FEATURE_NAME, {
+    proxyuser: true,
+    proxypass: true
+});
+
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_action');
