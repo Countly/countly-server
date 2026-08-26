@@ -490,6 +490,11 @@ usersApi.mergeOtherPlugins = function(options, callback) {
 
 usersApi.mergeUserProperties = function(newAppUserP, oldAppUser) {
     for (var i in oldAppUser) {
+        // a key off a stored document or a parsed payload can be a prototype
+        // member name; writing through one would reach Object.prototype
+        if (i === "__proto__" || i === "constructor" || i === "prototype") {
+            continue;
+        }
         // sum up session count and total session duration
         if (i === "sc" || i === "tsd") {
             if (typeof newAppUserP[i] === "undefined") {
