@@ -31,9 +31,20 @@ function validate_token_if_exists(params) {
                 qstring: params.qstring,
                 token: token,
                 req_path: params.fullPath,
+                //ask for the document rather than just the owner, and keep it on params.
+                //A single use token (multi false) is consumed by this very call, so a
+                //handler that wants to know what the token was restricted to cannot read
+                //it back afterwards - the row is already gone, and absence would read as
+                //"no restriction". This is the only point at which it is still there.
+                return_data: true,
                 callback: function(valid) {
-                //false or owner.id
-                    if (valid) {
+                //false, or the token document because return_data is set
+                    if (valid && typeof valid === "object") {
+                        params.token_data = valid;
+                        resolve(valid.owner);
+                    }
+                    else if (valid) {
+                        //an authorizer that ignored return_data would hand back the owner id
                         resolve(valid);
                     }
                     else {

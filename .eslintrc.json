@@ -122,6 +122,13 @@
     },
     "overrides": [
         {
+            "files": ["api/**/*.js", "plugins/*/api/**/*.js"],
+            "excludedFiles": ["**/tests.js", "**/tests/**"],
+            "rules": {
+                "no-prototype-pollution-sink": "error"
+            }
+        },
+        {
             "files": [
                 "frontend/express/public/javascripts/countly/*.js",
                 "frontend/express/public/javascripts/countly/vue/*.js",
