@@ -14,9 +14,15 @@ const { EJSON } = require('bson');
 const FEATURE_NAME = 'dbviewer';
 // upper bound on rows returned per find()/aggregation page
 const MAX_DBVIEWER_LIMIT = 10000;
-// role-parameterized aggregation guard + find() query hardening helpers
-const { sanitizeAggregation, ALLOWED_STAGES_USER, ALLOWED_STAGES_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
-const { sanitizeProjection, escapeRegExp } = require('./parts/query_guard.js');
+// Allow-list of MongoDB operators and the validator that rejects a pipeline using
+// anything outside it, at any depth. Kept in a dedicated module so it can be
+// unit-tested in isolation.
+const { sanitizeAggregation, ALLOWED_OPERATORS_USER, ALLOWED_OPERATORS_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
+const { findDisallowedProjectionValue, escapeRegExp } = require('./parts/query_guard.js');
+// Fields the viewer must never return, and the helpers that remove them. Held in one
+// module because the same redaction applies in three places (document read,
+// collection read, aggregation) and a per-site list drifts.
+const { hasRedactedFields, redactFields, redactionStage } = require('./parts/redaction.js');
 var spawn = require('child_process').spawn,
     child;
 (function() {
@@ -123,10 +129,8 @@ var spawn = require('child_process').spawn,
                 if (dbs[dbNameOnParam]) {
                     dbs[dbNameOnParam].collection(params.qstring.collection).findOne({ _id: params.qstring.document }, function(err, results) {
                         if (!err) {
-                            if (params.qstring.collection === 'members' && results) {
-                                delete results.password;
-                                delete results.api_key;
-                                delete results.two_factor_auth;
+                            if (hasRedactedFields(params.qstring.collection)) {
+                                redactFields(params.qstring.collection, results);
                             }
                             else if (params.qstring.collection === 'auth_tokens' && results) {
                                 if (results._id) {
@@ -221,9 +225,15 @@ var spawn = require('child_process').spawn,
                 common.returnMessage(params, 400, common.unsafeQueryError(badOp));
                 return false;
             }
-            //restrict the projection to plain field include/exclude — drop any
-            //expression / field-path alias (e.g. {x:"$password"})
-            sanitizeProjection(projection);
+            //the projection must be plain field include/exclude. An expression or
+            //field-path alias (e.g. {x:"$password"}) could compute or rename fields
+            //the viewer otherwise removes, so reject rather than quietly dropping
+            //the field and returning different results than were asked for
+            var badProjection = findDisallowedProjectionValue(projection);
+            if (badProjection) {
+                common.returnMessage(params, 400, 'Projection for "' + badProjection.name + '" must be 0 or 1');
+                return false;
+            }
 
             if (dbs[dbNameOnParam]) {
                 try {
@@ -246,10 +256,8 @@ var spawn = require('child_process').spawn,
                     var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc) {
 
-                            if (params.qstring.collection === 'members' && doc) {
-                                delete doc.password;
-                                delete doc.api_key;
-                                delete doc.two_factor_auth;
+                            if (hasRedactedFields(params.qstring.collection)) {
+                                redactFields(params.qstring.collection, doc);
                             }
                             else if (params.qstring.collection === 'auth_tokens' && doc) {
                                 if (doc._id) {
@@ -378,13 +386,17 @@ var spawn = require('child_process').spawn,
                         aggregation.push({ "$limit": Math.min(iDisplayLength, MAX_DBVIEWER_LIMIT) });
                     }
                 }
-                // The pipeline has already been validated/sanitized by
-                // sanitizeAggregation() (allow-list of stages, no server-side JS,
-                // no joins into redacted collections) before this point.
-                // Insert the redaction as the very first stage so no user stage
-                // can read the raw credential fields before they are removed.
-                if (collection === 'members') {
-                    aggregation.splice(0, 0, {"$project": {"password": 0, "api_key": 0, "two_factor_auth": 0}});
+                // The pipeline has already been validated by sanitizeAggregation()
+                // (allow-list of operators, no server-side JS, no joins into
+                // redacted collections) before this point.
+                var redaction = redactionStage(collection);
+                if (redaction) {
+                    // Insert the redaction as the very first stage so no
+                    // user-supplied stage — including a leading $match using
+                    // $expr, or a $project/$group that aliases or references the
+                    // field — can read the raw credential fields before they are
+                    // removed.
+                    aggregation.splice(0, 0, redaction);
                 }
                 else if (collection === 'auth_tokens') {
                     aggregation.splice(0, 0, {"$addFields": {"_id": "***redacted***"}});
@@ -524,20 +536,28 @@ var spawn = require('child_process').spawn,
             }
             // handle aggregation request
             else if (isContainDb && params.qstring.aggregation) {
-                // Validate the pipeline against the caller's allow-list and run
-                // it. Global admins get the broader list (may join/union, but
-                // still no writes and never into a redacted collection); other
-                // users get the restricted list. Disallowed stages are stripped;
-                // server-side-JS operators and joins into members/auth_tokens
-                // reject the request.
-                var runAggregation = function(allowedStages) {
+                // Validate the pipeline against the caller's allow-list of MongoDB
+                // operators and run it unchanged. Global admins get the broader
+                // list (they may join and union, but still not into a redacted
+                // collection); other users get the restricted one. Anything the
+                // caller may not use rejects the request rather than being removed
+                // from the pipeline, so the result is never quietly different from
+                // what was asked for.
+                var runAggregation = function(allowedOperators) {
                     try {
                         let aggregation = EJSON.parse(params.qstring.aggregation);
-                        var guard = sanitizeAggregation(aggregation, allowedStages);
+                        var guard = sanitizeAggregation(aggregation, allowedOperators);
                         if (guard.error) {
-                            var msg = guard.error.type === "join"
-                                ? 'Aggregation may not join the "' + guard.error.name + '" collection'
-                                : 'Aggregation may not use the "' + guard.error.name + '" operator';
+                            var msg;
+                            if (guard.error.type === "join") {
+                                msg = 'Aggregation may not join the "' + guard.error.name + '" collection';
+                            }
+                            else if (guard.error.type === "stage") {
+                                msg = 'Aggregation stage at ' + guard.error.where + ' does not name a pipeline stage';
+                            }
+                            else {
+                                msg = 'Aggregation may not use the "' + guard.error.name + '" operator (at ' + guard.error.where + ')';
+                            }
                             common.returnMessage(params, 400, msg);
                             return;
                         }
@@ -548,12 +568,12 @@ var spawn = require('child_process').spawn,
                     }
                 };
                 if (params.member.global_admin) {
-                    runAggregation(ALLOWED_STAGES_GLOBAL_ADMIN);
+                    runAggregation(ALLOWED_OPERATORS_GLOBAL_ADMIN);
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
                         if (hasAccess) {
-                            runAggregation(ALLOWED_STAGES_USER);
+                            runAggregation(ALLOWED_OPERATORS_USER);
                         }
                         else {
                             common.returnMessage(params, 401, 'User does not have right tot view this colleciton');

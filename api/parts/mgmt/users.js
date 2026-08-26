@@ -24,9 +24,26 @@ var crypto = require('crypto');
 * @returns {boolean} true
 **/
 usersApi.getCurrentUser = function(params) {
-    delete params.member.password;
+    //Answer with a copy, so removing fields here cannot affect the member object the rest
+    //of the request still uses.
+    var member = Object.assign({}, params.member);
 
-    common.returnOutput(params, params.member);
+    //The api_key is not scoped: it grants everything its owner can do, on every app they
+    //can reach. getUserById and getAllUsers already project it away, and the member event
+    //payloads delete it, so this was the one read path that handed it out. It matters here
+    //because a request can be authorized by a token rather than by the key itself, and a
+    //token can be limited to a single app, so returning the key would let a token that is
+    //limited to one app produce a credential that is limited to nothing. Anyone who needs
+    //their own key can still read it from the dashboard's /api-key route.
+    delete member.password;
+    delete member.api_key;
+    //Same reasoning for the second factor, whose secret lives on the member document: a
+    //response carrying both the key and the secret behind the factor protecting it protects
+    //nothing. The whole object goes, since this endpoint has no consumer that needs it and
+    //the enabled flag is available from the user listing.
+    delete member.two_factor_auth;
+
+    common.returnOutput(params, member);
     return true;
 };
 
