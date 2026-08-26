@@ -75,6 +75,36 @@ var versionInfo = require('./version.info'),
     { validateCreate } = require('../../api/utils/rights.js'),
     tracker = require('../../api/parts/mgmt/tracker.js');
 
+//Language codes as the dashboard uses them, e.g. "en", "pt-br", "zh_CN", "zh-Hans-CN".
+//Repeated subtags are allowed because a deployment can extend locale.conf.js with a code
+//that has more than one, and the shape alone is not what decides acceptance - see
+//isSelectableLang.
+var LANG_CODE_RE = /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8}){0,3}$/;
+
+/**
+* Whether a language code may be stored as a member's preference.
+*
+* Checked against the list the dashboard actually offers rather than against a shape,
+* because the shape is the weaker statement: locale.conf.js is the same list the language
+* menu is built from, plugins extend it through plugins.extendModule, and both places that
+* post here send a code straight out of that menu. So a deployment that ships extra
+* localization files can select them, and nothing else is accepted at all.
+*
+* The shape is still checked, because the stored value reaches file paths - for example
+* api/utils/localization.js and the plugin localization lookups - and the list is
+* deployment configuration rather than something this route validated.
+* @param {string} lang - language code as posted
+* @returns {boolean} true when it is one of the configured languages
+**/
+function isSelectableLang(lang) {
+    if (typeof lang !== "string" || !LANG_CODE_RE.test(lang)) {
+        return false;
+    }
+    return Array.isArray(languages) && languages.some(function(locale) {
+        return locale && locale.code === lang;
+    });
+}
+
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
@@ -1861,8 +1891,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
         var updatedUser = {};
 
-        if (req.body.lang) {
-            updatedUser.lang = req.body.lang;
+        //The stored lang reaches file paths in several places, for example
+        //api/utils/localization.js and the plugin localization lookups, so it is checked
+        //here rather than relying on every reader to sanitize it.
+        if (req.body.lang && isSelectableLang(req.body.lang + "")) {
+            updatedUser.lang = req.body.lang + "";
 
             countlyDb.collection('members').update({"_id": countlyDb.ObjectID(req.session.uid + "")}, {'$set': updatedUser}, {safe: true}, function(err, member) {
                 if (member && !err) {
@@ -1874,6 +1907,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             });
         }
         else {
+            //not one of the configured languages, so it did not come from the language
+            //menu. Logged because the only way to reach here is a hand made request.
+            log.w("Refused a language that is not in locale.conf");
             res.send(false);
             return false;
         }
