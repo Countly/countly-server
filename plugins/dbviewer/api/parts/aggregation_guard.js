@@ -1,104 +1,222 @@
 /**
  * @module plugins/dbviewer/api/parts/aggregation_guard
  * @description Validates a DB Viewer aggregation pipeline against a role-specific
- * allow-list of stages, and rejects pipelines that use server-side-JavaScript
- * operators or join/union into a redacted (credential) collection.
+ * allow-list of MongoDB operators, and rejects pipelines that join or union into a
+ * redacted (credential) collection.
  *
- * One routine, two lists:
- *  - non-global users get ALLOWED_STAGES_USER (no joins, no writes);
- *  - global admins get ALLOWED_STAGES_GLOBAL_ADMIN (the same plus join/union
- *    stages).
- * Anything not in the applicable list is stripped from the pipeline at every
- * depth. Two hard rules apply to everyone, at any depth, and reject the request:
- *  - no $function / $accumulator / $where (server-side JavaScript);
- *  - no join/union into members / auth_tokens (their field redaction only
- *    applies to the top-level source collection, so a join would return raw
- *    credentials — denied even for global admins).
+ * HOW THIS WORKS, AND WHY IT IS SHAPED THIS WAY
+ *
+ * The pipeline is walked blindly: every object and array, at every depth, with no
+ * attempt to work out which arrays are sub-pipelines and which are ordinary
+ * expression arrays. Only keys are examined, and only keys beginning with "$".
+ * Any such key that is not on the allow-list rejects the whole request.
+ *
+ * Two properties make that both safe and complete:
+ *
+ *  - MongoDB will not let a "$"-prefixed key be an ordinary field. A document may
+ *    store a field named "$price", but it can only be read through $getField,
+ *    where the name is a VALUE. {$match:{"$price":5}} is an error ("unknown top
+ *    level operator"), as is projecting or sorting on it. So a "$"-prefixed key in
+ *    a valid pipeline is always part of the query language rather than data.
+ *
+ *    It is not always an OPERATOR, though, which an earlier version of this file
+ *    assumed and was wrong about: the geospatial and text query operators spell
+ *    their options with a "$" too, and {$geoWithin: {$centerSphere: [...]}} is
+ *    ordinary MongoDB that Countly itself builds. Those option keys are declared in
+ *    OPERATOR_OPTION_KEYS and accepted only directly inside the operator that owns
+ *    them, so nothing is widened for a key appearing anywhere else.
+ *  - A stage only executes if its name appears as a literal key in the submitted
+ *    pipeline. Computed values never become stages: an object built with $setField
+ *    whose key is "$lookup" is data, and joins nothing. So checking literal keys
+ *    catches everything that can run.
+ *
+ * KEYS ONLY, NEVER VALUES. {$literal:"$lookup"} is a legitimate expression
+ * returning the string "$lookup", and "$fieldname" / "$$ROOT" are ordinary value
+ * references. Inspecting values would reject valid queries.
+ *
+ * EXACT MATCH ONLY. $mergeObjects is legitimate and must not be caught by a prefix
+ * or substring test for $merge.
+ *
+ * WHY AN ALLOW-LIST RATHER THAN A LIST OF DANGEROUS OPERATORS
+ *
+ * An omission here rejects a valid query, which is a support ticket. An omission
+ * from a list of dangerous operators permits an exfiltration, which is a
+ * vulnerability. Those costs are not equal, so this fails closed: an operator
+ * introduced by a future MongoDB release is rejected until reviewed and added.
+ *
+ * The previous two versions of this guard both failed by trying to identify
+ * sub-pipelines from their contents, which let one unrecognised sibling stage hide
+ * a $lookup from the stage filter. Nothing here infers structure. If a future
+ * change reintroduces inference, make it fail closed.
+ *
+ * MAINTENANCE. The lists below were verified against a live MongoDB 8.0 by probing
+ * every entry; verify_operators.js in this directory is the means of re-verifying
+ * them. Run it on a MongoDB upgrade: operators added by the new release will be
+ * rejected until added here, and entries that no longer exist should be removed.
+ * That probe found a real misspelling in the previous version of this file,
+ * "$sharedDataDistribution" for "$shardedDataDistribution", so do not hand-edit
+ * these lists without re-running it.
+ *
+ * DELIBERATELY ABSENT, and therefore rejected:
+ *  - joins and unions for non-global users: $lookup, $graphLookup, $unionWith
+ *    (they read a second collection, bypassing the per-collection access check)
+ *  - writes: $out, $merge
+ *  - server-side JavaScript: $function, $accumulator, $where
+ *  - server, cluster and internal introspection: $currentOp, $collStats,
+ *    $indexStats, $planCacheStats, $listSessions, $listLocalSessions,
+ *    $listSampledQueries, $listSearchIndexes, $shardedDataDistribution,
+ *    $changeStream, $changeStreamSplitLargeEvents, $mergeCursors, $documents,
+ *    $listClusterCatalog, and every $_internal* stage
  */
 
 'use strict';
 
-// Stages a non-global user may run. No joins/unions (they read a second
-// collection, bypassing the per-collection access check) and no writes.
-const ALLOWED_STAGES_USER = {
-    "$addFields": true,
-    "$bucket": true,
-    "$bucketAuto": true,
-    "$count": true,
-    "$densify": true,
-    "$facet": true,
-    "$fill": true,
-    "$geoNear": true,
-    "$group": true,
-    "$limit": true,
-    "$match": true,
-    "$project": true,
-    "$querySettings": true,
-    "$redact": true,
-    "$replaceRoot": true,
-    "$replaceWith": true,
-    "$sample": true,
-    "$search": true,
-    "$searchMeta": true,
-    "$set": true,
-    "$setWindowFields": true,
-    "$skip": true,
-    "$sort": true,
-    "$sortByCount": true,
-    "$unset": true,
-    "$unwind": true,
-    "$vectorSearch": true //atlas specific
+// Pipeline stages a non-global user may run. Unchanged from the previous version of
+// this guard, so this is not a widening of what anyone can do.
+const STAGES_USER = [
+    "$addFields", "$bucket", "$bucketAuto", "$count", "$densify", "$facet",
+    "$fill", "$geoNear", "$group", "$limit", "$match", "$project",
+    "$querySettings", "$redact", "$replaceRoot", "$replaceWith", "$sample",
+    "$search", "$searchMeta", "$set", "$setWindowFields", "$skip", "$sort",
+    "$sortByCount", "$unset", "$unwind", "$vectorSearch"
+];
+
+// Join and union stages, for global admins only. Still never into a protected
+// collection: see findProtectedJoin below.
+const STAGES_GLOBAL_ADMIN_ONLY = ["$lookup", "$graphLookup", "$unionWith"];
+
+// Expression operators, accumulators and window operators. These live inside
+// stages rather than being stages, and a blind walk meets them constantly, so they
+// have to be listed or every real query is rejected.
+const EXPRESSION_OPERATORS = [
+    // arithmetic
+    "$abs", "$add", "$ceil", "$divide", "$exp", "$floor", "$ln", "$log",
+    "$log10", "$mod", "$multiply", "$pow", "$round", "$sqrt", "$subtract",
+    "$trunc",
+    // bitwise, added in MongoDB 6.3/8.0
+    "$bitAnd", "$bitNot", "$bitOr", "$bitXor",
+    // array
+    "$arrayElemAt", "$arrayToObject", "$concatArrays", "$filter", "$first",
+    "$firstN", "$in", "$indexOfArray", "$isArray", "$last", "$lastN", "$map",
+    "$maxN", "$minN", "$objectToArray", "$range", "$reduce", "$reverseArray",
+    "$size", "$slice", "$sortArray", "$zip",
+    // boolean and comparison
+    "$and", "$not", "$or", "$cmp", "$eq", "$gt", "$gte", "$lt", "$lte", "$ne",
+    // conditional
+    "$cond", "$ifNull", "$switch",
+    // data size
+    "$binarySize", "$bsonSize",
+    // date
+    "$dateAdd", "$dateDiff", "$dateFromParts", "$dateFromString",
+    "$dateSubtract", "$dateToParts", "$dateToString", "$dateTrunc",
+    "$dayOfMonth", "$dayOfWeek", "$dayOfYear", "$hour", "$isoDayOfWeek",
+    "$isoWeek", "$isoWeekYear", "$millisecond", "$minute", "$month", "$second",
+    "$week", "$year", "$tsIncrement", "$tsSecond",
+    // literal, object, variable and misc
+    "$literal", "$getField", "$rand", "$setField", "$unsetField",
+    "$mergeObjects", "$let", "$toHashedIndexKey",
+    // set
+    "$allElementsTrue", "$anyElementTrue", "$setDifference", "$setEquals",
+    "$setIntersection", "$setIsSubset", "$setUnion",
+    // string
+    "$concat", "$indexOfBytes", "$indexOfCP", "$ltrim", "$regexFind",
+    "$regexFindAll", "$regexMatch", "$replaceOne", "$replaceAll", "$rtrim",
+    "$split", "$strLenBytes", "$strLenCP", "$strcasecmp", "$substr",
+    "$substrBytes", "$substrCP", "$toLower", "$trim", "$toUpper",
+    // text score
+    "$meta",
+    // trigonometry
+    "$sin", "$cos", "$tan", "$asin", "$acos", "$atan", "$atan2", "$asinh",
+    "$acosh", "$atanh", "$sinh", "$cosh", "$tanh", "$degreesToRadians",
+    "$radiansToDegrees",
+    // type conversion
+    "$convert", "$isNumber", "$toBool", "$toDate", "$toDecimal", "$toDouble",
+    "$toInt", "$toLong", "$toObjectId", "$toString", "$type", "$toUUID",
+    // accumulators, valid in $group and/or $setWindowFields
+    "$addToSet", "$avg", "$bottom", "$bottomN", "$covariancePop",
+    "$covarianceSamp", "$denseRank", "$derivative", "$documentNumber",
+    "$expMovingAvg", "$integral", "$linearFill", "$locf", "$max", "$median",
+    "$min", "$percentile", "$push", "$rank", "$shift", "$stdDevPop",
+    "$stdDevSamp", "$sum", "$top", "$topN"
+];
+
+// Query operators, reachable through $match. $where is absent on purpose: it runs
+// server-side JavaScript.
+const QUERY_OPERATORS = [
+    "$eq", "$gt", "$gte", "$in", "$lt", "$lte", "$ne", "$nin",
+    "$and", "$not", "$nor", "$or",
+    "$exists", "$type", "$expr", "$jsonSchema", "$mod", "$regex", "$options",
+    "$text", "$geoIntersects", "$geoWithin", "$near", "$nearSphere",
+    "$all", "$elemMatch", "$size",
+    "$bitsAllClear", "$bitsAllSet", "$bitsAnyClear", "$bitsAnySet",
+    "$comment", "$sampleRate"
+];
+
+// Dollar-prefixed keys that are OPTIONS of a particular operator rather than
+// operators in their own right. MongoDB spells the options of the geospatial and
+// text query operators with a "$", and they are legal only directly inside the
+// operator that owns them.
+//
+// Scoped to that operator rather than added to the allow-list above, because
+// {$match: {loc: {$geometry: ...}}} is not valid MongoDB and must stay rejected -
+// widening the flat list would accept it. This is a declared table, not structure
+// inferred from the contents: an option key is recognised because its parent key
+// says so, one level, and nowhere else.
+const OPERATOR_OPTION_KEYS = {
+    "$geoWithin": ["$box", "$center", "$centerSphere", "$geometry", "$polygon"],
+    "$geoIntersects": ["$geometry"],
+    "$near": ["$geometry", "$maxDistance", "$minDistance"],
+    "$nearSphere": ["$geometry", "$maxDistance", "$minDistance"],
+    "$text": ["$search", "$language", "$caseSensitive", "$diacriticSensitive"]
 };
-
-// Global admins may additionally use the join/union stages. Still no write
-// stages, and still never into a protected collection (see findHardViolation).
-const ALLOWED_STAGES_GLOBAL_ADMIN = Object.assign({}, ALLOWED_STAGES_USER, {
-    "$lookup": true,
-    "$graphLookup": true,
-    "$unionWith": true
-});
-
-// Expression operators that run server-side JavaScript. Never allowed for
-// anyone, at any depth — they live inside otherwise-allowed stages.
-const DENIED_OPERATORS = {
-    "$function": true,
-    "$accumulator": true,
-    "$where": true
-};
-
-// Collections whose contents DB Viewer redacts. A join/union into them would
-// return the raw documents (redaction only applies to the top-level source),
-// so such joins are rejected for everyone — including global admins.
-const PROTECTED_JOIN_COLLECTIONS = {
-    "members": true,
-    "auth_tokens": true
-};
-
-// All recognized aggregation STAGE operators (any role's allow-list plus the
-// known blocked stages), used to recognize a nested array as a sub-pipeline
-// (array of stage objects) and tell it apart from an ordinary expression array.
-const KNOWN_STAGE_OPERATORS = Object.assign({
-    "$out": true,
-    "$merge": true,
-    "$documents": true,
-    "$collStats": true,
-    "$indexStats": true,
-    "$currentOp": true,
-    "$listSessions": true,
-    "$listLocalSessions": true,
-    "$listSampledQueries": true,
-    "$listSearchIndexes": true,
-    "$planCacheStats": true,
-    "$changeStream": true,
-    "$changeStreamSplitLargeEvents": true,
-    "$mergeCursors": true,
-    "$sharedDataDistribution": true
-}, ALLOWED_STAGES_GLOBAL_ADMIN);
 
 /**
- * Extract the collection name from a join "from"/"coll" reference, which may be
- * a plain string ("members") or the cross-database object form
- * ({ db, coll }). Returns [] when no collection name can be determined.
+ * Build the option-key lookup for one operator.
+ * @param {string} operator - the owning operator name
+ * @returns {object|null} map of permitted option key to true, or null
+ */
+function optionKeysFor(operator) {
+    if (!Object.prototype.hasOwnProperty.call(OPERATOR_OPTION_KEYS, operator)) {
+        return null;
+    }
+    var names = OPERATOR_OPTION_KEYS[operator];
+    var map = {};
+    for (var i = 0; i < names.length; i++) {
+        map[names[i]] = true;
+    }
+    return map;
+}
+
+/**
+ * Build a lookup object from operator name lists.
+ * @returns {object} map of operator name to true
+ */
+function toMap() {
+    var map = {};
+    for (var i = 0; i < arguments.length; i++) {
+        var list = arguments[i];
+        for (var j = 0; j < list.length; j++) {
+            map[list[j]] = true;
+        }
+    }
+    return map;
+}
+
+const ALLOWED_OPERATORS_USER = toMap(STAGES_USER, EXPRESSION_OPERATORS, QUERY_OPERATORS);
+const ALLOWED_OPERATORS_GLOBAL_ADMIN = toMap(STAGES_USER, STAGES_GLOBAL_ADMIN_ONLY, EXPRESSION_OPERATORS, QUERY_OPERATORS);
+
+// Collections whose contents DB Viewer redacts. A join or union into them would
+// return the raw documents, because the redaction only applies to the top-level
+// source collection, so those are rejected for everyone including global admins.
+const PROTECTED_JOIN_COLLECTIONS = {
+    "members": true,
+    "auth_tokens": true,
+    "password_reset": true
+};
+
+/**
+ * Extract the collection name from a join "from"/"coll" reference, which may be a
+ * plain string ("members") or the cross-database object form ({ db, coll }).
  * @param {*} from - a $lookup.from / $graphLookup.from / $unionWith.coll value
  * @returns {string[]} the referenced collection name(s)
  */
@@ -113,7 +231,7 @@ function collectionOf(from) {
 }
 
 /**
- * Collection names a single stage joins / unions from.
+ * Collection names a single stage joins or unions from.
  * @param {object} stage - one aggregation stage
  * @returns {string[]} target collection names referenced by join/union operators
  */
@@ -140,47 +258,16 @@ function joinTargetsOf(stage) {
 }
 
 /**
- * Does this array look like an aggregation sub-pipeline — a non-empty array
- * whose every element is a stage object (an object carrying a recognized stage
- * operator key)? Expression arrays (e.g. $concat operands) do not match.
- * @param {*} arr - candidate value
- * @returns {boolean} true if it is a sub-pipeline
+ * Deep-scan for a join or union into a protected collection, at any depth. This one
+ * inspects VALUES (the "from"/"coll" names) rather than keys, so it stays a
+ * separate pass from the operator check.
+ * @param {*} node - pipeline / stage / expression node (not mutated)
+ * @returns {object|null} { name } of the protected collection, or null
  */
-function isSubPipeline(arr) {
-    if (!Array.isArray(arr) || arr.length === 0) {
-        return false;
-    }
-    for (var i = 0; i < arr.length; i++) {
-        var el = arr[i];
-        if (!el || typeof el !== "object" || Array.isArray(el)) {
-            return false;
-        }
-        var isStage = false;
-        for (var k in el) {
-            if (Object.prototype.hasOwnProperty.call(el, k) && KNOWN_STAGE_OPERATORS[k] === true) {
-                isStage = true;
-                break;
-            }
-        }
-        if (!isStage) {
-            return false;
-        }
-    }
-    return true;
-}
-
-/**
- * Deep-walk a node for a hard-rule violation that must reject the whole request,
- * regardless of role: a server-side-JS operator, or a join/union into a
- * protected (redacted) collection. Detection-only (no mutation), so a blanket
- * deep walk is safe and stays correct for any (incl. future) nested shape.
- * @param {*} node - pipeline / stage / expression node
- * @returns {{type: string, name: string}|null} the violation, or null
- */
-function findHardViolation(node) {
+function findProtectedJoin(node) {
     if (Array.isArray(node)) {
         for (var i = 0; i < node.length; i++) {
-            var inArr = findHardViolation(node[i]);
+            var inArr = findProtectedJoin(node[i]);
             if (inArr) {
                 return inArr;
             }
@@ -191,17 +278,14 @@ function findHardViolation(node) {
         var targets = joinTargetsOf(node);
         for (var t = 0; t < targets.length; t++) {
             if (PROTECTED_JOIN_COLLECTIONS[targets[t]] === true) {
-                return { type: "join", name: targets[t] };
+                return { name: targets[t] };
             }
         }
         for (var key in node) {
             if (!Object.prototype.hasOwnProperty.call(node, key)) {
                 continue;
             }
-            if (DENIED_OPERATORS[key] === true) {
-                return { type: "operator", name: key };
-            }
-            var inVal = findHardViolation(node[key]);
+            var inVal = findProtectedJoin(node[key]);
             if (inVal) {
                 return inVal;
             }
@@ -211,112 +295,110 @@ function findHardViolation(node) {
 }
 
 /**
- * Walk a kept stage's value and strip disallowed stages from any sub-pipeline
- * nested anywhere within it (structural — $facet branches, a .pipeline field,
- * or any other nested-pipeline shape). A sub-pipeline emptied by stripping is
- * removed from its parent object (Mongo rejects an empty $facet branch).
- * @param {*} value - the stage value (or any nested node)
- * @param {object} allowedStages - the role's allow-list
- * @param {object} changes - accumulator: keys are removed stage names
- * @returns {void}
+ * Deep-scan for a "$"-prefixed KEY that is neither on the allow-list nor a declared
+ * option of the operator it sits directly inside.
+ *
+ * Blind traversal: no assumption about which arrays are sub-pipelines. Keys only,
+ * never values. Exact match, so $mergeObjects is not confused with $merge.
+ *
+ * Two things are not operators and are treated accordingly:
+ *
+ *  - the option keys in OPERATOR_OPTION_KEYS, permitted only directly inside their
+ *    own operator. {$geoWithin: {$centerSphere: [...]}} is ordinary MongoDB, and
+ *    Countly itself builds it (plugins/geo/api/geo.js); a flat scan rejected it.
+ *  - the value of $literal, which is data returned unevaluated. Descending into it
+ *    contradicted this module's own "keys only, never values" rule: {$literal:
+ *    {$lookup: 1}} is the object {$lookup: 1}, not a join.
+ *
+ * @param {*} node - pipeline / stage / expression node (not mutated)
+ * @param {object} allowedOperators - allow-list for the caller's role
+ * @param {string} path - position of the current node, for the error message
+ * @param {object|null} optionKeys - option keys the owning operator permits here
+ * @returns {object|null} { name, where } of the first offending key, or null
  */
-function stripNested(value, allowedStages, changes) {
-    if (Array.isArray(value)) {
-        if (isSubPipeline(value)) {
-            stripStages(value, allowedStages, changes);
-        }
-        else {
-            for (var i = 0; i < value.length; i++) {
-                stripNested(value[i], allowedStages, changes);
+function findDisallowedOperator(node, allowedOperators, path, optionKeys) {
+    if (Array.isArray(node)) {
+        for (var i = 0; i < node.length; i++) {
+            //an array is the operator's value, so its elements sit in the same
+            //position and keep the same option context
+            var inArr = findDisallowedOperator(node[i], allowedOperators, path + "[" + i + "]", optionKeys);
+            if (inArr) {
+                return inArr;
             }
         }
-        return;
+        return null;
     }
-    if (value && typeof value === "object") {
-        for (var k in value) {
-            if (!Object.prototype.hasOwnProperty.call(value, k)) {
-                continue;
-            }
-            var child = value[k];
-            if (Array.isArray(child) && isSubPipeline(child)) {
-                stripStages(child, allowedStages, changes);
-                if (child.length === 0) {
-                    delete value[k];
-                }
-            }
-            else {
-                stripNested(child, allowedStages, changes);
-            }
-        }
-    }
-}
-
-/**
- * Recursively remove stages not in `allowedStages` from a pipeline, at every
- * depth. Mutates the pipeline in place.
- * @param {Array} pipeline - aggregation pipeline
- * @param {object} allowedStages - the role's allow-list (values must be === true)
- * @param {object} changes - accumulator: keys are removed stage names
- * @returns {void}
- */
-function stripStages(pipeline, allowedStages, changes) {
-    if (!Array.isArray(pipeline)) {
-        return;
-    }
-    for (var z = 0; z < pipeline.length; z++) {
-        var stage = pipeline[z];
-        if (!stage || typeof stage !== "object") {
-            continue;
-        }
-        for (var key in stage) {
-            if (!Object.prototype.hasOwnProperty.call(stage, key)) {
+    if (node && typeof node === "object") {
+        for (var key in node) {
+            if (!Object.prototype.hasOwnProperty.call(node, key)) {
                 continue;
             }
             // require an explicit `true` so inherited Object.prototype keys
-            // (constructor, __proto__, …) are never treated as allow-listed
-            if (allowedStages[key] !== true) {
-                changes[key] = true;
-                delete stage[key];
+            // (constructor, __proto__, ...) are never treated as allow-listed
+            if (key.charAt(0) === "$" && allowedOperators[key] !== true && !(optionKeys && optionKeys[key] === true)) {
+                return { name: key, where: path + "." + key };
             }
-            else {
-                stripNested(stage[key], allowedStages, changes);
-                var v = stage[key];
-                if (v && typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) {
-                    delete stage[key];
-                }
+            if (key === "$literal") {
+                continue;
             }
-        }
-        if (Object.keys(stage).length === 0) {
-            pipeline.splice(z, 1);
-            z--;
+            var inVal = findDisallowedOperator(node[key], allowedOperators, path + "." + key, optionKeysFor(key));
+            if (inVal) {
+                return inVal;
+            }
         }
     }
+    return null;
 }
 
 /**
- * Validate and sanitize an aggregation pipeline for a given role's allow-list.
- * Rejects (without mutating) when a hard rule is violated; otherwise strips any
- * stage not in the allow-list and returns what was removed.
- * @param {Array} pipeline - aggregation pipeline (mutated in place when valid)
- * @param {object} allowedStages - ALLOWED_STAGES_USER or ALLOWED_STAGES_GLOBAL_ADMIN
- * @returns {{changes: object, error: ({type: string, name: string}|null)}}
- *          When error is set the caller must reject the request and not run the
- *          pipeline. Otherwise changes lists the removed stage names.
+ * Validate an aggregation pipeline. The pipeline is never modified: one that uses
+ * something it may not use is rejected, so the caller either runs exactly what was
+ * asked for or gets an error explaining why not.
+ *
+ * @param {Array} pipeline - parsed aggregation pipeline (not mutated)
+ * @param {object} allowedOperators - ALLOWED_OPERATORS_USER or _GLOBAL_ADMIN
+ * @returns {{changes: object, error: ({type: string, name: string, where: string}|null)}}
+ *          When error is set the caller must reject the request. changes is always
+ *          empty and is kept only so the response shape does not change.
  */
-function sanitizeAggregation(pipeline, allowedStages) {
-    var violation = findHardViolation(pipeline);
-    if (violation) {
-        return { changes: {}, error: violation };
+function sanitizeAggregation(pipeline, allowedOperators) {
+    var join = findProtectedJoin(pipeline);
+    if (join) {
+        return { changes: {}, error: { type: "join", name: join.name } };
     }
-    var changes = {};
-    stripStages(pipeline, allowedStages, changes);
-    return { changes: changes, error: null };
+    var operator = findDisallowedOperator(pipeline, allowedOperators, "pipeline", null);
+    if (operator) {
+        return { changes: {}, error: { type: "operator", name: operator.name, where: operator.where } };
+    }
+    // Top-level elements are stages by position, so each must actually name one.
+    // This is not structural inference: it only says that a stage object carries a
+    // stage operator. It catches an element whose only keys are ordinary names
+    // ("constructor", "__proto__", a stray field) with a clear message, rather than
+    // handing it to MongoDB to reject.
+    if (Array.isArray(pipeline)) {
+        for (var i = 0; i < pipeline.length; i++) {
+            var stage = pipeline[i];
+            if (!stage || typeof stage !== "object" || Array.isArray(stage)) {
+                return { changes: {}, error: { type: "stage", name: String(stage), where: "pipeline[" + i + "]" } };
+            }
+            var named = false;
+            for (var key in stage) {
+                if (Object.prototype.hasOwnProperty.call(stage, key) && key.charAt(0) === "$") {
+                    named = true;
+                    break;
+                }
+            }
+            if (!named) {
+                return { changes: {}, error: { type: "stage", name: Object.keys(stage).join(","), where: "pipeline[" + i + "]" } };
+            }
+        }
+    }
+    return { changes: {}, error: null };
 }
 
 module.exports = {
-    ALLOWED_STAGES_USER,
-    ALLOWED_STAGES_GLOBAL_ADMIN,
-    DENIED_OPERATORS,
+    ALLOWED_OPERATORS_USER,
+    ALLOWED_OPERATORS_GLOBAL_ADMIN,
     PROTECTED_JOIN_COLLECTIONS,
     sanitizeAggregation
 };

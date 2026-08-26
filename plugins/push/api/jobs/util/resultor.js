@@ -415,6 +415,11 @@ class Resultor extends DoFinish {
 
         // changed tokens - set new ones
         for (let aid in this.changed) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (aid === "__proto__" || aid === "constructor" || aid === "prototype") {
+                continue;
+            }
             let collection = 'push_' + aid;
             if (!updates[collection]) {
                 updates[collection] = [];
@@ -438,6 +443,11 @@ class Resultor extends DoFinish {
 
         // expired tokens - unset
         for (let aid in this.removeTokens) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (aid === "__proto__" || aid === "constructor" || aid === "prototype") {
+                continue;
+            }
             let collectionPush = `push_${aid}`,
                 collectionAppUsers = `app_users${aid}`;
             if (!updates[collectionPush]) {
@@ -475,11 +485,21 @@ class Resultor extends DoFinish {
 
         let now = Date.now();
         for (let aid in this.sentUsers) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (aid === "__proto__" || aid === "constructor" || aid === "prototype") {
+                continue;
+            }
             let collection = 'push_' + aid;
             if (!updates[collection]) {
                 updates[collection] = [];
             }
             for (let mid in this.sentUsers[aid]) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (mid === "__proto__" || mid === "constructor" || mid === "prototype") {
+                    continue;
+                }
                 if (this.sentUsers[aid][mid].users.length) {
                     updates[collection].push({
                         updateMany: {
