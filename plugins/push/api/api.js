@@ -70,6 +70,12 @@ plugins.setConfigs(FEATURE_NAME, {
     default_content_available: false, // sets content-available: 1 by default for ios
 });
 
+//outbound proxy credentials for sending pushes
+plugins.setSecretConfigs(FEATURE_NAME, {
+    proxyuser: true,
+    proxypass: true
+});
+
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_action');

@@ -867,10 +867,22 @@
 
                 return options;
             },
+            //Tooltip templates are built by concatenating into an html string, so a value
+            //interpolated into one has to be escaped, and escaping has to be the last
+            //thing done to it. This used to encode and then immediately unescape, which
+            //returns the input unchanged, so a label containing markup was passed through
+            //as markup. That was not the original intent: the sites below escaped
+            //correctly until the unescape was added to stop Countly's own key escaping
+            //(&#36; for a leading $, &#46; for dots) from being shown to the user as
+            //literal character references.
+            //
+            //Both are satisfied by normalising first and escaping once: undo the html
+            //escaping the api applies, undo the key substitutions mongo forces on us,
+            //then escape. A label reads as its real text and can no longer open a tag.
             sanitizeHtml: function(value) {
                 if (value) {
-                    value = countlyCommon.encodeHtml(value);
-                    return countlyCommon.unescapeHtml(value);
+                    var text = countlyCommon.unescapeHtml(String(value));
+                    return countlyCommon.encodeHtml(countlyCommon.decode(text));
                 }
                 return value;
             }
