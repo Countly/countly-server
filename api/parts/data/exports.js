@@ -744,6 +744,11 @@ exports.fromRequest = function(options) {
                 }
                 if (options.columnNames || options.mapper) {
                     for (key in body) {
+                        // a key off a stored document or a parsed payload can be a prototype
+                        // member name; writing through one would reach Object.prototype
+                        if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                            continue;
+                        }
                         if (options.mapper) {
                             body[key] = transformValuesInObject(body[key], options.mapper);
                         }
@@ -772,6 +777,74 @@ exports.fromRequest = function(options) {
 };
 
 
+/**
+ * Look for an aggregation stage that writes, at any nesting depth.
+ *
+ * Sub-pipelines inside $lookup, $unionWith and $facet are searched too, so a write cannot be
+ * hidden one level down. Names are matched as object keys, which is the only place a stage
+ * operator appears.
+ *
+ * The node budget is a stop on runaway work, not a verdict. Exhausting it means the
+ * pipeline could not be verified, which is a reason to refuse rather than to proceed:
+ * returning "nothing found" there would let a large enough structure in front of an
+ * $out carry the write through.
+ *
+ * @param {Array} pipeline - aggregation pipeline to inspect
+ * @returns {string|null} why the pipeline must be refused, or null when it is safe
+ */
+function findWriteStage(pipeline) {
+    var WRITE_STAGES = ["$out", "$merge"];
+    var MAX_NODES = 10000;
+    var seen = 0;
+    var exhausted = false;
+
+    /**
+     * @param {*} node - value to walk
+     * @returns {string|null} offending stage name or null
+     */
+    function walk(node) {
+        if (seen++ > MAX_NODES) {
+            exhausted = true;
+            return null;
+        }
+        if (!node || typeof node !== "object") {
+            return null;
+        }
+        if (Array.isArray(node)) {
+            for (var i = 0; i < node.length; i++) {
+                var fromItem = walk(node[i]);
+                if (fromItem) {
+                    return fromItem;
+                }
+            }
+            return null;
+        }
+        //Object.keys rather than for...in: node is a parsed request payload, and an
+        //inherited enumerable key is not part of the pipeline the caller sent. Walking
+        //one would let a poisoned prototype decide what this scan looks at, which is the
+        //opposite of what a guard should allow. The platform copy of this function
+        //already reads it this way.
+        var keys = Object.keys(node);
+        for (var k = 0; k < keys.length; k++) {
+            var key = keys[k];
+            if (WRITE_STAGES.indexOf(key) !== -1) {
+                return key;
+            }
+            var fromValue = walk(node[key]);
+            if (fromValue) {
+                return fromValue;
+            }
+        }
+        return null;
+    }
+    var found = walk(pipeline);
+    if (found) {
+        return "write stage " + found;
+    }
+    //fail closed: unverified is not the same as verified safe
+    return exhausted ? "pipeline too large to verify (over " + MAX_NODES + " nodes)" : null;
+}
+
 exports.fromRequestQuery = function(options) {
     options.db = options.db || common.db;
     options.path = options.path || "/";
@@ -786,7 +859,15 @@ exports.fromRequestQuery = function(options) {
         //providing data in request object
         'req': {
             url: options.path,
-            body: options.data || {},
+            //Deliberately empty. The endpoint being re-run supplies the collection and the
+            //pipeline, and that is only trustworthy while the caller cannot influence what it
+            //returns. processRequest copies every key of this body onto the inner request's
+            //params.qstring, so anything here reaches the endpoint as if it were a query
+            //parameter: an endpoint that keeps unrecognised parameters and returns what it
+            //stored would echo a caller-supplied collection and pipeline back to us. Every
+            //caller in the product passes its parameters in the path's query string instead,
+            //so there is nothing to forward.
+            body: {},
             method: "export"
         },
         //adding custom processing for API responses
@@ -795,6 +876,22 @@ exports.fromRequestQuery = function(options) {
                 log.e(err);
             }
             if (body) {
+                //A spec is the endpoint's own work, so its stages are trusted, but no endpoint
+                //has any reason to write. Refusing $out and $merge at any depth keeps a buggy
+                //or tampered spec from turning a read into a write.
+                var writeStage = findWriteStage(body.pipeline);
+                if (writeStage) {
+                    log.e("Refusing export query: " + writeStage);
+                    var refused = new Transform({
+                        objectMode: true,
+                        transform: (data, _, done) => {
+                            done(null, data);
+                        }
+                    });
+                    refused.end();
+                    options.output(refused);
+                    return;
+                }
                 if (body.transformFunction) {
                     options.transformFunction = body.transformFunction;
                 }
