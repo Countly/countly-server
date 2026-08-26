@@ -29,6 +29,130 @@ var fs = require('fs');
 
 
 /**
+* Check that a view stays on the dashboard, and return the url to navigate to
+*
+* The view can come from a request (/o/render passes params.qstring.view through), and the
+* url is built by concatenation. With the default countlyConfig.path of "" the prefix is
+* exactly "http://localhost", so a view that does not begin with "/" rewrites the host
+* instead of the path:
+*
+*   "@169.254.169.254/latest/meta-data/"  ->  host 169.254.169.254
+*   ":8500/v1/kv/?recurse"                ->  host localhost:8500
+*   ".internal.example/x"                 ->  host localhost.internal.example
+*
+* Parsing the concatenated url and comparing origins settles all of those at once, rather
+* than trying to enumerate them. It also agrees with what Chromium will do with the same
+* string, since both use the WHATWG url parser. Note that a private range denylist would
+* be the wrong control here: the intended target is loopback.
+*
+* The returned url is the concatenation itself, unchanged, so a configured
+* countlyConfig.path keeps working exactly as before.
+* @param {string} host - dashboard origin plus the configured path
+* @param {string} view - view to render, expected to be a path on that dashboard
+* @returns {string|null} url to navigate to, or null when it leaves the dashboard origin
+**/
+function sameOriginView(host, view) {
+    if (typeof view !== "string") {
+        return null;
+    }
+    var target = host + view;
+    //host may carry no path at all, so normalise it before taking the origin
+    var expected = originOf(host + "/");
+    if (!expected || originOf(target) !== expected) {
+        return null;
+    }
+    return target;
+}
+
+//The dashboard serves nearly all of its own assets, but not quite all of them. Two
+//off-origin fetches are part of a normal render: countlyConfig.cdn moves the core
+//styles and scripts to a CDN, and the map widgets fetch tiles from OpenStreetMap.
+//Refusing those leaves screenshots unstyled or the map blank, and a CDN deployment
+//cannot bootstrap the dashboard at all, so both are allowed by origin.
+//
+//frontend/express/public/javascripts/countly/vue/components/vis.js requests
+//https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png and passes no subdomains option,
+//so leaflet expands {s} to a, b and c. Listed as exact origins rather than matched by
+//suffix: the allowlist stays a set of strings to compare, with no pattern to get wrong.
+var TILE_ORIGINS = [
+    "https://a.tile.openstreetmap.org",
+    "https://b.tile.openstreetmap.org",
+    "https://c.tile.openstreetmap.org",
+    "https://tile.openstreetmap.org"
+];
+
+/**
+* Origin of a url, or null when it has none to speak of
+*
+* A relative cdn ("" or "/assets/") has no origin and returns null here, which is
+* correct: it is already served from the dashboard origin and needs no entry.
+* @param {string} url - absolute url, or anything at all
+* @returns {string|null} the serialised origin, or null when there is not a real one
+**/
+function originOf(url) {
+    var origin;
+    try {
+        origin = new URL(url).origin;
+    }
+    catch (error) {
+        return null;
+    }
+    //opaque origins serialise to "null" and would compare equal to each other
+    if (!origin || origin === "null") {
+        return null;
+    }
+    return origin;
+}
+
+/**
+* Origin of the configured CDN, when one is configured as an absolute url
+*
+* cdn belongs to the dashboard's config rather than the api's. In the standard layout
+* both live in the same tree and this finds it with no operator action; where the api
+* is deployed without the dashboard the file is absent, and the origin is named in
+* countlyConfig.render.allowedOrigins instead.
+* @returns {string|null} the CDN origin, or null when there is none to allow
+**/
+function cdnOrigin() {
+    try {
+        return originOf(require('../../frontend/express/config.js').cdn || "");
+    }
+    catch (error) {
+        return null;
+    }
+}
+
+/**
+* Origins the renderer may fetch subresources from
+*
+* The dashboard's own origin, the configured CDN, the map tile provider the shipped
+* dashboard uses, and anything the operator adds in countlyConfig.render.allowedOrigins
+* (entries may be a bare origin or any url on it). Everything else is aborted.
+* @param {string} host - dashboard origin plus the configured path
+* @returns {string[]} origins to allow, empty when the host itself cannot be parsed
+**/
+function renderAssetOrigins(host) {
+    var dashboard = originOf(host + "/");
+    if (!dashboard) {
+        return [];
+    }
+    var configured = (countlyConfig.render && countlyConfig.render.allowedOrigins) || [];
+    if (!Array.isArray(configured)) {
+        configured = [];
+    }
+    var origins = [dashboard, cdnOrigin()]
+        .concat(TILE_ORIGINS)
+        .concat(configured.map(originOf));
+    return origins.filter(function(origin, at) {
+        return origin && origins.indexOf(origin) === at;
+    });
+}
+
+//exported so the same origin check can be unit tested without launching a browser
+exports.sameOriginView = sameOriginView;
+exports.renderAssetOrigins = renderAssetOrigins;
+
+/**
  * Function to render views as images
  * @param  {object} options - options required for rendering
  * @param  {string} options.host - the hostname
@@ -128,6 +252,28 @@ exports.renderView = function(options, cb) {
                     scale: options.dimensions && options.dimensions.scale ? options.dimensions.scale : 2
                 };
 
+                //Second, independent control: the renderer may only fetch from the
+                //dashboard origin and the few asset origins a dashboard legitimately uses.
+                //The check on the view bounds where we navigate, this bounds every
+                //subresource the rendered page then asks for, so a page that does reach the
+                //browser cannot use it to fetch what the server can reach.
+                var allowedOrigins = renderAssetOrigins(host);
+                if (!allowedOrigins.length) {
+                    log.e("Cannot parse the configured dashboard host", host);
+                }
+                await page.setRequestInterception(true);
+                page.on('request', function(request) {
+                    var requestUrl = request.url();
+                    if (/^(data|blob|about):/.test(requestUrl)) {
+                        return request.continue();
+                    }
+                    if (allowedOrigins.indexOf(originOf(requestUrl)) !== -1) {
+                        return request.continue();
+                    }
+                    log.d("Refused a request outside the allowed render origins", requestUrl);
+                    return request.abort();
+                });
+
                 page.setDefaultNavigationTimeout(updatedTimeout);
                 const resp = await page.goto(host + '/login/token/' + token + '?ssr=true');
                 const status = resp?.status();
@@ -139,7 +285,14 @@ exports.renderView = function(options, cb) {
 
                 await timeout(1500);
 
-                await page.goto(host + view);
+                var viewUrl = sameOriginView(host, view);
+                if (!viewUrl) {
+                    //the value can be attacker supplied, so keep it out of the log
+                    log.e("Refusing to render a view outside the dashboard origin");
+                    throw new Error("Invalid view");
+                }
+
+                await page.goto(viewUrl);
 
                 if (waitForRegex) {
                     await page.waitForResponse(

@@ -20,9 +20,9 @@
                     <template v-slot="rowScope">
                         <div v-if="rowScope.row.consent">
                             <p class="color-primary-green text-smaller text-uppercase bu-mb-1" style="margin-top: 0px; font-weight: 700">{{i18n("consent.opt-i")}}</p>
-                            <span class="text-small bu-mb-4" v-html="rowScope.row.optin.join(',')"></span>
+                            <span class="text-small bu-mb-4">{{consentFeatures(rowScope.row.optin)}}</span>
                             <p class="color-red-100 text-smaller text-uppercase bu-mb-1" style="font-weight: 700;">{{i18n("consent.opt-o")}}</p>
-                            <span class="text-small" v-html="rowScope.row.optout.join(',')"></span>
+                            <span class="text-small">{{consentFeatures(rowScope.row.optout)}}</span>
                         </div>
                         <div v-if="!rowScope.row.consent">
                             -

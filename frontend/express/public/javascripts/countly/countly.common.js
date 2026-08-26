@@ -311,23 +311,34 @@
         };
 
         /**
-        * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
+        * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first, all . (dot) symbols to &#46; and NUL to &#9647 in the string
+        *
+        * Mirrors the encoder in api/lib/countly.common.js. Keys are substituted because
+        * mongo will not accept $ or . in a key name, and the two encoders have to agree
+        * on the substitution set or the decoder below cannot undo all of it.
         * @memberof countlyCommon
         * @param {string} str - value to encode
         * @returns {string} encoded string
         */
         countlyCommon.encode = function(str) {
-            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;').replace(/\u0000/g, "&#9647");
         };
 
         /**
-        * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
+        * Decode value from db, decoding first &#36; to $, all &#46; to . (dots) and &#9647 back to NUL. Decodes also url encoded values as &amp;#36; and &amp;#46;.
+        *
+        * What this receives was encoded by the api, not by countlyCommon.encode above, so
+        * the set it has to undo is the api's. It used to handle only $ and . even though
+        * this comment already promised the url encoded forms, so &#9647, &amp;#36; and
+        * &amp;#46; reached callers still encoded. That went unnoticed because the result
+        * is usually interpolated into html, where the browser resolves the leftovers as
+        * character references anyway; it shows through anywhere that is not html.
         * @memberof countlyCommon
         * @param {string} str - value to decode
         * @returns {string} decoded string
         */
         countlyCommon.decode = function(str) {
-            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
+            return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.').replace(/&#9647/g, '\u0000');
         };
 
         /**

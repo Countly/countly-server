@@ -31,9 +31,20 @@ function validate_token_if_exists(params) {
                 qstring: params.qstring,
                 token: token,
                 req_path: params.fullPath,
+                //ask for the document rather than just the owner, and keep it on params.
+                //A single use token (multi false) is consumed by this very call, so a
+                //handler that wants to know what the token was restricted to cannot read
+                //it back afterwards - the row is already gone, and absence would read as
+                //"no restriction". This is the only point at which it is still there.
+                return_data: true,
                 callback: function(valid) {
-                //false or owner.id
-                    if (valid) {
+                //false, or the token document because return_data is set
+                    if (valid && typeof valid === "object") {
+                        params.token_data = valid;
+                        resolve(valid.owner);
+                    }
+                    else if (valid) {
+                        //an authorizer that ignored return_data would hand back the owner id
                         resolve(valid);
                     }
                     else {
@@ -1130,22 +1141,40 @@ exports.hasAdminAccess = function(member, app_id, type) {
         return true;
     }
 
-    var isAdmin = true;
+    //Admin access has to be granted, not merely left unsaid. This used to start true
+    //and only clear when an entry for the app existed with `all` falsy, so an app the
+    //member had no entry for never cleared it and every such app came back as one they
+    //administer. Any check reached through here (hasCreateRight, hasReadRight,
+    //hasUpdateRight, hasDeleteRight) then passed for apps nobody had granted.
+    var isAdmin = false;
     // check users who has permission property
     if (hasPermissionObject) {
         var types = type ? [type] : ["c", "r", "u", "d"];
+        var passesAllRules = true;
         for (var i = 0; i < types.length; i++) {
-            if (member.permission[types[i]] && member.permission[types[i]][app_id] && !member.permission[types[i]][app_id].all) {
-                isAdmin = false;
+            if (member.permission[types[i]] && member.permission[types[i]][app_id]) {
+                if (!member.permission[types[i]][app_id].all) {
+                    passesAllRules = false;
+                }
+            }
+            else {
+                passesAllRules = false;
             }
         }
+        if (passesAllRules) {
+            isAdmin = true;
+        }
+
     }
     // check legacy users who has admin_of property
     // users should have at least one app in admin_of array
     else {
         isAdmin = typeof member.admin_of !== "undefined" && member.admin_of.indexOf(app_id) > -1;
     }
-    return isAdmin || member.global_admin;
+    //coerced: global_admin is often simply absent, and `isAdmin || undefined` is
+    //undefined rather than false. The JSDoc promises a boolean, and a caller comparing
+    //strictly or serialising the result should not have to know the difference.
+    return !!(isAdmin || member.global_admin);
 };
 
 exports.hasCreateRight = function(feature, app_id, member) {
