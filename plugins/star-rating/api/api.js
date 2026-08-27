@@ -7,7 +7,8 @@ var exported = {},
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete, validateGlobalAdmin, validateAppAdmin } = require('../../../api/utils/rights.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
-    imageUtils = require('./image-utils.js');
+    imageUtils = require('./image-utils.js'),
+    inputUtils = require('./input-utils.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
     fs = require('fs'),
@@ -307,14 +308,26 @@ var SNIFFED_TYPE_TO_EXT = {
 * Used for file upload
 * @param {object} myfile - file object(if empty - returns)
 * @param {string} id - unique identifier
+* @param {string} appId - id of the app the caller was authorized for
 * @param {function} callback = callback function
 **/
-function uploadFile(myfile, id, callback) {
+function uploadFile(myfile, id, appId, callback) {
     if (!myfile) {
         callback(true);
         return;
     }
     var tmp_path = myfile.path;
+
+    //The identifier is request supplied and is concatenated into the path below, so refuse
+    //anything that is not a plain name before it can pick the write location.
+    var safeId = imageUtils.safeLogoIdentifier(id);
+    //appId comes from the request that was just authorized, so if it is missing something
+    //upstream changed: refuse rather than build a name around the string "undefined"
+    if (!safeId || !appId) {
+        fs.unlink(tmp_path, function() { });
+        callback("Invalid identifier");
+        return;
+    }
 
     create_upload_dir(function() {
         fs.readFile(tmp_path, (err, data) => {
@@ -333,21 +346,55 @@ function uploadFile(myfile, id, callback) {
                 callback("Invalid image format. Must be png, jpeg, or gif");
                 return;
             }
-            try {
-                var pp = path.resolve(__dirname, './../images/' + id + "." + detectedExt);
-                countlyFs.saveData("star-rating", pp, data, { id: "" + id + "." + detectedExt, writeMode: "overwrite" }, function(err3) {
-                    fs.unlink(tmp_path, function() { });
-                    if (err3) {
-                        callback("Failed to upload image");
-                    }
-                    else {
-                        callback(true, id + "." + detectedExt);
-                    }
-                });
-            }
-            catch (SyntaxError) {
+            //The stored name is namespaced by app, so no two apps can choose the same one
+            //and there is nothing to race over. See imageUtils.logoStorageName.
+            var storedName = imageUtils.logoStorageName(appId + "", safeId, detectedExt);
+            if (!storedName) {
                 fs.unlink(tmp_path, function() { });
-                callback("Failed to upload image");
+                callback("Invalid identifier");
+                return;
+            }
+            //Second layer, for names that predate the namespacing: a legacy widget's logo
+            //is a bare "<identifier>.<ext>", and an identifier may contain "_", so an
+            //identifier crafted to look like "<other app id>_<name>" could still land on
+            //one. A name another app's widget points at is not ours to overwrite. Matching
+            //on the full name including the extension is deliberate: a different extension
+            //is a different file and overwrites nothing.
+            common.db.collection('feedback_widgets').findOne({logo: storedName, app_id: {$ne: appId + ""}}, {projection: {_id: 1}}, function(ownerErr, otherAppWidget) {
+                if (ownerErr) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Failed to upload image");
+                    return;
+                }
+                if (otherAppWidget) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Identifier is in use by another application");
+                    return;
+                }
+                doSave();
+            });
+
+            /**
+            * Store the image once the name is known to be free
+            * @returns {void} void
+            **/
+            function doSave() {
+                try {
+                    var pp = path.resolve(__dirname, './../images/' + storedName);
+                    countlyFs.saveData("star-rating", pp, data, { id: "" + storedName, writeMode: "overwrite" }, function(err3) {
+                        fs.unlink(tmp_path, function() { });
+                        if (err3) {
+                            callback("Failed to upload image");
+                        }
+                        else {
+                            callback(true, storedName);
+                        }
+                    });
+                }
+                catch (SyntaxError) {
+                    fs.unlink(tmp_path, function() { });
+                    callback("Failed to upload image");
+                }
             }
         });
     });
@@ -984,7 +1031,10 @@ function uploadFile(myfile, id, callback) {
                     no_checksum: true,
                     //providing data in request object
                     'req': {
-                        url: "/i?" + ob.params.href.split("/i/feedback/input?")[1]
+                        //only the widget's own parameters: this runs with no_checksum,
+                        //so forwarding the caller's whole query string would let extra
+                        //parameters reach /i unsigned. See input-utils.js.
+                        url: "/i?" + inputUtils.buildForwardedQuery(ob.params.qstring)
                     },
                     //adding custom processing for API responses
                     'APICallback': function(err, responseData, headers, returnCode) {
@@ -1035,7 +1085,7 @@ function uploadFile(myfile, id, callback) {
     plugins.register("/i/feedback/logo", function(ob) {
         var params = ob.params;
         validateCreate(params, FEATURE_NAME, function() {
-            uploadFile(params.files.logo, params.qstring.identifier, function(good, filename) { //will return as good if no file
+            uploadFile(params.files.logo, params.qstring.identifier, params.qstring.app_id, function(good, filename) { //will return as good if no file
                 if (typeof good === 'boolean' && good) {
                     common.returnMessage(params, 200, filename);
                 }
@@ -1387,6 +1437,19 @@ function uploadFile(myfile, id, callback) {
      * @apiDescription: Get feedback widgets with or without filters 
      * @apiParam: 'app_key', app_key of related application provided by sdk request
      */
+    //These two lookups serve the sdk, so they answer without a session and without an
+    //app_id to scope by, and they have to keep doing that or widgets stop rendering.
+    //What they must not do is hand out the fields the app-scoped /feedback/widgets
+    //deliberately withholds: targeting, which is the audience segmentation query, and
+    //cohortID, which that handler fetches only to test membership and then deletes with
+    //the comment "no need to return more data than needed".
+    //
+    //Excluded rather than allow-listed on purpose. These endpoints render every widget
+    //type, so an allow-list drawn from the rating-only projection above would drop the
+    //fields surveys and nps need, and the caller is an sdk in the field that cannot be
+    //redeployed. Naming the internal fields cannot break rendering.
+    const WIDGET_INTERNAL_FIELDS = {targeting: 0, cohortID: 0};
+
     plugins.register('/o/feedback/multiple-widgets-by-id', function(ob) {
         var params = ob.params;
         var collectionName = 'feedback_widgets';
@@ -1405,7 +1468,7 @@ function uploadFile(myfile, id, callback) {
                 _id: {
                     $in: widgetIdsArray
                 }
-            }).toArray(function(err, docs) {
+            }, {projection: WIDGET_INTERNAL_FIELDS}).toArray(function(err, docs) {
                 if (!err) {
                     if (docs.length) {
                         common.returnOutput(params, docs);
@@ -1567,7 +1630,7 @@ function uploadFile(myfile, id, callback) {
 
         common.db.collection(collectionName).findOne({
             "_id": widgetId
-        }, function(err, doc) {
+        }, {projection: WIDGET_INTERNAL_FIELDS}, function(err, doc) {
             if (err) {
                 common.returnMessage(params, 500, err.message);
             }
@@ -1634,79 +1697,90 @@ function uploadFile(myfile, id, callback) {
     plugins.register('/o', function(ob) {
         var params = ob.params;
         if (params.qstring.method === 'star') {
-            if (params.qstring.period) {
-                //check if period comes from datapicker
-                if (params.qstring.period.indexOf(",") !== -1) {
-                    try {
-                        params.qstring.period = JSON.parse(params.qstring.period);
-                    }
-                    catch (SyntaxError) {
-                        common.returnMessage(params, 400, 'Bad request parameter: period');
-                        return true;
-                    }
-                }
-                else {
-                    switch (params.qstring.period) {
-                    case "prevMonth":
-                    case "month":
-                    case "day":
-                    case "yesterday":
-                    case "hour":
-                        break;
-                    default:
-                        if (!/([0-9]+)days/.test(params.qstring.period)) {
+            //this read is app scoped: require the caller to hold star-rating
+            //read access on app_id, the same check the sibling reads in this
+            //file apply. Authorize before validating parameters so that an
+            //unauthorized caller cannot probe the endpoint.
+            validateRead(params, FEATURE_NAME, function() {
+                if (params.qstring.period) {
+                    //check if period comes from datapicker
+                    if (params.qstring.period.indexOf(",") !== -1) {
+                        try {
+                            params.qstring.period = JSON.parse(params.qstring.period);
+                        }
+                        catch (SyntaxError) {
                             common.returnMessage(params, 400, 'Bad request parameter: period');
                             return true;
                         }
-                        break;
+                    }
+                    else {
+                        switch (params.qstring.period) {
+                        case "prevMonth":
+                        case "month":
+                        case "day":
+                        case "yesterday":
+                        case "hour":
+                            break;
+                        default:
+                            if (!/([0-9]+)days/.test(params.qstring.period)) {
+                                common.returnMessage(params, 400, 'Bad request parameter: period');
+                                return true;
+                            }
+                            break;
+                        }
                     }
                 }
-            }
-            else {
-                common.returnMessage(params, 400, 'Missing request parameter: period');
-                return true;
-            }
-            countlyCommon.setPeriod(params.qstring.period, true);
-            var periodObj = countlyCommon.periodObj;
-            var collectionName = crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
-            var id_prefix = params.qstring.app_id + "_" + collectionName + "_";
-            var documents = [];
-            for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                for (var m = 0; m < common.base64.length; m++) {
-                    documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
-                }
-            }
-            common.db.collection("events_data").find({
-                '_id': {
-                    $in: documents
-                }
-            }).toArray(function(err, docs) {
-                if (!err) {
-                    var result = {};
-                    docs.forEach(function(doc) {
-                        if (!doc.meta) {
-                            doc.meta = {};
-                        }
-                        if (!doc.meta.platform_version_rate) {
-                            doc.meta.platform_version_rate = [];
-                        }
-                        if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
-                            common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
-                        }
-                        doc.meta.platform_version_rate.forEach(function(item) {
-                            var data = item.split('**');
-                            if (result[data[0]] === undefined) {
-                                result[data[0]] = [];
-                            }
-                            if (result[data[0]].indexOf(data[1]) === -1) {
-                                result[data[0]].push(data[1]);
-                            }
-                        });
-                    });
-                    common.returnOutput(params, result);
+                else {
+                    common.returnMessage(params, 400, 'Missing request parameter: period');
                     return true;
                 }
+                countlyCommon.setPeriod(params.qstring.period, true);
+                var periodObj = countlyCommon.periodObj;
+                var collectionName = crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
+                var id_prefix = params.qstring.app_id + "_" + collectionName + "_";
+                var documents = [];
+                for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                    documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                    for (var m = 0; m < common.base64.length; m++) {
+                        documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
+                }
+                common.db.collection("events_data").find({
+                    '_id': {
+                        $in: documents
+                    }
+                }).toArray(function(err, docs) {
+                    if (!err) {
+                        //A null prototype map: the keys are platform names taken from the public
+                        //star rating event's platform_version_rate segmentation, so they can be
+                        //"__proto__", "constructor" or "toString". On a plain object those read back
+                        //as inherited members rather than as undefined, so the array below is never
+                        //created and the indexOf that follows throws, failing this read for everyone.
+                        var result = Object.create(null);
+                        docs.forEach(function(doc) {
+                            if (!doc.meta) {
+                                doc.meta = {};
+                            }
+                            if (!doc.meta.platform_version_rate) {
+                                doc.meta.platform_version_rate = [];
+                            }
+                            if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
+                                common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
+                            }
+                            doc.meta.platform_version_rate.forEach(function(item) {
+                                var data = item.split('**');
+                                if (result[data[0]] === undefined) {
+                                    result[data[0]] = [];
+                                }
+                                if (result[data[0]].indexOf(data[1]) === -1) {
+                                    result[data[0]].push(data[1]);
+                                }
+                            });
+                        });
+                        common.returnOutput(params, result);
+                        return true;
+                    }
+                });
             });
             return true;
         }
