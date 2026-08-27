@@ -612,6 +612,17 @@ module.exports.estimate = async params => {
         return true;
     }
 
+    // estimate() builds the audience aggregation from data.filter directly, without going
+    // through validate(), so apply the same operator check validate() runs for
+    // test/create/update. Without it, filter.user / filter.drill reach the $match stage of
+    // an aggregation over app_users unchecked, so a server-side-JS operator such as
+    // $function (including nested inside $expr) would execute in the database.
+    let badOp = common.findUnsafeMongoOperator(data.filter.user) || common.findUnsafeMongoOperator(data.filter.drill);
+    if (badOp) {
+        common.returnMessage(params, 400, common.unsafeQueryError(badOp));
+        return true;
+    }
+
     // Cross-app guard. validateRead only checks the caller's permission against
     // params.qstring.app_id, while the body's "app" field selects which app's
     // push audience is counted. Without this binding a user with push:read on

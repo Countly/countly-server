@@ -27,6 +27,13 @@ plugins.setConfigs("reports", {
     secretKey: countlyApiConfig?.encryption?.reports_key || "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
 });
 
+//this key signs the subscribe/unsubscribe tokens, and /subscribe_report and
+///unsubscribe_report accept those without authentication. It self-generates, so
+//unlike the other secrets it is always set on every install.
+plugins.setSecretConfigs("reports", {
+    secretKey: true
+});
+
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
 var metrics = {
@@ -201,7 +208,23 @@ var metricProps = {
         });
     };
 
+    //Fields the generator derives while sending. They have no business arriving
+    //from the database: a document stored before the create/update allow-list
+    //existed may still hold them, and reports.send prefers a present
+    //messages[].html over rendering the trusted template.
+    //
+    //Stripped here rather than in loadReport because /o/reports/preview and
+    ///o/reports/pdf run their own findOne and call this directly, so this is the
+    //one point all three paths share.
+    const DERIVED_FIELDS = ["messages", "data", "subject", "mailTemplate", "properties",
+        "period", "start", "end", "date", "total_new", "universe"];
+
     reports.getReport = function(db, report, callback, cache) {
+        if (report) {
+            DERIVED_FIELDS.forEach(function(field) {
+                delete report[field];
+            });
+        }
         /**
          * find Member
          * @param {func} cb - callback function
@@ -791,12 +814,16 @@ var metricProps = {
 
                 if (report.sendPdf === true) {
                     let htmlForPdf = html;
+                    //the origins the template loads its images from, passed so the
+                    //renderer can refuse every other one
+                    let renderOrigins = [message.data && message.data.host];
                     if (pdfHasTemplate) { // report from dashboard
                         let emailFiller = Object.assign({}, message.data);
                         //use localhost for pdf generation instead of domain
                         //it prevents the issue when one server has local files and loadbalancer sends the request to another server
                         emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
                         htmlForPdf = ejs.render(message.template, emailFiller);
+                        renderOrigins.push(emailFiller.localhost);
                     }
                     pdf.renderPDF(htmlForPdf, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
@@ -820,8 +847,10 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     }, options, {
+                        //this branch never carried --disable-web-security, so it is
+                        //left as it is. renderOrigins bounds what may be requested.
                         args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                    }, true).catch(err => {
+                    }, true, renderOrigins).catch(err => {
                         log.d(err);
                     });
 
