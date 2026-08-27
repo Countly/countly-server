@@ -88,6 +88,9 @@
         }, countlySession.clearObject);
 
         for (var z in sparkLines) {
+            if (countlyCommon.isForbiddenFieldName(z)) {
+                continue;
+            }
             ret[z].sparkline = sparkLines[z];
         }
         return {usage: ret};

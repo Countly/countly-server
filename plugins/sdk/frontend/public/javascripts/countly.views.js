@@ -58,6 +58,9 @@
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 var data = params || {};
                 for (var key in this.configs) {
+                    if (countlyCommon.isForbiddenFieldName(key)) {
+                        continue;
+                    }
                     if (this.diff.indexOf(key) === -1) {
                         this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
                     }
@@ -175,6 +178,9 @@
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 var data = params || {};
                 for (var key in this.configs) {
+                    if (countlyCommon.isForbiddenFieldName(key)) {
+                        continue;
+                    }
                     this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
                 }
             }
