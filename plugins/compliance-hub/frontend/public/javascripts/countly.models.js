@@ -194,7 +194,13 @@
                 var ret = "<p>" + ((jQuery.i18n.map["systemlogs.action." + row.a]) ? jQuery.i18n.map["systemlogs.action." + row.a] : row.a) + "</p>";
                 if (typeof row.i === "object") {
                     if (typeof row.i.app_id !== "undefined" && countlyGlobal.apps[row.i.app_id]) {
-                        ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyGlobal.apps[row.i.app_id].name + "</p>";
+                        //this string is rendered with v-html, so every interpolated value must already be
+                        //HTML-safe. Everything taken from "row" arrives through common.returnOutput, which
+                        //escape_html_entities has already escaped, so it must NOT be escaped again here or
+                        //the entities would show up literally. The app name is the exception: it comes from
+                        //countlyGlobal, which is serialized into the dashboard's script island by
+                        //express-expose and is never HTML-escaped, so it reaches us raw and is escaped here.
+                        ret += "<p title='" + row.i.app_id + "'>" + jQuery.i18n.map["systemlogs.for-app"] + ": " + countlyCommon.encodeHtml(countlyGlobal.apps[row.i.app_id].name) + "</p>";
                     }
                     if (typeof row.i.appuser_id !== "undefined") {
                         ret += "<p title='" + row.i.appuser_id + "'>" + jQuery.i18n.map["systemlogs.for-appuser"] + ": " + row.i.appuser_id + "</p>";
