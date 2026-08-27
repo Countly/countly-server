@@ -438,3 +438,51 @@ describe("Common API utility functions", function() {
         });
     });
 });
+
+// The export path and the DB Viewer both hand a caller supplied projection to find(), and
+// MongoDB 4.4 and later evaluate aggregation expressions there. An expression can rename a
+// field, which defeats redaction that works by field name, or run javascript in the database
+// with $function. Only plain include and exclude survive.
+describe('common.sanitizeProjection', function() {
+    it('keeps plain include and exclude', function() {
+        var p = {email: 1, full_name: 1, password: 0, api_key: false, name: true};
+        common.sanitizeProjection(p);
+        p.should.eql({email: 1, full_name: 1, password: 0, api_key: false, name: true});
+    });
+
+    it('drops a field path alias, which is how a redacted field gets renamed', function() {
+        var p = {pw: '$password', ak: '$api_key', tfa: '$two_factor_auth', email: 1};
+        var dropped = common.sanitizeProjection(p);
+        p.should.eql({email: 1});
+        Object.keys(dropped).sort().should.eql(['ak', 'pw', 'tfa']);
+    });
+
+    it('drops a nested field path alias', function() {
+        var p = {secret: '$two_factor_auth.secret_token'};
+        common.sanitizeProjection(p);
+        p.should.eql({});
+    });
+
+    it('drops expressions, including ones that would run javascript', function() {
+        var p = {
+            joined: {$concat: ['$password', '$api_key']},
+            js: {$function: {body: 'function(v){ return v; }', args: ['$password'], lang: 'js'}},
+            picked: {$cond: [true, '$api_key', 'no']}
+        };
+        common.sanitizeProjection(p);
+        p.should.eql({});
+    });
+
+    it('drops values that are not valid include or exclude', function() {
+        var p = {a: 2, b: NaN, c: 'yes', d: null, e: [1]};
+        common.sanitizeProjection(p);
+        p.should.eql({});
+    });
+
+    it('leaves a missing or non object projection alone', function() {
+        should.not.exist(common.sanitizeProjection(undefined).undefined);
+        Object.keys(common.sanitizeProjection(null)).should.eql([]);
+        Object.keys(common.sanitizeProjection('string')).should.eql([]);
+        Object.keys(common.sanitizeProjection([1, 2])).should.eql([]);
+    });
+});
