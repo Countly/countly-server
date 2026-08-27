@@ -7,7 +7,8 @@ var exported = {},
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete, validateGlobalAdmin, validateAppAdmin } = require('../../../api/utils/rights.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
-    imageUtils = require('./image-utils.js');
+    imageUtils = require('./image-utils.js'),
+    inputUtils = require('./input-utils.js');
 var fetch = require('../../../api/parts/data/fetch.js');
 var ejs = require("ejs"),
     fs = require('fs'),
@@ -1030,7 +1031,10 @@ function uploadFile(myfile, id, appId, callback) {
                     no_checksum: true,
                     //providing data in request object
                     'req': {
-                        url: "/i?" + ob.params.href.split("/i/feedback/input?")[1]
+                        //only the widget's own parameters: this runs with no_checksum,
+                        //so forwarding the caller's whole query string would let extra
+                        //parameters reach /i unsigned. See input-utils.js.
+                        url: "/i?" + inputUtils.buildForwardedQuery(ob.params.qstring)
                     },
                     //adding custom processing for API responses
                     'APICallback': function(err, responseData, headers, returnCode) {
