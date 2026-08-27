@@ -2032,17 +2032,14 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     }
                 }
             }
-            //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
-            for (let i in mergedDataObj.meta) {
-                if (!isMergeableKey(mergedDataObj.meta, i)) {
-                    continue;
-                }
-                for (var p = 0; p < mergedDataObj.meta[i].length; p++) {
-                    if (mergedDataObj.meta[i][p] && typeof mergedDataObj.meta[i][p] === 'string') {
-                        mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&quot;');
-                    }
-                }
-            }
+            // NOTE: meta values must stay byte-identical to the data-object keys so the
+            // frontend can look up each value's counts. returnOutput escapes both the meta
+            // array values and the data keys with the same escape_html pass, so they already
+            // match. Do NOT pre-escape quotes here: it turns `"` into `&quot;`, which that
+            // later pass re-escapes to `&amp;quot;` (whenever the value also contains < or >),
+            // so any segmentation value carrying an HTML attribute (e.g. style="..",
+            // data-x="..") no longer matched its data key and silently vanished from the
+            // "All Events" breakdown while still showing in Drill.
             //truncate large meta on refresh		
             if (isRefresh) {
                 var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
