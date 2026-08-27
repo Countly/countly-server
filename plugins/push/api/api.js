@@ -164,8 +164,14 @@ plugins.register('/i', async ob => {
         let push = events.filter(e => e.key && e.key.indexOf('[CLY]_push_action') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24);
         if (push.length) {
             try {
-                let ids = push.map(e => common.db.ObjectID(e.segmentation.i)),
-                    msgs = await Message.findMany({_id: {$in: ids}}),
+                //Bound to the app the event was ingested under. The message id travels to
+                //devices in the notification payload as c.i, so it is not private to the app that
+                //sent it, and without this an event submitted with one app's key could move
+                //another app's action counters. `app` is stored as an ObjectID, so the request's
+                //id is converted rather than compared as a string.
+                let requestApp = common.db.ObjectID(params.app_id + ""),
+                    ids = push.map(e => common.db.ObjectID(e.segmentation.i)),
+                    msgs = await Message.findMany({_id: {$in: ids}, app: requestApp}),
                     updates = {};
                 for (let i = 0; i < push.length; i++) {
                     let event = push[i],
@@ -218,7 +224,7 @@ plugins.register('/i', async ob => {
                     }
                 }
 
-                await Promise.all(Object.keys(updates).map(mid => common.db.collection('messages').updateOne({_id: common.db.ObjectID(mid)}, updates[mid])));
+                await Promise.all(Object.keys(updates).map(mid => common.db.collection('messages').updateOne({_id: common.db.ObjectID(mid), app: requestApp}, updates[mid])));
             }
             catch (e) {
                 log.e('Wrong [CLY]_push_* event i segmentation', e);

@@ -3178,6 +3178,40 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
     }
 };
 
+/**
+* Restrict a find() projection to plain field inclusion and exclusion.
+*
+* A projection value may only be 0, 1 or a boolean. Anything else is dropped:
+*  - expressions and field path aliases, for example { leak: "$password" } or
+*    { x: { $function: ... } }, would rename or compute fields that the caller is not
+*    supposed to see. MongoDB 4.4 and later accept aggregation expressions in a find()
+*    projection, so a rename defeats any redaction that works by field name, and
+*    $function evaluates javascript in the database engine;
+*  - other numbers such as 2 or NaN are not valid include/exclude values and can make the
+*    query throw.
+*
+* Kept in common so every caller supplied projection goes through the same guard, whether
+* it arrives at the DB Viewer or at an export.
+* @param {object} projection - parsed projection object, mutated in place
+* @returns {object} changes - keys are the projection fields that were dropped
+*/
+common.sanitizeProjection = function(projection) {
+    var changes = {};
+    if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
+        return changes;
+    }
+    for (var key in projection) {
+        if (Object.prototype.hasOwnProperty.call(projection, key)) {
+            var value = projection[key];
+            if (value !== 0 && value !== 1 && value !== true && value !== false) {
+                changes[key] = true;
+                delete projection[key];
+            }
+        }
+    }
+    return changes;
+};
+
 common.sanitizeFilename = (filename, replacement = "") => {
     return (filename + "")
         .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)
