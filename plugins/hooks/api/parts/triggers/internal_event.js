@@ -59,6 +59,83 @@ async function isRuleOwnerGlobalAdmin(rule, cache) {
     return result;
 }
 
+//An app document carries credentials: the sdk key, every rotated key, the immutable
+//id_key, and the checksum salt. Effects can emit the payload verbatim, since the http
+//effect's body is a template and {{payload_json}} stringifies the whole thing to a url the
+//hook's author chose, so none of these belong in what hooks hands to an effect.
+//
+//This is done here rather than at the dispatch sites on purpose: systemlogs stores those
+//payloads whole so that a deleted or reset app can be recovered afterwards, and stripping
+//at the source would take the recoverable fields away with it. Everything below therefore
+//works on copies and never touches the object the other subscribers of the same dispatch
+//see.
+const APP_SECRET_FIELDS = ["key", "keys", "id_key", "salt", "checksum_salt"];
+
+/**
+ * Copy an app document without the fields that authenticate writes to it
+ * @param {object} app - app document from a dispatch payload
+ * @returns {object} copy without the credential fields
+ */
+function withoutAppSecrets(app) {
+    const copy = Object.assign({}, app);
+    APP_SECRET_FIELDS.forEach(function(field) {
+        delete copy[field];
+    });
+    return copy;
+}
+
+//Fields of a dispatch payload that hold an app document. /i/apps/update sends two of
+//them: data.app is the document before the change, and data.update is what was written.
+//data.update is not the smaller of the two for this purpose - the accepted key list is
+//rebuilt on EVERY update, so data.update.keys carries every key the app has ever had,
+//data.update.key appears whenever the key is rotated, and data.update.id_key is filled in
+//the first time an app that predates it is touched.
+const APP_SHAPED_FIELDS = ["app", "update"];
+
+/**
+ * Copy trigger params with any app document's credentials removed. Keyed off field names
+ * that are known to hold an app document, and off the event type for the payloads that
+ * are an app document, rather than by looking for a field called "key" anywhere: "key" is
+ * an ordinary field elsewhere - events have one - and scrubbing those would break hooks
+ * that reference it.
+ * @param {object} params - params about to be handed to the effect pipeline
+ * @param {string} eventType - internal event being processed
+ * @returns {object} params safe to hand onwards
+ */
+function withoutSecrets(params, eventType) {
+    if (!params || typeof params !== "object") {
+        return params;
+    }
+    const out = Object.assign({}, params);
+    if (out.data && typeof out.data === "object") {
+        let data = out.data;
+        let replaced = false;
+        //crashes/new and /i/apps/update nest app documents under named fields
+        APP_SHAPED_FIELDS.forEach(function(field) {
+            if (data[field] && typeof data[field] === "object") {
+                if (!replaced) {
+                    data = Object.assign({}, data);
+                    replaced = true;
+                }
+                data[field] = withoutAppSecrets(data[field]);
+            }
+        });
+        //while /i/apps/create, /i/apps/delete and /i/apps/reset pass the app document as
+        //data itself. A payload carrying one of the fields above is not itself an app.
+        if (!replaced && typeof eventType === "string" && eventType.indexOf("/i/apps/") === 0) {
+            data = withoutAppSecrets(data);
+            replaced = true;
+        }
+        if (replaced) {
+            out.data = data;
+        }
+    }
+    if (out.app && typeof out.app === "object") {
+        out.app = withoutAppSecrets(out.app);
+    }
+    return out;
+}
+
 /**
  * Internal event trigger
  */
@@ -73,6 +150,9 @@ class InternalEventTrigger {
         this.pipeline = () => {};
         if (options.pipeline) {
             this.pipeline = (data) => {
+                //before anything copies or forwards it, including the _originalInput
+                //snapshot kept for error records
+                data.params = withoutSecrets(data.params, data.eventType);
                 try {
                     data.rule._originalInput = JSON.parse(JSON.stringify(data.params || {}));
                 }
@@ -269,7 +349,7 @@ class InternalEventTrigger {
                     else if (!appId) {
                         warnMissingAppId("ob.appId");
                     }
-                    else if (rule.apps[0] === appId + '') {
+                    else if (Array.isArray(rule.apps) && rule.apps.indexOf(appId + '') > -1) {
                         utils.updateRuleTriggerTime(rule._id);
                         this.pipeline({
                             params: {data, appId, eventType},
@@ -295,10 +375,10 @@ class InternalEventTrigger {
                 if (!app_id) {
                     warnMissingAppId("ob.app_id");
                 }
-                else if (rule.apps[0] !== app_id + '') {
+                else if (!(Array.isArray(rule.apps) && rule.apps.indexOf(app_id + '') > -1)) {
                     noteOutOfScope(rule, app_id);
                 }
-                if (rule.apps[0] === app_id + '') {
+                if (Array.isArray(rule.apps) && rule.apps.indexOf(app_id + '') > -1) {
                     try {
                         utils.updateRuleTriggerTime(rule._id);
                     }
@@ -439,6 +519,9 @@ InternalEventTrigger.getInternalEvents = function() {
 };
 
 module.exports = InternalEventTrigger;
+//exported so the payload scrub can be unit tested without a live dispatch
+module.exports.withoutSecrets = withoutSecrets;
+
 const InternalEvents = [
     "/i/apps/create",
     "/i/apps/update",
