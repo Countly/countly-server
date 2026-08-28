@@ -69,10 +69,10 @@ var LIFTED_INIT = (function() {
 function accumulate(values) {
     var result;
     var doc = {meta: {platform_version_rate: values}};
-    /* eslint-disable no-eval */
+    /* eslint-disable no-eval, security/detect-eval-with-expression */
     eval(LIFTED_INIT);
     eval(LIFTED);
-    /* eslint-enable no-eval */
+    /* eslint-enable no-eval, security/detect-eval-with-expression */
     return result;
 }
 
