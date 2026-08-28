@@ -110,13 +110,16 @@ countlyCommon.union = function(a, b) {
     }
 });
 
-/* eslint-disable no-eval */
+//the frontend file is not a module, so its functions are lifted out by name and
+//evaluated here. Both rules name the same five calls, and the source they run is
+//read from the repo, not from input.
+/* eslint-disable no-eval, security/detect-eval-with-expression */
 eval(methodSrc("isForbiddenFieldName"));
 eval(methodSrc("mergeMetricsByName"));
 eval(methodSrc("extendDbObj"));
 var extendMeta = eval("(" + blockSrc("    function extendMeta() {", "    }").trim() + ")");
 eval(blockSrc("    countlyEvent.getEventsWithSegmentations = function() {", "    };"));
-/* eslint-enable no-eval */
+/* eslint-enable no-eval, security/detect-eval-with-expression */
 
 describe("countly client: segmentation value prototype pollution", function() {
     afterEach(function() {
