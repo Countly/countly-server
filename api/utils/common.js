@@ -867,6 +867,42 @@ common.getISOWeeksInYear = function(year) {
 * @param {boolean} returnErrors - return error details as array or only boolean result
 * @returns {object} validated args in obj property, or false as result property if args do not pass validation and errors array
 */
+/**
+ * Parse a declared Object or Array argument that arrived as its JSON text.
+ *
+ * Request parameters are scalars by the time a handler sees them, so a caller
+ * that means to send a structure sends its JSON. This lets a declared type
+ * accept either form, so an endpoint does not have to parse it itself.
+ *
+ * Applied wherever a structure is declared, not only at the literal "Object" and
+ * "Array" types: a nested schema declares one too.
+ *
+ * Widening only: an argument that was already the declared type is untouched,
+ * and text that is not that type still fails the check below.
+ * @param {any} value - the argument as supplied
+ * @param {string} type - the declared type, "Object" or "Array"
+ * @returns {any} the parsed value, or the original when it does not apply
+ */
+function parseDeclaredStructure(value, type) {
+    if (typeof value !== "string" || !value.length) {
+        return value;
+    }
+    var parsed;
+    try {
+        parsed = JSON.parse(value);
+    }
+    catch (ex) {
+        return value;
+    }
+    if (type === "Array" && Array.isArray(parsed)) {
+        return parsed;
+    }
+    if (type === "Object" && parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed;
+    }
+    return value;
+}
+
 common.validateArgs = function(args, argProperties, returnErrors) {
 
     if (arguments.length === 2) {
@@ -1105,6 +1141,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (argProperties[arg].type === 'Array') {
+                    args[arg] = parseDeclaredStructure(args[arg], 'Array');
                     if (!Array.isArray(args[arg])) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -1150,6 +1187,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (argProperties[arg].type === 'Object') {
+                    args[arg] = parseDeclaredStructure(args[arg], 'Object');
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -1286,6 +1324,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
+                    //a nested schema declares an object just as surely as type: "Object"
+                    args[arg] = parseDeclaredStructure(args[arg], 'Object');
                     if (typeof args[arg] !== 'object' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -1314,6 +1354,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
+                    //and a nested schema marked array declares an array
+                    args[arg] = parseDeclaredStructure(args[arg], 'Array');
                     if (!Array.isArray(args[arg])) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -2888,6 +2930,40 @@ common.parseUserQuery = function(raw) {
 };
 
 /**
+ * Keep a request parameter out of the shape Mongo reads as a query expression.
+ *
+ * An object in a value position is read as an operator document rather than as
+ * the value it stands in for, so `{"view": {"$ne": null}}` turns an equality
+ * match on one document into a match on many: rows the endpoint never meant to
+ * return, and no bound left on how much it has to scan.
+ *
+ * Arrays go the same way. Whether a structure is pre-parsed at all depends on the
+ * request's content type, so an endpoint that wants one cannot rely on receiving
+ * it already parsed and has to accept the json text regardless - a form encoded
+ * caller sends exactly that today. Scalarizing both keeps one rule rather than
+ * one rule and an exception.
+ *
+ * Applied to what comes in off the request. Internal callers build a qstring
+ * themselves and pass structures on purpose.
+ *
+ * @param {any} value - one value from a parsed request
+ * @returns {any} the value unchanged when it is a scalar, else its JSON text
+ */
+common.asRequestScalar = function(value) {
+    if (value === null || typeof value !== "object") {
+        return value;
+    }
+    try {
+        return JSON.stringify(value);
+    }
+    catch (ex) {
+        //a parsed body cannot be circular, but never hand a handler an object
+        //just because stringifying failed
+        return "";
+    }
+};
+
+/**
  * Build a short, log-safe label identifying the request's endpoint, for use in
  * log messages (e.g. query-rejection logs). Returns the request path plus the
  * `method` query param when present, e.g. " [/i/app_users/delete]" or
@@ -3491,6 +3567,40 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
  * @param {string} replacement - string to replace characters to be removed
  * @returns {string} sanitizedFilename - sanitized filename
  */
+/**
+* Restrict a find() projection to plain field inclusion and exclusion.
+*
+* A projection value may only be 0, 1 or a boolean. Anything else is dropped:
+*  - expressions and field path aliases, for example { leak: "$password" } or
+*    { x: { $function: ... } }, would rename or compute fields that the caller is not
+*    supposed to see. MongoDB 4.4 and later accept aggregation expressions in a find()
+*    projection, so a rename defeats any redaction that works by field name, and
+*    $function evaluates javascript in the database engine;
+*  - other numbers such as 2 or NaN are not valid include/exclude values and can make the
+*    query throw.
+*
+* Kept in common so every caller supplied projection goes through the same guard, whether
+* it arrives at the DB Viewer or at an export.
+* @param {object} projection - parsed projection object, mutated in place
+* @returns {object} changes - keys are the projection fields that were dropped
+*/
+common.sanitizeProjection = function(projection) {
+    var changes = {};
+    if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
+        return changes;
+    }
+    for (var key in projection) {
+        if (Object.prototype.hasOwnProperty.call(projection, key)) {
+            var value = projection[key];
+            if (value !== 0 && value !== 1 && value !== true && value !== false) {
+                changes[key] = true;
+                delete projection[key];
+            }
+        }
+    }
+    return changes;
+};
+
 common.sanitizeFilename = (filename, replacement = "") => {
     return (filename + "")
         .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)

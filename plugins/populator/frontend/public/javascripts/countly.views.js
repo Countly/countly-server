@@ -552,7 +552,11 @@
                     saveButtonLabel: CV.i18n('common.yes'),
                     cancelButtonLabel: CV.i18n('common.cancel'),
                     title: CV.i18n('populator.environment-delete-warning-title'),
-                    text: CV.i18n('populator.environment-delete-warning-description', this.filterByEnvironmentOptions.filter(x => x.value === this.environmentId)[0].label)
+                    //this sentence is rendered with v-html because the localized string itself carries
+                    //markup, so the environment name substituted into it has to be escaped here. The name
+                    //was html-decoded when the dropdown options were built, which is what the dropdown
+                    //needs, so the escaping the api applied no longer holds by this point.
+                    text: CV.i18n('populator.environment-delete-warning-description', countlyCommon.encodeHtml(this.filterByEnvironmentOptions.filter(x => x.value === this.environmentId)[0].label))
                 };
             },
             calculateWidth: function(percentage) {
