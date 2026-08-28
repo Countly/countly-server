@@ -269,6 +269,8 @@ mail.sendTimeBanWarning = function(member, db) {
         multi: false,
         owner: member._id,
         app: "",
+        //the mailed link logs the member back in, so this token carries login permission
+        can_login: true,
         callback: function(err, token) {
             mail.lookup(function(err2, host) {
                 localize.getProperties(member.lang, function(err3, properties) {

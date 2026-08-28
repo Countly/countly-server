@@ -1506,6 +1506,8 @@ plugins.setConfigs("dashboards", {
                         purpose: "LoginAuthToken",
                         temporary: true,
                         ttl: 540, //9 minutes
+                        //the headless renderer authenticates by redeeming this at /login/token
+                        can_login: true,
                         callback: function(er, token) {
                             if (er) {
                                 return resolve();
