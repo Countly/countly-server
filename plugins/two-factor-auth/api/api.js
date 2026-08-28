@@ -4,9 +4,31 @@ var plugin = {},
     log = common.log('two-factor-auth:api'),
     utils = require("../../../api/utils/utils.js"),
     plugins = require('../../pluginManager.js'),
-    { validateUser } = require('../../../api/utils/rights.js');
+    { validateUser, isScopedCredential } = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'two_factor_auth';
+
+/**
+ * Refuse a credential that is narrower than its owner.
+ *
+ * These three methods change the owner's second factor, which is account level and belongs
+ * to no application: enable replaces the secret, disable removes it and asks for no current
+ * code to do so, and generate-qr-code hands out a fresh secret to enable with. A token
+ * narrowed to one app or one feature would otherwise be able to weaken the factor that
+ * protects everything its owner can reach - the escalation the permission model exists to
+ * prevent. validateUser bounds what a scoped token may touch per app; it does not reject
+ * the request, and for an account level route there is no app to bound.
+ * @param {object} params - params object of the request
+ * @param {string} what - what the request was trying to do, for the message
+ * @returns {boolean} true when the request was refused and answered
+ */
+function refuseScopedCredential(params, what) {
+    if (isScopedCredential(params)) {
+        common.returnMessage(params, 403, "A restricted token cannot " + what);
+        return true;
+    }
+    return false;
+}
 
 plugins.setConfigs("two-factor-auth", {
     globally_enabled: false
@@ -22,6 +44,9 @@ plugins.register("/i/two-factor-auth", function(ob) {
     switch (ob.params.qstring.method) {
     case "enable":
         validateUser(ob.params, function() {
+            if (refuseScopedCredential(ob.params, "change two factor authentication")) {
+                return;
+            }
             var member = ob.params.member,
                 secretToken = ob.params.qstring.secret_token,
                 authCode = ob.params.qstring.auth_code;
@@ -66,6 +91,9 @@ plugins.register("/i/two-factor-auth", function(ob) {
         break;
     case "disable":
         validateUser(ob.params, function() {
+            if (refuseScopedCredential(ob.params, "change two factor authentication")) {
+                return;
+            }
             var member = ob.params.member;
 
             if (!config.globally_enabled) {

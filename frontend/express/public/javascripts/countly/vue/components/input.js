@@ -494,7 +494,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled"><slot name="option-prefix" v-bind="option"></slot>{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\

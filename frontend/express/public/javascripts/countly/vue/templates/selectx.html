@@ -111,6 +111,9 @@
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
                     v-model="innerValue">
+                    <template v-if="!!$scopedSlots['option-prefix']" v-slot:option-prefix="scope">
+                        <slot name="option-prefix" v-bind="scope"></slot>
+                    </template>
                 </cly-checklistbox>
                 <cly-checklistbox
                     :noMatchFoundPlaceholder="noMatchFoundPlaceholder"

@@ -19,7 +19,9 @@ const log = require('./log.js')('core:authorizer');
 * @param {string} options.token - token to store, if not provided, will be generated
 * @param {string} options.owner - id of the user who created this token
 * @param {string} options.app - list of the apps for which token was created
-* @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
+* @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$). Deprecated as an authorization mechanism, kept for tokens created before the permission model.
+* @param {object} [options.token_permission] - CRUD permissions granted to this token, in the same shape as member.permission ({_:{a,u}, c/r/u/d:{appId:{all, allowed}}}). When set, the token authorizes only the intersection of this object and its owner's own permissions. When omitted, the token inherits the owner's full permissions.
+* @param {boolean} [options.can_login=false] - if true, the token may be redeemed for a dashboard session at /login/token. SERVER-ASSIGNED ONLY - see the note below.
 * @param {string} options.tryReuse - if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.
 * @param {bool} [options.temporary=false] - If logged in with temporary token. Doesn't kill other sessions on logout.
 * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
@@ -33,6 +35,13 @@ authorizer.save = function(options) {
     options.endpoint = options.endpoint || "";
     options.purpose = options.purpose || "";
     options.temporary = options.temporary || false; //If logged in with temporary token. Doesn't kill other sessions on logout
+
+    // Login capability is a property of the token, never of its purpose string. It is set only
+    // where the server itself establishes or propagates a session (setLoggedInVariables, the
+    // renderer, the ban-warning mail, OIDC login), and by /i/token/create only when the creating
+    // credential already holds it. Defaulting to false here means any caller that does not ask
+    // for it explicitly produces a token that cannot be redeemed at /login/token.
+    options.can_login = options.can_login === true;
 
     if (options.endpoint !== "" && !Array.isArray(options.endpoint)) {
         options.endpoint = [options.endpoint];
@@ -53,8 +62,40 @@ authorizer.save = function(options) {
             }
             else if (member) {
                 authorizer.clearExpiredTokens(options);
+                /**
+                * Build the token document to store. token_permission is only written when the
+                * token is actually scoped, so an unscoped token stays absent-means-unrestricted.
+                * @returns {object} document to insert into auth_tokens
+                */
+                var buildTokenDoc = function() {
+                    var doc = {
+                        _id: options.token,
+                        ttl: options.ttl,
+                        ends: options.ttl + Math.round(Date.now() / 1000),
+                        multi: options.multi,
+                        owner: options.owner,
+                        app: options.app,
+                        endpoint: options.endpoint,
+                        purpose: options.purpose,
+                        temporary: options.temporary,
+                        can_login: options.can_login
+                    };
+                    if (options.token_permission) {
+                        doc.token_permission = options.token_permission;
+                    }
+                    return doc;
+                };
                 if (options.tryReuse === true) {
-                    var rules = {"multi": options.multi, "endpoint": options.endpoint, "app": options.app, "owner": options.owner, "purpose": options.purpose};
+                    var rules = {"multi": options.multi, "endpoint": options.endpoint, "app": options.app, "owner": options.owner, "purpose": options.purpose, "can_login": options.can_login};
+                    // Never reuse a token that grants something different from what is being asked
+                    // for: an identical-looking token with a wider (or narrower) permission set is a
+                    // different credential.
+                    if (options.token_permission) {
+                        rules.token_permission = options.token_permission;
+                    }
+                    else {
+                        rules.token_permission = {$exists: false};
+                    }
                     if (options.purpose === "LoggedInAuth") {
                         //Login token, allow switching from expiring to not expiring(and other way around)
                         //If there is changes to session expiration - this will allow to treat those tokens as same token.
@@ -78,17 +119,7 @@ authorizer.save = function(options) {
                             options.callback(err_token, token.value._id);
                         }
                         else {
-                            options.db.collection("auth_tokens").insert({
-                                _id: options.token,
-                                ttl: options.ttl,
-                                ends: options.ttl + Math.round(Date.now() / 1000),
-                                multi: options.multi,
-                                owner: options.owner,
-                                app: options.app,
-                                endpoint: options.endpoint,
-                                purpose: options.purpose,
-                                temporary: options.temporary
-                            }, function(err1) {
+                            options.db.collection("auth_tokens").insert(buildTokenDoc(), function(err1) {
                                 if (typeof options.callback === "function") {
                                     options.callback(err1, options.token);
                                 }
@@ -97,17 +128,7 @@ authorizer.save = function(options) {
                     });
                 }
                 else {
-                    options.db.collection("auth_tokens").insert({
-                        _id: options.token,
-                        ttl: options.ttl,
-                        ends: options.ttl + Math.round(Date.now() / 1000),
-                        multi: options.multi,
-                        owner: options.owner,
-                        app: options.app,
-                        endpoint: options.endpoint,
-                        purpose: options.purpose,
-                        temporary: options.temporary
-                    }, function(err1) {
+                    options.db.collection("auth_tokens").insert(buildTokenDoc(), function(err1) {
                         if (typeof options.callback === "function") {
                             options.callback(err1, options.token);
                         }
@@ -249,7 +270,13 @@ var verify_token = function(options, return_owner, return_data) {
                 if (Array.isArray(res.endpoint) && res.endpoint.length === 0) {
                     res.endpoint = "";
                 }
-                if (res.endpoint && res.endpoint !== "") {
+                // The endpoint regex is the pre-permission-model scoping mechanism. It only ever
+                // constrained which paths a token could call, never what the resolved member was
+                // allowed to do, so it is not an authorization boundary. Tokens issued under the
+                // permission model carry token_permission instead, which rights.js intersects with
+                // the owner's own permissions on every request. Legacy tokens (no token_permission)
+                // keep being matched exactly as before, so existing integrations are unaffected.
+                if (!res.token_permission && res.endpoint && res.endpoint !== "") {
                     //keep backwards compability
                     if (!Array.isArray(res.endpoint)) {
                         res.endpoint = [res.endpoint];
