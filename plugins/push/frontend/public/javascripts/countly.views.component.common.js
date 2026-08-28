@@ -1,6 +1,15 @@
 /* eslint-disable no-console */
 /*global CV,countlyVue,countlyPushNotification,countlyGlobal,countlyCommon,moment*/
 (function(countlyPushNotificationComponent) {
+    // The message editor is a live contenteditable. Its body is user-authored text; the
+    // only legitimate markup is the user-property token <span>. Allow just that element
+    // (with the attributes the token relies on) and let everything else be escaped to inert
+    // text, so a stored message cannot introduce active markup when the editor is populated.
+    var PUSH_MESSAGE_EDITOR_XSS_OPTIONS = {
+        whiteList: {
+            span: ["class", "id", "contenteditable", "data-user-property-label", "data-user-property-value", "data-user-property-type", "data-user-property-fallback"]
+        }
+    };
     countlyPushNotificationComponent.LargeRadioButtonWithDescription = countlyVue.views.create({
         props: {
             value: {
@@ -709,7 +718,7 @@
             },
             reset: function(htmlContent, ids) {
                 this.disconnectMutationObserver();
-                this.$refs.element.innerHTML = htmlContent;
+                this.$refs.element.innerHTML = countlyCommon.encodeSomeHtml(htmlContent, PUSH_MESSAGE_EDITOR_XSS_OPTIONS);
                 this.addEventListeners(ids);
                 this.startMutationObserver();
             },
