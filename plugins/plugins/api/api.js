@@ -152,7 +152,8 @@ var plugin = {},
                                     if (!resultObj.enabled) {
                                         var local_path = fullpath + "/frontend/public/localization/" + resultObj.code + ".properties";
                                         if (params.member.lang && params.member.lang !== "en") {
-                                            local_path = fullpath + "/frontend/public/localization/" + resultObj.code + "_" + params.member.lang + ".properties";
+                                            //sanitized the same way api/utils/localization.js does it
+                                            local_path = fullpath + "/frontend/public/localization/" + resultObj.code + "_" + common.sanitizeFilename(params.member.lang) + ".properties";
                                         }
                                         if (fs.existsSync(local_path)) {
                                             var local_properties = fs.readFileSync(local_path);
@@ -403,9 +404,14 @@ var plugin = {},
             var fullpath = path.resolve(__dirname, "../");
             var local_path = fullpath + "/frontend/public/localization/plugins.properties";
             if (params.member.lang && params.member.lang !== "en") {
-                path = fullpath + "/frontend/public/localization/plugins" + "_" + params.member.lang + ".properties";
-                if (fs.existsSync(path)) {
-                    local_path = path;
+                //sanitized the same way api/utils/localization.js does it.
+                //A local name: this used to assign to `path`, which is the required path
+                //module at the top of this file, so one call to this route by a non
+                //English global admin left path.resolve broken for the rest of the
+                //process.
+                var localizedPath = fullpath + "/frontend/public/localization/plugins" + "_" + common.sanitizeFilename(params.member.lang) + ".properties";
+                if (fs.existsSync(localizedPath)) {
+                    local_path = localizedPath;
                 }
             }
             let subject = 'Countly test email';

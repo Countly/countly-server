@@ -186,9 +186,13 @@ function string(obj) {
     else {
         obj = JSON.stringify(obj);
         if (obj) {
-            // Only escape things that could break out of script context
-            obj = obj.replace(/<\/script>/ig, '</scr"+"ipt>');
-            obj = obj.replace(/<!--/g, '<\\!--');
+            // Escape "<" so nothing serialized here can open or close a tag in the inline
+            // <script> block this value is written into. A "</script>" end tag terminates the
+            // script in any of its whitespace/slash spellings (</script >, </script/>, ...),
+            // which an exact-match replace of "</script>" misses; escaping every "<" closes all
+            // of those plus "<!--" and "<script". "<" parses back to "<", so runtime
+            // values read from the exposed object are unchanged.
+            obj = obj.replace(/</g, '\\u003c');
             obj = obj.replace(/\u2028/g, '\\u2028'); // Line separator
             obj = obj.replace(/\u2029/g, '\\u2029'); // Paragraph separator
         }
@@ -222,7 +226,8 @@ function escape_js_string(str) {
         .replace(/\0/g, '\\0') // Null character
         .replace(/[\u0000-\u001F\u007F-\u009F]/g, function(ch) {
             return '\\u' + ('0000' + ch.charCodeAt(0).toString(16)).slice(-4);
-        });
+        })
+        .replace(/</g, '\\u003c'); // "<" so a key cannot break out of the <script> block
 }
 
 exports = module.exports = function(app) {
