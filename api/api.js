@@ -537,6 +537,11 @@ function handleRequest(req, res) {
         form.parse(req, (err, fields, files) => {
             //handle bakcwards compatability with formiddble v1
             for (let i in files) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (i === "__proto__" || i === "constructor" || i === "prototype") {
+                    continue;
+                }
                 if (files[i].filepath) {
                     files[i].path = files[i].filepath;
                 }
@@ -554,14 +559,16 @@ function handleRequest(req, res) {
             if (multiFormData) {
                 let formDataUrl = [];
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
-                    formDataUrl.push(`${i}=${fields[i]}`);
+                    //back to the scalar the request carried; formidable's json body
+                    //parser is the only thing that makes these structures
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
+                    formDataUrl.push(`${i}=${params.qstring[i]}`);
                 }
                 params.formDataUrl = formDataUrl.join('&');
             }
             else {
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
                 }
             }
             if (!params.apiPath) {

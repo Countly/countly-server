@@ -125,6 +125,31 @@ function getJSON(val) {
 }
 
 /**
+ * Whether a value is a plain object or an array, and so should be walked rather than escaped
+ * as a scalar.
+ *
+ * Tested by prototype identity rather than by reading value.constructor. `constructor` is an
+ * ordinary property name, so a JSON body can carry its own: {"constructor": true, ...} makes
+ * value.constructor evaluate to true, which used to fail the check and return the object with
+ * its keys and values unescaped. Since escape_html_entities is the replacer for every
+ * returnOutput and returnMessage, that turned any user controlled property name into markup
+ * wherever a response is rendered.
+ *
+ * Prototype identity cannot be spoofed by an own property, and it keeps the original intent:
+ * ObjectIDs, Dates and other class instances are still escaped as scalars rather than walked.
+ *
+ * @param {Any} value - value under inspection
+ * @returns {boolean} true when it should be recursed into
+ */
+function isPlainContainer(value) {
+    if (Array.isArray(value)) {
+        return true;
+    }
+    const proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+}
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {any} value - value to escape
@@ -132,7 +157,7 @@ function getJSON(val) {
 * @returns {any} escaped value
 **/
 function escape_html_entities(key, value, more) {
-    if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
+    if (typeof value === 'object' && value && isPlainContainer(value)) {
         if (Array.isArray(value)) {
             let replacement = [];
             for (let k = 0; k < value.length; k++) {
@@ -644,6 +669,42 @@ common.getISOWeeksInYear = function(year) {
 };
 
 
+/**
+ * Parse a declared Object or Array argument that arrived as its JSON text.
+ *
+ * Request parameters are scalars by the time a handler sees them, so a caller
+ * that means to send a structure sends its JSON. This lets a declared type
+ * accept either form, so an endpoint does not have to parse it itself.
+ *
+ * Applied wherever a structure is declared, not only at the literal "Object" and
+ * "Array" types: a nested schema declares one too.
+ *
+ * Widening only: an argument that was already the declared type is untouched,
+ * and text that is not that type still fails the check below.
+ * @param {any} value - the argument as supplied
+ * @param {string} type - the declared type, "Object" or "Array"
+ * @returns {any} the parsed value, or the original when it does not apply
+ */
+function parseDeclaredStructure(value, type) {
+    if (typeof value !== "string" || !value.length) {
+        return value;
+    }
+    var parsed;
+    try {
+        parsed = JSON.parse(value);
+    }
+    catch (ex) {
+        return value;
+    }
+    if (type === "Array" && Array.isArray(parsed)) {
+        return parsed;
+    }
+    if (type === "Object" && parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed;
+    }
+    return value;
+}
+
 common.validateArgs = function(args, argProperties, returnErrors) {
     if (arguments.length === 2) {
         returnErrors = false;
@@ -881,6 +942,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (argProperties[arg].type === 'Array') {
+                    args[arg] = parseDeclaredStructure(args[arg], 'Array');
                     if (!Array.isArray(args[arg])) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -926,6 +988,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (argProperties[arg].type === 'Object') {
+                    args[arg] = parseDeclaredStructure(args[arg], 'Object');
                     if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -1062,6 +1125,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if (typeof argProperties[arg].type === 'object' && !argProperties[arg].array) {
+                    //a nested schema declares an object just as surely as type: "Object"
+                    args[arg] = parseDeclaredStructure(args[arg], 'Object');
                     if (typeof args[arg] !== 'object' && !(!argProperties[arg].required && args[arg] === null)) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -1090,6 +1155,8 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                 }
                 else if ((typeof argProperties[arg].type === 'object' && argProperties[arg].array) || argProperties[arg].type.indexOf('[]') === argProperties[arg].type.length - 2) {
+                    //and a nested schema marked array declares an array
+                    args[arg] = parseDeclaredStructure(args[arg], 'Array');
                     if (!Array.isArray(args[arg])) {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid type for " + arg);
@@ -1369,9 +1436,15 @@ common.fixEventKey = function(eventKey) {
     if (shortEventName.length >= 128) {
         return false;
     }
-    else {
-        return shortEventName;
+    //the key is stored as a field name (d.<day>.<key>.<metric> on the totals
+    //document, and as part of the per-event collection hash), so a key naming an
+    //Object.prototype member is prefixed the same way a forbidden segmentation
+    //value is. Every caller derives its collection name and its stored paths from
+    //this return value, so prefixing here keeps write and read agreeing.
+    if (common.isForbiddenFieldName(shortEventName)) {
+        return "[CLY]" + shortEventName;
     }
+    return shortEventName;
 };
 
 common.blockResponses = function(params) {
@@ -1910,6 +1983,11 @@ common.recordMetric = function(params, props) {
         tmpSet = {};
 
     for (let i in props.metrics) {
+        // a key off a stored document or a parsed payload can be a prototype
+        // member name; writing through one would reach Object.prototype
+        if (common.isForbiddenFieldName(i)) {
+            continue;
+        }
         props.metrics[i].value = props.metrics[i].value || 1;
         recordMetric(params, i, props.metrics[i], tmpSet, updateUsersZero, updateUsersMonth);
     }
@@ -2014,6 +2092,19 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 }
 
 /**
+* Whether a string, used as a MongoDB field name, would name a member of
+* Object.prototype. Such a name survives storage as a literal field and, when the
+* document is later walked with for...in and merged, writes into the prototype of
+* the process. Segmentation values, metric values and event keys all become field
+* names, so each is checked against this before use.
+* @param {string} name - the candidate field name
+* @returns {boolean} true when the name must not be used as a field name as-is
+**/
+common.isForbiddenFieldName = function(name) {
+    return name === "__proto__" || name === "constructor" || name === "prototype";
+};
+
+/**
 * Record specific metric segment
 * @param {Params} params - params object
 * @param {string} metric - metric to record
@@ -2029,6 +2120,12 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
     var escapedMetricVal = (val + "").replace(/^\$/, "").replace(/\./g, ":");
+    //escapedMetricVal is used below as a component of a d.<...> field name, so a
+    //value naming an Object.prototype member is prefixed the way forbidden day
+    //numbers already are
+    if (common.isForbiddenFieldName(escapedMetricVal)) {
+        escapedMetricVal = "[CLY]" + escapedMetricVal;
+    }
     if (!tmpSet["meta." + escapedMetricKey]) {
         tmpSet["meta." + escapedMetricKey] = [];
     }
@@ -2571,6 +2668,40 @@ common.parseUserQuery = function(raw) {
 };
 
 /**
+ * Keep a request parameter out of the shape Mongo reads as a query expression.
+ *
+ * An object in a value position is read as an operator document rather than as
+ * the value it stands in for, so `{"view": {"$ne": null}}` turns an equality
+ * match on one document into a match on many: rows the endpoint never meant to
+ * return, and no bound left on how much it has to scan.
+ *
+ * Arrays go the same way. Whether a structure is pre-parsed at all depends on the
+ * request's content type, so an endpoint that wants one cannot rely on receiving
+ * it already parsed and has to accept the json text regardless - a form encoded
+ * caller sends exactly that today. Scalarizing both keeps one rule rather than
+ * one rule and an exception.
+ *
+ * Applied to what comes in off the request. Internal callers build a qstring
+ * themselves and pass structures on purpose.
+ *
+ * @param {any} value - one value from a parsed request
+ * @returns {any} the value unchanged when it is a scalar, else its JSON text
+ */
+common.asRequestScalar = function(value) {
+    if (value === null || typeof value !== "object") {
+        return value;
+    }
+    try {
+        return JSON.stringify(value);
+    }
+    catch (ex) {
+        //a parsed body cannot be circular, but never hand a handler an object
+        //just because stringifying failed
+        return "";
+    }
+};
+
+/**
  * Build a short, log-safe label identifying the request's endpoint, for use in
  * log messages (e.g. query-rejection logs). Returns the request path plus the
  * `method` query param when present, e.g. " [/i/app_users/delete]" or
@@ -2588,6 +2719,54 @@ common.reqInfo = function(params) {
         ctx = (reqPath + reqMethod).trim();
     }
     return ctx ? " [" + ctx + "]" : "";
+};
+
+/**
+ * Remove the request's own authentication parameters from an object that is about
+ * to be stored. api_key and auth_token are both accepted as request parameters
+ * (see api/utils/rights.js), so a handler that keeps input it does not recognise
+ * persists the caller's credential, and a document read back later hands that
+ * credential to everyone allowed to read it.
+ *
+ * Top level only, and deliberately so. That is where a copy of the request puts
+ * them. A value the caller nested inside their own payload is their own to
+ * disclose, and descending to arbitrary depth would mean guessing at shapes.
+ *
+ * This is not a substitute for only storing declared fields. It is the floor: a
+ * handler that cannot enumerate its own shape can still refuse to keep a
+ * credential.
+ *
+ * @param {object} doc - the object about to be written, mutated in place
+ * @returns {object} the same object, so it can be used inline
+ */
+common.stripRequestCredentials = function(doc) {
+    if (doc && typeof doc === "object") {
+        delete doc.api_key;
+        delete doc.auth_token;
+    }
+    return doc;
+};
+
+/**
+ * Add the removal of stored request credentials to an update document.
+ *
+ * stripRequestCredentials keeps a credential out of a document being written, which
+ * does nothing for one already saved: an update sends $set, and a field absent from
+ * $set is left exactly as it was. So a document created before that helper existed
+ * keeps handing out the credential until something removes it, and the update that
+ * would have been the natural moment to do so does not.
+ *
+ * Use together with stripRequestCredentials, never instead of it. The strip is what
+ * makes this legal: MongoDB refuses an update naming the same field in $set and
+ * $unset, so the fields have to be gone from the document first.
+ *
+ * @param {Object<string, any>} update - the update document, e.g. {$set: doc}
+ * @returns {Object<string, any>} the same update, with the credentials unset
+ */
+common.unsetRequestCredentials = function(update) {
+    update = update || {};
+    update.$unset = Object.assign({}, update.$unset, {api_key: "", auth_token: ""});
+    return update;
 };
 
 common.clearClashingQueryOperations = function(query) {
@@ -3075,6 +3254,40 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
     }
 };
 
+/**
+* Restrict a find() projection to plain field inclusion and exclusion.
+*
+* A projection value may only be 0, 1 or a boolean. Anything else is dropped:
+*  - expressions and field path aliases, for example { leak: "$password" } or
+*    { x: { $function: ... } }, would rename or compute fields that the caller is not
+*    supposed to see. MongoDB 4.4 and later accept aggregation expressions in a find()
+*    projection, so a rename defeats any redaction that works by field name, and
+*    $function evaluates javascript in the database engine;
+*  - other numbers such as 2 or NaN are not valid include/exclude values and can make the
+*    query throw.
+*
+* Kept in common so every caller supplied projection goes through the same guard, whether
+* it arrives at the DB Viewer or at an export.
+* @param {object} projection - parsed projection object, mutated in place
+* @returns {object} changes - keys are the projection fields that were dropped
+*/
+common.sanitizeProjection = function(projection) {
+    var changes = {};
+    if (!projection || typeof projection !== "object" || Array.isArray(projection)) {
+        return changes;
+    }
+    for (var key in projection) {
+        if (Object.prototype.hasOwnProperty.call(projection, key)) {
+            var value = projection[key];
+            if (value !== 0 && value !== 1 && value !== true && value !== false) {
+                changes[key] = true;
+                delete projection[key];
+            }
+        }
+    }
+    return changes;
+};
+
 common.sanitizeFilename = (filename, replacement = "") => {
     return (filename + "")
         .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)
@@ -3263,19 +3476,36 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
 
 };
 
+/**
+* Own enumerable keys of a source object that may be used as a field name on a merge
+* target. for...in also yields inherited keys, and a key naming an Object.prototype
+* member resolves to the target's prototype instead of an own slot when the target is
+* indexed with it, so both are removed here once rather than at each operator loop.
+* @param {object} source - object whose keys are about to be walked
+* @returns {string[]} keys that are safe to write through
+**/
+function mergeableKeys(source) {
+    if (!source || typeof source !== "object") {
+        return [];
+    }
+    return Object.keys(source).filter(function(key) {
+        return !common.isForbiddenFieldName(key);
+    });
+}
+
 common.mergeQuery = function(ob1, ob2) {
     if (ob2) {
-        for (let key in ob2) {
+        for (let key of mergeableKeys(ob2)) {
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
             else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob2[key][val];
                 }
             }
             else if (key === "$addToSet") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
                     }
@@ -3296,7 +3526,7 @@ common.mergeQuery = function(ob1, ob2) {
 
             }
             else if (key === "$push") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     if (typeof ob1[key][val] !== 'object') {
                         ob1[key][val] = {'$each': [ob1[key][val]]};
                     }
@@ -3306,7 +3536,7 @@ common.mergeQuery = function(ob1, ob2) {
                             ob1[key][val].$each.push(ob2[key][val].$each[p]);
                         }
                         //copy other push modifiers
-                        for (let modifier in ob2[key][val]) {
+                        for (let modifier of mergeableKeys(ob2[key][val])) {
                             if (modifier !== "$each") {
                                 ob1[key][val][modifier] = ob2[key][val][modifier];
                             }
@@ -3318,25 +3548,25 @@ common.mergeQuery = function(ob1, ob2) {
                 }
             }
             else if (key === "$inc") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || 0;
                     ob1[key][val] += ob2[key][val];
                 }
             }
             else if (key === "$mul") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || 0;
                     ob1[key][val] *= ob2[key][val];
                 }
             }
             else if (key === "$min") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.min(ob1[key][val], ob2[key][val]);
                 }
             }
             else if (key === "$max") {
-                for (let val in ob2[key]) {
+                for (let val of mergeableKeys(ob2[key])) {
                     ob1[key][val] = ob1[key][val] || ob2[key][val];
                     ob1[key][val] = Math.max(ob1[key][val], ob2[key][val]);
                 }
