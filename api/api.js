@@ -564,14 +564,16 @@ function handleRequest(req, res) {
             if (multiFormData) {
                 let formDataUrl = [];
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
-                    formDataUrl.push(`${i}=${fields[i]}`);
+                    //back to the scalar the request carried; formidable's json body
+                    //parser is the only thing that makes these structures
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
+                    formDataUrl.push(`${i}=${params.qstring[i]}`);
                 }
                 params.formDataUrl = formDataUrl.join('&');
             }
             else {
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
                 }
             }
             if (!params.apiPath) {

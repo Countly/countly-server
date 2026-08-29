@@ -8,7 +8,7 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete, applyTokenScope } = require('../../../api/utils/rights.js');
 
 const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
@@ -1593,9 +1593,29 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         // verify_token skips the app check entirely and an
                         // app-scoped token would be accepted for any other app.
                         qstring: params.qstring,
-                        callback: function(owner, expires_after) {
-                            if (owner) {
-                                var token = params.req.headers["countly-token"];
+                        //return_data so the token document itself is available here. This
+                        //route resolves its own token rather than going through a rights
+                        //validator, so the bounding rights.js would have applied has to be
+                        //applied here or it does not happen at all.
+                        return_data: true,
+                        callback: function(tokenData, expires_after) {
+                            if (!tokenData) {
+                                common.returnMessage(params, 401, 'User does not have view right for this application');
+                                return false;
+                            }
+                            var token = params.req.headers["countly-token"];
+                            params.token_data = tokenData;
+                            common.db.collection('members').findOne({_id: common.db.ObjectID(tokenData.owner + "")}, function(memberErr, member) {
+                                //bound by the token before anything is authorized, the way
+                                //rights.js does it. A token scoped to another feature on this
+                                //same app must not read heatmaps merely because its owner can,
+                                //and the app restriction alone does not say anything about
+                                //which feature was granted.
+                                var scoped = (memberErr || !member) ? null : applyTokenScope(params, member);
+                                if (!viewsUtils.ownerCanRead(scoped, app._id + "", FEATURE_NAME)) {
+                                    common.returnMessage(params, 401, 'User does not have view right for this application');
+                                    return false;
+                                }
                                 if (expires_after < 600 && expires_after > -1) {
                                     authorize.extend_token({
                                         extendTill: Date.now() + 600000, //10 minutes
@@ -1610,7 +1630,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             getHeatmap(params);
                                         }
                                     });
-
                                 }
                                 else {
                                     params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
@@ -1621,10 +1640,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                                     getHeatmap(params);
                                 }
-                            }
-                            else {
-                                common.returnMessage(params, 401, 'User does not have view right for this application');
-                            }
+                            });
                         }
                     });
                 });

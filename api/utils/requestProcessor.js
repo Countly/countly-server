@@ -12,7 +12,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter, getAdminApps, getUserAppsForFeaturePermission } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -374,6 +374,15 @@ const processRequest = (params) => {
             }
             case '/o/render': {
                 validateUserForRead(params, function() {
+                    //The render endpoint mints an owner-authority login token and drives a headless
+                    //session with it, so it must only be reachable by a credential that already holds
+                    //the owner's full authority. A scoped token (or a legacy app/endpoint-restricted
+                    //one) would otherwise have a view rendered with more authority than the token
+                    //itself carries. Same rule as the token management endpoints.
+                    if (isScopedCredential(params)) {
+                        common.returnMessage(params, 403, "A restricted token cannot render a view");
+                        return;
+                    }
                     var options = {};
                     var view = params.qstring.view || "";
                     var route = params.qstring.route || "";
@@ -393,6 +402,8 @@ const processRequest = (params) => {
                         owner: params.member._id,
                         ttl: 300,
                         purpose: "LoginAuthToken",
+                        //the headless renderer authenticates by redeeming this at /login/token
+                        can_login: true,
                         callback: function(err2, token) {
                             if (err2) {
                                 common.returnMessage(params, 400, 'Error creating token: ' + err2);
@@ -1607,7 +1618,26 @@ const processRequest = (params) => {
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.getAllUsers);
                     break;
                 case 'me':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
+                    validateUserForMgmtReadAPI(function() {
+                        //This endpoint answers with the caller's own account and belongs to no
+                        //application, so a token that was deliberately limited to some
+                        //applications has no business reading it. Without this an app limited
+                        //token still reached account level data, because the app restriction in
+                        //verify_token is only compared when the request itself names an app.
+                        //
+                        //params.token_data is the document the validation above already read.
+                        //It is deliberately not looked up again: verify_token consumes a single
+                        //use token, so a second read finds nothing, and absence would then read
+                        //as "unrestricted" - the restriction would be dropped for exactly the
+                        //tokens that are meant to be the most limited. A request authorized by
+                        //an api_key carries no token_data and has no restriction to honour.
+                        var tokenData = params.token_data;
+                        if (tokenData && tokenData.app && tokenData.app.length) {
+                            common.returnMessage(params, 401, 'Token is restricted to specific applications');
+                            return false;
+                        }
+                        return countlyApi.mgmt.users.getCurrentUser(params);
+                    }, params);
                     break;
                 case 'id':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.getUserById);
@@ -2152,6 +2182,12 @@ const processRequest = (params) => {
                                 params.qstring.projection = null;
                             }
                         }
+                        //The projection reaches find() as given, and the credential redaction
+                        //further down works by field name, so an expression that renames or
+                        //computes a field would carry a redacted value out under a name the
+                        //redaction does not know. Restrict it to plain include and exclude, the
+                        //same guard the DB Viewer applies to its own projections.
+                        common.sanitizeProjection(params.qstring.projection);
                         if (typeof params.qstring.sort === "string") {
                             try {
                                 params.qstring.sort = JSON.parse(params.qstring.sort);
@@ -2573,6 +2609,12 @@ const processRequest = (params) => {
                 */
                 case 'delete':
                     validateUser(() => {
+                        //revoking the owner's other credentials is credential management, not
+                        //something a token narrowed to a subset of the owner's access may do
+                        if (isScopedCredential(params)) {
+                            common.returnMessage(params, 403, "A restricted token cannot delete tokens");
+                            return;
+                        }
                         if (params.qstring.tokenid) {
                             common.db.collection("auth_tokens").remove({
                                 "_id": params.qstring.tokenid,
@@ -2619,7 +2661,90 @@ const processRequest = (params) => {
                 */
                 case 'create':
                     validateUser(params, () => {
-                        let ttl, multi, endpoint, purpose, apps;
+                        let ttl, multi, endpoint, purpose, apps, tokenPermission;
+
+                        // The credential doing the creating, not its owner, is the ceiling for what
+                        // may be granted. params.member is already that ceiling: rights.js bounds the
+                        // member by the authenticating token's permissions before any handler runs, so
+                        // for an api_key it is the full member, and for a scoped token it is exactly
+                        // that token's authority. A token therefore cannot mint a child that reaches
+                        // an app or feature it cannot reach itself, even though their owner can.
+                        const creatorToken = params.token_data;
+                        /**
+                        * Whether a legacy app/endpoint scope value actually restricts anything.
+                        * @param {string|Array} scope - the app or endpoint field of a token
+                        * @returns {boolean} true if the token is restricted by it
+                        */
+                        const isScopeRestricted = function(scope) {
+                            return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+                        };
+                        // Tokens created before the permission model carry an app/endpoint regex scope
+                        // instead of permissions. That scope is not carried into params.member, so
+                        // there is nothing to bound such a token's grants by - refuse rather than
+                        // issue a child that could be wider than its parent.
+                        const creatorIsLegacyRestricted = !!creatorToken && !creatorToken.token_permission && (isScopeRestricted(creatorToken.app) || isScopeRestricted(creatorToken.endpoint));
+                        if (creatorIsLegacyRestricted) {
+                            common.returnMessage(params, 403, "A restricted token cannot create tokens");
+                            return;
+                        }
+
+                        if (params.qstring.permission && params.qstring.permission !== "") {
+                            if (typeof params.qstring.permission === "string") {
+                                try {
+                                    tokenPermission = JSON.parse(params.qstring.permission);
+                                }
+                                catch (ex) {
+                                    common.returnMessage(params, 400, "Invalid permission object");
+                                    return;
+                                }
+                            }
+                            else {
+                                tokenPermission = params.qstring.permission;
+                            }
+                            if (typeof tokenPermission !== "object" || Array.isArray(tokenPermission)) {
+                                common.returnMessage(params, 400, "Invalid permission object");
+                                return;
+                            }
+                            // The endpoint regex is not an authorization boundary and is ignored for
+                            // permission-scoped tokens. Reject rather than store an inert restriction
+                            // that would read as if it were enforced.
+                            if (params.qstring.endpoint || params.qstring.endpointquery) {
+                                common.returnMessage(params, 400, "Endpoint restrictions cannot be combined with permissions");
+                                return;
+                            }
+                            if (!isPermissionSubset(tokenPermission, params.member)) {
+                                common.returnMessage(params, 403, "Token permissions must be a subset of the creating credential's permissions");
+                                return;
+                            }
+                        }
+
+                        // A scoped credential has to say what it is granting. A token with no
+                        // token_permission is bounded only by its owner, so a child created without
+                        // one would reach everything the owner can - wider than the parent that
+                        // created it. The subset check above cannot catch this, because there is no
+                        // permission object to compare; the omission itself is the escalation.
+                        if (!tokenPermission && creatorToken && creatorToken.token_permission) {
+                            common.returnMessage(params, 403, "A scoped token must state the permissions it grants");
+                            return;
+                        }
+
+                        // Login is a capability of the token, never of its purpose string, and it is
+                        // only ever passed on by a credential that holds it, to a child that is not
+                        // narrowed. That makes a scoped token unable to produce a session, which is
+                        // what the purpose allowlist used to (and could not) guarantee.
+                        const requestedLogin = params.qstring.can_login === true || params.qstring.can_login === "true" || params.qstring.can_login === "1";
+                        let canLogin = false;
+                        if (requestedLogin) {
+                            //a token created before this model that carries no restriction at all is a
+                            //full-permission credential, and keeps the login authority it has today
+                            const creatorHasLogin = !creatorToken || creatorToken.can_login === true || (typeof creatorToken.can_login === "undefined" && !creatorToken.token_permission);
+                            if (!creatorHasLogin || tokenPermission) {
+                                common.returnMessage(params, 403, "The creating credential cannot grant login permission");
+                                return;
+                            }
+                            canLogin = true;
+                        }
+
                         if (params.qstring.ttl) {
                             ttl = parseInt(params.qstring.ttl);
                         }
@@ -2633,6 +2758,11 @@ const processRequest = (params) => {
                         apps = params.qstring.apps || "";
                         if (params.qstring.apps) {
                             apps = params.qstring.apps.split(',');
+                        }
+                        //keep the app list in step with the granted permissions, so the token list
+                        //shows what the token reaches and the app check stays a useful early filter
+                        if (tokenPermission && !params.qstring.apps) {
+                            apps = getPermissionApps(tokenPermission);
                         }
 
                         if (params.qstring.endpointquery && params.qstring.endpointquery !== "") {
@@ -2663,6 +2793,8 @@ const processRequest = (params) => {
                             app: apps,
                             endpoint: endpoint,
                             purpose: purpose,
+                            token_permission: tokenPermission,
+                            can_login: canLogin,
                             callback: (err, token) => {
                                 if (err) {
                                     common.returnMessage(params, 404, err);
@@ -2752,6 +2884,14 @@ const processRequest = (params) => {
                 */
                 case 'list':
                     validateUser(params, function() {
+                        // Every document here includes its _id, which is the token itself. Listing
+                        // them from a scoped token would hand it the owner's other credentials -
+                        // including the unrestricted session token - and let it act as any of them,
+                        // which is the escalation the permission model exists to prevent.
+                        if (isScopedCredential(params)) {
+                            common.returnMessage(params, 403, "A restricted token cannot list tokens");
+                            return;
+                        }
                         common.db.collection("auth_tokens").find({"owner": params.member._id + ""}).toArray(function(err, res) {
                             if (err) {
                                 common.returnMessage(params, 404, err.message);

@@ -79,6 +79,9 @@ describe("star-rating consent link destinations", function() {
         ["an https url with surrounding whitespace", "  https://example.com/terms  "]
     ];
 
+    //every entry here is a url the link must refuse, so the script schemes are the
+    //fixtures themselves - nothing navigates to them
+    /* eslint-disable no-script-url */
     var refused = [
         ["a javascript url", "javascript:alert(document.domain)//"],
         ["mixed case javascript", "JaVaScRiPt:alert(1)"],
@@ -95,6 +98,7 @@ describe("star-rating consent link destinations", function() {
         ["a root-relative path", "/terms"],
         ["a fragment", "#terms"]
     ];
+    /* eslint-enable no-script-url */
 
     Object.keys(checks).forEach(function(where) {
         describe(where, function() {
