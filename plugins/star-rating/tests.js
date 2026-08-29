@@ -57,22 +57,17 @@ describe('Testing Rating plugin', function() {
                 });
         });
 
-        it('should not send X-Frame-Options and should not scope framing for an unresolvable widget', function(done) {
+        it('should not send the framing or opener headers, so the widget stays embeddable', function(done) {
             request.get('/feedback/rating')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    //the widget must stay embeddable, so X-Frame-Options is gone
+                    //the widget is embedded by an SDK into a page on the customer's own
+                    //origin, so neither header the dashboard sets globally may survive here
                     should.not.exist(res.headers['x-frame-options']);
-                    //and with no app resolved there is nothing to scope framing to,
-                    //so no frame-ancestors may be emitted at all, enforced or reported
-                    ['content-security-policy', 'content-security-policy-report-only'].forEach(function(h) {
-                        if (res.headers[h]) {
-                            res.headers[h].should.not.containEql('frame-ancestors');
-                        }
-                    });
+                    should.not.exist(res.headers['cross-origin-opener-policy']);
                     done();
                 });
         });

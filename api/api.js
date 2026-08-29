@@ -128,11 +128,6 @@ plugins.connectToAllDatabases().then(function() {
         robotstxt: "User-agent: *\nDisallow: /",
         dashboard_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nCross-Origin-Opener-Policy: same-origin-allow-popups",
         api_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nAccess-Control-Allow-Origin:*",
-        //Off by default: allow_access_control_origin is labelled as an
-        //Access-Control-Origin list only, so enforcing it as a framing rule could
-        //block an embed that works today. Turn on once the reported violations
-        //from a real deployment come back clean.
-        widget_frame_ancestors_enforce: false,
         dashboard_rate_limit_window: 60,
         dashboard_rate_limit_requests: 500,
         api_rate_limit_window: 0,
