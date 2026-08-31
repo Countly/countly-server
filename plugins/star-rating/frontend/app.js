@@ -64,7 +64,15 @@ var STAR_RATING_EXT_TO_MIME = {
                 countlyPath = `/${countlyPath}`;
             }
 
+            //This popup is meant to be embedded by an SDK in a page on the customer's own
+            //origin, so the framing and cross-origin isolation headers the dashboard sets
+            //globally have to come back off for this response.
+            //
+            //Cross-Origin-Opener-Policy matters when the SDK opens the popup as a window
+            //rather than an iframe: it would otherwise sever window.opener and with it any
+            //callback the SDK expects.
             res.removeHeader('X-Frame-Options');
+            res.removeHeader('Cross-Origin-Opener-Policy');
             res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath });
         }
 

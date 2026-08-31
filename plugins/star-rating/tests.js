@@ -57,6 +57,21 @@ describe('Testing Rating plugin', function() {
                 });
         });
 
+        it('should not send the framing or opener headers, so the widget stays embeddable', function(done) {
+            request.get('/feedback/rating')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    //the widget is embedded by an SDK into a page on the customer's own
+                    //origin, so neither header the dashboard sets globally may survive here
+                    should.not.exist(res.headers['x-frame-options']);
+                    should.not.exist(res.headers['cross-origin-opener-policy']);
+                    done();
+                });
+        });
+
         it('should prefix every asset path with provided_url when it has a leading slash', function(done) {
             var providedUrl = '/reverse-proxy/countly';
             request.get('/feedback/rating?provided_url=' + encodeURIComponent(providedUrl))
