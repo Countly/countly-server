@@ -182,29 +182,42 @@ tracker.reportLicenseState = function(license, extra) {
         return;
     }
     if (isEnabled && plugins.getConfig("tracking").server_user_details) {
-        // These are CURRENT-state properties, so they have to be cleared, not omitted: JSON drops
-        // undefined keys, which would leave the previous licence's id, name and rule standing on the
-        // tracked user next to license_status: "missing". `extra` is merged untouched — an unmeasured
-        // metric_current there stays omitted rather than becoming an empty string, so the numeric
-        // properties on the tracking server keep their type.
-        var blank = function(v) {
+        // These are CURRENT-state properties, and JSON drops undefined keys, so simply omitting the
+        // ones a license no longer supplies left the PREVIOUS license's id, name and rule standing on
+        // the tracked user next to license_status: "missing".
+        //
+        // Which is cleared and which is omitted follows the property's type, deliberately:
+        //
+        //   - text identity (id, client, rule, stage) is cleared with an empty string, so the tracked
+        //     user stops being segmentable by a license it no longer has;
+        //   - numbers (version, term dates, entitlement caps) are OMITTED instead. An empty string in
+        //     a numeric property changes its type on the tracking server and breaks filtering and
+        //     aggregation over the whole fleet, which is a worse outcome than a stale cap — and
+        //     license_status already says there is no license to read those caps against.
+        //
+        // `extra` is merged untouched for the same reason: an unmeasured metric_current stays omitted
+        // rather than becoming an empty string.
+        var text = function(v) {
             return (v === undefined || v === null) ? '' : v;
         };
         var ent = license.entitlement || {};
-        var custom = Object.assign({
-            license_id: blank(license._id || license.license_id),
-            license_version: (license._id || license.license_id) ? (license.license_version || 1) : '',
-            client_name: blank(license.name),
-            license_rule: blank(license.rule),
-            license_stage: blank(license.license_stage),
-            license_start: blank(license.start),
-            license_end: blank(license.end),
-            included_prod_apps: blank(ent.included_prod_apps),
-            max_prod_apps: blank(ent.max_prod_apps),
-            instance_allowance: blank(ent.instance_allowance),
-            support_dp_tier: blank(ent.support_dp_tier)
-        }, extra || {});
-        Countly.user_details({custom: custom});
+        var hasLicense = !!(license._id || license.license_id);
+        var custom = {
+            license_id: text(license._id || license.license_id),
+            client_name: text(license.name),
+            license_rule: text(license.rule),
+            license_stage: text(license.license_stage)
+        };
+        if (hasLicense) {
+            custom.license_version = license.license_version || 1;
+            custom.license_start = license.start;
+            custom.license_end = license.end;
+            custom.included_prod_apps = ent.included_prod_apps;
+            custom.max_prod_apps = ent.max_prod_apps;
+            custom.instance_allowance = ent.instance_allowance;
+            custom.support_dp_tier = ent.support_dp_tier;
+        }
+        Countly.user_details({custom: Object.assign(custom, extra || {})});
     }
 };
 
