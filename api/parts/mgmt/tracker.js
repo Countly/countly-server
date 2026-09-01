@@ -182,21 +182,28 @@ tracker.reportLicenseState = function(license, extra) {
         return;
     }
     if (isEnabled && plugins.getConfig("tracking").server_user_details) {
+        // These are CURRENT-state properties, so they have to be cleared, not omitted: JSON drops
+        // undefined keys, which would leave the previous licence's id, name and rule standing on the
+        // tracked user next to license_status: "missing". `extra` is merged untouched — an unmeasured
+        // metric_current there stays omitted rather than becoming an empty string, so the numeric
+        // properties on the tracking server keep their type.
+        var blank = function(v) {
+            return (v === undefined || v === null) ? '' : v;
+        };
+        var ent = license.entitlement || {};
         var custom = Object.assign({
-            license_id: license._id || license.license_id,
-            license_version: license.license_version || 1,
-            client_name: license.name,
-            license_rule: license.rule,
-            license_stage: license.license_stage,
-            license_start: license.start,
-            license_end: license.end
+            license_id: blank(license._id || license.license_id),
+            license_version: (license._id || license.license_id) ? (license.license_version || 1) : '',
+            client_name: blank(license.name),
+            license_rule: blank(license.rule),
+            license_stage: blank(license.license_stage),
+            license_start: blank(license.start),
+            license_end: blank(license.end),
+            included_prod_apps: blank(ent.included_prod_apps),
+            max_prod_apps: blank(ent.max_prod_apps),
+            instance_allowance: blank(ent.instance_allowance),
+            support_dp_tier: blank(ent.support_dp_tier)
         }, extra || {});
-        if (license.entitlement) {
-            custom.included_prod_apps = license.entitlement.included_prod_apps;
-            custom.max_prod_apps = license.entitlement.max_prod_apps;
-            custom.instance_allowance = license.entitlement.instance_allowance;
-            custom.support_dp_tier = license.entitlement.support_dp_tier;
-        }
         Countly.user_details({custom: custom});
     }
 };
