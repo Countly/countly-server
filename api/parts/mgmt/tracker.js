@@ -182,21 +182,39 @@ tracker.reportLicenseState = function(license, extra) {
         return;
     }
     if (isEnabled && plugins.getConfig("tracking").server_user_details) {
+        // CURRENT-STATE PROPERTIES, SO THEY ARE CLEARED RATHER THAN OMITTED. JSON drops undefined
+        // keys, so omitting what a licence no longer supplies left the PREVIOUS license's id, client,
+        // rule, term and entitlement caps standing on the tracked user next to
+        // license_status: "missing" — an unlicensed server still sitting in v2 fleet segments with its
+        // former caps.
+        //
+        // An empty string is not a string VALUE here: it is how Countly deletes a custom user
+        // property. The SDK's own Countly.userData.unset(key) is implemented as customData[key] = ""
+        // (see countly-sdk-nodejs lib/countly.js), and it reaches the server through this same
+        // user_details.custom payload — so the property is removed and numeric properties keep their
+        // type on the tracking server rather than being rewritten as text.
+        //
+        // `extra` is merged untouched, which is a different case on purpose: an unmeasured
+        // metric_current has no new value to report, and deleting the last measured one would lose
+        // data rather than correct it.
+        var clear = function(v) {
+            return (v === undefined || v === null) ? '' : v;
+        };
+        var ent = license.entitlement || {};
+        var hasLicense = !!(license._id || license.license_id);
         var custom = Object.assign({
-            license_id: license._id || license.license_id,
-            license_version: license.license_version || 1,
-            client_name: license.name,
-            license_rule: license.rule,
-            license_stage: license.license_stage,
-            license_start: license.start,
-            license_end: license.end
+            license_id: clear(license._id || license.license_id),
+            client_name: clear(license.name),
+            license_rule: clear(license.rule),
+            license_stage: clear(license.license_stage),
+            license_version: hasLicense ? (license.license_version || 1) : '',
+            license_start: clear(license.start),
+            license_end: clear(license.end),
+            included_prod_apps: clear(ent.included_prod_apps),
+            max_prod_apps: clear(ent.max_prod_apps),
+            instance_allowance: clear(ent.instance_allowance),
+            support_dp_tier: clear(ent.support_dp_tier)
         }, extra || {});
-        if (license.entitlement) {
-            custom.included_prod_apps = license.entitlement.included_prod_apps;
-            custom.max_prod_apps = license.entitlement.max_prod_apps;
-            custom.instance_allowance = license.entitlement.instance_allowance;
-            custom.support_dp_tier = license.entitlement.support_dp_tier;
-        }
         Countly.user_details({custom: custom});
     }
 };
