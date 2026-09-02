@@ -256,12 +256,16 @@ authorizer.extend_token = function(options) {
     // after its parent expired. Read the document first; a token with no bound extends as
     // before.
     options.db.collection("auth_tokens").findOne({_id: options.token}, {projection: {max_ends: 1}}, function(readErr, doc) {
-        if (!readErr && doc && doc.max_ends > 0) {
-            if (updateArr.ttl === 0 || updateArr.ends > doc.max_ends) {
-                // ttl 0 would mean never expires; the bound turns that into "until the bound"
-                updateArr.ends = doc.max_ends;
-                updateArr.ttl = Math.max(1, doc.max_ends - Math.round(Date.now() / 1000));
+        if (readErr) {
+            // fail closed: without the bound there is no safe extension to write
+            if (typeof options.callback === "function") {
+                options.callback(readErr, null);
             }
+            return;
+        }
+        if (doc && doc.max_ends > 0 && updateArr.ends > doc.max_ends) {
+            updateArr.ends = doc.max_ends;
+            updateArr.ttl = Math.max(1, doc.max_ends - Math.round(Date.now() / 1000));
         }
         options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
             if (typeof options.callback === "function") {
@@ -366,7 +370,12 @@ var verify_token = function(options, return_owner, return_data) {
                     }
                 }
 
-                if (valid_endpoint && valid_app) {
+                // The bound a scoped parent put on this token is absolute. It is applied wherever
+                // ends is written, but a writer that does not know about it - a session-timeout
+                // change retimes every LoggedInAuth token of a member in one update - must not be
+                // able to move the token past it either, so it is enforced here, at every use.
+                var pastBound = res.max_ends > 0 && res.max_ends < Math.round(Date.now() / 1000);
+                if (valid_endpoint && valid_app && !pastBound) {
                     if (res.ttl === 0) {
                         valid = true;
                         expires_after = -1;
@@ -389,7 +398,7 @@ var verify_token = function(options, return_owner, return_data) {
                     }
 
                     //consume token if expired or not multi
-                    if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000))) {
+                    if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000)) || pastBound) {
                         options.db.collection("auth_tokens").remove({_id: options.token});
                     }
                 }

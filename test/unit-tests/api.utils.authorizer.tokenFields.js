@@ -173,12 +173,14 @@ describe("authorizer token record", function() {
                             ok.should.equal(true);
                             db.stored[0].ends.should.equal(bound);
                             db.stored[0].ttl.should.be.above(0);
-                            //extendBy 0 means "never expires"; the bound turns that into "until the bound"
+                            //the relative form is clamped the same way
                             authorizer.extend_token({
                                 db: db,
                                 token: "bounded",
-                                extendBy: 0,
-                                callback: function() {
+                                extendBy: 600000,
+                                callback: function(err2, ok2) {
+                                    (!err2).should.equal(true);
+                                    ok2.should.equal(true);
                                     db.stored[0].ends.should.equal(bound);
                                     db.stored[0].ttl.should.be.above(0);
                                     done();
@@ -186,6 +188,40 @@ describe("authorizer token record", function() {
                             });
                         }
                     });
+                }
+            });
+        });
+
+        it("fails closed when the bound cannot be read", function(done) {
+            //a transient read failure must not turn into an unbounded ten-minute extension
+            var db = dbStub([{
+                _id: "bounded",
+                ttl: 30,
+                ends: 1,
+                max_ends: 1,
+                multi: true
+            }]);
+            var findOne = db.collection("auth_tokens").findOne;
+            db.collection = function(name) {
+                var coll = dbStub(db.stored).collection(name);
+                if (name === "auth_tokens") {
+                    coll.findOne = function(query, projection, callback) {
+                        (callback || projection)(new Error("read failed"), null);
+                    };
+                }
+                return coll;
+            };
+            void findOne;
+            authorizer.extend_token({
+                db: db,
+                token: "bounded",
+                extendTill: Date.now() + 600000,
+                callback: function(err, ok) {
+                    (!!err).should.equal(true);
+                    (ok === null).should.equal(true);
+                    //nothing was written
+                    db.stored[0].ends.should.equal(1);
+                    done();
                 }
             });
         });
@@ -210,6 +246,84 @@ describe("authorizer token record", function() {
                         }
                     });
                 }
+            });
+        });
+    });
+
+    describe("the bound is enforced at every use", function() {
+        var now = Math.round(Date.now() / 1000);
+
+        /**
+        * A stored token document with the given lifetime fields.
+        * @param {string} id - token id
+        * @param {object} life - ttl, ends and max_ends
+        * @returns {object} document for the stub
+        */
+        function tokenDoc(id, life) {
+            return {
+                _id: id,
+                owner: OWNER,
+                ttl: life.ttl,
+                ends: life.ends,
+                max_ends: life.max_ends,
+                multi: true,
+                app: "",
+                endpoint: ""
+            };
+        }
+
+        /**
+        * Verify a token through the public entry point, handing back the document or false.
+        * @param {object} db - stub
+        * @param {string} id - token id
+        * @param {function} cb - called with the verify result
+        * @returns {void}
+        */
+        function verify(db, id, cb) {
+            authorizer.verify_return({
+                db: db,
+                token: id,
+                req_path: "",
+                return_data: true,
+                callback: cb
+            });
+        }
+
+        it("refuses a token whose bound has passed, however far its ends was pushed", function(done) {
+            //whatever moved ends - the session-timeout retiming of every LoggedInAuth token of a
+            //member writes ends directly - the parent's bound is the end of this token's life
+            var db = dbStub([tokenDoc("pushed", {ttl: 3600, ends: now + 3600, max_ends: now - 5})]);
+            verify(db, "pushed", function(valid) {
+                (!valid).should.equal(true);
+                done();
+            });
+        });
+
+        it("refuses a never-expiring token once its bound has passed", function(done) {
+            var db = dbStub([tokenDoc("forever", {ttl: 0, ends: 0, max_ends: now - 5})]);
+            verify(db, "forever", function(valid) {
+                (!valid).should.equal(true);
+                done();
+            });
+        });
+
+        it("accepts a bounded token while its bound is ahead", function(done) {
+            var db = dbStub([tokenDoc("alive", {ttl: 3600, ends: now + 3600, max_ends: now + 60})]);
+            verify(db, "alive", function(valid) {
+                valid._id.should.equal("alive");
+                done();
+            });
+        });
+
+        it("keeps session-timeout retiming away from bounded tokens", function() {
+            //plugins/plugins rewrites ttl and ends of every LoggedInAuth token a member owns when the
+            //session timeout changes. A bounded child is not a session token, whatever purpose it was
+            //given, so both updates leave bounded tokens alone
+            var src = require("fs").readFileSync(require("path").join(__dirname, "../../plugins/plugins/api/api.js"), "utf8");
+            var updates = src.match(/collection\("auth_tokens"\)\.update\(\{[^\n]*"purpose": "LoggedInAuth"[^\n]*\}/g) || [];
+            updates.length.should.equal(2);
+            updates.forEach(function(call) {
+                call.should.match(/"max_ends": \{\$exists: false\}/);
             });
         });
     });
