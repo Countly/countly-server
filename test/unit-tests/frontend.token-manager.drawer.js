@@ -33,7 +33,8 @@ function loadDrawer() {
         window: {},
         console: console,
         $: jq,
-        countlyGlobal: {apps: {}, member: {}, defaultApp: {_id: "app"}},
+        //the member is a user of appone and apptwo; apponly it holds a feature on without membership
+        countlyGlobal: {apps: {appone: {}, apptwo: {}, apponly: {}}, member: {global_admin: false, permission: {_: {a: [], u: [["appone", "apptwo"]]}, c: {}, r: {}, u: {}, d: {}}}, defaultApp: {_id: "appone"}},
         countlyCommon: {API_URL: "", ACTIVE_APP_ID: "app"},
         CV: {
             T: function(name) {
@@ -212,6 +213,23 @@ describe("token manager drawer", function() {
             loaded.created.length = 0;
             vue.onSubmit({description: "d", checkboxMultipleTimes: false, checkboxCanLogin: false, selectApps: []});
             loaded.created[0].canLogin.should.equal(false);
+        });
+
+        it("names as user apps only the selected apps the creator is a member of", function() {
+            //the dashboard lists an app the creator holds one read grant on, with no membership.
+            //A token may carry that grant, but naming the app as a user app would be asking for
+            //membership the creator does not have, which the server refuses
+            var vue = instance(loaded.drawer, FEATURES);
+            vue.tokenUsage = "1";
+            vue.permissionSet.r.allowed.core = true;
+            vue.setPermissionByFeature("r", "core");
+            loaded.created.length = 0;
+            vue.onSubmit({description: "d", checkboxMultipleTimes: true, selectApps: ["appone", "apponly"]});
+            var permission = loaded.created[0].permission;
+            should(JSON.parse(JSON.stringify(permission._.u))).eql([["appone"]]);
+            //the feature grant travels to both, membership only to the one held
+            permission.r.appone.allowed.core.should.equal(true);
+            permission.r.apponly.allowed.core.should.equal(true);
         });
 
         it("grants every selected app the same permissions", function() {

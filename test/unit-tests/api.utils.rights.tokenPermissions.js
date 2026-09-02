@@ -107,6 +107,33 @@ describe("token permissions", function() {
                 featureOnly).should.equal(true);
         });
 
+        it("refuses administering an app the ceiling holds every feature on but is not a member of", function() {
+            //four all:true entries satisfy hasAdminAccess, yet the app is absent from the member's
+            //own _.u/_.a. A child naming it under _.a would gain admin membership of an app its
+            //owner is not a member of - the same escalation as the user-app case, one level up
+            var featuresOnly = {
+                global_admin: false,
+                permission: permission({
+                    userApps: [APP_A],
+                    grants: [
+                        {type: "c", app: APP_B, all: true},
+                        {type: "r", app: APP_B, all: true},
+                        {type: "u", app: APP_B, all: true},
+                        {type: "d", app: APP_B, all: true}
+                    ]
+                })
+            };
+            rights.isPermissionSubset(permission({adminApps: [APP_B]}), featuresOnly).should.equal(false);
+            //the four all grants themselves are still passed on, since the ceiling does hold them
+            var allFour = permission({
+                grants: [
+                    {type: "c", app: APP_B, all: true}, {type: "r", app: APP_B, all: true},
+                    {type: "u", app: APP_B, all: true}, {type: "d", app: APP_B, all: true}
+                ]
+            });
+            rights.isPermissionSubset(allFour, featuresOnly).should.equal(true);
+        });
+
         it("refuses anything that is not a permission object", function() {
             rights.isPermissionSubset(undefined, member).should.equal(false);
             rights.isPermissionSubset([], member).should.equal(false);
@@ -176,6 +203,22 @@ describe("token permissions", function() {
             };
             ownerWithEmptyEntry.permission.r[APP_B] = {all: false, allowed: {}};
             var scoped = rights.intersectPermission(ownerWithEmptyEntry, permission({userApps: [APP_B]}));
+            rights.getUserApps(scoped).indexOf(APP_B).should.equal(-1);
+        });
+
+        it("does not turn four all grants into admin membership", function() {
+            var featuresOnly = {
+                global_admin: false,
+                permission: permission({
+                    userApps: [APP_A],
+                    grants: [
+                        {type: "c", app: APP_B, all: true}, {type: "r", app: APP_B, all: true},
+                        {type: "u", app: APP_B, all: true}, {type: "d", app: APP_B, all: true}
+                    ]
+                })
+            };
+            var scoped = rights.intersectPermission(featuresOnly, permission({adminApps: [APP_B]}));
+            rights.getAdminApps(scoped).indexOf(APP_B).should.equal(-1);
             rights.getUserApps(scoped).indexOf(APP_B).should.equal(-1);
         });
 

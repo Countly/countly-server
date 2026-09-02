@@ -101,7 +101,8 @@ describe("tokens that open a dashboard session", function() {
                 if (!/\.(js|ts)$/.test(entry.name)) {
                     return;
                 }
-                var relative = path.relative(ROOT, full);
+                //MINTERS are written with forward slashes; path.relative uses the platform separator
+                var relative = path.relative(ROOT, full).split(path.sep).join("/");
                 if (allowed.indexOf(relative) !== -1) {
                     return;
                 }
