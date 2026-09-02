@@ -1330,11 +1330,15 @@ function principalAllowsAll(principal, type, appId) {
 }
 
 /**
-* Every app id a principal refers to, whether through the _ grouping or a c/r/u/d entry.
+* Apps a principal is a member of - the ones it administers, and the ones it is a user of.
+*
+* Distinct from the apps it can reach a feature on: some validators (validateUserForRead and
+* validateUserForWrite) authorize on membership alone, so membership is authority in its own
+* right and has to be bounded separately from the c/r/u/d grants.
 * @param {object} principal - object with permission (and optionally the legacy arrays)
-* @returns {string[]} list of app ids
+* @returns {string[]} list of app ids the principal is a member of
 */
-function principalApps(principal) {
+function principalMemberApps(principal) {
     var apps = [];
     /**
     * Add an app id once.
@@ -1365,13 +1369,28 @@ function principalApps(principal) {
             }
         }
     }
-    for (var t = 0; t < PERMISSION_TYPES.length; t++) {
-        var forType = permission[PERMISSION_TYPES[t]];
-        for (var appId in forType || {}) {
-            push(appId);
-        }
-    }
     return apps;
+}
+
+/**
+* Every app id a principal actually reaches: the ones it is a member of, plus the ones it holds
+* a c/r/u/d grant on.
+*
+* An entry under c/r/u/d that grants nothing does not count. The permission editor writes an
+* entry for every app the editing user could see, so a member routinely carries empty entries
+* for apps it has no access to at all; treating those as apps the member reaches would let a
+* token be scoped to one of them and come out wider than its own owner.
+* @param {object} principal - object with permission (and optionally the legacy arrays)
+* @returns {string[]} list of app ids
+*/
+function principalApps(principal) {
+    if (!principal) {
+        return [];
+    }
+    if (typeof principal.permission === "undefined") {
+        return principalMemberApps(principal);
+    }
+    return grantingApps(principal.permission);
 }
 
 /**
@@ -1478,12 +1497,28 @@ exports.isPermissionSubset = function(childPermission, ceiling) {
             }
         }
     }
-    //an app the child can see at all must be an app the ceiling can see, since some validators
-    //authorize on app membership alone
+    //an app the child can reach at all must be an app the ceiling can reach
     var ceilingApps = principalApps(ceiling);
     var childApps = grantingApps(childPermission);
     for (i = 0; i < childApps.length; i++) {
         if (!ceiling.global_admin && ceilingApps.indexOf(childApps[i]) === -1) {
+            return false;
+        }
+    }
+    //membership is authority of its own: validateUserForRead and validateUserForWrite authorize
+    //on it alone, without asking about any feature. So an app the child names as a user app has
+    //to be an app the ceiling is itself a member of - holding one feature on an app is not the
+    //same as being a member of it, and treating it as such would let a token read an app its
+    //own owner is refused on.
+    var ceilingMemberApps = principalMemberApps(ceiling);
+    var childUserApps = [];
+    if (childPermission._ && Array.isArray(childPermission._.u)) {
+        for (i = 0; i < childPermission._.u.length; i++) {
+            childUserApps = childUserApps.concat(childPermission._.u[i] || []);
+        }
+    }
+    for (i = 0; i < childUserApps.length; i++) {
+        if (!ceiling.global_admin && ceilingMemberApps.indexOf(childUserApps[i]) === -1) {
             return false;
         }
     }
@@ -1567,6 +1602,10 @@ exports.intersectPermission = function(member, tokenPermission) {
     var tokenPrincipal = {permission: tokenPermission};
     var userApps = [];
     var memberApps = principalApps(member);
+    //membership is granted by the owner's own membership, never by a feature it happens to hold:
+    //validateUserForRead and validateUserForWrite authorize on membership alone, so a token that
+    //picked it up from a feature grant would read apps its owner is refused on
+    var memberMemberApps = principalMemberApps(member);
     var tokenAdminApps = (tokenPermission._ && Array.isArray(tokenPermission._.a)) ? tokenPermission._.a : [];
     var tokenUserApps = [];
     if (tokenPermission._ && Array.isArray(tokenPermission._.u)) {
@@ -1608,9 +1647,9 @@ exports.intersectPermission = function(member, tokenPermission) {
         if (isAdmin) {
             result._.a.push(appId);
         }
-        else if (grantsAnything || tokenUserApps.indexOf(appId) !== -1) {
-            //app membership alone is what some validators check, so an app the token grants
-            //anything on - or names as a user app - stays visible
+        else if ((grantsAnything || tokenUserApps.indexOf(appId) !== -1) && (member.global_admin || memberMemberApps.indexOf(appId) !== -1)) {
+            //an app the token grants anything on - or names as a user app - stays visible, but
+            //only while the owner is a member of it too
             userApps.push(appId);
         }
     });

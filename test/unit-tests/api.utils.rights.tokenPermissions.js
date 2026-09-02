@@ -77,6 +77,36 @@ describe("token permissions", function() {
             rights.isPermissionSubset(editorShaped, {permission: readCoreOnA}).should.equal(true);
         });
 
+        it("refuses membership of an app the ceiling merely has an empty entry for", function() {
+            //the permission editor writes an entry for every app it could see, so a member
+            //routinely carries empty entries for apps it has no access to at all. Naming one
+            //as a user app grants membership, and validateUserForRead authorizes on membership
+            //alone, so accepting this would hand the token an app its own owner is refused on
+            var ownerWithEmptyEntry = {
+                global_admin: false,
+                permission: permission({
+                    userApps: [APP_A],
+                    grants: [{type: "r", app: APP_A, allowed: {core: true}}]
+                })
+            };
+            ownerWithEmptyEntry.permission.r[APP_B] = {all: false, allowed: {}};
+            var membershipOfB = permission({userApps: [APP_B]});
+            rights.isPermissionSubset(membershipOfB, ownerWithEmptyEntry).should.equal(false);
+        });
+
+        it("refuses membership of an app the ceiling only holds one feature on", function() {
+            //holding a feature on an app is not the same as being a member of it
+            var featureOnly = {
+                global_admin: false,
+                permission: permission({grants: [{type: "r", app: APP_A, allowed: {core: true}}]})
+            };
+            rights.isPermissionSubset(permission({userApps: [APP_A]}), featureOnly).should.equal(false);
+            //the feature grant itself is still passed on, because that the ceiling does hold
+            rights.isPermissionSubset(
+                permission({grants: [{type: "r", app: APP_A, allowed: {core: true}}]}),
+                featureOnly).should.equal(true);
+        });
+
         it("refuses anything that is not a permission object", function() {
             rights.isPermissionSubset(undefined, member).should.equal(false);
             rights.isPermissionSubset([], member).should.equal(false);
@@ -132,6 +162,33 @@ describe("token permissions", function() {
             rights.hasAdminAccess(scoped, APP_A).should.equal(false);
             rights.hasReadRight("core", APP_A, scoped).should.equal(true);
             rights.hasDeleteRight("core", APP_A, scoped).should.equal(false);
+        });
+
+        it("never grants membership of an app the owner is not a member of", function() {
+            //enforcement side of the same rule: even a token that was somehow stored with a
+            //wider membership claim is bounded on every request by the owner's own membership
+            var ownerWithEmptyEntry = {
+                global_admin: false,
+                permission: permission({
+                    userApps: [APP_A],
+                    grants: [{type: "r", app: APP_A, allowed: {core: true}}]
+                })
+            };
+            ownerWithEmptyEntry.permission.r[APP_B] = {all: false, allowed: {}};
+            var scoped = rights.intersectPermission(ownerWithEmptyEntry, permission({userApps: [APP_B]}));
+            rights.getUserApps(scoped).indexOf(APP_B).should.equal(-1);
+        });
+
+        it("does not turn a feature grant into app membership", function() {
+            //the owner may read core on A without being a member of A, so a token carrying
+            //that same read must not come out a member of A either
+            var featureOnly = {
+                global_admin: false,
+                permission: permission({grants: [{type: "r", app: APP_A, allowed: {core: true}}]})
+            };
+            var scoped = rights.intersectPermission(featureOnly, readCoreOnA);
+            rights.hasReadRight("core", APP_A, scoped).should.equal(true);
+            rights.getUserApps(scoped).indexOf(APP_A).should.equal(-1);
         });
 
         it("reports only the apps the token reaches", function() {

@@ -45,10 +45,13 @@
                 else {
                     self.filteredFeatures = self.features;
                 }
+                //the column headers describe the rows on screen, and those just changed
+                self.syncAllFlags();
             },
             clearSearch: function() {
                 this.searchQuery = '';
                 this.filteredFeatures = this.features;
+                this.syncAllFlags();
             },
             //granting anything on a feature implies being able to read it, mirroring how a user's
             //own permissions are edited in user management
@@ -79,16 +82,30 @@
                 }
                 this.syncAllFlags();
             },
-            //"all" must mean every feature, including ones added later, so it is only set when the
-            //whole list is selected - the server refuses an "all" grant the creator does not hold
             syncAllFlags: function() {
                 var self = this;
-                PERMISSION_TYPES.forEach(function(type) {
-                    var every = self.features.length > 0 && self.features.every(function(feature) {
+                /**
+                * Whether every feature in a list is allowed for one access type.
+                * @param {string} type - access type (c, r, u, d)
+                * @param {string[]} features - features to check
+                * @returns {boolean} true when the list is non-empty and fully allowed
+                */
+                var allOf = function(type, features) {
+                    return features.length > 0 && features.every(function(feature) {
                         return self.permissionSet[type].allowed[feature] === true;
                     });
-                    self.permissionSet[type].all = every;
-                    self.allByType[type] = every;
+                };
+                PERMISSION_TYPES.forEach(function(type) {
+                    //"all" must mean every feature, including ones added later, so it is only set
+                    //when the whole list is selected - the server refuses an "all" grant the
+                    //creator does not hold
+                    self.permissionSet[type].all = allOf(type, self.features);
+                    //the column header toggles the rows on screen, so it reports on those. Reading
+                    //it off the full list instead would leave it ticked after a filtered toggle -
+                    //the value would go false, true, false within one tick, so Vue would see no
+                    //change to patch and the box the browser just ticked would stay ticked while
+                    //the model said otherwise.
+                    self.allByType[type] = allOf(type, self.filteredFeatures);
                 });
             },
             buildPermission: function(apps) {

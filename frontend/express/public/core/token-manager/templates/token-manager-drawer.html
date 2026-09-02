@@ -32,10 +32,7 @@
                 </el-checkbox>
                 <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.permission.can-login-text')}}</p>
             </cly-form-field>
-            <cly-form-field v-if="tokenUsage === '1'" class="bu-p-0">
-                <div class="bu-is-flex bu-mt-4">
-                    <p class="text-small color-cool-gray-100">{{i18n('token_manager.select-apps')}}<i class="el-icon-question bu-ml-2"></i></p>
-                </div>
+            <cly-form-field v-if="tokenUsage === '1'" class="bu-p-0 bu-mt-4" :label="i18n('token_manager.select-apps')" :name="i18n('token_manager.select-apps')" rules="required">
                 <cly-app-select
                     style="width: 100%;"
                     v-model="formScope.editedObject.selectApps"
