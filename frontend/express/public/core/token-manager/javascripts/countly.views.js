@@ -45,10 +45,13 @@
                 else {
                     self.filteredFeatures = self.features;
                 }
+                //the column headers describe the rows on screen, and those just changed
+                self.syncAllFlags();
             },
             clearSearch: function() {
                 this.searchQuery = '';
                 this.filteredFeatures = this.features;
+                this.syncAllFlags();
             },
             //granting anything on a feature implies being able to read it, mirroring how a user's
             //own permissions are edited in user management
@@ -79,20 +82,61 @@
                 }
                 this.syncAllFlags();
             },
-            //"all" must mean every feature, including ones added later, so it is only set when the
-            //whole list is selected - the server refuses an "all" grant the creator does not hold
             syncAllFlags: function() {
                 var self = this;
-                PERMISSION_TYPES.forEach(function(type) {
-                    var every = self.features.length > 0 && self.features.every(function(feature) {
+                /**
+                * Whether every feature in a list is allowed for one access type.
+                * @param {string} type - access type (c, r, u, d)
+                * @param {string[]} features - features to check
+                * @returns {boolean} true when the list is non-empty and fully allowed
+                */
+                var allOf = function(type, features) {
+                    return features.length > 0 && features.every(function(feature) {
                         return self.permissionSet[type].allowed[feature] === true;
                     });
-                    self.permissionSet[type].all = every;
-                    self.allByType[type] = every;
+                };
+                PERMISSION_TYPES.forEach(function(type) {
+                    //"all" must mean every feature, including ones added later, so it is only set
+                    //when the whole list is selected - the server refuses an "all" grant the
+                    //creator does not hold
+                    self.permissionSet[type].all = allOf(type, self.features);
+                    //the column header toggles the rows on screen, so it reports on those. Reading
+                    //it off the full list instead would leave it ticked after a filtered toggle -
+                    //the value would go false, true, false within one tick, so Vue would see no
+                    //change to patch and the box the browser just ticked would stay ticked while
+                    //the model said otherwise.
+                    self.allByType[type] = allOf(type, self.filteredFeatures);
                 });
             },
+            //apps the creator is a member of. countlyAuth.getUserApps reads permission._.u
+            //unconditionally, and a member stored before permission objects existed has no
+            //permission at all - only admin_of/user_of, which the dashboard still honours
+            creatorMemberApps: function() {
+                var member = countlyGlobal.member || {};
+                if (member.global_admin) {
+                    return Object.keys(countlyGlobal.apps || {});
+                }
+                if (member.permission && member.permission._) {
+                    var apps = [];
+                    (member.permission._.u || []).forEach(function(group) {
+                        apps = apps.concat(group || []);
+                    });
+                    return apps.concat(member.permission._.a || []);
+                }
+                return (member.admin_of || []).concat(member.user_of || []);
+            },
             buildPermission: function(apps) {
-                var permission = {_: {a: [], u: [apps]}, c: {}, r: {}, u: {}, d: {}};
+                //the dashboard lists every app the creator holds a read grant on, and that includes
+                //apps the creator is not a member of - a read grant on one feature puts an app in
+                //the app switcher without putting it in the member's _.u. Membership is a grant of
+                //its own that the server refuses to widen, so the token names as user apps only
+                //the selected apps the creator is itself a member of. The others still carry their
+                //feature grants, which is exactly what the creator has on them.
+                var memberApps = this.creatorMemberApps();
+                var userApps = apps.filter(function(appId) {
+                    return memberApps.indexOf(appId) !== -1;
+                });
+                var permission = {_: {a: [], u: [userApps]}, c: {}, r: {}, u: {}, d: {}};
                 return countlyAuth.combinePermissionObject([apps], [this.permissionSet], permission);
             },
             onClose: function() {

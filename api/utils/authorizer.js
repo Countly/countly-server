@@ -68,10 +68,19 @@ authorizer.save = function(options) {
                 * @returns {object} document to insert into auth_tokens
                 */
                 var buildTokenDoc = function() {
+                    var ends = options.ttl + Math.round(Date.now() / 1000);
+                    // A caller bounding this token by another credential's lifetime passes that
+                    // credential's absolute end. The cap is applied here, at insertion, rather than
+                    // by the caller turning it into a relative ttl: the member lookup above is
+                    // asynchronous, so a ttl computed before it would land ends later than the
+                    // bound by however long the lookup took.
+                    if (options.maxEnds > 0 && options.ttl > 0 && ends > options.maxEnds) {
+                        ends = options.maxEnds;
+                    }
                     var doc = {
                         _id: options.token,
                         ttl: options.ttl,
-                        ends: options.ttl + Math.round(Date.now() / 1000),
+                        ends: ends,
                         multi: options.multi,
                         owner: options.owner,
                         app: options.app,
@@ -82,6 +91,11 @@ authorizer.save = function(options) {
                     };
                     if (options.token_permission) {
                         doc.token_permission = options.token_permission;
+                    }
+                    if (options.maxEnds > 0) {
+                        // kept on the document so that extend_token can honour it: the bound is
+                        // a property of this token for its whole life, not of the insert alone
+                        doc.max_ends = options.maxEnds;
                     }
                     return doc;
                 };
@@ -236,10 +250,28 @@ authorizer.extend_token = function(options) {
         }
         return;
     }
-    options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
-        if (typeof options.callback === "function") {
-            options.callback(err, true);
+    // A token bounded by another credential's lifetime carries max_ends. An extension - the
+    // heatmap route extends a token by ten minutes whenever it is close to expiry - must not
+    // carry it past that bound, or repeated requests keep a scoped child alive indefinitely
+    // after its parent expired. Read the document first; a token with no bound extends as
+    // before.
+    options.db.collection("auth_tokens").findOne({_id: options.token}, {projection: {max_ends: 1}}, function(readErr, doc) {
+        if (readErr) {
+            // fail closed: without the bound there is no safe extension to write
+            if (typeof options.callback === "function") {
+                options.callback(readErr, null);
+            }
+            return;
         }
+        if (doc && doc.max_ends > 0 && updateArr.ends > doc.max_ends) {
+            updateArr.ends = doc.max_ends;
+            updateArr.ttl = Math.max(1, doc.max_ends - Math.round(Date.now() / 1000));
+        }
+        options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
+            if (typeof options.callback === "function") {
+                options.callback(err, true);
+            }
+        });
     });
 };
 /**
@@ -338,8 +370,17 @@ var verify_token = function(options, return_owner, return_data) {
                     }
                 }
 
+                // The bound a scoped parent put on this token is absolute. It is applied wherever
+                // ends is written, but a writer that does not know about it - a session-timeout
+                // change retimes every LoggedInAuth token of a member in one update - must not be
+                // able to move the token past it either, so it is enforced here, at every use.
+                var pastBound = res.max_ends > 0 && res.max_ends < Math.round(Date.now() / 1000);
                 if (valid_endpoint && valid_app) {
-                    if (res.ttl === 0) {
+                    if (pastBound) {
+                        // expired by its bound: neither branch below may mark it valid, and the
+                        // consume step at the end removes it like any other expired token
+                    }
+                    else if (res.ttl === 0) {
                         valid = true;
                         expires_after = -1;
                         if (return_owner) {
@@ -361,7 +402,7 @@ var verify_token = function(options, return_owner, return_data) {
                     }
 
                     //consume token if expired or not multi
-                    if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000))) {
+                    if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000)) || pastBound) {
                         options.db.collection("auth_tokens").remove({_id: options.token});
                     }
                 }

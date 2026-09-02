@@ -2751,6 +2751,29 @@ const processRequest = (params) => {
                         else {
                             ttl = 1800;
                         }
+
+                        // A scoped token may pass its permissions on, but not more life than it
+                        // has left. A ttl of 0 means "never expires", so a sixty second credential
+                        // minting one of those outlives itself indefinitely - the permissions were
+                        // bounded and the lifetime was not, and capturing the parent for a moment
+                        // would then be permanent. An api_key, and an unscoped credential such as
+                        // the dashboard session token, are the owner's own authority and carry no
+                        // cap: they are not narrower than the member they belong to.
+                        let maxEnds;
+                        if (creatorToken && creatorToken.token_permission && creatorToken.ttl > 0) {
+                            //the absolute bound; authorizer.save applies it at insertion, so the async
+                            //member lookup in between cannot push the child past the parent
+                            maxEnds = creatorToken.ends;
+                            const remainingLife = (creatorToken.ends || 0) - Math.round(Date.now() / 1000);
+                            if (remainingLife < 1) {
+                                common.returnMessage(params, 403, "The creating token has no remaining lifetime to grant");
+                                return;
+                            }
+                            //also catches a ttl that did not parse, which would otherwise be stored as NaN
+                            if (!(ttl > 0) || ttl > remainingLife) {
+                                ttl = remainingLife;
+                            }
+                        }
                         multi = true;
                         if (params.qstring.multi === false || params.qstring.multi === 'false') {
                             multi = false;
@@ -2795,6 +2818,7 @@ const processRequest = (params) => {
                             purpose: purpose,
                             token_permission: tokenPermission,
                             can_login: canLogin,
+                            maxEnds: maxEnds,
                             callback: (err, token) => {
                                 if (err) {
                                     common.returnMessage(params, 404, err);
