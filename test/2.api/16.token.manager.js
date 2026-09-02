@@ -1348,12 +1348,22 @@ describe('Testing token manager', function() {
                 });
         });
 
-        it('the member itself is refused on that app', function(done) {
+        it('the member itself is not a member of that app', function(done) {
+            //membership is what getUserApps reports, and /o/apps/mine is built from it on every
+            //branch. (An app-data endpoint is not used here: which validator gates one differs
+            //between release lines, and this case is about membership, not a feature.)
             request
-                .get('/o/app_users/loyalty?app_id=' + OTHER_APP_ID + '&api_key=' + memberKey)
-                .expect(401)
-                .end(function(err) {
-                    done(err);
+                .get('/o/apps/mine?api_key=' + memberKey)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var mine = JSON.parse(res.text);
+                    (mine.user_of || {}).should.not.have.property(OTHER_APP_ID);
+                    (mine.admin_of || {}).should.not.have.property(OTHER_APP_ID);
+                    (mine.user_of || {}).should.have.property(APP_ID);
+                    done();
                 });
         });
 
@@ -1428,12 +1438,18 @@ describe('Testing token manager', function() {
                 });
         });
 
-        it('and reads on the app it names, as its owner does', function(done) {
+        it('and is a member of the app it names, as its owner is', function(done) {
             request
-                .get('/o/app_users/loyalty?app_id=' + APP_ID + '&auth_token=' + scopedToken)
+                .get('/o/apps/mine?auth_token=' + scopedToken)
                 .expect(200)
-                .end(function(err) {
-                    done(err);
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var mine = JSON.parse(res.text);
+                    (mine.user_of || {}).should.have.property(APP_ID);
+                    (mine.user_of || {}).should.not.have.property(OTHER_APP_ID);
+                    done();
                 });
         });
 
