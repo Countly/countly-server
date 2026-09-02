@@ -109,7 +109,17 @@
                 });
             },
             buildPermission: function(apps) {
-                var permission = {_: {a: [], u: [apps]}, c: {}, r: {}, u: {}, d: {}};
+                //the dashboard lists every app the creator holds a read grant on, and that includes
+                //apps the creator is not a member of - a read grant on one feature puts an app in
+                //the app switcher without putting it in the member's _.u. Membership is a grant of
+                //its own that the server refuses to widen, so the token names as user apps only
+                //the selected apps the creator is itself a member of. The others still carry their
+                //feature grants, which is exactly what the creator has on them.
+                var memberApps = countlyAuth.getUserApps();
+                var userApps = apps.filter(function(appId) {
+                    return memberApps.indexOf(appId) !== -1;
+                });
+                var permission = {_: {a: [], u: [userApps]}, c: {}, r: {}, u: {}, d: {}};
                 return countlyAuth.combinePermissionObject([apps], [this.permissionSet], permission);
             },
             onClose: function() {

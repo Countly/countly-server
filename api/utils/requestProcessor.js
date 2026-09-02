@@ -2759,7 +2759,11 @@ const processRequest = (params) => {
                         // would then be permanent. An api_key, and an unscoped credential such as
                         // the dashboard session token, are the owner's own authority and carry no
                         // cap: they are not narrower than the member they belong to.
+                        let maxEnds;
                         if (creatorToken && creatorToken.token_permission && creatorToken.ttl > 0) {
+                            //the absolute bound; authorizer.save applies it at insertion, so the async
+                            //member lookup in between cannot push the child past the parent
+                            maxEnds = creatorToken.ends;
                             const remainingLife = (creatorToken.ends || 0) - Math.round(Date.now() / 1000);
                             if (remainingLife < 1) {
                                 common.returnMessage(params, 403, "The creating token has no remaining lifetime to grant");
@@ -2814,6 +2818,7 @@ const processRequest = (params) => {
                             purpose: purpose,
                             token_permission: tokenPermission,
                             can_login: canLogin,
+                            maxEnds: maxEnds,
                             callback: (err, token) => {
                                 if (err) {
                                     common.returnMessage(params, 404, err);

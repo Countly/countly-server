@@ -1520,9 +1520,20 @@ exports.isPermissionSubset = function(childPermission, ceiling) {
         return false;
     }
     var t, appId, i;
+    //membership is authority of its own: validateUserForRead and validateUserForWrite authorize
+    //on it alone, without asking about any feature, and getUserApps drives app listings and
+    //data scoping. So an app the child names under _ - as admin or as user - has to be an app
+    //the ceiling is itself a member of. Holding features on an app, even all of them, is not the
+    //same as being a member of it: a member can carry all:true for an app that is absent from
+    //its own _.u/_.a, and hasAdminAccess would then call the child an admin of an app the owner
+    //is not even a member of.
+    var ceilingMemberApps = principalMemberApps(ceiling);
     //an app the child administers implies every feature of every type, present and future
     var childAdminApps = (childPermission._ && Array.isArray(childPermission._.a)) ? childPermission._.a : [];
     for (i = 0; i < childAdminApps.length; i++) {
+        if (!ceiling.global_admin && ceilingMemberApps.indexOf(childAdminApps[i]) === -1) {
+            return false;
+        }
         for (t = 0; t < PERMISSION_TYPES.length; t++) {
             if (!principalAllowsAll(ceiling, PERMISSION_TYPES[t], childAdminApps[i])) {
                 return false;
@@ -1537,12 +1548,7 @@ exports.isPermissionSubset = function(childPermission, ceiling) {
             return false;
         }
     }
-    //membership is authority of its own: validateUserForRead and validateUserForWrite authorize
-    //on it alone, without asking about any feature. So an app the child names as a user app has
-    //to be an app the ceiling is itself a member of - holding one feature on an app is not the
-    //same as being a member of it, and treating it as such would let a token read an app its
-    //own owner is refused on.
-    var ceilingMemberApps = principalMemberApps(ceiling);
+    //and the same for the apps the child names as user apps
     var childUserApps = [];
     if (childPermission._ && Array.isArray(childPermission._.u)) {
         for (i = 0; i < childPermission._.u.length; i++) {
@@ -1675,11 +1681,15 @@ exports.intersectPermission = function(member, tokenPermission) {
                 grantsAnything = true;
             }
         }
-        var isAdmin = tokenAdminApps.indexOf(appId) !== -1 && exports.hasAdminAccess(member, appId);
+        //membership of either kind is granted only where the owner is itself a member. hasAdminAccess
+        //alone is not enough for the admin branch: it also says yes to four all:true entries on an
+        //app absent from the owner's _.u/_.a, and an admin app is membership too
+        var ownerIsMember = member.global_admin || memberMemberApps.indexOf(appId) !== -1;
+        var isAdmin = tokenAdminApps.indexOf(appId) !== -1 && exports.hasAdminAccess(member, appId) && ownerIsMember;
         if (isAdmin) {
             result._.a.push(appId);
         }
-        else if ((grantsAnything || tokenUserApps.indexOf(appId) !== -1) && (member.global_admin || memberMemberApps.indexOf(appId) !== -1)) {
+        else if ((grantsAnything || tokenUserApps.indexOf(appId) !== -1) && ownerIsMember) {
             //an app the token grants anything on - or names as a user app - stays visible, but
             //only while the owner is a member of it too
             userApps.push(appId);

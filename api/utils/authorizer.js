@@ -68,10 +68,19 @@ authorizer.save = function(options) {
                 * @returns {object} document to insert into auth_tokens
                 */
                 var buildTokenDoc = function() {
+                    var ends = options.ttl + Math.round(Date.now() / 1000);
+                    // A caller bounding this token by another credential's lifetime passes that
+                    // credential's absolute end. The cap is applied here, at insertion, rather than
+                    // by the caller turning it into a relative ttl: the member lookup above is
+                    // asynchronous, so a ttl computed before it would land ends later than the
+                    // bound by however long the lookup took.
+                    if (options.maxEnds > 0 && options.ttl > 0 && ends > options.maxEnds) {
+                        ends = options.maxEnds;
+                    }
                     var doc = {
                         _id: options.token,
                         ttl: options.ttl,
-                        ends: options.ttl + Math.round(Date.now() / 1000),
+                        ends: ends,
                         multi: options.multi,
                         owner: options.owner,
                         app: options.app,

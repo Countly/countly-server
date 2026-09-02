@@ -1378,6 +1378,40 @@ describe('Testing token manager', function() {
                 });
         });
 
+        it('nor one that administers it, however many features the member holds there', function(done) {
+            //give the member every feature on the other app - but no membership of it - and ask for
+            //admin. hasAdminAccess is satisfied by the four all grants; membership is not
+            var full = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            ["c", "r", "u", "d"].forEach(function(type) {
+                full[type][APP_ID] = {all: false, allowed: {core: true}};
+                full[type][OTHER_APP_ID] = {all: true, allowed: {}};
+            });
+            request
+                .get('/i/users/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({user_id: memberId, permission: full}))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    request
+                        .get('/i/token/create?api_key=' + memberKey + '&multi=true&ttl=3600&permission=' + encodeURIComponent(JSON.stringify({_: {a: [OTHER_APP_ID], u: [[]]}, c: {}, r: {}, u: {}, d: {}})))
+                        .expect(403)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            //restore the plain shape the remaining cases rely on
+                            var plain = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+                            plain.r[APP_ID] = {all: false, allowed: {core: true}};
+                            plain.r[OTHER_APP_ID] = {all: false, allowed: {}};
+                            request
+                                .get('/i/users/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({user_id: memberId, permission: plain}))
+                                .expect(200)
+                                .end(done);
+                        });
+                });
+        });
+
         it('a token for the app the member does reach is still granted', function(done) {
             var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
             permission.r[APP_ID] = {all: false, allowed: {core: true}};

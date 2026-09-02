@@ -90,6 +90,54 @@ describe("authorizer token record", function() {
         });
     });
 
+    it("never lets ends pass an absolute bound, whatever ttl was asked for", function(done) {
+        //a scoped token minting a child hands over its own ends as the bound. The bound is applied
+        //here, at insertion, because the member lookup before it is asynchronous: a relative ttl
+        //computed by the caller would land ends later than the bound by the lookup's duration
+        var db = dbStub([]);
+        var now = Math.round(Date.now() / 1000);
+        var bound = now + 60;
+        authorizer.save({
+            db: db,
+            owner: OWNER,
+            ttl: 3600,
+            maxEnds: bound,
+            callback: function(err) {
+                (!err).should.equal(true);
+                db.stored[0].ends.should.be.belowOrEqual(bound);
+                db.stored[0].ends.should.be.above(now);
+                //the ttl asked for is kept as a record of the request; ends is what verify_token checks
+                db.stored[0].ttl.should.equal(3600);
+                done();
+            }
+        });
+    });
+
+    it("leaves ends alone when no bound is given, and for a token that never expires", function(done) {
+        var db = dbStub([]);
+        var now = Math.round(Date.now() / 1000);
+        authorizer.save({
+            db: db,
+            owner: OWNER,
+            ttl: 3600,
+            callback: function() {
+                db.stored[0].ends.should.be.aboveOrEqual(now + 3600);
+                authorizer.save({
+                    db: db,
+                    owner: OWNER,
+                    ttl: 0,
+                    maxEnds: now + 60,
+                    callback: function() {
+                        //ttl 0 is "never expires" and verify_token never reads ends for it; the
+                        //bound is not silently turned into an expiry the caller did not ask for
+                        db.stored[1].ttl.should.equal(0);
+                        done();
+                    }
+                });
+            }
+        });
+    });
+
     describe("verify_token", function() {
         var future = Math.round(Date.now() / 1000) + 3600;
 
