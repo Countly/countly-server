@@ -494,6 +494,58 @@ describe('Testing token manager', function() {
                 });
         });
 
+        //the parent holds ttl 3600, so anything longer than that - "never expires" most of all -
+        //would outlive the credential that granted it
+        var createChildAndReadTtl = function(ttl, cb) {
+            request
+                .get('/i/token/create?auth_token=' + limitedToken + '&multi=true&ttl=' + ttl + '&permission=' + readCorePermission(APP_ID))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    var child = JSON.parse(res.text).result;
+                    testUtils.db.collection("auth_tokens").findOne({_id: child}, function(dbErr, doc) {
+                        if (dbErr || !doc) {
+                            return cb(dbErr || "child token missing");
+                        }
+                        cb(null, doc.ttl, child);
+                    });
+                });
+        };
+
+        it('the child cannot be given a life its parent does not have', function(done) {
+            //ttl 0 is "never expires", so this is the widest ask there is
+            createChildAndReadTtl(0, function(err, ttl, child) {
+                if (err) {
+                    return done(err);
+                }
+                ttl.should.be.above(0);
+                ttl.should.be.belowOrEqual(3600);
+                deleteToken(child, done);
+            });
+        });
+
+        it('nor a longer one than its parent has left', function(done) {
+            createChildAndReadTtl(99999, function(err, ttl, child) {
+                if (err) {
+                    return done(err);
+                }
+                ttl.should.be.belowOrEqual(3600);
+                deleteToken(child, done);
+            });
+        });
+
+        it('but a shorter life than its parent is granted as asked', function(done) {
+            createChildAndReadTtl(30, function(err, ttl, child) {
+                if (err) {
+                    return done(err);
+                }
+                ttl.should.equal(30);
+                deleteToken(child, done);
+            });
+        });
+
         it('the limited token cannot be granted login permission', function(done) {
             //the permission the token already holds is supplied, so a narrowing child is the only
             //thing being asked for beyond login - what is refused here is the login grant itself
@@ -581,6 +633,28 @@ describe('Testing token manager', function() {
                         return done(err);
                     }
                     deleteToken(JSON.parse(res.text).result, done);
+                });
+        });
+
+        it('and is not capped by its own lifetime, being the owner\'s full authority', function(done) {
+            //the lifetime cap is for a credential narrower than its owner. The dashboard session
+            //token is not one, and capping it would stop the token manager UI - which creates
+            //through that session - from ever issuing a token that does not expire
+            request
+                .get('/i/token/create?auth_token=' + fullToken + '&purpose=child-never&multi=true&ttl=0')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var child = JSON.parse(res.text).result;
+                    testUtils.db.collection("auth_tokens").findOne({_id: child}, function(dbErr, doc) {
+                        if (dbErr || !doc) {
+                            return done(dbErr || "child token missing");
+                        }
+                        doc.ttl.should.equal(0);
+                        deleteToken(child, done);
+                    });
                 });
         });
 
@@ -1218,6 +1292,175 @@ describe('Testing token manager', function() {
             testUtils.db.collection("auth_tokens").remove({owner: memberId + ""}, function() {
                 testUtils.db.collection("members").remove({username: username}, function() {
                     done();
+                });
+            });
+        });
+    });
+
+
+    describe('A grant is bounded by what the owner reaches, not by what its permissions mention', function() {
+        // The permission editor writes an entry for every app it could see, so a member
+        // routinely carries empty c/r/u/d entries for apps it has no access to at all.
+        // Those entries are not access. Naming such an app as a user app in a token is,
+        // because validateUserForRead and validateUserForWrite authorize on membership
+        // alone - so accepting it would hand the token an app its own owner is refused on.
+        var memberId = "";
+        var memberKey = "";
+        var scopedToken = "";
+        var OTHER_APP_ID = "";
+        var username = "tokenreach" + Math.round(Math.random() * 100000);
+
+        it('setup: an app the member will not be given access to', function(done) {
+            var params = {name: "Token reach other app"};
+            request
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    OTHER_APP_ID = JSON.parse(res.text)._id;
+                    (OTHER_APP_ID !== "").should.equal(true);
+                    done();
+                });
+        });
+
+        it('setup: a member carrying an empty entry for it, the way the editor stores one', function(done) {
+            var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[APP_ID] = {all: false, allowed: {core: true}};
+            permission.r[OTHER_APP_ID] = {all: false, allowed: {}};
+            permission.c[OTHER_APP_ID] = {all: false, allowed: {}};
+            permission.u[OTHER_APP_ID] = {all: false, allowed: {}};
+            permission.d[OTHER_APP_ID] = {all: false, allowed: {}};
+            var params = {full_name: "Token Reach", username: username, password: testUtils.password, email: username + "@domain.com", permission: permission};
+            request
+                .get('/i/users/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('api_key');
+                    memberId = ob._id;
+                    memberKey = ob.api_key;
+                    done();
+                });
+        });
+
+        it('the member itself is not a member of that app', function(done) {
+            //membership is what getUserApps reports, and /o/apps/mine is built from it on every
+            //branch. (An app-data endpoint is not used here: which validator gates one differs
+            //between release lines, and this case is about membership, not a feature.)
+            request
+                .get('/o/apps/mine?api_key=' + memberKey)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var mine = JSON.parse(res.text);
+                    (mine.user_of || {}).should.not.have.property(OTHER_APP_ID);
+                    (mine.admin_of || {}).should.not.have.property(OTHER_APP_ID);
+                    (mine.user_of || {}).should.have.property(APP_ID);
+                    done();
+                });
+        });
+
+        it('and cannot mint a token that is a member of it', function(done) {
+            var permission = {_: {a: [], u: [[OTHER_APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            request
+                .get('/i/token/create?api_key=' + memberKey + '&multi=true&ttl=3600&permission=' + encodeURIComponent(JSON.stringify(permission)))
+                .expect(403)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('nor one that is a member of it alongside an app it does reach', function(done) {
+            var permission = {_: {a: [], u: [[APP_ID, OTHER_APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[APP_ID] = {all: false, allowed: {core: true}};
+            request
+                .get('/i/token/create?api_key=' + memberKey + '&multi=true&ttl=3600&permission=' + encodeURIComponent(JSON.stringify(permission)))
+                .expect(403)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('nor one that administers it, however many features the member holds there', function(done) {
+            //give the member every feature on the other app - but no membership of it - and ask for
+            //admin. hasAdminAccess is satisfied by the four all grants; membership is not
+            var full = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            ["c", "r", "u", "d"].forEach(function(type) {
+                full[type][APP_ID] = {all: false, allowed: {core: true}};
+                full[type][OTHER_APP_ID] = {all: true, allowed: {}};
+            });
+            request
+                .get('/i/users/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({user_id: memberId, permission: full}))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    request
+                        .get('/i/token/create?api_key=' + memberKey + '&multi=true&ttl=3600&permission=' + encodeURIComponent(JSON.stringify({_: {a: [OTHER_APP_ID], u: [[]]}, c: {}, r: {}, u: {}, d: {}})))
+                        .expect(403)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            //restore the plain shape the remaining cases rely on
+                            var plain = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+                            plain.r[APP_ID] = {all: false, allowed: {core: true}};
+                            plain.r[OTHER_APP_ID] = {all: false, allowed: {}};
+                            request
+                                .get('/i/users/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({user_id: memberId, permission: plain}))
+                                .expect(200)
+                                .end(done);
+                        });
+                });
+        });
+
+        it('a token for the app the member does reach is still granted', function(done) {
+            var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[APP_ID] = {all: false, allowed: {core: true}};
+            request
+                .get('/i/token/create?api_key=' + memberKey + '&multi=true&ttl=3600&permission=' + encodeURIComponent(JSON.stringify(permission)))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    scopedToken = JSON.parse(res.text).result;
+                    (scopedToken !== "").should.equal(true);
+                    done();
+                });
+        });
+
+        it('and is a member of the app it names, as its owner is', function(done) {
+            request
+                .get('/o/apps/mine?auth_token=' + scopedToken)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var mine = JSON.parse(res.text);
+                    (mine.user_of || {}).should.have.property(APP_ID);
+                    (mine.user_of || {}).should.not.have.property(OTHER_APP_ID);
+                    done();
+                });
+        });
+
+        it('cleanup: remove the token, the member and the app', function(done) {
+            testUtils.db.collection("auth_tokens").remove({owner: memberId + ""}, function() {
+                testUtils.db.collection("members").remove({username: username}, function() {
+                    request
+                        .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + JSON.stringify({app_id: OTHER_APP_ID}))
+                        .end(function() {
+                            done();
+                        });
                 });
             });
         });
