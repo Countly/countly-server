@@ -92,6 +92,11 @@ authorizer.save = function(options) {
                     if (options.token_permission) {
                         doc.token_permission = options.token_permission;
                     }
+                    if (options.maxEnds > 0) {
+                        // kept on the document so that extend_token can honour it: the bound is
+                        // a property of this token for its whole life, not of the insert alone
+                        doc.max_ends = options.maxEnds;
+                    }
                     return doc;
                 };
                 if (options.tryReuse === true) {
@@ -245,10 +250,24 @@ authorizer.extend_token = function(options) {
         }
         return;
     }
-    options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
-        if (typeof options.callback === "function") {
-            options.callback(err, true);
+    // A token bounded by another credential's lifetime carries max_ends. An extension - the
+    // heatmap route extends a token by ten minutes whenever it is close to expiry - must not
+    // carry it past that bound, or repeated requests keep a scoped child alive indefinitely
+    // after its parent expired. Read the document first; a token with no bound extends as
+    // before.
+    options.db.collection("auth_tokens").findOne({_id: options.token}, {projection: {max_ends: 1}}, function(readErr, doc) {
+        if (!readErr && doc && doc.max_ends > 0) {
+            if (updateArr.ttl === 0 || updateArr.ends > doc.max_ends) {
+                // ttl 0 would mean never expires; the bound turns that into "until the bound"
+                updateArr.ends = doc.max_ends;
+                updateArr.ttl = Math.max(1, doc.max_ends - Math.round(Date.now() / 1000));
+            }
         }
+        options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
+            if (typeof options.callback === "function") {
+                options.callback(err, true);
+            }
+        });
     });
 };
 /**

@@ -18,7 +18,8 @@ function dbStub(tokens) {
         },
         collection: function(name) {
             return {
-                findOne: function(query, callback) {
+                findOne: function(query, projectionOrCallback, maybeCallback) {
+                    var callback = typeof projectionOrCallback === "function" ? projectionOrCallback : maybeCallback;
                     if (name === "members") {
                         return callback(null, {_id: OWNER});
                     }
@@ -32,7 +33,16 @@ function dbStub(tokens) {
                     callback(null, doc);
                 },
                 remove: function() { },
-                update: function() { },
+                update: function(query, change, callback) {
+                    stored.filter(function(doc) {
+                        return doc._id === query._id;
+                    }).forEach(function(doc) {
+                        Object.assign(doc, (change && change.$set) || {});
+                    });
+                    if (typeof callback === "function") {
+                        callback(null, {});
+                    }
+                },
                 findAndModify: function(rules, sort, update, callback) {
                     callback(null, null);
                 }
@@ -135,6 +145,72 @@ describe("authorizer token record", function() {
                     }
                 });
             }
+        });
+    });
+
+    describe("extend_token", function() {
+        it("never extends a bounded token past its bound", function(done) {
+            //the heatmap route extends a near-expiry token by ten minutes on every request. For a
+            //child bounded by its parent that would keep it alive indefinitely after the parent
+            //expired, so the bound is persisted and the extension clamps to it
+            var db = dbStub([]);
+            var now = Math.round(Date.now() / 1000);
+            var bound = now + 60;
+            authorizer.save({
+                db: db,
+                owner: OWNER,
+                ttl: 30,
+                maxEnds: bound,
+                token: "bounded",
+                callback: function() {
+                    db.stored[0].max_ends.should.equal(bound);
+                    authorizer.extend_token({
+                        db: db,
+                        token: "bounded",
+                        extendTill: Date.now() + 600000,
+                        callback: function(err, ok) {
+                            (!err).should.equal(true);
+                            ok.should.equal(true);
+                            db.stored[0].ends.should.equal(bound);
+                            db.stored[0].ttl.should.be.above(0);
+                            //extendBy 0 means "never expires"; the bound turns that into "until the bound"
+                            authorizer.extend_token({
+                                db: db,
+                                token: "bounded",
+                                extendBy: 0,
+                                callback: function() {
+                                    db.stored[0].ends.should.equal(bound);
+                                    db.stored[0].ttl.should.be.above(0);
+                                    done();
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        it("extends an unbounded token exactly as before", function(done) {
+            var db = dbStub([]);
+            authorizer.save({
+                db: db,
+                owner: OWNER,
+                ttl: 30,
+                token: "free",
+                callback: function() {
+                    (db.stored[0].max_ends === undefined).should.equal(true);
+                    var till = Date.now() + 600000;
+                    authorizer.extend_token({
+                        db: db,
+                        token: "free",
+                        extendTill: till,
+                        callback: function() {
+                            db.stored[0].ends.should.equal(Math.round(till / 1000));
+                            done();
+                        }
+                    });
+                }
+            });
         });
     });
 
