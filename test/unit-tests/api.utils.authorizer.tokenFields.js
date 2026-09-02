@@ -260,7 +260,11 @@ describe("authorizer token record", function() {
     });
 
     describe("the bound is enforced at every use", function() {
-        var now = Math.round(Date.now() / 1000);
+        //computed per case, not per file: the api-core run loads every test file first and then
+        //runs for minutes, so a bound set at load time to "a minute ahead" has already passed
+        var now = function() {
+            return Math.round(Date.now() / 1000);
+        };
 
         /**
         * A stored token document with the given lifetime fields.
@@ -301,7 +305,7 @@ describe("authorizer token record", function() {
         it("refuses a token whose bound has passed, however far its ends was pushed", function(done) {
             //whatever moved ends - the session-timeout retiming of every LoggedInAuth token of a
             //member writes ends directly - the parent's bound is the end of this token's life
-            var db = dbStub([tokenDoc("pushed", {ttl: 3600, ends: now + 3600, max_ends: now - 5})]);
+            var db = dbStub([tokenDoc("pushed", {ttl: 3600, ends: now() + 3600, max_ends: now() - 5})]);
             verify(db, "pushed", function(valid) {
                 (!valid).should.equal(true);
                 //and consumed, as any other expired token is
@@ -311,7 +315,7 @@ describe("authorizer token record", function() {
         });
 
         it("refuses a never-expiring token once its bound has passed", function(done) {
-            var db = dbStub([tokenDoc("forever", {ttl: 0, ends: 0, max_ends: now - 5})]);
+            var db = dbStub([tokenDoc("forever", {ttl: 0, ends: 0, max_ends: now() - 5})]);
             verify(db, "forever", function(valid) {
                 (!valid).should.equal(true);
                 db.stored.length.should.equal(0);
@@ -320,7 +324,7 @@ describe("authorizer token record", function() {
         });
 
         it("accepts a bounded token while its bound is ahead", function(done) {
-            var db = dbStub([tokenDoc("alive", {ttl: 3600, ends: now + 3600, max_ends: now + 60})]);
+            var db = dbStub([tokenDoc("alive", {ttl: 3600, ends: now() + 3600, max_ends: now() + 3600})]);
             verify(db, "alive", function(valid) {
                 valid._id.should.equal("alive");
                 //a multi-use token within its bound is kept
