@@ -375,8 +375,12 @@ var verify_token = function(options, return_owner, return_data) {
                 // change retimes every LoggedInAuth token of a member in one update - must not be
                 // able to move the token past it either, so it is enforced here, at every use.
                 var pastBound = res.max_ends > 0 && res.max_ends < Math.round(Date.now() / 1000);
-                if (valid_endpoint && valid_app && !pastBound) {
-                    if (res.ttl === 0) {
+                if (valid_endpoint && valid_app) {
+                    if (pastBound) {
+                        // expired by its bound: neither branch below may mark it valid, and the
+                        // consume step at the end removes it like any other expired token
+                    }
+                    else if (res.ttl === 0) {
                         valid = true;
                         expires_after = -1;
                         if (return_owner) {

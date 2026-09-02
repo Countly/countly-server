@@ -32,7 +32,16 @@ function dbStub(tokens) {
                     stored.push(doc);
                     callback(null, doc);
                 },
-                remove: function() { },
+                remove: function(query, callback) {
+                    for (var i = stored.length - 1; i >= 0; i--) {
+                        if (stored[i]._id === query._id) {
+                            stored.splice(i, 1);
+                        }
+                    }
+                    if (typeof callback === "function") {
+                        callback(null, {});
+                    }
+                },
                 update: function(query, change, callback) {
                     stored.filter(function(doc) {
                         return doc._id === query._id;
@@ -295,6 +304,8 @@ describe("authorizer token record", function() {
             var db = dbStub([tokenDoc("pushed", {ttl: 3600, ends: now + 3600, max_ends: now - 5})]);
             verify(db, "pushed", function(valid) {
                 (!valid).should.equal(true);
+                //and consumed, as any other expired token is
+                db.stored.length.should.equal(0);
                 done();
             });
         });
@@ -303,6 +314,7 @@ describe("authorizer token record", function() {
             var db = dbStub([tokenDoc("forever", {ttl: 0, ends: 0, max_ends: now - 5})]);
             verify(db, "forever", function(valid) {
                 (!valid).should.equal(true);
+                db.stored.length.should.equal(0);
                 done();
             });
         });
@@ -311,6 +323,8 @@ describe("authorizer token record", function() {
             var db = dbStub([tokenDoc("alive", {ttl: 3600, ends: now + 3600, max_ends: now + 60})]);
             verify(db, "alive", function(valid) {
                 valid._id.should.equal("alive");
+                //a multi-use token within its bound is kept
+                db.stored.length.should.equal(1);
                 done();
             });
         });
