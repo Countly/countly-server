@@ -256,7 +256,7 @@ var plugin = {},
                     }
                     if (params.member.settings && params.member.settings.frontend && typeof data.frontend.session_timeout !== "undefined") {} //eslint-disable-line no-empty
                     else { //if not set member value
-                        common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err) {
+                        common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth", "max_ends": {$exists: false}}, {$set: updateArr}, function(err) {
                             if (err) {
                                 console.log(err);
                             }
@@ -333,7 +333,7 @@ var plugin = {},
                         updateArr.ttl = data.frontend.session_timeout * 60;
                     }
 
-                    common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err) {
+                    common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth", "max_ends": {$exists: false}}, {$set: updateArr}, function(err) {
                         if (err) {
                             console.log(err);
                         }
