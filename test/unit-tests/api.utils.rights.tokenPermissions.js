@@ -125,10 +125,12 @@ describe("token permissions", function() {
             };
             rights.isPermissionSubset(permission({adminApps: [APP_B]}), featuresOnly).should.equal(false);
             //the four all grants themselves are still passed on, since the ceiling does hold them
-            var allFour = permission({grants: [
-                {type: "c", app: APP_B, all: true}, {type: "r", app: APP_B, all: true},
-                {type: "u", app: APP_B, all: true}, {type: "d", app: APP_B, all: true}
-            ]});
+            var allFour = permission({
+                grants: [
+                    {type: "c", app: APP_B, all: true}, {type: "r", app: APP_B, all: true},
+                    {type: "u", app: APP_B, all: true}, {type: "d", app: APP_B, all: true}
+                ]
+            });
             rights.isPermissionSubset(allFour, featuresOnly).should.equal(true);
         });
 
