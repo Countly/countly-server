@@ -108,6 +108,23 @@
                     self.allByType[type] = allOf(type, self.filteredFeatures);
                 });
             },
+            //apps the creator is a member of. countlyAuth.getUserApps reads permission._.u
+            //unconditionally, and a member stored before permission objects existed has no
+            //permission at all - only admin_of/user_of, which the dashboard still honours
+            creatorMemberApps: function() {
+                var member = countlyGlobal.member || {};
+                if (member.global_admin) {
+                    return Object.keys(countlyGlobal.apps || {});
+                }
+                if (member.permission && member.permission._) {
+                    var apps = [];
+                    (member.permission._.u || []).forEach(function(group) {
+                        apps = apps.concat(group || []);
+                    });
+                    return apps.concat(member.permission._.a || []);
+                }
+                return (member.admin_of || []).concat(member.user_of || []);
+            },
             buildPermission: function(apps) {
                 //the dashboard lists every app the creator holds a read grant on, and that includes
                 //apps the creator is not a member of - a read grant on one feature puts an app in
@@ -115,7 +132,7 @@
                 //its own that the server refuses to widen, so the token names as user apps only
                 //the selected apps the creator is itself a member of. The others still carry their
                 //feature grants, which is exactly what the creator has on them.
-                var memberApps = countlyAuth.getUserApps();
+                var memberApps = this.creatorMemberApps();
                 var userApps = apps.filter(function(appId) {
                     return memberApps.indexOf(appId) !== -1;
                 });

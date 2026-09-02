@@ -232,6 +232,28 @@ describe("token manager drawer", function() {
             permission.r.apponly.allowed.core.should.equal(true);
         });
 
+        it("derives the creator's membership from the legacy arrays when there is no permission object", function() {
+            //a member stored before permission objects existed has admin_of/user_of only, and the
+            //dashboard still serves them. Reading permission._.u would throw and no limited token
+            //could be created at all
+            var saved = loaded.sandbox.countlyGlobal.member;
+            loaded.sandbox.countlyGlobal.member = {global_admin: false, user_of: ["appone"], admin_of: ["apptwo"]};
+            try {
+                var vue = instance(loaded.drawer, FEATURES);
+                vue.tokenUsage = "1";
+                vue.permissionSet.r.allowed.core = true;
+                vue.setPermissionByFeature("r", "core");
+                loaded.created.length = 0;
+                vue.onSubmit({description: "d", checkboxMultipleTimes: true, selectApps: ["appone", "apptwo", "apponly"]});
+                var permission = loaded.created[0].permission;
+                should(JSON.parse(JSON.stringify(permission._.u))).eql([["appone", "apptwo"]]);
+                permission.r.apponly.allowed.core.should.equal(true);
+            }
+            finally {
+                loaded.sandbox.countlyGlobal.member = saved;
+            }
+        });
+
         it("grants every selected app the same permissions", function() {
             var vue = instance(loaded.drawer, FEATURES);
             vue.tokenUsage = "1";
