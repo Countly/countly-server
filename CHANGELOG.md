@@ -1,5 +1,7 @@
 ## Version 24.05.53
+Fixes:
 - [core] Chart tooltips now show label text as text, so a label is never treated as markup, and the dashboard undoes the same key substitutions the api applies (`&#36;`, `&#46;`, `&#9647;` and their url encoded forms) instead of only two of them
+- [license] Fixes for license manager forward compatibility 
 
 ## Version 24.05.52
 Fixes:
