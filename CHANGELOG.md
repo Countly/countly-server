@@ -1,3 +1,19 @@
+## Version 25.03.53-LTS
+Fixes:
+- [core] Fix segmentation values with HTML attributes dropped from All Events breakdown
+- [license] Fixes for license manager forward compatibility 
+- [journey_engine]: Create a new content block instead of overwriting the last
+- [funnels] Ellipsize long funnel name in detail header
+- [core] guard stored-document walks against prototype keys
+- [ab-testing] do not keep the request's credentials in stored experiments
+
+Security Fixes:
+- [content,surveys] Take Cross-Origin-Opener-Policy off the embedded routes
+- [core] Encode and sanitize values at frontend HTML sinks
+- [oidc] Mark the OIDC session token as login-capable
+- [surveys] forward only the widget's own parameters from /i/feedback/inputs
+
+
 ## Version 25.03.52-LTS
 Security Fixes:
 - [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images.
