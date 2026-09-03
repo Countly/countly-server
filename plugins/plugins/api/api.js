@@ -152,7 +152,8 @@ var plugin = {},
                                     if (!resultObj.enabled) {
                                         var local_path = fullpath + "/frontend/public/localization/" + resultObj.code + ".properties";
                                         if (params.member.lang && params.member.lang !== "en") {
-                                            local_path = fullpath + "/frontend/public/localization/" + resultObj.code + "_" + params.member.lang + ".properties";
+                                            //sanitized the same way api/utils/localization.js does it
+                                            local_path = fullpath + "/frontend/public/localization/" + resultObj.code + "_" + common.sanitizeFilename(params.member.lang) + ".properties";
                                         }
                                         if (fs.existsSync(local_path)) {
                                             var local_properties = fs.readFileSync(local_path);
@@ -255,7 +256,7 @@ var plugin = {},
                     }
                     if (params.member.settings && params.member.settings.frontend && typeof data.frontend.session_timeout !== "undefined") {} //eslint-disable-line no-empty
                     else { //if not set member value
-                        common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err) {
+                        common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth", "max_ends": {$exists: false}}, {$set: updateArr}, function(err) {
                             if (err) {
                                 console.log(err);
                             }
@@ -282,6 +283,30 @@ var plugin = {},
             plugins.loadConfigs(common.db, function() {
                 var confs = plugins.getAllConfigs();
                 delete confs.services;
+                //A caller who is not a global admin gets only the values some part of
+                //the dashboard needs in order to work: the app management settings and
+                //a handful of display values. Nothing else, whether or not anybody
+                //remembered it was sensitive.
+                //
+                //Two mechanisms on purpose, in this order. The allow-list is the
+                //control: a value nobody declared is not returned, so a new setting is
+                //private by default and forgetting costs a missing input rather than a
+                //leak. Masking is the backstop: if a credential is ever declared
+                //readable by mistake, its value is still withheld.
+                if (!params.member.global_admin) {
+                    var before = Object.keys(confs);
+                    confs = plugins.maskSecretConfigs(plugins.filterReadableConfigs(confs));
+                    //a namespace disappearing here is how an undeclared value looks
+                    //from the outside, and the UI degrades silently when it happens, so
+                    //leave a trail rather than nothing
+                    var dropped = before.filter(function(ns) {
+                        return !confs[ns];
+                    });
+                    if (dropped.length) {
+                        log.d("Withheld configuration namespaces from a non global admin"
+                            + common.reqInfo(params) + ": " + dropped.join(", "));
+                    }
+                }
                 common.returnOutput(params, confs);
             });
         });
@@ -308,7 +333,7 @@ var plugin = {},
                         updateArr.ttl = data.frontend.session_timeout * 60;
                     }
 
-                    common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth"}, {$set: updateArr}, function(err) {
+                    common.db.collection("auth_tokens").update({"owner": ob.params.member._id + "", "purpose": "LoggedInAuth", "max_ends": {$exists: false}}, {$set: updateArr}, function(err) {
                         if (err) {
                             console.log(err);
                         }
@@ -379,9 +404,14 @@ var plugin = {},
             var fullpath = path.resolve(__dirname, "../");
             var local_path = fullpath + "/frontend/public/localization/plugins.properties";
             if (params.member.lang && params.member.lang !== "en") {
-                path = fullpath + "/frontend/public/localization/plugins" + "_" + params.member.lang + ".properties";
-                if (fs.existsSync(path)) {
-                    local_path = path;
+                //sanitized the same way api/utils/localization.js does it.
+                //A local name: this used to assign to `path`, which is the required path
+                //module at the top of this file, so one call to this route by a non
+                //English global admin left path.resolve broken for the rest of the
+                //process.
+                var localizedPath = fullpath + "/frontend/public/localization/plugins" + "_" + common.sanitizeFilename(params.member.lang) + ".properties";
+                if (fs.existsSync(localizedPath)) {
+                    local_path = localizedPath;
                 }
             }
             let subject = 'Countly test email';

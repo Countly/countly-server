@@ -8,13 +8,25 @@ var pluginOb = {},
     plugins = require('../../pluginManager.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
-    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete, applyTokenScope } = require('../../../api/utils/rights.js');
 
 const viewsUtils = require("./parts/viewsUtils.js");
 const FEATURE_NAME = 'views';
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 //keys to not use as segmentation
 (function() {
+    //Declares this plugin as an export query producer. /o/export/requestQuery re-runs the
+    //endpoint named here and executes the collection and pipeline it returns, so only endpoints
+    //that build such a query and authorize it themselves may be named. `require` pins the
+    //parameters that select the branch below which returns the query rather than the rows.
+    plugins.register("/export/query/producers", function(ob) {
+        ob.producers.push({
+            path: "/o",
+            require: {method: "views", action: "getExportQuery"},
+            db: "countly"
+        });
+    });
+
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
@@ -1581,9 +1593,29 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         // verify_token skips the app check entirely and an
                         // app-scoped token would be accepted for any other app.
                         qstring: params.qstring,
-                        callback: function(owner, expires_after) {
-                            if (owner) {
-                                var token = params.req.headers["countly-token"];
+                        //return_data so the token document itself is available here. This
+                        //route resolves its own token rather than going through a rights
+                        //validator, so the bounding rights.js would have applied has to be
+                        //applied here or it does not happen at all.
+                        return_data: true,
+                        callback: function(tokenData, expires_after) {
+                            if (!tokenData) {
+                                common.returnMessage(params, 401, 'User does not have view right for this application');
+                                return false;
+                            }
+                            var token = params.req.headers["countly-token"];
+                            params.token_data = tokenData;
+                            common.db.collection('members').findOne({_id: common.db.ObjectID(tokenData.owner + "")}, function(memberErr, member) {
+                                //bound by the token before anything is authorized, the way
+                                //rights.js does it. A token scoped to another feature on this
+                                //same app must not read heatmaps merely because its owner can,
+                                //and the app restriction alone does not say anything about
+                                //which feature was granted.
+                                var scoped = (memberErr || !member) ? null : applyTokenScope(params, member);
+                                if (!viewsUtils.ownerCanRead(scoped, app._id + "", FEATURE_NAME)) {
+                                    common.returnMessage(params, 401, 'User does not have view right for this application');
+                                    return false;
+                                }
                                 if (expires_after < 600 && expires_after > -1) {
                                     authorize.extend_token({
                                         extendTill: Date.now() + 600000, //10 minutes
@@ -1598,7 +1630,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             getHeatmap(params);
                                         }
                                     });
-
                                 }
                                 else {
                                     params.token_headers = {"countly-token": token, "content-language": token, "Access-Control-Expose-Headers": "countly-token"};
@@ -1609,10 +1640,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                                     getHeatmap(params);
                                 }
-                            }
-                            else {
-                                common.returnMessage(params, 401, 'User does not have view right for this application');
-                            }
+                            });
                         }
                     });
                 });
@@ -2122,6 +2150,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         var addToSetRules = {};
         if (currEvent.segmentation) {
             for (let segKey in currEvent.segmentation) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (segKey === "__proto__" || segKey === "constructor" || segKey === "prototype") {
+                    continue;
+                }
                 let tmpSegKey = "";
                 if (segKey.indexOf('.') !== -1 || segKey.substr(0, 1) === '$') {
                     tmpSegKey = segKey.replace(/^\$|\./g, "");

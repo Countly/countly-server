@@ -98,6 +98,11 @@ plugins.connectToAllDatabases().then(function() {
         trim_trailing_ending_spaces: false
     });
 
+    //declared in a module both this process and the dashboard require, because the
+    //metadata is process local and the dashboard serializes the security namespace
+    //into every page it renders
+    require('./utils/configMetadata.js').register(plugins);
+
     /**
     * Set Plugins APPs Config
     */
@@ -121,8 +126,8 @@ plugins.connectToAllDatabases().then(function() {
         password_rotation: 3,
         password_autocomplete: true,
         robotstxt: "User-agent: *\nDisallow: /",
-        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
-        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
+        dashboard_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nCross-Origin-Opener-Policy: same-origin-allow-popups",
+        api_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
         dashboard_rate_limit_requests: 500,
         api_rate_limit_window: 0,
@@ -532,6 +537,11 @@ function handleRequest(req, res) {
         form.parse(req, (err, fields, files) => {
             //handle bakcwards compatability with formiddble v1
             for (let i in files) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (i === "__proto__" || i === "constructor" || i === "prototype") {
+                    continue;
+                }
                 if (files[i].filepath) {
                     files[i].path = files[i].filepath;
                 }
@@ -549,14 +559,16 @@ function handleRequest(req, res) {
             if (multiFormData) {
                 let formDataUrl = [];
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
-                    formDataUrl.push(`${i}=${fields[i]}`);
+                    //back to the scalar the request carried; formidable's json body
+                    //parser is the only thing that makes these structures
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
+                    formDataUrl.push(`${i}=${params.qstring[i]}`);
                 }
                 params.formDataUrl = formDataUrl.join('&');
             }
             else {
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
                 }
             }
             if (!params.apiPath) {

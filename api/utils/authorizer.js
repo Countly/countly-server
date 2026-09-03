@@ -19,7 +19,9 @@ const log = require('./log.js')('core:authorizer');
 * @param {string} options.token - token to store, if not provided, will be generated
 * @param {string} options.owner - id of the user who created this token
 * @param {string} options.app - list of the apps for which token was created
-* @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
+* @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$). Deprecated as an authorization mechanism, kept for tokens created before the permission model.
+* @param {object} [options.token_permission] - CRUD permissions granted to this token, in the same shape as member.permission ({_:{a,u}, c/r/u/d:{appId:{all, allowed}}}). When set, the token authorizes only the intersection of this object and its owner's own permissions. When omitted, the token inherits the owner's full permissions.
+* @param {boolean} [options.can_login=false] - if true, the token may be redeemed for a dashboard session at /login/token. SERVER-ASSIGNED ONLY - see the note below.
 * @param {string} options.tryReuse - if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.
 * @param {boolean} [options.temporary=false] - If logged in with temporary token. Doesn't kill other sessions on logout.
 * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
@@ -33,6 +35,13 @@ authorizer.save = function(options) {
     options.endpoint = options.endpoint || "";
     options.purpose = options.purpose || "";
     options.temporary = options.temporary || false; //If logged in with temporary token. Doesn't kill other sessions on logout
+
+    // Login capability is a property of the token, never of its purpose string. It is set only
+    // where the server itself establishes or propagates a session (setLoggedInVariables, the
+    // renderer, the ban-warning mail, OIDC login), and by /i/token/create only when the creating
+    // credential already holds it. Defaulting to false here means any caller that does not ask
+    // for it explicitly produces a token that cannot be redeemed at /login/token.
+    options.can_login = options.can_login === true;
 
     if (options.endpoint !== "" && !Array.isArray(options.endpoint)) {
         options.endpoint = [options.endpoint];
@@ -53,8 +62,54 @@ authorizer.save = function(options) {
             }
             else if (member) {
                 authorizer.clearExpiredTokens(options);
+                /**
+                * Build the token document to store. token_permission is only written when the
+                * token is actually scoped, so an unscoped token stays absent-means-unrestricted.
+                * @returns {object} document to insert into auth_tokens
+                */
+                var buildTokenDoc = function() {
+                    var ends = options.ttl + Math.round(Date.now() / 1000);
+                    // A caller bounding this token by another credential's lifetime passes that
+                    // credential's absolute end. The cap is applied here, at insertion, rather than
+                    // by the caller turning it into a relative ttl: the member lookup above is
+                    // asynchronous, so a ttl computed before it would land ends later than the
+                    // bound by however long the lookup took.
+                    if (options.maxEnds > 0 && options.ttl > 0 && ends > options.maxEnds) {
+                        ends = options.maxEnds;
+                    }
+                    var doc = {
+                        _id: options.token,
+                        ttl: options.ttl,
+                        ends: ends,
+                        multi: options.multi,
+                        owner: options.owner,
+                        app: options.app,
+                        endpoint: options.endpoint,
+                        purpose: options.purpose,
+                        temporary: options.temporary,
+                        can_login: options.can_login
+                    };
+                    if (options.token_permission) {
+                        doc.token_permission = options.token_permission;
+                    }
+                    if (options.maxEnds > 0) {
+                        // kept on the document so that extend_token can honour it: the bound is
+                        // a property of this token for its whole life, not of the insert alone
+                        doc.max_ends = options.maxEnds;
+                    }
+                    return doc;
+                };
                 if (options.tryReuse === true) {
-                    var rules = {"multi": options.multi, "endpoint": options.endpoint, "app": options.app, "owner": options.owner, "purpose": options.purpose};
+                    var rules = {"multi": options.multi, "endpoint": options.endpoint, "app": options.app, "owner": options.owner, "purpose": options.purpose, "can_login": options.can_login};
+                    // Never reuse a token that grants something different from what is being asked
+                    // for: an identical-looking token with a wider (or narrower) permission set is a
+                    // different credential.
+                    if (options.token_permission) {
+                        rules.token_permission = options.token_permission;
+                    }
+                    else {
+                        rules.token_permission = {$exists: false};
+                    }
                     if (options.purpose === "LoggedInAuth") {
                         //Login token, allow switching from expiring to not expiring(and other way around)
                         //If there is changes to session expiration - this will allow to treat those tokens as same token.
@@ -78,17 +133,7 @@ authorizer.save = function(options) {
                             options.callback(err_token, token.value._id);
                         }
                         else {
-                            options.db.collection("auth_tokens").insert({
-                                _id: options.token,
-                                ttl: options.ttl,
-                                ends: options.ttl + Math.round(Date.now() / 1000),
-                                multi: options.multi,
-                                owner: options.owner,
-                                app: options.app,
-                                endpoint: options.endpoint,
-                                purpose: options.purpose,
-                                temporary: options.temporary
-                            }, function(err1) {
+                            options.db.collection("auth_tokens").insert(buildTokenDoc(), function(err1) {
                                 if (typeof options.callback === "function") {
                                     options.callback(err1, options.token);
                                 }
@@ -97,17 +142,7 @@ authorizer.save = function(options) {
                     });
                 }
                 else {
-                    options.db.collection("auth_tokens").insert({
-                        _id: options.token,
-                        ttl: options.ttl,
-                        ends: options.ttl + Math.round(Date.now() / 1000),
-                        multi: options.multi,
-                        owner: options.owner,
-                        app: options.app,
-                        endpoint: options.endpoint,
-                        purpose: options.purpose,
-                        temporary: options.temporary
-                    }, function(err1) {
+                    options.db.collection("auth_tokens").insert(buildTokenDoc(), function(err1) {
                         if (typeof options.callback === "function") {
                             options.callback(err1, options.token);
                         }
@@ -215,10 +250,28 @@ authorizer.extend_token = function(options) {
         }
         return;
     }
-    options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
-        if (typeof options.callback === "function") {
-            options.callback(err, true);
+    // A token bounded by another credential's lifetime carries max_ends. An extension - the
+    // heatmap route extends a token by ten minutes whenever it is close to expiry - must not
+    // carry it past that bound, or repeated requests keep a scoped child alive indefinitely
+    // after its parent expired. Read the document first; a token with no bound extends as
+    // before.
+    options.db.collection("auth_tokens").findOne({_id: options.token}, {projection: {max_ends: 1}}, function(readErr, doc) {
+        if (readErr) {
+            // fail closed: without the bound there is no safe extension to write
+            if (typeof options.callback === "function") {
+                options.callback(readErr, null);
+            }
+            return;
         }
+        if (doc && doc.max_ends > 0 && updateArr.ends > doc.max_ends) {
+            updateArr.ends = doc.max_ends;
+            updateArr.ttl = Math.max(1, doc.max_ends - Math.round(Date.now() / 1000));
+        }
+        options.db.collection("auth_tokens").update({_id: options.token}, {$set: updateArr}, function(err) {
+            if (typeof options.callback === "function") {
+                options.callback(err, true);
+            }
+        });
     });
 };
 /**
@@ -249,7 +302,13 @@ var verify_token = function(options, return_owner, return_data) {
                 if (Array.isArray(res.endpoint) && res.endpoint.length === 0) {
                     res.endpoint = "";
                 }
-                if (res.endpoint && res.endpoint !== "") {
+                // The endpoint regex is the pre-permission-model scoping mechanism. It only ever
+                // constrained which paths a token could call, never what the resolved member was
+                // allowed to do, so it is not an authorization boundary. Tokens issued under the
+                // permission model carry token_permission instead, which rights.js intersects with
+                // the owner's own permissions on every request. Legacy tokens (no token_permission)
+                // keep being matched exactly as before, so existing integrations are unaffected.
+                if (!res.token_permission && res.endpoint && res.endpoint !== "") {
                     //keep backwards compability
                     if (!Array.isArray(res.endpoint)) {
                         res.endpoint = [res.endpoint];
@@ -311,8 +370,17 @@ var verify_token = function(options, return_owner, return_data) {
                     }
                 }
 
+                // The bound a scoped parent put on this token is absolute. It is applied wherever
+                // ends is written, but a writer that does not know about it - a session-timeout
+                // change retimes every LoggedInAuth token of a member in one update - must not be
+                // able to move the token past it either, so it is enforced here, at every use.
+                var pastBound = res.max_ends > 0 && res.max_ends < Math.round(Date.now() / 1000);
                 if (valid_endpoint && valid_app) {
-                    if (res.ttl === 0) {
+                    if (pastBound) {
+                        // expired by its bound: neither branch below may mark it valid, and the
+                        // consume step at the end removes it like any other expired token
+                    }
+                    else if (res.ttl === 0) {
                         valid = true;
                         expires_after = -1;
                         if (return_owner) {
@@ -334,7 +402,7 @@ var verify_token = function(options, return_owner, return_data) {
                     }
 
                     //consume token if expired or not multi
-                    if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000))) {
+                    if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000)) || pastBound) {
                         options.db.collection("auth_tokens").remove({_id: options.token});
                     }
                 }

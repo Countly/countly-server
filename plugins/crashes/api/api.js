@@ -424,6 +424,11 @@ plugins.setConfigs("crashes", {
                     if (report.binary_images && typeof report.binary_images === "object") {
                         var needs_regeneration = false;
                         for (let k in report.binary_images) {
+                            // a key off a stored document or a parsed payload can be a prototype
+                            // member name; writing through one would reach Object.prototype
+                            if (k === "__proto__" || k === "constructor" || k === "prototype") {
+                                continue;
+                            }
                             if (!report.binary_images[k].bn) {
                                 report.binary_images[k].bn = k;
                                 needs_regeneration = true;

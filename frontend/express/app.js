@@ -75,6 +75,36 @@ var versionInfo = require('./version.info'),
     { validateCreate } = require('../../api/utils/rights.js'),
     tracker = require('../../api/parts/mgmt/tracker.js');
 
+//Language codes as the dashboard uses them, e.g. "en", "pt-br", "zh_CN", "zh-Hans-CN".
+//Repeated subtags are allowed because a deployment can extend locale.conf.js with a code
+//that has more than one, and the shape alone is not what decides acceptance - see
+//isSelectableLang.
+var LANG_CODE_RE = /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8}){0,3}$/;
+
+/**
+* Whether a language code may be stored as a member's preference.
+*
+* Checked against the list the dashboard actually offers rather than against a shape,
+* because the shape is the weaker statement: locale.conf.js is the same list the language
+* menu is built from, plugins extend it through plugins.extendModule, and both places that
+* post here send a code straight out of that menu. So a deployment that ships extra
+* localization files can select them, and nothing else is accepted at all.
+*
+* The shape is still checked, because the stored value reaches file paths - for example
+* api/utils/localization.js and the plugin localization lookups - and the list is
+* deployment configuration rather than something this route validated.
+* @param {string} lang - language code as posted
+* @returns {boolean} true when it is one of the configured languages
+**/
+function isSelectableLang(lang) {
+    if (typeof lang !== "string" || !LANG_CODE_RE.test(lang)) {
+        return false;
+    }
+    return Array.isArray(languages) && languages.some(function(locale) {
+        return locale && locale.code === lang;
+    });
+}
+
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
 var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
@@ -159,11 +189,17 @@ plugins.setConfigs("security", {
     password_rotation: 3,
     password_autocomplete: true,
     robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
+    dashboard_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nCross-Origin-Opener-Policy: same-origin-allow-popups",
+    api_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500
 });
+
+//the same declarations the API process makes. secretConfigs is process local, so
+//without this omitSecretConfigs() below has nothing registered to omit and the
+//stored proxy credentials go into the page source of every logged in user.
+require('../../api/utils/configMetadata.js').register(plugins);
+
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
@@ -1033,9 +1069,15 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     csrf_token: req.csrfToken(),
                     auth_token: req.session.auth_token,
                     member: member,
-                    config: req.config,
-                    security: plugins.getConfig("security"),
-                    tracking: plugins.getConfig("tracking"),
+                    //these namespaces are serialized into the page, so every logged in
+                    //user can read them in the source regardless of their permissions.
+                    //Secret values are dropped rather than masked: the page has no use
+                    //for a placeholder. Anything the browser genuinely needs must not
+                    //be marked secret, since masking what is already in page source
+                    //would achieve nothing.
+                    config: plugins.omitSecretConfigs("frontend", req.config),
+                    security: plugins.omitSecretConfigs("security", plugins.getConfig("security")),
+                    tracking: plugins.omitSecretConfigs("tracking", plugins.getConfig("tracking")),
                     plugins: plugins.getPlugins(),
                     pluginsFull: plugins.getPlugins(true),
                     path: countlyConfig.path || "",
@@ -1849,8 +1891,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
         var updatedUser = {};
 
-        if (req.body.lang) {
-            updatedUser.lang = req.body.lang;
+        //The stored lang reaches file paths in several places, for example
+        //api/utils/localization.js and the plugin localization lookups, so it is checked
+        //here rather than relying on every reader to sanitize it.
+        if (req.body.lang && isSelectableLang(req.body.lang + "")) {
+            updatedUser.lang = req.body.lang + "";
 
             countlyDb.collection('members').update({"_id": countlyDb.ObjectID(req.session.uid + "")}, {'$set': updatedUser}, {safe: true}, function(err, member) {
                 if (member && !err) {
@@ -1862,6 +1907,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             });
         }
         else {
+            //not one of the configured languages, so it did not come from the language
+            //menu. Logged because the only way to reach here is a hand made request.
+            log.w("Refused a language that is not in locale.conf");
             res.send(false);
             return false;
         }

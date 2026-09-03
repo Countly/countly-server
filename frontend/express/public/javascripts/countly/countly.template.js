@@ -368,7 +368,13 @@ var AppRouter = Backbone.Router.extend({
     */
     _removeUnfinishedRequests: function() {
         for (var url in this._myRequests) {
+            if (countlyCommon.isForbiddenFieldName(url)) {
+                continue;
+            }
             for (var data in this._myRequests[url]) {
+                if (countlyCommon.isForbiddenFieldName(data)) {
+                    continue;
+                }
                 //4 means done, less still in progress
                 if (parseInt(this._myRequests[url][data].readyState) !== 4) {
                     this._myRequests[url][data].abort_reason = "view_change";
@@ -2403,7 +2409,7 @@ var AppRouter = Backbone.Router.extend({
 
                 countlyCommon.setActiveApp(activeApp._id);
                 self.activeAppName = activeApp.name;
-                $('#active-app-name').html(activeApp.name);
+                $('#active-app-name').text(activeApp.name);
                 $('#active-app-name').attr('title', activeApp.name);
                 $("#active-app-icon").css("background-image", "url('" + countlyGlobal.cdn + "appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
             }

@@ -83,6 +83,16 @@ function isBlockedIP(ip) {
         return parsed.toIPv4Address().range() !== 'unicast';
     }
 
+    // ipaddr.js reports the well-known NAT64 prefix (64:ff9b::/96) as 'rfc6052'
+    // (blocked by the unicast check below), but the RFC 8215 local-use NAT64 prefix
+    // (64:ff9b:1::/48) as generic unicast. Block it explicitly so a NAT64 gateway
+    // cannot translate its embedded IPv4 into an internal address. Network-specific
+    // NAT64 prefixes carved from an operator's own unicast space cannot be told
+    // apart by prefix and remain out of scope.
+    if (parsed.kind() === 'ipv6' && parsed.match(ipaddr.parseCIDR('64:ff9b:1::/48'))) {
+        return true;
+    }
+
     return range !== 'unicast';
 }
 

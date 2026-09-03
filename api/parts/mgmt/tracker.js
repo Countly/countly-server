@@ -18,9 +18,11 @@ var tracker = {},
     FormData = require('form-data'),
     { Readable } = require('node:stream'),
     versionInfo = require('../../../frontend/express/version.info'),
-    server = "9c28c347849f2c03caf1b091ec7be8def435e85e",
+    // Telemetry target. Defaults to the production stats server; overridable via env so a local
+    // instance can loop its own license/server telemetry back to itself for testing.
+    server = process.env.COUNTLY_TRACKING_APP_KEY || "9c28c347849f2c03caf1b091ec7be8def435e85e",
     user = "fa6e9ae7b410cb6d756e8088c5f3936bf1fab5f3",
-    url = "https://stats.count.ly",
+    url = process.env.COUNTLY_TRACKING_URL || "https://stats.count.ly",
     plugins = require('../../../plugins/pluginManager.js');
 
 var IS_FLEX = false;
@@ -134,6 +136,86 @@ tracker.getBulkUser = function(serverInstance) {
 tracker.reportEvent = function(event) {
     if (isEnabled && plugins.getConfig("tracking").server_events) {
         Countly.add_event(event);
+    }
+};
+
+/**
+* Report a license lifecycle event with the shared segmentation core (license v2 design §6).
+* Events are edge-triggered by the caller (License.check transition tracking) — this helper only
+* stamps the shared core and forwards through the standard gates (isEnabled + server_events).
+* @param {string} name - event key, e.g. "license_expired"
+* @param {object} license - decoded license content (may be empty for license_removed)
+* @param {object} [extra] - event-specific segmentation
+**/
+tracker.reportLicenseEvent = function(name, license, extra) {
+    license = license || {};
+    if (license.disable_tracking === true) {
+        return;
+    }
+    tracker.reportEvent({
+        key: name,
+        count: 1,
+        timestamp: Date.now(),
+        segmentation: Object.assign({
+            license_id: license._id || license.license_id,
+            client_name: license.name,
+            license_version: license.license_version || 1,
+            rule: license.rule,
+            start: license.start,
+            end: license.end,
+            stage: license.license_stage,
+            hosting: license.license_hosting
+        }, extra || {})
+    });
+};
+
+/**
+* Upsert the current license state as user properties on this server's tracked user
+* (license v2 design §7) — slow-changing current-state props, so the whole fleet is
+* segmentable by license on the tracking server.
+* @param {object} license - decoded license content
+* @param {object} [extra] - additional current-state props (e.g. license_status, apps)
+**/
+tracker.reportLicenseState = function(license, extra) {
+    license = license || {};
+    if (license.disable_tracking === true) {
+        return;
+    }
+    if (isEnabled && plugins.getConfig("tracking").server_user_details) {
+        // CURRENT-STATE PROPERTIES, SO THEY ARE CLEARED RATHER THAN OMITTED. JSON drops undefined
+        // keys, so omitting what a licence no longer supplies left the PREVIOUS license's id, client,
+        // rule, term and entitlement caps standing on the tracked user next to
+        // license_status: "missing" — an unlicensed server still sitting in v2 fleet segments with its
+        // former caps.
+        //
+        // An empty string is not a string VALUE here: it is how Countly deletes a custom user
+        // property. The SDK's own Countly.userData.unset(key) is implemented as customData[key] = ""
+        // (see countly-sdk-nodejs lib/countly.js), and it reaches the server through this same
+        // user_details.custom payload — so the property is removed and numeric properties keep their
+        // type on the tracking server rather than being rewritten as text.
+        //
+        // `extra` is merged untouched, which is a different case on purpose: an unmeasured
+        // metric_current has no new value to report, and deleting the last measured one would lose
+        // data rather than correct it.
+        var clear = function(v) {
+            return (v === undefined || v === null) ? '' : v;
+        };
+        var ent = license.entitlement || {};
+        var hasLicense = !!(license._id || license.license_id);
+        var custom = Object.assign({
+            license_id: clear(license._id || license.license_id),
+            client_name: clear(license.name),
+            license_rule: clear(license.rule),
+            license_stage: clear(license.license_stage),
+            license_version: hasLicense ? (license.license_version || 1) : '',
+            license_start: clear(license.start),
+            license_end: clear(license.end),
+            included_prod_apps: clear(ent.included_prod_apps),
+            max_prod_apps: clear(ent.max_prod_apps),
+            instance_allowance: clear(ent.instance_allowance),
+            support_dp_tier: clear(ent.support_dp_tier)
+        }, extra || {});
+        Countly.user_details({custom: custom});
     }
 };
 

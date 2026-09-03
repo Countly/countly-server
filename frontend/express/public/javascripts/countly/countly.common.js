@@ -311,23 +311,34 @@
         };
 
         /**
-        * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
+        * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first, all . (dot) symbols to &#46; and NUL to &#9647 in the string
+        *
+        * Mirrors the encoder in api/lib/countly.common.js. Keys are substituted because
+        * mongo will not accept $ or . in a key name, and the two encoders have to agree
+        * on the substitution set or the decoder below cannot undo all of it.
         * @memberof countlyCommon
         * @param {string} str - value to encode
         * @returns {string} encoded string
         */
         countlyCommon.encode = function(str) {
-            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;').replace(/\u0000/g, "&#9647");
         };
 
         /**
-        * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
+        * Decode value from db, decoding first &#36; to $, all &#46; to . (dots) and &#9647 back to NUL. Decodes also url encoded values as &amp;#36; and &amp;#46;.
+        *
+        * What this receives was encoded by the api, not by countlyCommon.encode above, so
+        * the set it has to undo is the api's. It used to handle only $ and . even though
+        * this comment already promised the url encoded forms, so &#9647, &amp;#36; and
+        * &amp;#46; reached callers still encoded. That went unnoticed because the result
+        * is usually interpolated into html, where the browser resolves the leftovers as
+        * character references anyway; it shows through anywhere that is not html.
         * @memberof countlyCommon
         * @param {string} str - value to decode
         * @returns {string} decoded string
         */
         countlyCommon.decode = function(str) {
-            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
+            return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.').replace(/&#9647/g, '\u0000');
         };
 
         /**
@@ -1115,7 +1126,7 @@
                                         var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
                                         var noteId = notes[0].app_id;
                                         var app = countlyGlobal.apps[noteId] || {};
-                                        titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
+                                        titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + countlyCommon.encodeHtml(app.name) + "</span></div></div>" +
                                         "<div class='note-content'>" + notes[0].note + "</div>" +
                                         "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + (jQuery.i18n.map["notes.note-" + notes[0].noteType] || notes[0].noteType) + "</span> </div>" +
                                             "</div>";
@@ -2085,6 +2096,20 @@
         };
 
         /**
+        * Whether a string, used as an object key, names a member of Object.prototype.
+        * Such a name can arrive as a stored segmentation/metric value or as an own key of a
+        * JSON/BSON response; writing THROUGH it (target[name][...] = ...) reaches
+        * Object.prototype for the life of the page. Every hand-rolled merge below skips
+        * these names before indexing, mirroring api/utils/common.js isForbiddenFieldName.
+        * @memberof countlyCommon
+        * @param {string} name - the candidate key
+        * @returns {boolean} true when the name must not be used as a key as-is
+        */
+        countlyCommon.isForbiddenFieldName = function(name) {
+            return name === "__proto__" || name === "constructor" || name === "prototype";
+        };
+
+        /**
         * Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
         * @memberof countlyCommon
         * @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
@@ -2112,6 +2137,11 @@
                     newName = jQuery.i18n.map["common.unknown"];
                 }
                 data[metric] = newName;
+                // a stored segmentation/range value can be a prototype member name;
+                // writing through uniqueNames[newName] below would reach Object.prototype
+                if (countlyCommon.isForbiddenFieldName(newName)) {
+                    continue;
+                }
                 if (newName && !uniqueNames[newName]) {
                     uniqueNames[newName] = data;
                 }
@@ -2566,6 +2596,13 @@
                     continue;
                 }
 
+                // an own "__proto__"/"constructor"/"prototype" key survives JSON/BSON and
+                // hasOwnProperty does not exclude it; writing through dbObj[year][level1]
+                // below would reach Object.prototype
+                if (countlyCommon.isForbiddenFieldName(level1)) {
+                    continue;
+                }
+
                 if (intRegex.test(level1)) {
                     continue;
                 }
@@ -2624,6 +2661,10 @@
                 if (tmpUpdateObj[level1]) {
                     for (var level2 in tmpUpdateObj[level1]) {
                         if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj[level1], level2)) {
+                            continue;
+                        }
+
+                        if (countlyCommon.isForbiddenFieldName(level2)) {
                             continue;
                         }
 
