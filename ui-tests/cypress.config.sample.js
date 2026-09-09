@@ -3,7 +3,21 @@ if (typeof global.DOMMatrix === "undefined") {
     global.DOMMatrix = class DOMMatrix { };
 }
 
+// Define missing Promise.withResolvers in Node context (for pdfjs on Node < 22)
+if (typeof Promise.withResolvers !== "function") {
+    Promise.withResolvers = function() {
+        let resolve;
+        let reject;
+        const promise = new Promise((res, rej) => {
+            resolve = res;
+            reject = rej;
+        });
+        return { promise, resolve, reject };
+    };
+}
+
 const { defineConfig } = require("cypress");
+const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.mjs");
@@ -20,14 +34,34 @@ module.exports = defineConfig({
         viewportWidth: 2000,
         viewportHeight: 1100,
         numTestsKeptInMemory: 0,
-        experimentalMemoryManagement: true,
+        manageBrowserMemory: true,
         projectId: "000000",
         chromeWebSecurity: false,
         watchForFileChanges: true,
         video: true,
         setupNodeEvents(on, config) {
-            // Task: verify PDF images, logo, and text content
             on("task", {
+                // Task: drop the Countly database (replaces cy.exec, removed in Cypress 16)
+                dropMongoDatabase() {
+                    return new Promise((resolve, reject) => {
+                        const mongosh = spawn("mongosh", ["mongodb/countly", "--eval", "db.dropDatabase()"]);
+                        let stderr = "";
+
+                        mongosh.stderr.on("data", (chunk) => {
+                            stderr += chunk.toString();
+                        });
+                        mongosh.on("error", reject);
+                        mongosh.on("close", (code) => {
+                            if (code !== 0) {
+                                reject(new Error(`mongosh exited with code ${code}: ${stderr}`));
+                                return;
+                            }
+                            resolve(null);
+                        });
+                    });
+                },
+
+                // Task: verify PDF images, logo, and text content
                 async verifyPdf({ filePath, options = {} }) {
                     // options: { referenceLogoPath: string }
 
