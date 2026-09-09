@@ -12,6 +12,8 @@
 const CONFIG = {
     QUEUE_LABEL: 'auto-merge',
     FAILED_LABEL: 'auto-merge-failed',
+    // reorders the queue only — a PR still needs QUEUE_LABEL to be in it at all
+    PRIORITY_LABEL: 'auto-merge-priority',
     BATCH_SIZE: 3,
     MAX_RETRIES: 5,
     MERGE_METHOD: 'MERGE',
@@ -132,14 +134,20 @@ function buildStateCommentBody(state) {
 }
 
 /**
- * Selects the batch of PRs to shepherd this run
+ * Selects the batch of PRs to shepherd this run. Priority-labelled PRs go first (oldest
+ * first among themselves), then everything else oldest first.
  * @param {object[]} snapshots - PR snapshots (see Task 1 interface notes)
  * @param {number} [batchSize] - max PRs to admit into the batch (defaults to CONFIG.BATCH_SIZE)
  * @returns {{batch: object[], skipped: {number: number, reason: string}[]}} batch members and skipped PRs with reasons
  */
 function selectBatch(snapshots, batchSize) {
     const limit = typeof batchSize === 'number' ? batchSize : CONFIG.BATCH_SIZE;
-    const sorted = snapshots.slice().sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+    const sorted = snapshots.slice().sort((a, b) => {
+        if (!!a.isPriority !== !!b.isPriority) {
+            return a.isPriority ? -1 : 1;
+        }
+        return a.createdAt < b.createdAt ? -1 : 1;
+    });
     const batch = [];
     const skipped = [];
     for (const pr of sorted) {
@@ -299,6 +307,7 @@ query($owner: String!, $repo: String!) {
 function toSnapshot(node) {
     const commit = node.commits.nodes[0] && node.commits.nodes[0].commit;
     const rollupState = (commit && commit.statusCheckRollup) ? commit.statusCheckRollup.state : 'PENDING';
+    const labelNames = ((node.labels && node.labels.nodes) || []).map((l) => l.name);
     return {
         id: node.id,
         number: node.number,
@@ -311,7 +320,8 @@ function toSnapshot(node) {
         headSha: node.headRefOid,
         authorLogin: (node.author && node.author.login) || null,
         autoMergeEnabled: !!node.autoMergeRequest,
-        hasFailedLabel: ((node.labels && node.labels.nodes) || []).some((l) => l.name === CONFIG.FAILED_LABEL),
+        hasFailedLabel: labelNames.includes(CONFIG.FAILED_LABEL),
+        isPriority: labelNames.includes(CONFIG.PRIORITY_LABEL),
         checksFailed: rollupState === 'FAILURE' || rollupState === 'ERROR',
         checksPending: rollupState === 'PENDING' || rollupState === 'EXPECTED',
         mergeStateStatus: null,
@@ -408,6 +418,7 @@ async function preflightPermissionChecks(github, owner, repo, core) {
 const LABEL_SPECS = [
     { name: CONFIG.QUEUE_LABEL, color: '2ea44f', description: 'Opt this PR into the Merge Shepherd auto-merge queue' },
     { name: CONFIG.FAILED_LABEL, color: 'd73a4a', description: 'Merge Shepherd removed this PR from the queue after its checks failed repeatedly' },
+    { name: CONFIG.PRIORITY_LABEL, color: 'fbca04', description: 'Move this PR to the front of the Merge Shepherd queue (still needs the auto-merge label)' },
 ];
 
 /**
@@ -670,7 +681,7 @@ async function writeSummary(core, batch, skipped, actions, errors) {
     ]];
     for (const pr of batch) {
         const prActions = actions.filter((a) => a.number === pr.number);
-        rows.push(['#' + pr.number + ' ' + escapeHtml(pr.title), 'in batch', prActions.map((a) => a.type + (a.reason ? ' (' + a.reason + ')' : '')).join(', ') || 'none']);
+        rows.push(['#' + pr.number + ' ' + escapeHtml(pr.title), pr.isPriority ? 'in batch (priority)' : 'in batch', prActions.map((a) => a.type + (a.reason ? ' (' + a.reason + ')' : '')).join(', ') || 'none']);
     }
     for (const s of skipped) {
         rows.push(['#' + s.number, 'skipped', s.reason]);
