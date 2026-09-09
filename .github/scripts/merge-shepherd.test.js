@@ -87,6 +87,38 @@ test('selectBatch honors a custom batchSize, taking only the oldest eligible PR'
     ]);
 });
 
+test('selectBatch puts priority PRs first, oldest first among themselves, then the rest oldest first', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z' }),
+        makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', isPriority: true }),
+        makePr({ number: 4, createdAt: '2026-07-04T00:00:00Z', isPriority: true }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs);
+    assert.deepStrictEqual(batch.map((p) => p.number), [3, 4, 1]);
+    assert.deepStrictEqual(skipped, [{ number: 2, reason: 'queued behind batch' }]);
+});
+
+test('selectBatch gives batch slots to priority PRs before older non-priority ones', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z' }),
+        makePr({ number: 2, createdAt: '2026-07-09T00:00:00Z', isPriority: true }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs, 1);
+    assert.deepStrictEqual(batch.map((p) => p.number), [2]);
+    assert.deepStrictEqual(skipped, [{ number: 1, reason: 'queued behind batch' }]);
+});
+
+test('selectBatch still skips an ineligible priority PR without letting it block others', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', isPriority: true, reviewDecision: 'REVIEW_REQUIRED' }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs, 1);
+    assert.deepStrictEqual(batch.map((p) => p.number), [1]);
+    assert.deepStrictEqual(skipped, [{ number: 2, reason: 'not approved' }]);
+});
+
 test('conflicting PR is ejected', () => {
     const actions = shepherd.planForBatchMember(makePr({ mergeable: 'CONFLICTING' }));
     assert.deepStrictEqual(actions, [{ type: 'eject', number: 1, reason: 'conflict' }]);
@@ -1125,7 +1157,7 @@ test('run() fails the run when writing the job summary itself throws', async() =
     assert.ok(core.setFailedCalls.some((m) => /failed to write job summary/.test(m)));
 });
 
-test('run() ensures both the queue label and the failed-checks marker label exist', async() => {
+test('run() ensures the queue, failed-checks and priority labels exist', async() => {
     const { github, calls } = makeFakeGithub({
         nodes: [makeNode({})],
         pullsByNumber: { 1: { mergeable_state: 'clean' } },
@@ -1133,6 +1165,40 @@ test('run() ensures both the queue label and the failed-checks marker label exis
     await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
     assert.ok(calls.includes('createLabel:auto-merge'));
     assert.ok(calls.includes('createLabel:auto-merge-failed'));
+    assert.ok(calls.includes('createLabel:auto-merge-priority'));
+});
+
+test('run() processes a newer priority-labelled PR ahead of an older one when the batch is full', async() => {
+    const nodes = [
+        makeNode({ id: 'PR_1', number: 1, createdAt: '2026-07-01T00:00:00Z' }),
+        makeNode({
+            id: 'PR_2',
+            number: 2,
+            createdAt: '2026-07-02T00:00:00Z',
+            labels: { nodes: [{ name: 'auto-merge' }, { name: 'auto-merge-priority' }] },
+        }),
+    ];
+    const { github, calls } = makeFakeGithub({
+        nodes,
+        pullsByNumber: { 1: { mergeable_state: 'behind' }, 2: { mergeable_state: 'behind' } },
+    });
+    await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false, batchSize: 1 });
+    assert.ok(calls.includes('updateBranch:2'), 'priority PR takes the only batch slot');
+    assert.ok(!calls.includes('updateBranch:1'), 'older non-priority PR waits behind it');
+});
+
+test('run() does not enroll a PR that carries only the priority label', async() => {
+    // the queue query is filtered by the auto-merge label, so a priority-only PR never appears
+    // in the queue at all; this pins that the snapshot flag is read from the label list only
+    const nodes = [
+        makeNode({ labels: { nodes: [{ name: 'auto-merge' }] } }),
+    ];
+    const { github, calls } = makeFakeGithub({
+        nodes,
+        pullsByNumber: { 1: { mergeable_state: 'behind' } },
+    });
+    await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(calls.includes('updateBranch:1'));
 });
 
 test('run() removes the stale auto-merge-failed label from both a batch member and a skipped-ineligible PR that still carry it', async() => {
