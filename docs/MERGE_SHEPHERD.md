@@ -15,7 +15,11 @@ passing CI — every merge invalidates every other open PR.
 
 The queue is processed **oldest PR first**, up to **3 PRs at a time** (batch
 size is configurable via the repository Actions variable
-`MERGE_SHEPHERD_BATCH_SIZE`, default 3).
+`MERGE_SHEPHERD_BATCH_SIZE`, default 3). To jump the line, add the
+**`auto-merge-priority`** label as well: priority PRs are processed before
+everything else (oldest first among themselves) and take batch slots first.
+The priority label only reorders — a PR still needs `auto-merge` to be in the
+queue at all, and it must still meet the same eligibility rules.
 
 Your PR is **ejected from the queue** (label removed, comment explains why —
 and, if auto-merge was already armed on it, the comment says so too, since
