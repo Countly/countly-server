@@ -94,7 +94,9 @@ There are several ways to install Countly:
 
 3. Countly Lite also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](https://support.countly.com/hc/en-us/articles/360036862332-Installing-the-Countly-Server).
 
-4. You can also deploy Countly with one click using the official [Easypanel](https://easypanel.io) template: https://easypanel.io/templates/countly
+4. You can also deploy Countly with one click using the official [Easypanel](https://easypanel.io) template:
+
+   [![Deploy on Easypanel](https://easypanel.io/img/deploy-on-easypanel-40.svg)](https://easypanel.io/templates/countly)
 
    ![Countly running in the Easypanel dashboard after a one-click deploy](docs/images/easypanel-deploy.png)
 
