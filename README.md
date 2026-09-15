@@ -96,6 +96,8 @@ There are several ways to install Countly:
 
 4. You can also deploy Countly with one click using the official [Easypanel](https://easypanel.io) template: https://easypanel.io/templates/countly
 
+   ![Countly running in the Easypanel dashboard after a one-click deploy](docs/images/easypanel-deploy.png)
+
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](https://support.countly.com/hc/en-us/articles/360037443652-Upgrading-the-Countly-Server).
 
 ## 🧩 API, extensibility and plugins
