@@ -13,13 +13,16 @@ passing CI — every merge invalidates every other open PR.
    flaky CI failures (up to 5 retries per head commit), and GitHub merges
    the PR the moment all required checks pass.
 
-The queue is processed **oldest PR first**, up to **3 PRs at a time** (batch
-size is configurable via the repository Actions variable
-`MERGE_SHEPHERD_BATCH_SIZE`, default 3). To jump the line, add the
-**`auto-merge-priority`** label as well: priority PRs are processed before
-everything else (oldest first among themselves) and take batch slots first.
-The priority label only reorders — a PR still needs `auto-merge` to be in the
-queue at all, and it must still meet the same eligibility rules.
+Each base branch has its **own queue**: PRs targeting `main` and PRs
+targeting a release branch are shepherded side by side and never wait on
+each other. Within a queue, PRs are processed **oldest first**, up to **3 PRs
+at a time per base branch** (batch size is configurable via the repository
+Actions variable `MERGE_SHEPHERD_BATCH_SIZE`, default 3). To jump the line,
+add the **`auto-merge-priority`** label as well: priority PRs are processed
+before everything else in their queue (oldest first among themselves) and
+take that queue's batch slots first. The priority label only reorders — a PR
+still needs `auto-merge` to be in the queue at all, and it must still meet
+the same eligibility rules.
 
 Your PR is **ejected from the queue** (label removed, comment explains why —
 and, if auto-merge was already armed on it, the comment says so too, since
