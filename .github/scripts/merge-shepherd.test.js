@@ -119,6 +119,65 @@ test('selectBatch still skips an ineligible priority PR without letting it block
     assert.deepStrictEqual(skipped, [{ number: 2, reason: 'not approved' }]);
 });
 
+test('selectBatch gives every base branch its own batch so unrelated branches never block each other', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 4, createdAt: '2026-07-04T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 5, createdAt: '2026-07-05T00:00:00Z', baseRef: 'release.24.05' }),
+        makePr({ number: 6, createdAt: '2026-07-06T00:00:00Z', baseRef: 'release.24.05' }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs, 3);
+    assert.deepStrictEqual(batch.map((p) => p.number), [1, 2, 3, 5, 6]);
+    assert.deepStrictEqual(skipped, [{ number: 4, reason: 'queued behind batch for main' }]);
+});
+
+test('selectBatch fills each base branch queue independently even when one is older and full', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', baseRef: 'release.24.05' }),
+        makePr({ number: 4, createdAt: '2026-07-04T00:00:00Z', baseRef: 'release.24.05' }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs, 1);
+    assert.deepStrictEqual(batch.map((p) => p.number), [1, 3]);
+    assert.deepStrictEqual(skipped, [
+        { number: 2, reason: 'queued behind batch for main' },
+        { number: 4, reason: 'queued behind batch for release.24.05' },
+    ]);
+});
+
+test('selectBatch applies priority within a base branch queue, not across queues', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', baseRef: 'main' }),
+        makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', baseRef: 'release.24.05' }),
+        makePr({ number: 4, createdAt: '2026-07-04T00:00:00Z', baseRef: 'release.24.05', isPriority: true }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs, 1);
+    // #4 jumps #3 in the release queue; the main queue is untouched by it and still admits #1
+    assert.deepStrictEqual(batch.map((p) => p.number), [4, 1]);
+    assert.deepStrictEqual(skipped, [
+        { number: 2, reason: 'queued behind batch for main' },
+        { number: 3, reason: 'queued behind batch for release.24.05' },
+    ]);
+});
+
+test('selectBatch ineligible PRs on one base branch do not consume slots on another', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z', baseRef: 'main', isDraft: true }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', baseRef: 'main', reviewDecision: 'REVIEW_REQUIRED' }),
+        makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', baseRef: 'release.24.05' }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs, 1);
+    assert.deepStrictEqual(batch.map((p) => p.number), [3]);
+    assert.deepStrictEqual(skipped, [
+        { number: 1, reason: 'draft' },
+        { number: 2, reason: 'not approved' },
+    ]);
+});
+
 test('conflicting PR is ejected', () => {
     const actions = shepherd.planForBatchMember(makePr({ mergeable: 'CONFLICTING' }));
     assert.deepStrictEqual(actions, [{ type: 'eject', number: 1, reason: 'conflict' }]);
@@ -328,6 +387,7 @@ function makeNode(overrides) {
         number: 1,
         title: 'Test PR',
         createdAt: '2026-07-01T00:00:00Z',
+        baseRefName: 'main',
         isDraft: false,
         mergeable: 'MERGEABLE',
         reviewDecision: 'APPROVED',
@@ -903,6 +963,32 @@ test('run() with batchSize: 1 mutates only the older of two eligible behind PRs'
     assert.ok(calls.includes('updateBranch:1'));
     assert.ok(!calls.includes('graphql:enable-automerge:"PR_2"'));
     assert.ok(!calls.includes('updateBranch:2'));
+});
+
+test('run() shepherds one batch per base branch in the same run', async() => {
+    const nodes = [
+        makeNode({ id: 'PR_1', number: 1, createdAt: '2026-07-01T00:00:00Z', baseRefName: 'main' }),
+        makeNode({ id: 'PR_2', number: 2, createdAt: '2026-07-02T00:00:00Z', baseRefName: 'main' }),
+        makeNode({ id: 'PR_3', number: 3, createdAt: '2026-07-03T00:00:00Z', baseRefName: 'release.24.05' }),
+        makeNode({ id: 'PR_4', number: 4, createdAt: '2026-07-04T00:00:00Z', baseRefName: 'release.24.05' }),
+    ];
+    const { github, calls } = makeFakeGithub({
+        nodes,
+        pullsByNumber: {
+            1: { mergeable_state: 'behind' },
+            3: { mergeable_state: 'behind' },
+        },
+    });
+    const core = makeFakeCore();
+    await shepherd.run({ github, context: fakeContext, core, dryRun: false, batchSize: 1 });
+    assert.ok(calls.includes('updateBranch:1'), 'oldest main PR is in the main batch');
+    assert.ok(calls.includes('updateBranch:3'), 'oldest release PR is in the release batch');
+    assert.ok(!calls.includes('updateBranch:2'), 'second main PR waits behind the main batch');
+    assert.ok(!calls.includes('updateBranch:4'), 'second release PR waits behind the release batch');
+    const rows = core.summary.tables[0].filter((r) => typeof r[0] === 'string');
+    assert.deepStrictEqual(rows.find((r) => r[0].startsWith('#1 '))[1], 'in batch (main)');
+    assert.deepStrictEqual(rows.find((r) => r[0].startsWith('#3 '))[1], 'in batch (release.24.05)');
+    assert.deepStrictEqual(rows.find((r) => r[0] === '#2').slice(1), ['skipped', 'queued behind batch for main']);
 });
 
 test('run() falls back to CONFIG.BATCH_SIZE (3) when batchSize is invalid', async() => {
