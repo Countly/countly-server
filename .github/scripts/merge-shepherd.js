@@ -174,10 +174,12 @@ function buildStateCommentBody(state, details) {
 }
 
 /**
- * Selects the batch of PRs to shepherd this run. Priority-labelled PRs go first (oldest
+ * Selects the batch of PRs to shepherd this run. Every base branch is its own queue with its
+ * own `batchSize` slots, so PRs targeting unrelated branches (e.g. `main` and a release
+ * branch) never wait on each other. Within a queue, priority-labelled PRs go first (oldest
  * first among themselves), then everything else oldest first.
  * @param {object[]} snapshots - PR snapshots (see Task 1 interface notes)
- * @param {number} [batchSize] - max PRs to admit into the batch (defaults to CONFIG.BATCH_SIZE)
+ * @param {number} [batchSize] - max PRs to admit into each base branch's batch (defaults to CONFIG.BATCH_SIZE)
  * @returns {{batch: object[], skipped: {number: number, reason: string}[]}} batch members and skipped PRs with reasons
  */
 function selectBatch(snapshots, batchSize) {
@@ -190,7 +192,11 @@ function selectBatch(snapshots, batchSize) {
     });
     const batch = [];
     const skipped = [];
+    // slots used so far, keyed by base branch — snapshots without a base share one queue
+    const admittedPerBase = new Map();
     for (const pr of sorted) {
+        const baseKey = pr.baseRef || '';
+        const admitted = admittedPerBase.get(baseKey) || 0;
         let reason = null;
         if (pr.isDraft) {
             reason = 'draft';
@@ -201,14 +207,15 @@ function selectBatch(snapshots, batchSize) {
         else if (pr.unresolvedThreads > 0) {
             reason = 'unresolved conversations';
         }
-        else if (batch.length >= limit) {
-            reason = 'queued behind batch';
+        else if (admitted >= limit) {
+            reason = 'queued behind batch' + (pr.baseRef ? ' for ' + pr.baseRef : '');
         }
         if (reason) {
             skipped.push({ number: pr.number, reason });
         }
         else {
             batch.push(pr);
+            admittedPerBase.set(baseKey, admitted + 1);
         }
     }
     return { batch, skipped };
@@ -266,6 +273,7 @@ query($owner: String!, $repo: String!, $label: String!) {
                 number
                 title
                 createdAt
+                baseRefName
                 isDraft
                 mergeable
                 reviewDecision
@@ -353,6 +361,7 @@ function toSnapshot(node) {
         number: node.number,
         title: node.title,
         createdAt: node.createdAt,
+        baseRef: node.baseRefName || null,
         isDraft: node.isDraft,
         mergeable: node.mergeable,
         reviewDecision: node.reviewDecision,
@@ -737,7 +746,9 @@ async function writeSummary(core, batch, skipped, actions, errors) {
     ]];
     for (const pr of batch) {
         const prActions = actions.filter((a) => a.number === pr.number);
-        rows.push(['#' + pr.number + ' ' + escapeHtml(pr.title), pr.isPriority ? 'in batch (priority)' : 'in batch', prActions.map((a) => a.type + (a.reason ? ' (' + a.reason + ')' : '')).join(', ') || 'none']);
+        const statusNotes = [pr.baseRef ? escapeHtml(pr.baseRef) : null, pr.isPriority ? 'priority' : null].filter(Boolean);
+        const status = 'in batch' + (statusNotes.length ? ' (' + statusNotes.join(', ') + ')' : '');
+        rows.push(['#' + pr.number + ' ' + escapeHtml(pr.title), status, prActions.map((a) => a.type + (a.reason ? ' (' + a.reason + ')' : '')).join(', ') || 'none']);
     }
     for (const s of skipped) {
         rows.push(['#' + s.number, 'skipped', s.reason]);
