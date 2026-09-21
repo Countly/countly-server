@@ -72,6 +72,10 @@ PR page.
   the next bot cycle.
 - Retry state is stored in a bot comment on the PR
   (`merge-shepherd-state` marker); pushing new commits resets the count.
+  The same comment names the failing required checks and links the
+  workflow runs whose failed jobs were just re-run (and any GitHub refused
+  to re-run), so you can jump straight to the failure without hunting
+  through the Checks tab.
 - Logic lives in `.github/scripts/merge-shepherd.js`; unit tests in
   `.github/scripts/merge-shepherd.test.js` — run with `npm run
   test:merge-shepherd` (or directly:

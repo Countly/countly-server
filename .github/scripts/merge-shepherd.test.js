@@ -35,6 +35,39 @@ test('parseStateComment round-trips buildStateCommentBody', () => {
     assert.deepStrictEqual(shepherd.parseStateComment(body), state);
 });
 
+test('buildStateCommentBody with details still round-trips through parseStateComment', () => {
+    const state = { sha: 'abc1234def', retries: 2 };
+    const body = shepherd.buildStateCommentBody(state, {
+        failedNames: ['build', 'lint'],
+        rerunUrls: ['https://example.test/runs/42'],
+        notRerunUrls: ['https://example.test/runs/43'],
+    });
+    assert.deepStrictEqual(shepherd.parseStateComment(body), state);
+    assert.ok(body.includes('re-running failed jobs (retry 2/' + shepherd.CONFIG.MAX_RETRIES + ')'));
+    assert.ok(body.includes('Failing required check(s): `build`, `lint`'));
+    assert.ok(body.includes('Re-running:\n- https://example.test/runs/42'));
+    assert.ok(body.includes('Could not re-run (see the run for why):\n- https://example.test/runs/43'));
+    // the marker must stay last and on its own line so the regex in parseStateComment finds it
+    assert.ok(body.trimEnd().endsWith('-->'));
+});
+
+test('buildStateCommentBody explains when nothing was re-runnable and omits empty sections', () => {
+    const body = shepherd.buildStateCommentBody({ sha: 'abc1234', retries: 1 }, { failedNames: ['ci/legacy'], rerunUrls: [], notRerunUrls: [], noRerunnable: true });
+    assert.ok(body.includes('nothing to re-run (no re-runnable workflow run)'));
+    assert.ok(!body.includes('re-running failed jobs'));
+    assert.ok(body.includes('Failing required check(s): `ci/legacy`'));
+    assert.ok(!body.includes('Re-running:'));
+    assert.ok(!body.includes('Could not re-run'));
+});
+
+test('buildStateCommentBody sanitizes backticks and newlines in check names', () => {
+    const body = shepherd.buildStateCommentBody({ sha: 'abc1234', retries: 1 }, { failedNames: ['ci/legacy` @evil\ninjected'] });
+    const nameLine = body.split('\n').find((l) => l.startsWith('Failing required check(s):'));
+    assert.ok(nameLine, 'expected a failing-checks line');
+    assert.strictEqual((nameLine.slice('Failing required check(s): '.length).match(/`/g) || []).length, 2);
+    assert.ok(nameLine.includes('`ci/legacy‘ @evil injected`'));
+});
+
 test('parseStateComment returns null for missing or malformed marker', () => {
     assert.strictEqual(shepherd.parseStateComment('just a comment'), null);
     assert.strictEqual(shepherd.parseStateComment(''), null);
@@ -298,6 +331,7 @@ test('evaluateRequiredChecks: required CheckRun FAILURE is failed with run id/ur
         failed: true,
         failedRunIds: [42],
         failedRunUrls: ['https://github.com/Countly/countly-platform/actions/runs/42'],
+        failedRuns: [{ id: 42, url: 'https://github.com/Countly/countly-platform/actions/runs/42' }],
         failedNames: ['build'],
     });
 });
@@ -333,19 +367,19 @@ test('evaluateRequiredChecks: non-required failure alongside required success is
             checkSuite: { workflowRun: { databaseId: 100, url: 'https://example.test/runs/100' } },
         },
     ]);
-    assert.deepStrictEqual(result, { failed: false, failedRunIds: [], failedRunUrls: [], failedNames: [] });
+    assert.deepStrictEqual(result, { failed: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
 });
 
 test('evaluateRequiredChecks: required StatusContext ERROR is failed with its context name', () => {
     const result = shepherd.evaluateRequiredChecks([
         { __typename: 'StatusContext', context: 'ci/legacy', state: 'ERROR', isRequired: true },
     ]);
-    assert.deepStrictEqual(result, { failed: true, failedRunIds: [], failedRunUrls: [], failedNames: ['ci/legacy'] });
+    assert.deepStrictEqual(result, { failed: true, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: ['ci/legacy'] });
 });
 
 test('evaluateRequiredChecks: empty or missing contexts is not failed', () => {
-    assert.deepStrictEqual(shepherd.evaluateRequiredChecks([]), { failed: false, failedRunIds: [], failedRunUrls: [], failedNames: [] });
-    assert.deepStrictEqual(shepherd.evaluateRequiredChecks(undefined), { failed: false, failedRunIds: [], failedRunUrls: [], failedNames: [] });
+    assert.deepStrictEqual(shepherd.evaluateRequiredChecks([]), { failed: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
+    assert.deepStrictEqual(shepherd.evaluateRequiredChecks(undefined), { failed: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
 });
 
 const PASSING_CONCLUSIONS = ['SUCCESS', 'SKIPPED', 'NEUTRAL'];
@@ -452,6 +486,7 @@ function resolveFailure(fixture) {
 function makeFakeGithub(opts) {
     const calls = [];
     const createdComments = [];
+    const updatedComments = [];
     const github = {
         graphql: async(query, vars) => {
             // @octokit/graphql reserves these keys as request options and
@@ -541,6 +576,7 @@ function makeFakeGithub(opts) {
                 },
                 updateComment: async(p) => {
                     calls.push('updateComment:' + p.comment_id);
+                    updatedComments.push({ id: p.comment_id, body: p.body });
                     return { data: {} };
                 },
                 deleteComment: async(p) => {
@@ -615,7 +651,7 @@ function makeFakeGithub(opts) {
             },
         },
     };
-    return { github, calls, createdComments };
+    return { github, calls, createdComments, updatedComments };
 }
 
 const fakeContext = { repo: { owner: 'Countly', repo: 'countly-platform' } };
@@ -762,6 +798,76 @@ test('run() retries only the workflow run behind the failed required check', asy
     assert.ok(calls.includes('createComment:1'));
 });
 
+test('run() retry comment names the failing checks and links the runs it re-ran', async() => {
+    const { github, calls, createdComments } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksByNumber: {
+            1: [
+                { __typename: 'CheckRun', name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } },
+                { __typename: 'CheckRun', name: 'e2e', conclusion: 'TIMED_OUT', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } },
+                { __typename: 'CheckRun', name: 'lint', conclusion: 'SUCCESS', isRequired: true, checkSuite: { workflowRun: { databaseId: 43, url: 'https://example.test/runs/43' } } },
+            ],
+        },
+    });
+    await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(calls.includes('rerunFailedJobs:42'));
+    const retryComment = createdComments.find((c) => c.number === 1 && c.body.includes(shepherd.CONFIG.STATE_MARKER));
+    assert.ok(retryComment, 'expected a retry state comment');
+    assert.ok(retryComment.body.includes('re-running failed jobs (retry 1/' + shepherd.CONFIG.MAX_RETRIES + ')'));
+    assert.ok(retryComment.body.includes('Failing required check(s): `build`, `e2e`'), 'names only the failing required checks');
+    assert.ok(!retryComment.body.includes('`lint`'), 'passing checks are not listed');
+    assert.ok(retryComment.body.includes('Re-running:\n- https://example.test/runs/42'), 'links the run that was re-run');
+    assert.strictEqual((retryComment.body.match(/https:\/\/example\.test\/runs\/42/g) || []).length, 1, 'a run shared by two failing checks is linked once');
+    assert.ok(!retryComment.body.includes('runs/43'), 'the passing run is not linked');
+    assert.deepStrictEqual(shepherd.parseStateComment(retryComment.body), { sha: 'abc1234', retries: 1 });
+});
+
+test('run() retry comment update keeps the links when a later retry edits the existing comment', async() => {
+    const stateBody = shepherd.buildStateCommentBody({ sha: 'abc1234', retries: 1 });
+    const { github, calls, updatedComments } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        commentsByNumber: { 1: [{ id: 77, body: stateBody }] },
+        requiredChecksByNumber: {
+            1: [{ __typename: 'CheckRun', name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } }],
+        },
+    });
+    await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(calls.includes('updateComment:77'));
+    const updated = updatedComments.find((c) => c.id === 77);
+    assert.ok(updated.body.includes('(retry 2/' + shepherd.CONFIG.MAX_RETRIES + ')'));
+    assert.ok(updated.body.includes('Failing required check(s): `build`'));
+    assert.ok(updated.body.includes('Re-running:\n- https://example.test/runs/42'));
+});
+
+test('run() retry comment separates runs GitHub refused to re-run from the ones it accepted', async() => {
+    const { github, calls, createdComments } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksByNumber: {
+            1: [
+                { __typename: 'CheckRun', name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } },
+                { __typename: 'CheckRun', name: 'docs', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 43, url: 'https://example.test/runs/43' } } },
+            ],
+        },
+    });
+    github.rest.actions.reRunWorkflowFailedJobs = async(p) => {
+        calls.push('rerunFailedJobs:' + p.run_id);
+        if (p.run_id === 43) {
+            const err = new Error('This workflow run has already been re-run the maximum number of times');
+            err.status = 403;
+            throw err;
+        }
+        return { data: {} };
+    };
+    await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    const retryComment = createdComments.find((c) => c.number === 1 && c.body.includes(shepherd.CONFIG.STATE_MARKER));
+    assert.ok(retryComment, 'expected a retry state comment');
+    assert.ok(retryComment.body.includes('Re-running:\n- https://example.test/runs/42'));
+    assert.ok(retryComment.body.includes('Could not re-run (see the run for why):\n- https://example.test/runs/43'));
+});
+
 test('run() does not count a retry when every rerun request fails', async() => {
     const { github, calls } = makeFakeGithub({
         nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
@@ -783,7 +889,7 @@ test('run() does not count a retry when every rerun request fails', async() => {
 });
 
 test('run() counts a retry (without re-running) when the failed required check has no workflow run', async() => {
-    const { github, calls } = makeFakeGithub({
+    const { github, calls, createdComments } = makeFakeGithub({
         nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
         pullsByNumber: { 1: { mergeable_state: 'blocked' } },
         requiredChecksByNumber: {
@@ -795,6 +901,11 @@ test('run() counts a retry (without re-running) when the failed required check h
     // in an infinite no-op retry loop — a fresh state comment records the retry.
     assert.ok(!calls.some((c) => c.startsWith('rerunFailedJobs')));
     assert.ok(calls.includes('createComment:1'));
+    const retryComment = createdComments.find((c) => c.number === 1 && c.body.includes(shepherd.CONFIG.STATE_MARKER));
+    assert.ok(retryComment, 'expected a retry state comment');
+    assert.ok(retryComment.body.includes('nothing to re-run (no re-runnable workflow run)'), 'must not claim it re-ran anything');
+    assert.ok(retryComment.body.includes('Failing required check(s): `ci/legacy`'));
+    assert.ok(!retryComment.body.includes('Re-running:'));
 });
 
 test('run() ejects a non-re-runnable required-check failure once retries are exhausted', async() => {

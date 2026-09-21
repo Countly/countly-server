@@ -122,15 +122,55 @@ function parseStateComment(body) {
 }
 
 /**
- * Builds the bot state comment body for a retry
+ * Renders check/context names as inline code spans. Names can come from external CI systems,
+ * so backticks are stripped and whitespace collapsed so a crafted name cannot break out of the
+ * code span (or inject a newline into the comment).
+ * @param {string[]} names - failing required check names
+ * @returns {string} comma-separated code spans
+ */
+function formatCheckNames(names) {
+    return names.map((n) => '`' + String(n).replace(/`/g, '‘').replace(/\s+/g, ' ').trim() + '`').join(', ');
+}
+
+/**
+ * Renders a list of workflow run URLs as a markdown bullet list
+ * @param {string[]} urls - run URLs
+ * @returns {string} bullet list, one URL per line
+ */
+function formatRunList(urls) {
+    return urls.map((url) => '- ' + url).join('\n');
+}
+
+/**
+ * Builds the bot state comment body for a retry. The human-readable part names the failing
+ * required checks and links the workflow runs that were just re-run (or explains that nothing
+ * was re-runnable); the machine-readable marker at the end carries the retry state.
  * @param {{sha: string, retries: number}} state - current retry state
+ * @param {object} [details] - what failed and what was re-run
+ * @param {string[]} [details.failedNames] - failing required check names
+ * @param {string[]} [details.rerunUrls] - workflow runs whose failed jobs were re-run
+ * @param {string[]} [details.notRerunUrls] - failing workflow runs GitHub refused to re-run
+ * @param {boolean} [details.noRerunnable] - true when no failing check had a workflow run to re-run
  * @returns {string} comment body with human text and machine-readable marker
  */
-function buildStateCommentBody(state) {
-    return '🤖 **Merge Shepherd**: checks failed on `' + state.sha.slice(0, 7) + '` — re-running failed jobs '
+function buildStateCommentBody(state, details) {
+    const d = details || {};
+    const action = d.noRerunnable
+        ? 'nothing to re-run (no re-runnable workflow run), waiting for the check(s) to resolve'
+        : 're-running failed jobs';
+    let body = '🤖 **Merge Shepherd**: required checks failed on `' + state.sha.slice(0, 7) + '` — ' + action + ' '
         + '(retry ' + state.retries + '/' + CONFIG.MAX_RETRIES + '). '
-        + 'The PR is ejected from the queue if this keeps failing.\n'
-        + '<!-- ' + CONFIG.STATE_MARKER + ' ' + JSON.stringify(state) + ' -->';
+        + 'The PR is ejected from the queue if this keeps failing.';
+    if (d.failedNames && d.failedNames.length) {
+        body += '\n\nFailing required check(s): ' + formatCheckNames(d.failedNames);
+    }
+    if (d.rerunUrls && d.rerunUrls.length) {
+        body += '\n\nRe-running:\n' + formatRunList(d.rerunUrls);
+    }
+    if (d.notRerunUrls && d.notRerunUrls.length) {
+        body += '\n\nCould not re-run (see the run for why):\n' + formatRunList(d.notRerunUrls);
+    }
+    return body + '\n<!-- ' + CONFIG.STATE_MARKER + ' ' + JSON.stringify(state) + ' -->';
 }
 
 /**
@@ -342,11 +382,12 @@ function toSnapshot(node) {
 /**
  * Evaluates required-only check/status contexts from REQUIRED_CHECKS_QUERY for failure
  * @param {object[]} contextNodes - contexts.nodes from the query (CheckRun/StatusContext union, may be undefined)
- * @returns {{failed: boolean, failedRunIds: number[], failedRunUrls: string[], failedNames: string[]}} required-check failure summary
+ * @returns {{failed: boolean, failedRunIds: number[], failedRunUrls: string[], failedRuns: {id: number, url: string|null}[], failedNames: string[]}} required-check failure summary
  */
 function evaluateRequiredChecks(contextNodes) {
     const failedRunIds = [];
     const failedRunUrls = [];
+    const failedRuns = [];
     const failedNames = [];
     let failed = false;
     for (const node of (contextNodes || [])) {
@@ -362,6 +403,7 @@ function evaluateRequiredChecks(contextNodes) {
                 const run = node.checkSuite && node.checkSuite.workflowRun;
                 if (run && typeof run.databaseId !== 'undefined' && run.databaseId !== null && !failedRunIds.includes(run.databaseId)) {
                     failedRunIds.push(run.databaseId);
+                    failedRuns.push({ id: run.databaseId, url: run.url || null });
                     if (run.url) {
                         failedRunUrls.push(run.url);
                     }
@@ -377,7 +419,7 @@ function evaluateRequiredChecks(contextNodes) {
             }
         }
     }
-    return { failed, failedRunIds, failedRunUrls, failedNames };
+    return { failed, failedRunIds, failedRunUrls, failedRuns, failedNames };
 }
 
 /**
@@ -481,10 +523,11 @@ async function findStateComment(github, owner, repo, number) {
  * @param {string} repo - repo name
  * @param {object} pr - PR snapshot (uses pr.number and pr.stateComment)
  * @param {{sha: string, retries: number}} state - new state to record
+ * @param {object} [details] - failing checks / re-run links for the human-readable part (see buildStateCommentBody)
  * @returns {Promise<void>} resolves when written
  */
-async function upsertStateComment(github, owner, repo, pr, state) {
-    const body = buildStateCommentBody(state);
+async function upsertStateComment(github, owner, repo, pr, state, details) {
+    const body = buildStateCommentBody(state, details);
     if (pr.stateComment) {
         await github.rest.issues.updateComment({ owner, repo, comment_id: pr.stateComment.id, body });
     }
@@ -528,13 +571,10 @@ async function executeEject(github, owner, repo, pr, reason, core) {
     const mention = (reason === 'failed-checks' && pr.authorLogin) ? '@' + pr.authorLogin + ' ' : '';
     let body = mention + '🤖 **Merge Shepherd** removed this PR from the merge queue because ' + reasonText;
     if (reason === 'failed-checks' && pr.failedNames && pr.failedNames.length) {
-        // check/context names can come from external CI systems — strip backticks and collapse
-        // whitespace so a crafted name cannot break out of the inline code span
-        const safeNames = pr.failedNames.map((n) => '`' + String(n).replace(/`/g, '‘').replace(/\s+/g, ' ').trim() + '`');
-        body += '\n\nFailing required check(s): ' + safeNames.join(', ');
+        body += '\n\nFailing required check(s): ' + formatCheckNames(pr.failedNames);
     }
     if (reason === 'failed-checks' && pr.failedRunUrls && pr.failedRunUrls.length) {
-        body += '\n\nFailing runs:\n' + pr.failedRunUrls.map((url) => '- ' + url).join('\n');
+        body += '\n\nFailing runs:\n' + formatRunList(pr.failedRunUrls);
     }
     if (pr.autoMergeEnabled) {
         // The bot never disables auto-merge itself (see docs/MERGE_SHEPHERD.md), so a PR that
@@ -577,15 +617,25 @@ async function executeEject(github, owner, repo, pr, reason, core) {
  */
 async function executeRetry(github, owner, repo, pr, nextRetries, core) {
     const runIds = pr.failedRunIds || [];
+    const urlById = new Map((pr.failedRuns || []).map((r) => [r.id, r.url]));
+    const rerunUrls = [];
+    const notRerunUrls = [];
     let accepted = 0;
     let permissionErr = null;
     for (const runId of runIds) {
+        const url = urlById.get(runId) || null;
         try {
             await github.rest.actions.reRunWorkflowFailedJobs({ owner, repo, run_id: runId });
             accepted += 1;
+            if (url) {
+                rerunUrls.push(url);
+            }
         }
         catch (err) {
             core.warning('Could not re-run failed jobs of run ' + runId + ' for #' + pr.number + ': ' + err.message);
+            if (url) {
+                notRerunUrls.push(url);
+            }
             if (!permissionErr && isPermissionError(err)) {
                 permissionErr = err;
             }
@@ -608,8 +658,14 @@ async function executeRetry(github, owner, repo, pr, nextRetries, core) {
         core.info('#' + pr.number + ': no re-runnable workflow runs for the failed required check(s) — '
             + 'counting retry ' + nextRetries + '/' + CONFIG.MAX_RETRIES + ' while waiting for them to resolve');
     }
+    const details = {
+        failedNames: pr.failedNames || [],
+        rerunUrls,
+        notRerunUrls,
+        noRerunnable: runIds.length === 0,
+    };
     try {
-        await upsertStateComment(github, owner, repo, pr, { sha: pr.headSha, retries: nextRetries });
+        await upsertStateComment(github, owner, repo, pr, { sha: pr.headSha, retries: nextRetries }, details);
     }
     catch (err) {
         tagContext(err, 'comments');
@@ -939,6 +995,7 @@ async function run({ github, context, core, dryRun, batchSize }) {
                 pr.checksFailed = requiredResult.failed;
                 pr.failedRunIds = requiredResult.failedRunIds;
                 pr.failedRunUrls = requiredResult.failedRunUrls;
+                pr.failedRuns = requiredResult.failedRuns;
                 pr.failedNames = requiredResult.failedNames;
 
                 const actions = planForBatchMember(pr);
