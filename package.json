@@ -89,7 +89,7 @@
     "mcc-mnc-list": "1.1.11",
     "method-override": "3.0.0",
     "moment": "2.31.0",
-    "moment-timezone": "0.6.3",
+    "moment-timezone": "0.6.4",
     "mongodb": "6.20.0",
     "mongodb-connection-string-url": "^7.0.1",
     "nginx-conf": "2.1.0",
