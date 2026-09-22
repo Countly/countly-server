@@ -61,7 +61,12 @@ sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 sudo dnf update -y nss
 
 #install nodejs
-sudo dnf module install -y nodejs:20/common
+#nodejs:22 module stream is only available on EL9+; EL8's AppStream tops out at nodejs:20
+if [[ "$CENTOS_MAJOR" = "8" ]]; then
+    sudo dnf module install -y nodejs:20/common
+else
+    sudo dnf module install -y nodejs:22/common
+fi
 
 set +e
 NODE_JS_CMD=$(which nodejs)
