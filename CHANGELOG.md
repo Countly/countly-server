@@ -1,13 +1,50 @@
-## Next
+## Version 25.03.54
+Enterprise Features:
+- [journey_engine] Bar chart visualisation on the performance chart, with readable date labels and a cleaner header
+- [license] License v2 install side: entitlements, slots, renewal and offline policy
+
+Enterprise Fixes:
+- [concurrent_users] Pass the alert app when dispatching to hooks
+- [formulas] getSavedMetric accepts an object-typed expression instead of assuming a JSON string
+- [funnels] Long names are ellipsized in the detail header, step segmentation resets when the funnel event changes, and the recalculating message no longer overlaps the Select Funnel dialog
+- [journey_engine] Create a new content block instead of overwriting the last
+- [license] Fixes for license manager forward compatibility
+- [users,cohorts] Warn when a profile group is created with a name that already exists
+
+Features:
+- [tracker] License lifecycle reporting helpers and an overridable telemetry target
 
 Fixes:
-- [reports] Non-core reports, such as dashboard reports, now authorize the object they target on create and update
-- [core] Chart tooltips now show label text as text, so a label is never treated as markup, and the dashboard undoes the same key substitutions the api applies (`&#36;`, `&#46;`, `&#9647;` and their url encoded forms) instead of only two of them
+- [core] Chart tooltips show label text as text, and the dashboard decodes the same key substitutions the api applies
+- [core] Segmentation values with HTML attributes are no longer dropped from the All Events breakdown
+- [core] The stored member language is kept a language code, and plain containers are detected by prototype
+- [hooks] Endpoint rules are indexed by path, and every email effect is sanitized instead of throwing on a template-less one
+- [populator] A template is kept while other apps still have environments from it
+- [push] Audience filter operators are checked on the estimate endpoint, and message text renders as text in the notification preview
+- [reports] Reports are built from declared fields, and non-core reports authorize the object they target
+- [tracker] Current-licence properties are cleared when the licence disappears
 
 Security Fixes:
-- [star-rating] Consent link destinations are now checked as URLs, on save and again when rendered, so a link can only point at an http(s) url. HTML escaping never covered this, since a `javascript:` url contains no character that escaping touches. Link labels are also escaped before being used to build a regular expression
-- [core] CSV exports now neutralize cells that a spreadsheet client would read as a formula, in the streamed export path and in its header row as well as the values, and including values that begin with a tab or carriage return
-- [reports] Enabling, sending or rendering a report now checks that the apps it covers are still readable by the caller, and scheduled reports stop being emailed once the member they are scheduled as loses access to those apps
+- [alerts] The apps an alert targets are authorized, not just who owns it
+- [configs] Only declared configuration is returned to non global admins, and credentials are masked
+- [content,surveys] Cross-Origin-Opener-Policy is taken off the embedded routes
+- [core] Auth tokens carry explicit CRUD permissions and a server-assigned login, with grants bounded by the owner's app membership
+- [core] Enterprise configuration readable by non global admins, and this repository's export query producers, are declared explicitly
+- [core] Export queries are hardened: caller input stays out of the query specification, projections are limited to include and exclude, and CSV cells a spreadsheet would read as a formula are neutralized
+- [core] Only a preset's editors may change it, and request parameters are no longer copied onto it
+- [core] Request credentials are no longer kept in stored documents or returned by the current user endpoint
+- [core] Server side rendering stays on the dashboard origin, default response headers are standardised, and the SSRF filter rejects the RFC 8215 local-use NAT64 prefix
+- [core] Untrusted input is handled as data: request parameters are scalars that consumers parse, stored-document walks are guarded against prototype keys, and values are encoded and sanitized at frontend HTML sinks
+- [dbviewer] Aggregation operators are validated against an allow-list
+- [drill,journey_engine] The stored document is authorized, not just the request, and the timeline exclude list is read whichever way it arrives
+- [hooks] App credentials are kept out of the effect payload
+- [oidc] The OIDC session token is marked login-capable
+- [push] Push action counters are bound to the ingesting app
+- [reports] Enabling, sending or rendering a report checks that the apps it covers are still readable, and scheduled reports stop once that access is lost
+- [star-rating] Consent link destinations are checked as URLs, and uploaded logo names stay inside the images directory
+- [star-rating] Widget endpoints are authorized and scoped: the ratings read requires rights, by-id lookups no longer expose internal fields, only the widget's own parameters are forwarded from /i/feedback/input, and rating counters are bound to the submitting app
+- [surveys] Only the widget's own parameters are forwarded from /i/feedback/inputs
+- [views] The token owner's read right is applied on the heatmap endpoint
 
 ## Version 25.03.51
 
