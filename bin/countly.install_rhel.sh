@@ -91,6 +91,16 @@ sudo chown -R www-data:www-data /var/lib/nginx
 sudo dnf install -y sendmail
 sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exist"
 
+# TEMP: EL8's stock gcc (8.5.0) is known to have catastrophic compile times on
+# heavily templated C++ (Eigen/Boost, used by the ab-testing plugin's Stan
+# model compile) - use a newer toolchain for the npm install below, matching
+# what EL9's stock gcc (~11.x) already provides
+if [[ "$CENTOS_MAJOR" = "8" ]]; then
+    sudo dnf install -y gcc-toolset-11
+    # shellcheck disable=SC1091
+    source /opt/rh/gcc-toolset-11/enable
+fi
+
 #install npm modules
 npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install argon2; npm install sqlite3 --build-from-source; npm install; )
