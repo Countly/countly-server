@@ -86,6 +86,15 @@ sudo chown -R www-data:www-data /var/lib/nginx
 sudo dnf install -y sendmail
 sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exist"
 
+#isolated-vm has no prebuilt binary for glibc 2.28, so RHEL 8 builds it from source.
+#That needs -std=c++20 and python>=3.8, and stock RHEL 8 has neither.
+if [[ "$CENTOS_MAJOR" = "8" ]]; then
+    sudo dnf install -y gcc-toolset-11 python38
+    export npm_config_python=/usr/bin/python3.8
+    # shellcheck disable=SC1091
+    source /opt/rh/gcc-toolset-11/enable
+fi
+
 #install npm modules
 npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install argon2; npm install sqlite3 --build-from-source; npm install; )
