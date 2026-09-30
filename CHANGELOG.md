@@ -1,3 +1,8 @@
+## Version 24.05.54
+Enterprise Fixes:
+- [data-manager] Fixed event processing when multiple events have to be deleted after merging
+- [data-manager] Removed noisy transformation log
+
 ## Version 24.05.53
 Fixes:
 - [core] Chart tooltips now show label text as text, so a label is never treated as markup, and the dashboard undoes the same key substitutions the api applies (`&#36;`, `&#46;`, `&#9647;` and their url encoded forms) instead of only two of them
