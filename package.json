@@ -40,7 +40,7 @@
     "mocha": "10.8.2",
     "nyc": "18.0.0",
     "should": "13.2.3",
-    "supertest": "7.3.0",
+    "supertest": "7.3.1",
     "typescript": "^7.0.2"
   },
   "dependencies": {
@@ -99,7 +99,7 @@
     "properties-parser": "0.6.0",
     "puppeteer": "^25.7.0",
     "rate-limiter-flexible": "^11.0.0",
-    "sass": "1.105.0",
+    "sass": "1.105.1",
     "semver": "^7.7.1",
     "sharp": "^0.35.0",
     "sqlite3": "^5.1.7",
