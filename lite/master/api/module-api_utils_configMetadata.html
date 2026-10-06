@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/parts/mgmt/ip - Documentation</title>
+    <title>api/utils/configMetadata - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,7 +37,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/parts/mgmt/ip</h1>
+    <h1 class="page-title">api/utils/configMetadata</h1>
     
 
     
@@ -60,7 +60,16 @@
         <div class="container-overview">
         
             
-                <div class="description usertext"><p>Module returning hostname value</p></div>
+                <div class="description usertext"><p>Declarations of which core configuration a member who is not a global admin may
+read, and which core values are credentials that must never be returned.</p>
+<p>These live in a module rather than in an entry point because the metadata is
+process local. The API and the dashboard are separate processes, each with its own
+pluginManager instance, and a declaration made in one is invisible to the other.
+The dashboard serializes the security namespace into every page it renders, so a
+registration that ran only in api/api.js left omitSecretConfigs() with nothing to
+omit there, and the stored proxy credentials stayed in the page source of every
+logged in user.</p>
+<p>Both entry points call register() so the two processes agree.</p></div>
             
 
             
@@ -72,13 +81,22 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Module returning hostname value</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Declarations of which core configuration a member who is not a global admin may
+read, and which core values are credentials that must never be returned.</p>
+<p>These live in a module rather than in an entry point because the metadata is
+process local. The API and the dashboard are separate processes, each with its own
+pluginManager instance, and a declaration made in one is invisible to the other.
+The dashboard serializes the security namespace into every page it renders, so a
+registration that ran only in api/api.js left omitSecretConfigs() with nothing to
+omit there, and the stored proxy credentials stayed in the page source of every
+logged in user.</p>
+<p>Both entry points call register() so the two processes agree.</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line1">line 1</a>
+        <a href="utils_configMetadata.js.html">utils/configMetadata.js</a>, <a href="utils_configMetadata.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -169,7 +187,7 @@
 
     
 
-    <h4 class="name" id=".getHost"><span class="type-signature type-signature-static">(static) </span>getHost<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".register"><span class="type-signature type-signature-static">(static) </span>register<span class="signature">(plugins)</span><span class="type-signature"> &rarr; {void}</span></h4>
 
     
 
@@ -179,13 +197,14 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Function to get the hostname/ip address/url to access dashboard</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Declare the readable and secret core configuration on a pluginManager instance.
+Safe to call more than once: both setters merge into the existing declaration.</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line18">line 18</a>
+        <a href="utils_configMetadata.js.html">utils/configMetadata.js</a>, <a href="utils_configMetadata.js.html#line23">line 23</a>
     </li></ul></dd>
     
 
@@ -257,13 +276,13 @@
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>plugins</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type">object</span>
 
 
 
@@ -274,277 +293,7 @@
 
             
 
-            <td class="description last"><p>callback function that returns the hostname</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="~getNetworkIP"><span class="type-signature type-signature-inner">(inner) </span>getNetworkIP<span class="signature">(callback)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Try to get ip address through network, by connecting to external resource</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line65">line 65</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>callback function that returns the ip address</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="~stripTrailingSlash"><span class="type-signature type-signature-inner">(inner) </span>stripTrailingSlash<span class="signature">(str)</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Strip trailing slash</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line52">line 52</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>str</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>string from which to remove trailing slash</p></td>
+            <td class="description last"><p>the pluginManager instance to declare on</p></td>
         </tr>
 
     
@@ -569,10 +318,6 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
-<div class="param-desc">
-    <p>modified string</p>
-</div>
-
 
 
 <dl class="param-type">
@@ -581,7 +326,7 @@
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type">void</span>
 
 
 

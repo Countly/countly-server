@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>Pre Login - Documentation</title>
+    <title>countly/countly.token.manager.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,651 +37,120 @@
 
 <div id="main">
     
-    <h1 class="page-title">Pre Login</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2>
-        
-            Namespace
-        
-        </h2>
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-
-
-    
-
-    <h4 class="name" id="Pre Login">Pre Login</h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Javascript file loaded on pre login pages with some handy global functions</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pre-login.js.html">pre-login.js</a>, <a href="pre-login.js.html#line4">line 4</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        </div>
-    
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".addLocalization"><span class="type-signature type-signature-static">(static) </span>addLocalization<span class="signature">(name, path, callback)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pre-login.js.html">pre-login.js</a>, <a href="pre-login.js.html#line69">line 69</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-examples">Example</h5>
-    
-    <pre class="prettyprint"><code>addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');</code></pre>
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>base name of the property file without the locale/language. Should be the same name as your plugin</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>path</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>url path to where the localization file currently resides relative to the page you want to load it from</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>callback executed when localization file is loaded</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".encodeSomeHtml"><span class="type-signature type-signature-static">(static) </span>encodeSomeHtml<span class="signature">(html, options)</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Encode some tags, leaving those set in whitelist as they are.</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pre-login.js.html">pre-login.js</a>, <a href="pre-login.js.html#line50">line 50</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>html</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>value to encode</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>for encoding. Optional. If not passed, using default in common.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>encode string</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">string</span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".showMessage"><span class="type-signature type-signature-static">(static) </span>showMessage<span class="signature">(key)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>This method is called to show user a message, like error when loging in. By default this is taken from query parameter or passed to template directly as message variable</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="pre-login.js.html">pre-login.js</a>, <a href="pre-login.js.html#line17">line 17</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>key from localization property file</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">countly/countly.token.manager.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global countlyCommon, jQuery*/
+(function(countlyTokenManager, $) {
+    //we will store our data here
+    var _data = {};
+    //Initializing model
+    countlyTokenManager.initialize = function() {
+        //returning promise
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/o/token/list",
+            data: {},
+            success: function(json) {
+                //got our data, let's store it
+                _data = json.result;
+            },
+            error: function() {
+                //empty
+            }
+        });
+    };
+    //return data that we have
+    countlyTokenManager.getData = function() {
+        return _data;
+    };
+
+    countlyTokenManager.createToken = function(purpose, endpoint, multi, apps, ttl, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/token/create",
+            data: {
+                "purpose": purpose,
+                "endpoint": endpoint,
+                "multi": multi,
+                "apps": apps,
+                "ttl": ttl
+            },
+            success: function(json) {
+                //token created
+                callback(null, json);
+            },
+            error: function(xhr, status, error) {
+                callback(error);
+            }
+        });
+    };
+
+    /**
+     * Create a token, optionally limited to a set of CRUD permissions.
+     * @param {object} options - token options
+     * @param {string} options.purpose - description of the token
+     * @param {boolean} options.multi - can the token be used more than once
+     * @param {number} options.ttl - seconds until the token expires, 0 never expires
+     * @param {object=} options.permission - permission object limiting the token, omitted for a
+     *   token that carries the creator's own permissions
+     * @param {boolean=} options.canLogin - request permission to sign in to the dashboard. Granted
+     *   only when the creating credential holds it and the token is not limited
+     * @param {function} callback - called with (error, response)
+     * @returns {object} jQuery ajax object
+     */
+    countlyTokenManager.createTokenWithPermissions = function(options, callback) {
+        var data = {
+            "purpose": options.purpose,
+            "multi": options.multi,
+            "ttl": options.ttl
+        };
+        if (options.permission) {
+            data.permission = JSON.stringify(options.permission);
+        }
+        if (options.canLogin) {
+            data.can_login = true;
+        }
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/token/create",
+            data: data,
+            success: function(json) {
+                //token created
+                callback(null, json);
+            },
+            error: function(xhr, status, error) {
+                callback(error);
+            }
+        });
+    };
+
+    countlyTokenManager.deleteToken = function(id, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyCommon.API_URL + "/i/token/delete",
+            data: {
+                "tokenid": id
+            },
+            success: function() {
+                callback(null, true);
+            },
+            error: function(xhr, status, error) {
+                callback(error);
+            }
+        });
+    };
+
+}(window.countlyTokenManager = window.countlyTokenManager || {}, jQuery));</code></pre>
+        </article>
+    </section>
 
 
 

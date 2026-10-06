@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/parts/mgmt/ip - Documentation</title>
+    <title>api/utils/upload-temp - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,7 +37,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/parts/mgmt/ip</h1>
+    <h1 class="page-title">api/utils/upload-temp</h1>
     
 
     
@@ -60,7 +60,18 @@
         <div class="container-overview">
         
             
-                <div class="description usertext"><p>Module returning hostname value</p></div>
+                <div class="description usertext"><p>Bounds what the formidable parse in api/api.js is allowed to
+write to disk, and removes whatever it wrote that no handler consumed.</p>
+<p>api/api.js parses every POST body with formidable, before the request is
+routed or authorized. formidable writes multipart parts and raw
+application/octet-stream bodies to disk, so without a gate any POST carrying
+such a body leaves a file behind - including requests to paths that no
+handler serves. This module provides:</p>
+<ul>
+<li>parseOptions: formidable options that allow a file to be written only
+where a plugin declared that the path reads params.files</li>
+<li>discardUploads: removal of the files a request left behind</li>
+</ul></div>
             
 
             
@@ -72,13 +83,24 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Module returning hostname value</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Bounds what the formidable parse in api/api.js is allowed to
+write to disk, and removes whatever it wrote that no handler consumed.</p>
+<p>api/api.js parses every POST body with formidable, before the request is
+routed or authorized. formidable writes multipart parts and raw
+application/octet-stream bodies to disk, so without a gate any POST carrying
+such a body leaves a file behind - including requests to paths that no
+handler serves. This module provides:</p>
+<ul>
+<li>parseOptions: formidable options that allow a file to be written only
+where a plugin declared that the path reads params.files</li>
+<li>discardUploads: removal of the files a request left behind</li>
+</ul></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line1">line 1</a>
+        <a href="utils_upload-temp.js.html">utils/upload-temp.js</a>, <a href="utils_upload-temp.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -169,7 +191,7 @@
 
     
 
-    <h4 class="name" id=".getHost"><span class="type-signature type-signature-static">(static) </span>getHost<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~discardUploads"><span class="type-signature type-signature-inner">(inner) </span>discardUploads<span class="signature">(params)</span><span class="type-signature"> &rarr; {void}</span></h4>
 
     
 
@@ -179,13 +201,19 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Function to get the hostname/ip address/url to access dashboard</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Remove the files formidable wrote for this request.</p>
+<p>Handlers that consume an upload unlink it themselves, so in the normal case
+these are already gone and the unlink is a no-op. What is left is every
+request that was rejected before reaching a handler at all, which is not
+enumerable at the rejection sites - rights.js alone rejects in 63 places.</p>
+<p>Only the snapshot from trackUploads is touched, never params.files, so a
+handler substituting a path cannot redirect this at another file.</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line18">line 18</a>
+        <a href="utils_upload-temp.js.html">utils/upload-temp.js</a>, <a href="utils_upload-temp.js.html#line143">line 143</a>
     </li></ul></dd>
     
 
@@ -257,13 +285,13 @@
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>params</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type">object</span>
 
 
 
@@ -274,7 +302,7 @@
 
             
 
-            <td class="description last"><p>callback function that returns the hostname</p></td>
+            <td class="description last"><p>request params</p></td>
         </tr>
 
     
@@ -296,6 +324,25 @@
 
 
 
+<h5 class="h5-returns">Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
+
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -304,7 +351,7 @@
 
     
 
-    <h4 class="name" id="~getNetworkIP"><span class="type-signature type-signature-inner">(inner) </span>getNetworkIP<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~findDeclaration"><span class="type-signature type-signature-inner">(inner) </span>findDeclaration<span class="signature">(uploadPaths, reqPath)</span><span class="type-signature"> &rarr; {object|null}</span></h4>
 
     
 
@@ -314,13 +361,15 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Try to get ip address through network, by connecting to external resource</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Find the declaration a plugin registered for this path, if any.</p>
+<p>Matching is exact: a declaration for /i must not let /i/anything through,
+otherwise declaring the SDK write endpoint would reopen the whole /i tree.</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line65">line 65</a>
+        <a href="utils_upload-temp.js.html">utils/upload-temp.js</a>, <a href="utils_upload-temp.js.html#line54">line 54</a>
     </li></ul></dd>
     
 
@@ -392,13 +441,13 @@
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>uploadPaths</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">function</span>
+<span class="param-type">Array</span>
 
 
 
@@ -409,125 +458,14 @@
 
             
 
-            <td class="description last"><p>callback function that returns the ip address</p></td>
+            <td class="description last"><p>plugins.uploadPaths</p></td>
         </tr>
 
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="~stripTrailingSlash"><span class="type-signature type-signature-inner">(inner) </span>stripTrailingSlash<span class="signature">(str)</span><span class="type-signature"> &rarr; {string}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Strip trailing slash</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_mgmt_ip.js.html">parts/mgmt/ip.js</a>, <a href="parts_mgmt_ip.js.html#line52">line 52</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
     
 
         <tr>
             
-                <td class="name"><code>str</code></td>
+                <td class="name"><code>reqPath</code></td>
             
 
             <td class="type">
@@ -544,7 +482,7 @@
 
             
 
-            <td class="description last"><p>string from which to remove trailing slash</p></td>
+            <td class="description last"><p>normalized request path</p></td>
         </tr>
 
     
@@ -570,7 +508,214 @@
 
         
 <div class="param-desc">
-    <p>modified string</p>
+    <p>the declaration, or null when uploads are not allowed</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+|
+
+<span class="param-type">null</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~normalizePath"><span class="type-signature type-signature-inner">(inner) </span>normalizePath<span class="signature">(url, installPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Strip the query string and the installation subpath from a request url.
+requestProcessor strips the subpath before routing, so it has to be stripped
+here too or uploads would be refused on subdirectory installs.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_upload-temp.js.html">utils/upload-temp.js</a>, <a href="utils_upload-temp.js.html#line29">line 29</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>request url, query string included</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>installPath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>installation subpath (common.config.path)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>the path as requestProcessor will see it</p>
 </div>
 
 
@@ -582,6 +727,433 @@
     <dd>
         
 <span class="param-type">string</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~parseOptions"><span class="type-signature type-signature-inner">(inner) </span>parseOptions<span class="signature">(url, installPath<span class="signature-attributes">opt</span>, uploadPaths<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>formidable options restricting what this request may write to disk.</p>
+<p>Returns the options to merge into the IncomingForm options: an empty object
+where uploads are expected, and otherwise the entries that suppress them.
+Both suppressions are needed and cover different parsers - <code>filter</code> is only
+consulted for multipart parts, while formidable's octetstream plugin creates
+its file directly via _newFile() and never calls <code>filter</code>, so the only way to
+stop a raw body reaching disk is to leave that plugin out.</p>
+<p>The remaining parsers are kept enabled either way, so urlencoded and json
+bodies still populate params.qstring exactly as before.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_upload-temp.js.html">utils/upload-temp.js</a>, <a href="utils_upload-temp.js.html#line87">line 87</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>request url, query string included</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>installPath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>installation subpath (common.config.path)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>uploadPaths</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>plugins.uploadPaths, the declared upload paths</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>options to merge into the IncomingForm options</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~trackUploads"><span class="type-signature type-signature-inner">(inner) </span>trackUploads<span class="signature">(params, files)</span><span class="type-signature"> &rarr; {void}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Record the paths formidable produced for this request, so they can be removed
+later without trusting params.files.</p>
+<p>The snapshot is taken before any handler runs, because a handler may repoint
+params.files[x].path at something else entirely - crash_symbolication points
+it at files shipped with the plugin when serving populator data, which must
+never be deleted.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_upload-temp.js.html">utils/upload-temp.js</a>, <a href="utils_upload-temp.js.html#line116">line 116</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>request params</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>files</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the files formidable parsed</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">void</span>
 
 
 
