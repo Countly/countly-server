@@ -116,8 +116,17 @@ describe("pluginManager explicit database names", function() {
         var original = {};
         var originalConnect;
         var originalBuildInfo;
+        var originalEnv = {};
 
         before(async function() {
+            //env overrides are applied again for drill/out/fs connections, e.g. COUNTLY_CONFIG__MONGODB_HOST
+            //set in CI would replace the connection string used here, so run without them
+            Object.keys(process.env).filter(function(k) {
+                return k.indexOf("COUNTLY_CONFIG") === 0;
+            }).forEach(function(k) {
+                originalEnv[k] = process.env[k];
+                delete process.env[k];
+            });
             original.mongodb = countlyConfig.mongodb;
             original.databases = countlyConfig.databases;
             countlyConfig.mongodb = CONNECTION;
@@ -143,6 +152,7 @@ describe("pluginManager explicit database names", function() {
             else {
                 countlyConfig.databases = original.databases;
             }
+            Object.assign(process.env, originalEnv);
         });
 
         it("opens the configured database for each named connection", async function() {
@@ -176,10 +186,14 @@ describe("pluginManager explicit database names", function() {
 
         it("falls back to names from the connection string when not configured", async function() {
             delete countlyConfig.databases;
-            var db = await plugins.dbConnection("countly_drill");
-            db.databaseName.should.equal("countly_drill");
-            await db.client.close();
-            countlyConfig.databases = Object.assign({}, NAMES);
+            try {
+                var db = await plugins.dbConnection("countly_drill");
+                db.databaseName.should.equal("countly_drill");
+                await db.client.close();
+            }
+            finally {
+                countlyConfig.databases = Object.assign({}, NAMES);
+            }
         });
 
         it("uses the configured name in command line connection params", async function() {
@@ -190,7 +204,19 @@ describe("pluginManager explicit database names", function() {
         it("uses db of object form mongodb config for main database on every connection", async function() {
             countlyConfig.mongodb = {host: "mongo-host", port: 27017, db: "countly_base"};
             delete countlyConfig.databases;
+            try {
+                await checkObjectFormDb();
+            }
+            finally {
+                countlyConfig.mongodb = CONNECTION;
+                countlyConfig.databases = Object.assign({}, NAMES);
+            }
+        });
 
+        /**
+        * Checks every connection with object form mongodb config having db countly_base
+        **/
+        async function checkObjectFormDb() {
             var api = await plugins.dbConnection("countly");
             api.databaseName.should.equal("countly_base");
             await api.client.close();
@@ -209,10 +235,7 @@ describe("pluginManager explicit database names", function() {
             await shared[0].client.close();
 
             plugins.getDbConnectionParams("countly").db.should.equal("countly_base");
-
-            countlyConfig.mongodb = CONNECTION;
-            countlyConfig.databases = Object.assign({}, NAMES);
-        });
+        }
 
         it("uses db of drill config file unless databases.countly_drill is set", async function() {
             var file = path.join(os.tmpdir(), "countly-test-drill-config-" + process.pid + ".js");
