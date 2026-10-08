@@ -28,6 +28,17 @@ describe("SSRF protection utility", function() {
         it("blocks the RFC 8215 local-use NAT64 prefix (64:ff9b:1::/48)", async function() {
             (await ssrf.isUrlSafe("http://[64:ff9b:1::7f00:1]/")).safe.should.equal(false);
         });
+
+        it("blocks the standard NAT64 prefix (64:ff9b::/96, RFC 6052)", async function() {
+            (await ssrf.isUrlSafe("http://[64:ff9b::7f00:1]/")).safe.should.equal(false);
+        });
+
+        it("blocks an IPv4-mapped IPv6 loopback address", async function() {
+            (await ssrf.isUrlSafe("http://[::ffff:127.0.0.1]/")).safe.should.equal(false);
+        });
+        it("allows an IPv4-mapped IPv6 public address", async function() {
+            (await ssrf.isUrlSafe("http://[::ffff:8.8.8.8]/")).safe.should.equal(true);
+        });
         it("allows a public IPv6 literal", async function() {
             (await ssrf.isUrlSafe("http://[2001:4860:4860::8888]/")).safe.should.equal(true);
         });
