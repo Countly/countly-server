@@ -829,6 +829,11 @@ plugins.setConfigs("dashboards", {
                 //owner chose to show them. Widgets that reference no apps, such
                 //as notes, are always copied.
                 widgets = widgets.filter(function(widget) {
+                    if (isAppLessWidget(widget)) {
+                        widget.apps = [];
+                        return true;
+                    }
+
                     if (typeof widget.apps === "undefined") {
                         return true;
                     }
@@ -1212,13 +1217,18 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
+            //Whatever apps value was sent, a note never references apps.
+            if (isAppLessWidget(widget)) {
+                widget.apps = [];
+            }
+
             if (!isWidgetValid(widget)) {
                 common.returnMessage(params, 400, 'Invalid parameter: widget');
                 return true;
             }
 
             if (widget.widget_type === "note") {
-                widget.contenthtml = sanitizeNote(widget.contenthtml);
+                widget.contenthtml = sanitizeNote(widget.contenthtml || "");
             }
 
             //A new widget may only reference apps the creator can read. Reject
@@ -1304,10 +1314,6 @@ plugins.setConfigs("dashboards", {
                 log.d('Parse widget failed', widget);
             }
 
-            if (widget.widget_type === "note") {
-                widget.contenthtml = sanitizeNote(widget.contenthtml);
-            }
-
             if (!dashboardId || dashboardId.length !== 24) {
                 common.returnMessage(params, 400, 'Invalid parameter: dashboard_id');
                 return true;
@@ -1316,17 +1322,6 @@ plugins.setConfigs("dashboards", {
             if (!widgetId || widgetId.length !== 24) {
                 common.returnMessage(params, 400, 'Invalid parameter: widget_id');
                 return true;
-            }
-            //Normalize the apps list up front so an array-like value such as
-            //{length: 1, "0": "<app id>"} cannot slip past the access check below
-            //while still being read through .length/[i] by every consumer.
-            if (typeof widget.apps !== "undefined") {
-                var updatedWidgetApps = normalizeAppIds(widget.apps);
-                if (updatedWidgetApps === null) {
-                    common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
-                    return true;
-                }
-                widget.apps = updatedWidgetApps;
             }
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
@@ -1351,12 +1346,34 @@ plugins.setConfigs("dashboards", {
                             //rights. They may not ADD an app they cannot read,
                             //which is what would turn a shared widget into a
                             //window onto an unrelated app.
-                            common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, {projection: {apps: 1}}, function(readErr, existingWidget) {
+                            common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, {projection: {apps: 1, widget_type: 1}}, function(readErr, existingWidget) {
                                 if (readErr || !existingWidget) {
                                     return common.returnMessage(params, 500, "Failed to update widget");
                                 }
 
-                                if (typeof widget.apps !== "undefined") {
+                                //A partial update may omit widget_type, so fall
+                                //back to the stored type to recognise a note.
+                                var isNote = isAppLessWidget({widget_type: widget.widget_type || existingWidget.widget_type});
+
+                                if (isNote) {
+                                    //Whatever apps value was sent, a note never
+                                    //references apps.
+                                    widget.apps = [];
+                                    if (typeof widget.contenthtml !== "undefined") {
+                                        widget.contenthtml = sanitizeNote(widget.contenthtml);
+                                    }
+                                }
+                                else if (typeof widget.apps !== "undefined") {
+                                    //Normalize so an array-like value such as
+                                    //{length: 1, "0": "<app id>"} cannot slip past
+                                    //the access check while still being read
+                                    //through .length/[i] by every consumer.
+                                    var updatedWidgetApps = normalizeAppIds(widget.apps);
+                                    if (updatedWidgetApps === null) {
+                                        return common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
+                                    }
+                                    widget.apps = updatedWidgetApps;
+
                                     var existingApps = normalizeAppIds(existingWidget.apps) || [];
                                     var addedApps = widget.apps.filter(function(appId) {
                                         return existingApps.indexOf(appId) === -1;
@@ -1754,6 +1771,17 @@ plugins.setConfigs("dashboards", {
         }
 
         return true;
+    }
+
+    /**
+     * Function to check whether a widget shows no app data. Such widgets are
+     * stored without apps; the UI sends apps: "*" for them, which is not an
+     * app list and would otherwise fail normalizeAppIds.
+     * @param  {Object} widget - widget
+     * @returns {Boolean} true if the widget references no apps
+     */
+    function isAppLessWidget(widget) {
+        return !!widget && widget.widget_type === "note";
     }
 
     /**

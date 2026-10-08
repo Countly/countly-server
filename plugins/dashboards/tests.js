@@ -291,3 +291,169 @@ describe('Testing dashboards cross-app widget scoping', function() {
             });
     });
 });
+
+// Note widgets show no app data, and the UI has always sent apps: "*" for
+// them. Normalizing widget app lists must not reject notes on add, edit or
+// copy, while a data widget sending "*" is still rejected.
+
+describe('Testing dashboards note widgets', function() {
+    var API_KEY_ADMIN = "";
+    var dashId = "";
+    var copyId = "";
+    var noteId = "";
+    var uniq = Date.now();
+
+    /**
+     * Adds a widget to the test dashboard
+     * @param {Object} widget - widget to add
+     * @param {Number} status - expected HTTP status
+     * @param {Function} callback - called with (err, res)
+     */
+    function addWidget(widget, status, callback) {
+        request
+            .get('/i/dashboards/add-widget?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId + '&widget=' + encodeURIComponent(JSON.stringify(widget)))
+            .expect(status)
+            .end(callback);
+    }
+
+    it('should create a dashboard', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        request
+            .get('/i/dashboards/create?api_key=' + API_KEY_ADMIN + '&name=NoteDash' + uniq + '&share_with=none')
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                dashId = JSON.parse(res.text);
+                should.exist(dashId);
+                done();
+            });
+    });
+
+    it('should add a note widget sent with apps "*"', function(done) {
+        addWidget({widget_type: "note", feature: "core", apps: "*", contenthtml: "<p>note one</p>"}, 200, function(err, res) {
+            if (err) {
+                return done(err);
+            }
+            noteId = JSON.parse(res.text);
+            should.exist(noteId);
+            done();
+        });
+    });
+
+    it('should add a note widget sent with an empty apps list', function(done) {
+        addWidget({widget_type: "note", feature: "core", apps: [], contenthtml: "<p>note two</p>"}, 200, done);
+    });
+
+    it('should accept a note whatever its apps value is', function(done) {
+        // a note's apps are replaced with [] before saving, so none of these
+        // may be rejected - including ids the creator could not otherwise use
+        var appsValues = [
+            undefined,
+            null,
+            "garbage",
+            {length: 1, "0": "aaaaaaaaaaaaaaaaaaaaaaaa"},
+            ["not-an-app-id"],
+            ["aaaaaaaaaaaaaaaaaaaaaaaa"]
+        ];
+        var created = [];
+        var next = function(i) {
+            if (i >= appsValues.length) {
+                // remove them again so the counts below stay at 2
+                var removeNext = function(j) {
+                    if (j >= created.length) {
+                        return done();
+                    }
+                    request
+                        .get('/i/dashboards/remove-widget?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId + '&widget_id=' + created[j])
+                        .end(function() {
+                            removeNext(j + 1);
+                        });
+                };
+                return removeNext(0);
+            }
+            var widget = {widget_type: "note", feature: "core", contenthtml: "<p>odd apps</p>"};
+            if (typeof appsValues[i] !== "undefined") {
+                widget.apps = appsValues[i];
+            }
+            addWidget(widget, 200, function(err, res) {
+                if (err) {
+                    return done(new Error("note with apps " + JSON.stringify(appsValues[i]) + " was rejected: " + err.message));
+                }
+                created.push(JSON.parse(res.text));
+                next(i + 1);
+            });
+        };
+        next(0);
+    });
+
+    it('should still reject a data widget sent with apps "*"', function(done) {
+        addWidget({widget_type: "number", data_type: "session", apps: "*", metrics: ["u"]}, 400, done);
+    });
+
+    it('should edit a note widget sent with apps "*"', function(done) {
+        var widget = {widget_type: "note", feature: "core", apps: "*", contenthtml: "<p>note one edited</p>"};
+        request
+            .get('/i/dashboards/update-widget?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId + '&widget_id=' + noteId + '&widget=' + encodeURIComponent(JSON.stringify(widget)))
+            .expect(200)
+            .end(done);
+    });
+
+    it('should edit a note widget without widget_type in the update', function(done) {
+        // the stored type decides that this is a note
+        var widget = {apps: {length: 1, "0": "aaaaaaaaaaaaaaaaaaaaaaaa"}, contenthtml: "<p>partial edit</p>"};
+        request
+            .get('/i/dashboards/update-widget?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId + '&widget_id=' + noteId + '&widget=' + encodeURIComponent(JSON.stringify(widget)))
+            .expect(200)
+            .end(done);
+    });
+
+    it('should list both notes on the dashboard', function(done) {
+        request
+            .get('/o/dashboards/widget-layout?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var widgets = JSON.parse(res.text);
+                widgets.length.should.eql(2);
+                done();
+            });
+    });
+
+    it('should copy note widgets with the dashboard', function(done) {
+        request
+            .get('/i/dashboards/create?api_key=' + API_KEY_ADMIN + '&name=NoteDashCopy' + uniq + '&share_with=none&copy_dash_id=' + dashId)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                copyId = JSON.parse(res.text);
+                request
+                    .get('/o/dashboards/widget-layout?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + copyId)
+                    .expect(200)
+                    .end(function(e, r) {
+                        if (e) {
+                            return done(e);
+                        }
+                        JSON.parse(r.text).length.should.eql(2);
+                        done();
+                    });
+            });
+    });
+
+    after(function(done) {
+        request
+            .get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId)
+            .end(function() {
+                request
+                    .get('/i/dashboards/delete?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + copyId)
+                    .end(function() {
+                        done();
+                    });
+            });
+    });
+});
