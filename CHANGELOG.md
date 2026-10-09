@@ -1,4 +1,8 @@
 ## Next
+Enterprise Fixes:
+- [active_users] Today's values are refreshed at most every 5 minutes, and a failed calculation keeps the previous values and is retried after 5 minutes instead of on every dashboard load
+- [data-manager] Removed a noisy log for events without a transformation rule
+
 Fixes:
 - [dashboards] Note widgets can be created, edited and copied again; their apps value is always stored as "*"
 
