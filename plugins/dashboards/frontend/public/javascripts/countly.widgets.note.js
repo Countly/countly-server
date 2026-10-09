@@ -171,7 +171,7 @@
                 return {
                     widget_type: "note",
                     feature: "core",
-                    apps: [],
+                    apps: "*",
                     contenthtml: "",
                 };
             },

@@ -347,7 +347,7 @@ describe('Testing dashboards note widgets', function() {
     });
 
     it('should accept a note whatever its apps value is', function(done) {
-        // a note's apps are replaced with [] before saving, so none of these
+        // a note's apps are replaced with "*" before saving, so none of these
         // may be rejected - including ids the creator could not otherwise use
         var appsValues = [
             undefined,
@@ -407,6 +407,21 @@ describe('Testing dashboards note widgets', function() {
             .get('/i/dashboards/update-widget?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId + '&widget_id=' + noteId + '&widget=' + encodeURIComponent(JSON.stringify(widget)))
             .expect(200)
             .end(done);
+    });
+
+    it('should store a note with apps "*" whatever was sent', function(done) {
+        request
+            .get('/o/dashboards/widget?api_key=' + API_KEY_ADMIN + '&dashboard_id=' + dashId + '&widget_id=' + noteId)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var widgets = JSON.parse(res.text);
+                widgets.length.should.eql(1);
+                widgets[0].apps.should.eql("*");
+                done();
+            });
     });
 
     it('should list both notes on the dashboard', function(done) {

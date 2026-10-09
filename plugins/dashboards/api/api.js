@@ -16,6 +16,9 @@ var pluginOb = {},
 
 var ejs = require("ejs");
 
+//apps value stored for widgets that show no app data, such as notes
+var APP_LESS_WIDGET_APPS = "*";
+
 plugins.setConfigs("dashboards", {
     sharing_status: true,
     allow_public_dashboards: true
@@ -830,7 +833,7 @@ plugins.setConfigs("dashboards", {
                 //as notes, are always copied.
                 widgets = widgets.filter(function(widget) {
                     if (isAppLessWidget(widget)) {
-                        widget.apps = [];
+                        widget.apps = APP_LESS_WIDGET_APPS;
                         return true;
                     }
 
@@ -1217,9 +1220,9 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
-            //Whatever apps value was sent, a note never references apps.
+            //Whatever apps value was sent, a note is stored with "*".
             if (isAppLessWidget(widget)) {
-                widget.apps = [];
+                widget.apps = APP_LESS_WIDGET_APPS;
             }
 
             if (!isWidgetValid(widget)) {
@@ -1234,16 +1237,18 @@ plugins.setConfigs("dashboards", {
             //A new widget may only reference apps the creator can read. Reject
             //rather than silently strip, so a widget is never stored pointing at
             //an app whose data will not be served.
-            var newWidgetApps = normalizeAppIds(widget.apps);
-            if (newWidgetApps === null) {
-                common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
-                return true;
+            if (!isAppLessWidget(widget)) {
+                var newWidgetApps = normalizeAppIds(widget.apps);
+                if (newWidgetApps === null) {
+                    common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
+                    return true;
+                }
+                if (!memberHasAccessToAllApps(params.member, newWidgetApps)) {
+                    common.returnMessage(params, 403, 'Not allowed to use one or more of the given apps');
+                    return true;
+                }
+                widget.apps = newWidgetApps;
             }
-            if (!memberHasAccessToAllApps(params.member, newWidgetApps)) {
-                common.returnMessage(params, 403, 'Not allowed to use one or more of the given apps');
-                return true;
-            }
-            widget.apps = newWidgetApps;
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 if (err || !dashboard) {
@@ -1356,9 +1361,9 @@ plugins.setConfigs("dashboards", {
                                 var isNote = isAppLessWidget({widget_type: widget.widget_type || existingWidget.widget_type});
 
                                 if (isNote) {
-                                    //Whatever apps value was sent, a note never
-                                    //references apps.
-                                    widget.apps = [];
+                                    //Whatever apps value was sent, a note is
+                                    //stored with "*".
+                                    widget.apps = APP_LESS_WIDGET_APPS;
                                     if (typeof widget.contenthtml !== "undefined") {
                                         widget.contenthtml = sanitizeNote(widget.contenthtml);
                                     }
@@ -1775,8 +1780,8 @@ plugins.setConfigs("dashboards", {
 
     /**
      * Function to check whether a widget shows no app data. Such widgets are
-     * stored without apps; the UI sends apps: "*" for them, which is not an
-     * app list and would otherwise fail normalizeAppIds.
+     * always stored with apps: APP_LESS_WIDGET_APPS ("*", the format notes
+     * have always had) and skip app id validation and access checks.
      * @param  {Object} widget - widget
      * @returns {Boolean} true if the widget references no apps
      */

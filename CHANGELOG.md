@@ -18,7 +18,7 @@ Fixes:
 - [core] Chart tooltips show label text as text, and the dashboard decodes the same key substitutions the api applies
 - [core] Segmentation values with HTML attributes are no longer dropped from the All Events breakdown
 - [core] The stored member language is kept a language code, and plain containers are detected by prototype
-- [dashboards] Note widgets can be created, edited and copied again; their apps value is always stored as an empty list
+- [dashboards] Note widgets can be created, edited and copied again; their apps value is always stored as "*"
 - [hooks] Endpoint rules are indexed by path, and every email effect is sanitized instead of throwing on a template-less one
 - [populator] A template is kept while other apps still have environments from it
 - [push] Audience filter operators are checked on the estimate endpoint, and message text renders as text in the notification preview
