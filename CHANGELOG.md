@@ -3,6 +3,9 @@ Enterprise Fixes:
 - [active_users] Today's values are refreshed at most every 5 minutes, and a failed calculation keeps the previous values and is retried after 5 minutes instead of on every dashboard load
 - [data-manager] Removed a noisy log for events without a transformation rule
 
+Features:
+- [core] Database names can be set explicitly with the `databases` config or one environment variable per database (COUNTLY_CONFIG__DATABASES_COUNTLY, _COUNTLY_DRILL, _COUNTLY_OUT, _COUNTLY_FS), so Countly can run on databases with names other than the defaults
+
 Fixes:
 - [dashboards] Note widgets can be created, edited and copied again; their apps value is always stored as "*"
 
