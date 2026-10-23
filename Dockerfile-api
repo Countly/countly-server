@@ -12,15 +12,15 @@ RUN apt-get update && \
 
 # Python 3.12 from source for the ab-testing cmdstanpy models
 RUN cd /usr/src && \
-	wget -q https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && \
-	tar -xf Python-3.12.12.tar.xz && \
-	cd Python-3.12.12 && \
+	wget -q https://www.python.org/ftp/python/3.12.15/Python-3.12.15.tar.xz && \
+	tar -xf Python-3.12.15.tar.xz && \
+	cd Python-3.12.15 && \
 	./configure --enable-optimizations --enable-shared && \
 	make -j"$(nproc)" && \
 	make altinstall && \
 	ldconfig && \
 	python3.12 -c "import ssl" && \
-	python3.12 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
+	python3.12 -m pip install --no-cache-dir --upgrade "pip>=26.2.2" "certifi>=2026.10.19" setuptools wheel && \
 	rm -rf /usr/src/Python*
 
 
