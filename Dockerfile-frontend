@@ -1,5 +1,5 @@
 # node:24-trixie-slim -- Node.js 24 (Krypton LTS) on Debian trixie-slim.
-# Multi-arch manifest list digest, resolved 2026-10-23 (Node.js 24.22.1).
+# Multi-arch manifest list digest, resolved 2026-10-23.
 FROM node:24-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea AS builder
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides

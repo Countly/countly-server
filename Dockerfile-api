@@ -1,5 +1,5 @@
 # node:24-trixie-slim -- Node.js 24 (Krypton LTS) on Debian trixie-slim.
-# Multi-arch manifest list digest, resolved 2026-10-23 (Node.js 24.22.1).
+# Multi-arch manifest list digest, resolved 2026-10-23.
 FROM node:24-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea AS builder-base
 
 ENV NODE_OPTIONS="--max-old-space-size=2048"
