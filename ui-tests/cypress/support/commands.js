@@ -539,7 +539,7 @@ Cypress.Commands.add('verifyElement', ({
 });
 
 Cypress.Commands.add('dropMongoDatabase', () => {
-    cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
+    cy.task('dropMongoDatabase');
 });
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {

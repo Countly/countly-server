@@ -1,3 +1,73 @@
+## Version 25.03.56-LTS
+Security Fixes:
+- [docker] Node.js 24.22.1 in the api and frontend images (Brotli decoder fix)
+- [core] `bin/upgrade/25.03/upgrade.nodejs.22.patch.sh` updates an existing Node.js 22 install to the latest patch release (22.23.4 or later) without reinstalling node_modules
+- [ab-testing] Python 3.12.12 to 3.12.15 in the api image, with pip 26.2.2 and certifi 2026.10.19 (refreshed CA bundle) required by the image, the model requirements and `setup.sh`; `bin/upgrade/25.03/upgrade.python.certifi.sh` refreshes pip, certifi and the model requirements on an existing 25.03 install
+
+Fixes:
+- [ab-testing] `setup.sh` aborts when a package install or model build fails instead of reporting success, and installs its packages system-wide on Ubuntu 24, where the system python3.12 is externally managed
+
+This release also carries everything from 25.03.54 and 25.03.55 below.
+
+## Version 25.03.55
+Enterprise Fixes:
+- [active_users] Today's values are refreshed at most every 5 minutes, and a failed calculation keeps the previous values and is retried after 5 minutes instead of on every dashboard load
+- [data-manager] Removed a noisy log for events without a transformation rule
+
+Features:
+- [core] Database names can be set explicitly
+
+Fixes:
+- [dashboards] Note widgets can be created, edited and copied again.
+
+## Version 25.03.54
+Enterprise Features:
+- [journey_engine] Bar chart visualisation on the performance chart, with readable date labels and a cleaner header
+- [license] License v2 install side: entitlements, slots, renewal and offline policy
+
+Enterprise Fixes:
+- [concurrent_users] Pass the alert app when dispatching to hooks
+- [formulas] getSavedMetric accepts an object-typed expression instead of assuming a JSON string
+- [funnels] Long names are ellipsized in the detail header, step segmentation resets when the funnel event changes, and the recalculating message no longer overlaps the Select Funnel dialog
+- [journey_engine] Create a new content block instead of overwriting the last
+- [license] Fixes for license manager forward compatibility
+- [users,cohorts] Warn when a profile group is created with a name that already exists
+
+Features:
+- [tracker] License lifecycle reporting helpers and an overridable telemetry target
+
+Fixes:
+- [core] Chart tooltips show label text as text, and the dashboard decodes the same key substitutions the api applies
+- [core] Segmentation values with HTML attributes are no longer dropped from the All Events breakdown
+- [core] The stored member language is kept a language code, and plain containers are detected by prototype
+- [hooks] Endpoint rules are indexed by path, and every email effect is sanitized instead of throwing on a template-less one
+- [populator] A template is kept while other apps still have environments from it
+- [push] Audience filter operators are checked on the estimate endpoint, and message text renders as text in the notification preview
+- [reports] Reports are built from declared fields, and non-core reports authorize the object they target
+- [tracker] Current-licence properties are cleared when the licence disappears
+
+Security Fixes:
+- [alerts] The apps an alert targets are authorized, not just who owns it
+- [configs] Only declared configuration is returned to non global admins, and credentials are masked
+- [content,surveys] Cross-Origin-Opener-Policy is taken off the embedded routes
+- [core] Auth tokens carry explicit CRUD permissions and a server-assigned login, with grants bounded by the owner's app membership
+- [core] Enterprise configuration readable by non global admins, and this repository's export query producers, are declared explicitly
+- [core] Export queries are hardened: caller input stays out of the query specification, projections are limited to include and exclude, and CSV cells a spreadsheet would read as a formula are neutralized
+- [core] Only a preset's editors may change it, and request parameters are no longer copied onto it
+- [core] Request credentials are no longer kept in stored documents or returned by the current user endpoint
+- [core] Server side rendering stays on the dashboard origin, default response headers are standardised, and the SSRF filter rejects the RFC 8215 local-use NAT64 prefix
+- [core] Untrusted input is handled as data: request parameters are scalars that consumers parse, stored-document walks are guarded against prototype keys, and values are encoded and sanitized at frontend HTML sinks
+- [dbviewer] Aggregation operators are validated against an allow-list
+- [drill,journey_engine] The stored document is authorized, not just the request, and the timeline exclude list is read whichever way it arrives
+- [hooks] App credentials are kept out of the effect payload
+- [oidc] The OIDC session token is marked login-capable
+- [push] Push action counters are bound to the ingesting app
+- [reports] Enabling, sending or rendering a report checks that the apps it covers are still readable, and scheduled reports stop once that access is lost
+- [star-rating] Consent link destinations are checked as URLs, and uploaded logo names stay inside the images directory
+- [star-rating] Widget endpoints are authorized and scoped: the ratings read requires rights, by-id lookups no longer expose internal fields, only the widget's own parameters are forwarded from /i/feedback/input, and rating counters are bound to the submitting app
+- [surveys] Only the widget's own parameters are forwarded from /i/feedback/inputs
+- [views] The token owner's read right is applied on the heatmap endpoint
+
 ## Version 25.03.53-LTS
 Fixes:
 - [core] Fix segmentation values with HTML attributes dropped from All Events breakdown
