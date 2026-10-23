@@ -1833,6 +1833,63 @@ var pluginManager = function pluginManager() {
     };
 
     /**
+    * Load own config file of a database (e.g. drill/config.js for countly_drill) with env overrides applied
+    * @param {string} name - Countly database: countly_drill, countly_out or countly_fs
+    * @returns {object|null} config or null if database has no own config file or it can't be loaded
+    **/
+    this.loadDbConfigFile = function(name) {
+        if (typeof name !== "string" || !Object.prototype.hasOwnProperty.call(this.dbConfigFiles, name)) {
+            return null;
+        }
+        var conf;
+        try {
+            conf = JSON.parse(JSON.stringify(require(this.dbConfigFiles[name])));
+        }
+        catch (ex) {
+            return null;
+        }
+        if (this.dbConfigEnvs[name]) {
+            conf = configextender(this.dbConfigEnvs[name], conf, process.env);
+        }
+        return conf;
+    };
+
+    /**
+    * Get database name explicitly configured for one of Countly databases. In order of precedence:
+    * - "databases" config, which env vars COUNTLY_CONFIG__DATABASES_COUNTLY, COUNTLY_CONFIG__DATABASES_COUNTLY_DRILL,
+    *   COUNTLY_CONFIG__DATABASES_COUNTLY_OUT and COUNTLY_CONFIG__DATABASES_COUNTLY_FS override
+    * - "db" in object form of "mongodb" config: main config for countly database,
+    *   database's own config file (e.g. drill/config.js) for the others
+    * When set, it is used as is instead of the database name derived from the connection string
+    * @param {string} name - Countly database: countly, countly_drill, countly_out or countly_fs
+    * @param {object} config - config to read the setting from
+    * @param {object=} dbConfig - database's own config file, see loadDbConfigFile
+    * @returns {string|null} configured database name or null if not configured
+    **/
+    this.getConfiguredDatabaseName = function(name, config, dbConfig) {
+        /**
+        * Get usable database name from config value, env var values like "2024" are parsed to numbers
+        * @param {*} value - config value
+        * @returns {string|null} database name or null if value is not usable
+        **/
+        var toName = function(value) {
+            if (typeof value === "number" && isFinite(value)) {
+                value = value + "";
+            }
+            return (typeof value === "string" && value.length) ? value : null;
+        };
+        var names = config && config.databases;
+        if (names && typeof names === "object" && Object.prototype.hasOwnProperty.call(names, name) && toName(names[name])) {
+            return toName(names[name]);
+        }
+        var mongo = name === "countly" ? (config && config.mongodb) : (dbConfig && dbConfig.mongodb);
+        if (mongo && typeof mongo === "object" && toName(mongo.db)) {
+            return toName(mongo.db);
+        }
+        return null;
+    };
+
+    /**
     * Get database connection parameters for command line
     * @param {object} config - connection configs
     * @returns {object} db connection params
@@ -1840,6 +1897,7 @@ var pluginManager = function pluginManager() {
     this.getDbConnectionParams = function(config) {
         var ob = {};
         var db;
+        var configuredName = this.getConfiguredDatabaseName(typeof config === "string" ? config : "countly", countlyConfig, this.loadDbConfigFile(config));
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
@@ -1942,6 +2000,10 @@ var pluginManager = function pluginManager() {
             }
         }
 
+        if (configuredName) {
+            ob.db = configuredName;
+        }
+
         return ob;
     };
 
@@ -2037,6 +2099,10 @@ var pluginManager = function pluginManager() {
             config = config || useConfig;
         }
 
+        //database name set explicitly in config wins over the one in connection string
+        //read before config.mongodb.db is overwritten below, config can be the same object as useConfig
+        var configuredName = this.getConfiguredDatabaseName(db || "countly", useConfig, this.loadDbConfigFile(db));
+
         if (config && typeof config.mongodb === "string") {
             try {
                 const urlObj = new URL(config.mongodb);
@@ -2124,8 +2190,12 @@ var pluginManager = function pluginManager() {
             db_name = "countly";
         }
 
+        if (configuredName) {
+            db_name = configuredName;
+        }
+
         try {
-            dbOptions.appname = process.title + ": " + db_name + "(" + maxPoolSize + ") " + process.pid;
+            dbOptions.appname = process.title + ": " + (configuredName ? (db || "countly") : db_name) + "(" + maxPoolSize + ") " + process.pid;
         }
         catch (ex) {
             //silent
@@ -2216,7 +2286,7 @@ var pluginManager = function pluginManager() {
         if (dbList.length) {
             var ret = [];
             for (let i = 0; i < dbList.length; i++) {
-                ret.push(client.db(dbList[i]));
+                ret.push(client.db(this.getConfiguredDatabaseName(dbList[i], useConfig, this.loadDbConfigFile(dbList[i])) || dbList[i]));
             }
             return ret;
         }

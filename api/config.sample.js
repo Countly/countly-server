@@ -11,7 +11,7 @@ var countlyConfig = {
     * @property {string} [host=localhost] - host where to connect to mongodb, default localhost
     * @property {array=} replSetServers - array with multiple hosts, if you are connecting to replica set, provide this instead of host
     * @property {string=} replicaName - replica name, must provide for replica set connection to work
-    * @property {string} [db=countly] - countly database name, default countly
+    * @property {string} [db=countly] - main countly database name, default countly, databases.countly overrides it
     * @property {number} [port=27017] - port to use for mongodb connection, default 27017
     * @property {number} [max_pool_size=500] - how large pool size connection per process to create, default 500 per process, not recommended to be more than 1000 per server
     * @property {string=} username - username for authenticating user, if mongodb supports authentication
@@ -50,8 +50,31 @@ var countlyConfig = {
     },
     */
     /*  or define as a url
-	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-	mongodb: "mongodb://localhost:27017/countly",
+	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/?options]
+	//database names are not taken from the url, see databases below
+	//with username and password also set authSource, e.g. mongodb://user:pass@localhost:27017/?authSource=admin
+	mongodb: "mongodb://localhost:27017",
+    */
+    /**
+    * Optional explicit database names. By default Countly databases are named countly, countly_drill,
+    * countly_out and countly_fs. Set a name here to use a different database, it is used as is.
+    * These override db set in mongodb config (countly) or in database own config file, e.g. drill/config.js
+    * (countly_drill), env vars override these. Must be same in api and frontend configs.
+    * Env vars: COUNTLY_CONFIG__DATABASES_COUNTLY, COUNTLY_CONFIG__DATABASES_COUNTLY_DRILL,
+    * COUNTLY_CONFIG__DATABASES_COUNTLY_OUT, COUNTLY_CONFIG__DATABASES_COUNTLY_FS
+    * @type {object=}
+    * @property {string=} countly - main database name
+    * @property {string=} countly_drill - drill database name
+    * @property {string=} countly_out - out database name
+    * @property {string=} countly_fs - file storage database name
+    */
+    /*
+    databases: {
+        countly: "countly",
+        countly_drill: "countly_drill",
+        countly_out: "countly_out",
+        countly_fs: "countly_fs"
+    },
     */
     /**
     * Default API configuration
