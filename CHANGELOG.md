@@ -1,26 +1,42 @@
 ## Version 25.03.56-LTS
 Security Fixes:
 - [docker] Node.js 24.22.1 in the api and frontend images (Brotli decoder fix, CVE-2026-111497)
-- [core] `bin/upgrade/25.03/upgrade.nodejs.22.patch.sh` updates an existing Node.js 22 install to the latest patch release (22.23.4 or later) without reinstalling node_modules
-- [ab-testing] Python 3.12.12 to 3.12.15 in the api image, with pip 26.2.2 and certifi 2026.10.19 (refreshed CA bundle) required by the image, the model requirements and `setup.sh`; `bin/upgrade/25.03/upgrade.python.certifi.sh` refreshes pip, certifi and the model requirements on an existing 25.03 install
-- [ab-testing] `setup.sh` builds Python 3.12.15 instead of 3.12.0 on RHEL
+- [core] `bin/upgrade/25.03/upgrade.nodejs.22.patch.sh` updates an existing Node.js 22 install to 22.23.4 or later (same CVE)
+- [ab-testing] Python 3.12.15 with pip 26.2.2 and certifi 2026.10.19 in the api image and in `setup.sh` (RHEL builds 3.12.15 instead of 3.12.0); `bin/upgrade/25.03/upgrade.python.certifi.sh` updates existing installs
+
+Features:
+- [core] Database names can be set explicitly
 
 Fixes:
-- [ab-testing] `setup.sh` aborts when a package install or model build fails instead of reporting success, and installs its packages system-wide on Ubuntu 24, where the system python3.12 is externally managed
+- [dashboards] Note widgets can be created, edited and copied again
 
 Enterprise Features:
 - [license] A payment-overdue bar shows on every dashboard page while the licence server marks the licence as overdue
 
-Dependencies:
-- Bump nodemailer from 10.0.15 to 10.1.0
-- Bump express-rate-limit from 8.7.0 to 8.7.1
-- Bump puppeteer from 25.12.0 to 25.13.0
-- Bump vue-i18n from 11.4.13 to 11.4.14 in /plugins/content
-- Bump vite from 8.3.3 to 8.3.4 in /plugins/content and /plugins/journey_engine
-- Bump @vitejs/plugin-vue from 6.0.9 to 6.0.10 in /plugins/content and /plugins/journey_engine
-- Bump vitest from 5.0.3 to 5.0.4 in /plugins/content
+Enterprise Fixes:
+- [ab-testing] `setup.sh` stops when a package install or model build fails, and installs on Ubuntu 24, where python3.12 is externally managed
+- [active_users] Today's values are refreshed at most every 5 minutes, and a failed calculation is retried after 5 minutes instead of on every dashboard load
+- [data-manager] Removed a noisy log for events without a transformation rule
+- [formulas] getSavedMetric accepts an object-typed expression instead of assuming a JSON string
+- [users,cohorts] Warn when a profile group is created with a name that already exists
 
-This release also carries everything from 25.03.54 and 25.03.55 below.
+Dependencies:
+- Bump express-rate-limit from 8.7.0 to 8.7.1
+- Bump fs-extra from 11.4.0 to 11.4.1
+- Bump get-random-values from 5.0.0 to 5.0.1
+- Bump ipaddr.js from 2.4.0 to 2.5.0, also in /plugins/hooks
+- Bump moment from 2.30.1 to 2.31.0
+- Bump moment-timezone from 0.6.3 to 0.6.5, also in /bin/scripts/timezones
+- Bump nodemailer from 9.0.6 to 10.1.0
+- Bump puppeteer from 25.10.0 to 25.13.0
+- Bump rate-limiter-flexible from 11.2.0 to 11.2.1
+- Bump sass from 1.103.1 to 1.105.1
+- Bump sharp from 0.35.3 to 0.35.5, and from 0.35.4 to 0.35.5 in /plugins/content
+- Bump tar-stream from 3.2.1 to 3.2.2 in /plugins/system-utility
+- Bump bitset from 5.2.3 to 5.3.0 in /plugins/retention_segments
+- Bump swiper from 14.2.0 to 14.3.0 in /plugins/content
+- Bump vue-i18n from 11.4.10 to 11.4.14 in /plugins/content
+- Pin qs to 6.16.0 or later through an npm override
 
 ## Version 25.03.55
 Enterprise Fixes:
