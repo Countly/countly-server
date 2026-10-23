@@ -17,6 +17,11 @@
 
 NODE_MIN="22.23.4"
 
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root"
+    exit 1
+fi
+
 if [ -f /etc/redhat-release ]; then
     CENTOS_MAJOR="$(awk -F'[^0-9]+' '{ print $2 }' /etc/redhat-release)"
 
@@ -61,8 +66,12 @@ echo "Node.js $BEFORE -> $AFTER (required >= $NODE_MIN)"
 # sort -V puts the lower version first; the update is complete when NODE_MIN
 # is not strictly above the installed version
 if [ "$(printf '%s\n%s\n' "$NODE_MIN" "$AFTER" | sort -V | head -n1)" != "$NODE_MIN" ]; then
-    echo "Node.js is still below $NODE_MIN: the configured repository does not carry it yet."
-    echo "On RHEL the AppStream module lags upstream; bin/upgrade/25.03/upgrade.nodejs.22.sh switches the install to NodeSource, which does."
+    echo "Node.js is still below $NODE_MIN: the configured package repository does not carry it."
+    if [ -f /etc/redhat-release ]; then
+        echo "The RHEL AppStream module lags upstream; bin/upgrade/25.03/upgrade.nodejs.22.sh switches the install to NodeSource, which has it."
+    else
+        echo "Check that /etc/apt/sources.list.d/nodesource.list points at node_22.x; bin/upgrade/25.03/upgrade.nodejs.22.sh sets it up."
+    fi
     exit 1
 fi
 
@@ -73,4 +82,6 @@ fi
 
 if command -v countly >/dev/null 2>&1; then
     countly restart
+else
+    echo "countly command not found; restart the Countly processes to pick up the new Node.js"
 fi
