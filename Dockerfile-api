@@ -10,7 +10,8 @@ RUN apt-get update && \
 		python3 python3-setuptools zlib1g-dev libssl-dev libncurses-dev libgdbm-dev libnss3-dev libsqlite3-dev \
 		libreadline-dev libffi-dev libbz2-dev sqlite3 ca-certificates
 
-# Python 3.12 from source for the ab-testing cmdstanpy models
+# Python 3.12 from source for the ab-testing cmdstanpy models.
+# pip>=26.2.2 and certifi>=2026.10.19 drop the distrusted emSign roots.
 RUN cd /usr/src && \
 	wget -q https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && \
 	tar -xf Python-3.12.12.tar.xz && \
@@ -20,7 +21,7 @@ RUN cd /usr/src && \
 	make altinstall && \
 	ldconfig && \
 	python3.12 -c "import ssl" && \
-	python3.12 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
+	python3.12 -m pip install --no-cache-dir --upgrade "pip>=26.2.2" "certifi>=2026.10.19" setuptools wheel && \
 	rm -rf /usr/src/Python*
 
 
