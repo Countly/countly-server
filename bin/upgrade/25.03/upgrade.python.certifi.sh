@@ -2,9 +2,8 @@
 
 # Refreshes the Python package stack the ab-testing models run on, for an
 # existing 25.03 install: pip (which vendors the certifi CA bundle), certifi
-# itself, and the plugin's pinned requirements. On Ubuntu it also disables the
-# distrusted emSign roots in the OS CA store, whether ab-testing is installed
-# or not.
+# itself, and the plugin's pinned requirements. It also limits the OS CA store
+# to the emSign root certifi keeps (G1), whether ab-testing is installed or not.
 #
 # Standalone, like upgrade.nodejs.22.sh: not tied to the version gate, so any
 # 25.03.x install can run it, and safe to run again, as pip only reinstalls
@@ -24,8 +23,10 @@ CERTIFI_MIN="2026.10.19"
 # always installed the plugin's packages system-wide for that interpreter, so
 # this refresh does the same; pip >= 23.1 and get-pip.py honour the variable.
 export PIP_BREAK_SYSTEM_PACKAGES=1
-# pip's warning about running as root is noise here: this runs as root on purpose
 export PIP_ROOT_USER_ACTION=ignore
+export DEBIAN_FRONTEND=noninteractive
+# runs as root; setup.sh shares upgrade_pip below and runs it through sudo
+SUDO_PIP=""
 
 if [ -f /etc/redhat-release ]; then
     CENTOS_MAJOR="$(awk -F'[^0-9]+' '{ print $2 }' /etc/redhat-release)"
@@ -48,39 +49,38 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../.." && pwd )"
 AB="$DIR/plugins/ab-testing/api/bayesian"
 
-# The distro pip uses the OS CA store rather than a bundle of its own, as do
-# curl, apt and python's default SSL context, and Ubuntu had not dropped the
-# distrusted emSign roots yet. Disables the ones certifi 2026.10.19 dropped (G1
-# stays trusted, as in certifi). Ubuntu keeps "!" lines across ca-certificates
-# upgrades. Runs before the ab-testing check, as the store serves the whole host.
-EMSIGN_DISTRUSTED="emSign_Root_CA_-_C1 emSign_ECC_Root_CA_-_C3 emSign_ECC_Root_CA_-_G3"
-CA_OK=1
-if [ -f /etc/ca-certificates.conf ] && command -v update-ca-certificates >/dev/null 2>&1; then
-    CA_CHANGED=0
-    for c in $EMSIGN_DISTRUSTED; do
-        if grep -qx "mozilla/$c.crt" /etc/ca-certificates.conf; then
-            if [ "$CA_CHANGED" = "0" ]; then
-                cp -p /etc/ca-certificates.conf "/etc/ca-certificates.conf.bak-$(date '+%Y%m%d-%H%M%S')"
-            fi
-            sed -i "s|^mozilla/$c.crt$|!&|" /etc/ca-certificates.conf
-            echo "Disabling $c in the OS CA store"
-            CA_CHANGED=1
-        fi
-    done
-    if [ "$CA_CHANGED" = "1" ]; then
+# The distro pip, curl, apt/dnf and python's default SSL use the OS CA store,
+# which still trusts emSign roots that certifi dropped; only G1 is kept.
+CA_LEFT=""
+if [ -f /etc/ca-certificates.conf ]; then
+    # Debian/Ubuntu: a "!" line disables a root, and survives ca-certificates upgrades
+    if grep -E '^mozilla/emSign.*\.crt$' /etc/ca-certificates.conf | grep -qvx 'mozilla/emSign_Root_CA_-_G1.crt'; then
+        cp -p /etc/ca-certificates.conf "/etc/ca-certificates.conf.bak-$(date '+%Y%m%d-%H%M%S')"
+        sed -i '/^mozilla\/emSign.*\.crt$/{/emSign_Root_CA_-_G1.crt$/!s/^/!/}' /etc/ca-certificates.conf
         update-ca-certificates
     fi
-    for c in $EMSIGN_DISTRUSTED; do
-        if [ -e "/etc/ssl/certs/$c.pem" ]; then
-            echo "OS CA store: $c is still trusted"
-            CA_OK=0
-        fi
-    done
-    if [ "$CA_OK" = "1" ]; then
-        echo "OS CA store: distrusted emSign roots are not trusted"
+    CA_LEFT="$(ls /etc/ssl/certs | grep '^emSign.*\.pem$' | grep -vx 'emSign_Root_CA_-_G1.pem')"
+elif [ -f /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem ]; then
+    # CentOS/RHEL: a root copied into source/blocklist (blacklist on 8) is distrusted
+    CA_BUNDLE=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+    CA_BLOCK=/etc/pki/ca-trust/source/blocklist
+    [ -d "$CA_BLOCK" ] || CA_BLOCK=/etc/pki/ca-trust/source/blacklist
+    if sed -n 's/^# //p' "$CA_BUNDLE" | grep '^emSign' | grep -qvx 'emSign Root CA - G1'; then
+        awk -v dir="$CA_BLOCK" '
+            /^# / { label = substr($0, 3) }
+            /BEGIN CERTIFICATE/ { keep = (label ~ /^emSign/ && label != "emSign Root CA - G1"); file = dir "/" label ".pem"; gsub(/ /, "_", file) }
+            keep { print > file }
+            /END CERTIFICATE/ { keep = 0 }' "$CA_BUNDLE"
+        update-ca-trust extract
     fi
-elif [ -f /etc/redhat-release ]; then
-    echo "NOTE: the OS CA store is not changed on CentOS/RHEL, check the emSign roots with: trust list | grep -A2 -i emsign"
+    CA_LEFT="$(sed -n 's/^# //p' "$CA_BUNDLE" | grep '^emSign' | grep -vx 'emSign Root CA - G1')"
+fi
+CA_OK=1
+if [ -n "$CA_LEFT" ]; then
+    echo "OS CA store still trusts: $(echo $CA_LEFT)"
+    CA_OK=0
+else
+    echo "OS CA store: only emSign Root CA - G1 is trusted, as in certifi"
 fi
 
 if [ ! -d "$AB" ] || [ -f "$AB/.ab_disabled" ]; then
@@ -98,69 +98,54 @@ if [ -z "$PY" ]; then
 fi
 echo "Using $PY ($("$PY" --version 2>&1))"
 
-# Upgrades pip for $1 to >= $PIP_MIN, whoever installed it, so that a single
-# up-to-date pip is the one used:
-#  - not installed                -> get-pip.py
-#  - installed by pip/get-pip     -> upgraded in place
-#  - apt/rpm package, unused      -> package removed, then get-pip.py (one copy left)
-#  - apt/rpm package, depended on -> installed alongside in /usr/local, which
-#    comes before the package's copy on sys.path and PATH
-# The generic pip/pip3 commands are kept as they were unless $1 is the system
-# python3, so a python3.12 next to a python3.10 does not take over "pip3".
+# pip >= $PIP_MIN for python $1 without breaking a distro (apt/rpm) pip: that one
+# is replaced only for the system python3 when nothing depends on it, and put
+# back if the new pip fails; otherwise the new pip goes alongside it in
+# /usr/local. python < 3.10 is left alone, and pip/pip3 stay with python3.
 upgrade_pip() {
-    local py="$1" pip_dir pkg="" mgr="" rc backup b
+    local py pip_dir pkg="" deps removed="" system=0 rc backup pm=apt-get
+    py="$(command -v "$1")"
+    command -v apt-get >/dev/null 2>&1 || pm=dnf
+    if ! "$py" -c 'import sys; sys.exit(sys.version_info < (3, 10))'; then
+        echo "pip >= $PIP_MIN needs python >= 3.10, leaving the pip of $py as it is"
+        return 1
+    fi
+    [ "$(readlink -f "$py")" != "$(readlink -f "$(command -v python3)")" ] || system=1
+    pip_dir="$("$py" -c 'import os, pip; print(os.path.dirname(pip.__file__))' 2>/dev/null)" || pip_dir=""
+    if [ -n "$pip_dir" ]; then
+        pkg="$(dpkg -S "$pip_dir" 2>/dev/null | head -1 | cut -d: -f1)"
+        [ -n "$pkg" ] || pkg="$(rpm -qf --qf '%{NAME}' "$pip_dir" 2>/dev/null)" || pkg=""
+    fi
+    backup="$(mktemp -d)"
+    cp -p /usr/local/bin/pip /usr/local/bin/pip3 "$backup/" 2>/dev/null || true
 
-    get_pip() {
+    if [ -z "$pkg" ] && "$py" -m pip --version >/dev/null 2>&1; then
+        echo "pip in $pip_dir was installed by pip, upgrading it in place"
+        $SUDO_PIP "$py" -m pip install --upgrade --no-warn-script-location "pip>=$PIP_MIN"; rc=$?
+    else
+        deps="$(apt-cache rdepends --installed "$pkg" 2>/dev/null | tail -n +3; rpm -q --whatrequires "$pkg" 2>/dev/null | grep -v '^no package')"
+        if [ -z "$pkg" ]; then
+            echo "pip is missing for $py, installing it"
+        elif [ "$system" = "1" ] && [ -z "$deps" ] && $SUDO_PIP $pm remove -y "$pkg"; then
+            echo "removed distro package $pkg, nothing depended on it, replacing it"
+            removed="$pkg"
+        else
+            echo "pip in $pip_dir is distro package $pkg, installing alongside it"
+        fi
+        # --ignore-installed: never uninstall a distro pip, it can be shared with another python
         curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
-            && "$py" /tmp/get-pip.py "pip>=$PIP_MIN"
+            && $SUDO_PIP "$py" /tmp/get-pip.py --ignore-installed --no-warn-script-location "pip>=$PIP_MIN"
         rc=$?
         rm -f /tmp/get-pip.py
-        return $rc
-    }
-
-    # remember the generic commands, to put them back if they belong elsewhere
-    backup="$(mktemp -d)"
-    for b in pip pip3; do
-        [ -f "/usr/local/bin/$b" ] && cp -p "/usr/local/bin/$b" "$backup/"
-    done
-
-    if ! "$py" -m pip --version >/dev/null 2>&1; then
-        echo "pip is missing for $py, bootstrapping it"
-        get_pip; rc=$?
-    else
-        pip_dir="$("$py" -c 'import os, pip; print(os.path.dirname(pip.__file__))')"
-        if command -v dpkg >/dev/null 2>&1 && dpkg -S "$pip_dir" >/dev/null 2>&1; then
-            mgr=apt
-            pkg="$(dpkg -S "$pip_dir" 2>/dev/null | head -1 | cut -d: -f1)"
-        elif command -v rpm >/dev/null 2>&1 && rpm -qf "$pip_dir" >/dev/null 2>&1; then
-            mgr=rpm
-            pkg="$(rpm -qf --qf '%{NAME}' "$pip_dir")"
-        fi
-
-        if [ -z "$pkg" ]; then
-            echo "pip in $pip_dir was installed by pip, upgrading it in place"
-            "$py" -m pip install --upgrade "pip>=$PIP_MIN"; rc=$?
-        elif [ "$mgr" = "apt" ] && [ -z "$(apt-cache rdepends --installed "$pkg" | tail -n +3)" ]; then
-            echo "pip in $pip_dir is apt package $pkg and nothing depends on it, replacing it"
-            DEBIAN_FRONTEND=noninteractive apt-get remove -y "$pkg" && get_pip; rc=$?
-        elif [ "$mgr" = "rpm" ] && ! rpm -q --whatrequires "$pkg" >/dev/null 2>&1; then
-            echo "pip in $pip_dir is rpm package $pkg and nothing depends on it, replacing it"
-            dnf remove -y "$pkg" && get_pip; rc=$?
-        else
-            echo "pip in $pip_dir is $mgr package $pkg and is depended on, installing alongside it"
-            "$py" -m pip install --upgrade --ignore-installed "pip>=$PIP_MIN"; rc=$?
+        if [ "$rc" != "0" ] && [ -n "$removed" ]; then
+            echo "WARNING: the new pip failed, reinstalling $removed"
+            $SUDO_PIP $pm install -y "$removed"
         fi
     fi
 
-    # only the system python3 may own the generic pip/pip3 commands
-    if [ "$(readlink -f "$py")" != "$(readlink -f "$(command -v python3)")" ]; then
-        for b in pip pip3; do
-            if [ -f "$backup/$b" ]; then
-                cp -p "$backup/$b" "/usr/local/bin/$b"
-            else
-                rm -f "/usr/local/bin/$b"
-            fi
-        done
+    if [ "$system" = "0" ]; then
+        sudo -n rm -f /usr/local/bin/pip /usr/local/bin/pip3
+        sudo -n cp -p "$backup"/* /usr/local/bin/ 2>/dev/null || true
     fi
     rm -rf "$backup"
     return $rc
@@ -168,13 +153,11 @@ upgrade_pip() {
 
 upgrade_pip "$PY" || echo "WARNING: pip could not be upgraded to >= $PIP_MIN on $PY"
 
-# A distro certifi (Debian/Ubuntu point it at the OS CA store) stays for the
-# distro's own tools: pip would delete its files without telling dpkg/rpm. The
-# newer one goes alongside in /usr/local, which comes first on sys.path.
+# a distro certifi is kept (pip would delete its files without telling apt/rpm)
+# and the new one installed alongside it
 CERTIFI_DIR="$("$PY" -c 'import os, certifi; print(os.path.dirname(certifi.__file__))' 2>/dev/null)"
 CERTIFI_ARGS=""
 if [ -n "$CERTIFI_DIR" ] && { dpkg -S "$CERTIFI_DIR" || rpm -qf "$CERTIFI_DIR"; } >/dev/null 2>&1; then
-    echo "certifi in $CERTIFI_DIR belongs to a distro package, installing certifi >= $CERTIFI_MIN alongside it"
     CERTIFI_ARGS="--ignore-installed"
 fi
 "$PY" -m pip install --upgrade $CERTIFI_ARGS "certifi>=$CERTIFI_MIN" || exit 1
