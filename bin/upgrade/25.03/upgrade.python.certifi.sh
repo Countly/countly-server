@@ -59,7 +59,7 @@ if [ -f /etc/ca-certificates.conf ]; then
         sed -i '/^mozilla\/emSign.*\.crt$/{/emSign_Root_CA_-_G1.crt$/!s/^/!/}' /etc/ca-certificates.conf
         update-ca-certificates
     fi
-    CA_LEFT="$(ls /etc/ssl/certs | grep '^emSign.*\.pem$' | grep -vx 'emSign_Root_CA_-_G1.pem')"
+    CA_LEFT="$(find /etc/ssl/certs -maxdepth 1 -name 'emSign*.pem' ! -name 'emSign_Root_CA_-_G1.pem' -printf '%f\n')"
 elif [ -f /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem ]; then
     # CentOS/RHEL: a root copied into source/blocklist (blacklist on 8) is distrusted
     CA_BUNDLE=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
@@ -77,7 +77,7 @@ elif [ -f /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem ]; then
 fi
 CA_OK=1
 if [ -n "$CA_LEFT" ]; then
-    echo "OS CA store still trusts: $(echo $CA_LEFT)"
+    echo "OS CA store still trusts: ${CA_LEFT//$'\n'/, }"
     CA_OK=0
 else
     echo "OS CA store: only emSign Root CA - G1 is trusted, as in certifi"
