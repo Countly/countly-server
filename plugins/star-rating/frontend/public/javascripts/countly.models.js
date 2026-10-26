@@ -208,13 +208,15 @@
         // returning promise
         return $.ajax({
             type: "GET",
-            url: countlyCommon.API_URL + "/o/feedback/widget",
+            url: countlyCommon.API_URL + "/o/feedback/widgets",
             data: {
                 widget_id: id,
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
-                callback(json);
+                if (json && json.length) {
+                    callback(json[0]);
+                }
             }
         });
     };
