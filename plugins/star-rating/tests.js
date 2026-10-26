@@ -231,6 +231,75 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Widget show counter', function() {
+        //the popup page fetches the widget with nfd=1 and no credential; only the
+        //owning app's key may count the show, and the widget is returned either way
+        var otherAppId = "";
+        var otherAppKey = "";
+        var shownBefore = 0;
+        var scale = testUtils.testScalingFactor || 1;
+
+        function timesShown() {
+            return testUtils.db.collection('feedback_widgets').findOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {projection: {timesShown: 1}}).then(function(w) {
+                return (w && w.timesShown) || 0;
+            });
+        }
+
+        function wait(ms) {
+            return new Promise(function(resolve) {
+                setTimeout(resolve, ms);
+            });
+        }
+
+        function fetchForSdk(query) {
+            return request.get('/o/feedback/widget?widget_id=' + WIDGET_ID + '&nfd=1' + query)
+                .expect(200)
+                .then(function(res) {
+                    JSON.parse(res.text).should.have.property('_id', WIDGET_ID);
+                });
+        }
+
+        before(async function() {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_KEY = testUtils.get("APP_KEY");
+            WIDGET_ID = testUtils.get("WIDGET_ID");
+            var res = await request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "SRShowCounterOtherApp", type: "mobile"})))
+                .expect(200);
+            otherAppId = res.body._id;
+            otherAppKey = res.body.key;
+            should.exist(otherAppKey);
+            shownBefore = await timesShown();
+        });
+
+        it('returns the widget without counting a show when no app key is sent', async function() {
+            await fetchForSdk('');
+            (await timesShown()).should.eql(shownBefore);
+        });
+
+        it('returns the widget without counting a show for another app\'s key', async function() {
+            await fetchForSdk('&app_key=' + otherAppKey);
+            await wait(1000 * scale);
+            (await timesShown()).should.eql(shownBefore);
+        });
+
+        it('returns the widget and counts one show for the owning app\'s key', async function() {
+            await fetchForSdk('&app_key=' + APP_KEY);
+            var started = Date.now();
+            var n = await timesShown();
+            while (n !== shownBefore + 1 && Date.now() - started < 20000 * scale) {
+                await wait(250 * scale);
+                n = await timesShown();
+            }
+            n.should.eql(shownBefore + 1);
+        });
+
+        after(async function() {
+            if (otherAppId) {
+                await request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: otherAppId})));
+            }
+        });
+    });
+
     describe('Get widgets by array parameter', function() {
         it('should return widgets array', function(done) {
             API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
