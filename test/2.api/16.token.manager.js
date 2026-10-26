@@ -879,7 +879,7 @@ describe('Testing token manager', function() {
 
         it('an endpoint restriction combines with permissions, and both apply', function(done) {
             request
-                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=both&multi=true&ttl=300&endpoint=/o/apps/details&permission=' + readCorePermission(APP_ID))
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=both&multi=true&ttl=300&endpoint=/o/analytics/dashboard&permission=' + readCorePermission(APP_ID))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -887,14 +887,14 @@ describe('Testing token manager', function() {
                     }
                     var token = JSON.parse(res.text).result;
                     request
-                        .get('/o/apps/details?app_id=' + APP_ID + '&auth_token=' + token)
+                        .get('/o/analytics/dashboard?app_id=' + APP_ID + '&auth_token=' + token)
                         .expect(200)
                         .end(function(err2) {
                             if (err2) {
                                 return done(err2);
                             }
                             request
-                                .get('/o/apps/mine?auth_token=' + token)
+                                .get('/o/analytics/countries?app_id=' + APP_ID + '&auth_token=' + token)
                                 .expect(400)
                                 .end(function(err3) {
                                     if (err3) {
