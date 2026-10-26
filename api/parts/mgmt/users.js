@@ -573,6 +573,24 @@ usersApi.updateUser = async function(params) {
         delete updatedMember.user_of;
     }
 
+    //a permission sent without its app lists gets them here, as it does on creation: the rights
+    //checks read permission._, so a member saved without it was refused on every app admin call
+    if (updatedMember.permission) {
+        if (typeof updatedMember.permission._ !== "object" || updatedMember.permission._ === null) {
+            updatedMember.permission._ = {};
+        }
+        if (!Array.isArray(updatedMember.permission._.a)) {
+            updatedMember.permission._.a = [];
+        }
+        if (!Array.isArray(updatedMember.permission._.u)) {
+            updatedMember.permission._.u = [];
+        }
+        ["c", "r", "u", "d"].forEach(function(accessType) {
+            if (typeof updatedMember.permission[accessType] !== "object" || updatedMember.permission[accessType] === null) {
+                updatedMember.permission[accessType] = {};
+            }
+        });
+    }
 
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function(errUpdatingUser) {
