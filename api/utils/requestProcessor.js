@@ -8,7 +8,7 @@
  * @typedef {import('../../types/common').TimeObject} TimeObject
  */
 
-const Promise = require('bluebird');
+const Promise = require('./promise.js');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');

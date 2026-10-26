@@ -8,7 +8,7 @@
  */
 const pluginManager = require('../../../plugins/pluginManager.js'),
     crypto = require('crypto');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 console.log('looking for users without uid');
 var dry_run = true;

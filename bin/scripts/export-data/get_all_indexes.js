@@ -9,7 +9,7 @@ var crypto = require('crypto');
 
 const plugins = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
-const Promise = require("bluebird");
+const Promise = require("../../../api/utils/promise.js");
 const _ = require('underscore');
 const async = require('async');
 

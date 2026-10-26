@@ -5,7 +5,7 @@
  *  Command: node diagnostic_report.js
  */
 
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 const pluginManager = require('../../../plugins/pluginManager.js');
 
 var settings = {

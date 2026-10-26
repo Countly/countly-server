@@ -1,6 +1,6 @@
 var pluginOb = {},
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../../../api/utils/promise.js"),
     common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
     authorize = require('../../../api/utils/authorizer.js'),

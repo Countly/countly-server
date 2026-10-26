@@ -5,7 +5,7 @@ Script fixes indexes for views collections and merges views if there are  views 
 
 var pluginManager = require('../../pluginManager.js'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../../../api/utils/promise.js"),
     countlyDb;
 
 console.log("Checking if name index is set");
