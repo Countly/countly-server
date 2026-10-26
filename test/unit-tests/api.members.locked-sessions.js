@@ -16,15 +16,17 @@ var MEMBER_ID = "bbbbbbbbbbbbbbbbbbbbbbbb";
 * Run usersApi.updateUser against a stubbed database
 * @param {string} actorId - id of the admin saving the change
 * @param {object} args - the update args
+* @param {object} before - extra fields of the member as stored before the change
 * @returns {Promise<object>} the sessions and tokens the update removed, and the response status
 **/
-function update(actorId, args) {
+function update(actorId, args, before) {
     var captured = {sessionQueries: [], removedSessions: [], removedTokens: [], status: null};
     var sessions = [
         {_id: "s-member", session: JSON.stringify({uid: MEMBER_ID})},
         {_id: "s-admin", session: JSON.stringify({uid: ADMIN_ID})}
     ];
 
+    var reads = 0;
     var realDb = common.db;
     var realMessage = common.returnMessage;
     var realDispatch = plugins.dispatch;
@@ -37,7 +39,18 @@ function update(actorId, args) {
             collection: function(name) {
                 return {
                     findOne: function(query, callback) {
-                        callback(null, {_id: query._id, username: "member"});
+                        // the first read is the member before the change
+                        var stored = {_id: query._id, username: "member"};
+                        if (reads++ === 0) {
+                            Object.assign(stored, before || {});
+                        }
+                        callback(null, stored);
+                    },
+                    deleteMany: function(query) {
+                        if (name === "auth_tokens") {
+                            captured.removedTokens.push(query);
+                        }
+                        return Promise.resolve({deletedCount: 0});
                     },
                     update: function(query, update, options, callback) {
                         callback(null);
@@ -91,11 +104,12 @@ function update(actorId, args) {
 }
 
 describe("locking a member", function() {
-    it("ends the locked member's dashboard sessions and login tokens", async function() {
+    it("ends the locked member's dashboard sessions and revokes their tokens, once", async function() {
         var result = await update(ADMIN_ID, {locked: true});
         result.status.should.equal(200);
+        result.sessionQueries.should.have.length(1);
         result.removedSessions.should.eql(["s-member"]);
-        result.removedTokens.should.eql([{owner: MEMBER_ID, purpose: "LoggedInAuth"}]);
+        result.removedTokens.should.eql([{owner: MEMBER_ID}]);
     });
 
     it("keeps the session of the admin saving the change", async function() {
@@ -110,8 +124,23 @@ describe("locking a member", function() {
         result.removedSessions.should.eql([]);
     });
 
-    it("does not end the session of an admin who saves their own account", async function() {
-        var result = await update(MEMBER_ID, {locked: true});
+    it("ends nothing again when a member who is already locked is saved", async function() {
+        var result = await update(ADMIN_ID, {locked: true, full_name: "Renamed"}, {locked: true});
+        result.status.should.equal(200);
+        result.sessionQueries.should.eql([]);
+        result.removedTokens.should.eql([]);
+    });
+});
+
+describe("changing a member's password", function() {
+    it("ends the member's sessions when another admin sets it", async function() {
+        var result = await update(ADMIN_ID, {password: "N3w-password!"});
+        result.status.should.equal(200);
+        result.removedSessions.should.eql(["s-member"]);
+    });
+
+    it("keeps the sessions of a member who changes their own", async function() {
+        var result = await update(MEMBER_ID, {password: "N3w-password!"});
         result.status.should.equal(200);
         result.sessionQueries.should.eql([]);
     });
