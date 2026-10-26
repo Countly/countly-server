@@ -328,7 +328,8 @@ export default defineConfig([
         ],
         languageOptions: {
             ecmaVersion: 2023,
-            sourceType: "commonjs",
+            // env: node in .eslintrc.json; it never changed sourceType
+            parserOptions: { ecmaFeatures: { globalReturn: true } },
             globals: nodeGlobals
         },
         rules: {
@@ -351,7 +352,8 @@ export default defineConfig([
         ignores: ["plugins/*/tests.js"],
         languageOptions: {
             ecmaVersion: 2023,
-            sourceType: "commonjs",
+            // env: node in .eslintrc.json; it never changed sourceType
+            parserOptions: { ecmaFeatures: { globalReturn: true } },
             globals: nodeGlobals
         },
         rules: {
@@ -366,7 +368,8 @@ export default defineConfig([
         ],
         languageOptions: {
             ecmaVersion: 2023,
-            sourceType: "commonjs",
+            // env: node in .eslintrc.json; it never changed sourceType
+            parserOptions: { ecmaFeatures: { globalReturn: true } },
             globals: { ...nodeGlobals, ...globals.mocha }
         },
         rules: {
@@ -400,6 +403,24 @@ export default defineConfig([
             ecmaVersion: 2023,
             sourceType: "module",
             globals: nodeGlobals
+        }
+    },
+    {
+        // ES module files that a Node block above also matches. A module has no global
+        // return, and handing espree both makes it clear globalReturn on the shared
+        // options object, which then turns off for every other file in that block.
+        files: [
+            "plugins/content/frontend/vite.config.js",
+            "plugins/journey_engine/frontend/vite.config.js",
+            "plugins/journey_engine/frontend/vite-manifest.js",
+            "plugins/content/frontend/content-blocks/**/*.js",
+            "plugins/journey_engine/frontend/builder/**/*.js",
+            "plugins/content/api/positioning/**/*.js",
+            "ui-tests/**/*.js"
+        ],
+        languageOptions: {
+            sourceType: "module",
+            parserOptions: { ecmaFeatures: { globalReturn: false } }
         }
     }
 ]);
