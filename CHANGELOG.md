@@ -1,3 +1,53 @@
+## Version 25.03.57-LTS
+Security Fixes:
+- [core] `upgrade.python.certifi.sh` also distrusts the emSign roots certifi dropped in the OS certificate store (G1 is kept)
+- [ab-testing] pip and certifi upgrade also covers servers where pip is missing or installed by apt/dnf
+
+Enterprise Fixes:
+- [ab-testing] `setup.sh` no longer requires a `countly` user
+- [ab-testing] `setup.sh` reinstalls CmdStan when it is missing
+- [ab-testing] `setup.sh` supports Ubuntu 20
+
+## Version 25.03.56-LTS
+Security Fixes:
+- [docker] Node.js 24.22.1 in the api and frontend images (Brotli decoder fix, CVE-2026-111497)
+- [core] `bin/upgrade/25.03/upgrade.nodejs.22.patch.sh` updates an existing Node.js 22 install to 22.23.4 or later (same CVE)
+- [ab-testing] Python 3.12.15 with pip 26.2.2 and certifi 2026.10.19 in the api image and in `setup.sh` (RHEL builds 3.12.15 instead of 3.12.0); `bin/upgrade/25.03/upgrade.python.certifi.sh` updates existing installs
+
+Features:
+- [core] Database names can be set explicitly
+
+Fixes:
+- [dashboards] Note widgets can be created, edited and copied again
+
+Enterprise Features:
+- [license] A payment-overdue bar shows on every dashboard page while the licence server marks the licence as overdue
+
+Enterprise Fixes:
+- [ab-testing] `setup.sh` stops when a package install or model build fails, and installs on Ubuntu 24, where python3.12 is externally managed
+- [active_users] Today's values are refreshed at most every 5 minutes, and a failed calculation is retried after 5 minutes instead of on every dashboard load
+- [data-manager] Removed a noisy log for events without a transformation rule
+- [formulas] getSavedMetric accepts an object-typed expression instead of assuming a JSON string
+- [users,cohorts] Warn when a profile group is created with a name that already exists
+
+Dependencies:
+- Bump express-rate-limit from 8.7.0 to 8.7.1
+- Bump fs-extra from 11.4.0 to 11.4.1
+- Bump get-random-values from 5.0.0 to 5.0.1
+- Bump ipaddr.js from 2.4.0 to 2.5.0, also in /plugins/hooks
+- Bump moment from 2.30.1 to 2.31.0
+- Bump moment-timezone from 0.6.3 to 0.6.5, also in /bin/scripts/timezones
+- Bump nodemailer from 9.0.6 to 10.1.0
+- Bump puppeteer from 25.10.0 to 25.13.0
+- Bump rate-limiter-flexible from 11.2.0 to 11.2.1
+- Bump sass from 1.103.1 to 1.105.1
+- Bump sharp from 0.35.3 to 0.35.5, and from 0.35.4 to 0.35.5 in /plugins/content
+- Bump tar-stream from 3.2.1 to 3.2.2 in /plugins/system-utility
+- Bump bitset from 5.2.3 to 5.3.0 in /plugins/retention_segments
+- Bump swiper from 14.2.0 to 14.3.0 in /plugins/content
+- Bump vue-i18n from 11.4.10 to 11.4.14 in /plugins/content
+- Pin qs to 6.16.0 or later through an npm override
+
 ## Version 25.03.55
 Enterprise Fixes:
 - [active_users] Today's values are refreshed at most every 5 minutes, and a failed calculation keeps the previous values and is retried after 5 minutes instead of on every dashboard load
@@ -57,24 +107,68 @@ Security Fixes:
 - [surveys] Only the widget's own parameters are forwarded from /i/feedback/inputs
 - [views] The token owner's read right is applied on the heatmap endpoint
 
-## Version 25.03.51
+## Version 25.03.53-LTS
+Fixes:
+- [core] Fix segmentation values with HTML attributes dropped from All Events breakdown
+- [license] Fixes for license manager forward compatibility 
+- [journey_engine]: Create a new content block instead of overwriting the last
+- [funnels] Ellipsize long funnel name in detail header
+- [core] guard stored-document walks against prototype keys
+- [ab-testing] do not keep the request's credentials in stored experiments
+
+Security Fixes:
+- [content,surveys] Take Cross-Origin-Opener-Policy off the embedded routes
+- [core] Encode and sanitize values at frontend HTML sinks
+- [oidc] Mark the OIDC session token as login-capable
+- [surveys] forward only the widget's own parameters from /i/feedback/inputs
+
+
+## Version 25.03.52-LTS
+Security Fixes:
+- [docker] Rebuilt the api and frontend images as multi-stage builds on Debian 13 with Node.js 24, so compilers, development headers and build tooling are no longer present in the shipped images.
+- [core] Updated vulnerable transitive dependencies through npm overrides: tar, form-data, brace-expansion, minimatch, immutable, ip-address, basic-ftp, websocket-driver, js-yaml, body-parser, qs, postcss, protobufjs and ws
+- [hooks] Replaced the unmaintained v8-sandbox custom-code sandbox with isolated-vm, which exposes no network, filesystem or process surface to custom code. Custom code that relies on `setTimeout`, `setInterval` or asynchronous completion now fails with a logged error instead of running, and the `bufferToBase64` and `base64ToBuffer` helpers are no longer available
+- [ab-testing] Replaced pystan 2.19 and its pickled models with cmdstanpy and compiled Stan executables, removing the end-of-life Python 3.8 runtime
+
+Fixes:
+- [hooks] Custom code calling `setResult(undefined)` no longer fails the effect
+- [docker] A plugin whose dependency install or asset build fails now fails the image build instead of being shipped broken without warning
+- [ab-testing] The model runner locates its CmdStan installation automatically when `CMDSTAN` is not set in the service environment
+
+Enterprise Fixes:
+- [ab-testing] `/o/ab-testing/check-models` reports whether the models are actually compiled.
 
 Enterprise Features:
-- [journey_engine] dynamic parameter support in deeplinks
+- [ab-testing] Added `/o/ab-testing/test-models`, a global-admin diagnostic that runs a model against supplied variant data and returns the raw result
+
+Dependencies:
+- [core] Node.js 20 to 22 for package installs and upgrades. The hooks plugin requires Node.js 22 or later, as isolated-vm does not support Node.js 20. Fresh installs on Ubuntu and RHEL now install Node.js 22, and `bin/upgrade/25.03/upgrade.nodejs.22.sh` upgrades an existing 25.03 install. RHEL 8 additionally installs gcc-toolset-11 and Python 3.8, since isolated-vm publishes no prebuilt binary for glibc 2.28 and has to be compiled there
+- [docker] Node.js 20 to 24, Debian 12 to 13, npm 10 to 11.19.0. Custom plugins containing native addons must be rebuilt, and images derived from these must reinstall any build tooling they need
+- [ab-testing] Python 3.8 to 3.12, pystan 2.19.1.1 to cmdstanpy 1.2.5 with CmdStan 2.36.0
+- [hooks] v8-sandbox 3.2.12 to isolated-vm 6.2.0
+
+## Version 25.03.51
+Fixes:
+- [reports] Non-core reports, such as dashboard reports, now authorize the object they target on create and update
+- [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
+- [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
+- [core] Chart tooltips now show label text as text, so a label is never treated as markup, and the dashboard undoes the same key substitutions the api applies (`&#36;`, `&#46;`, `&#9647;` and their url encoded forms) instead of only two of them
+- [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`, `"`, `'`)
 
 Enterprise Fixes:
 - [data-manager] Fixed editing an event whose key contains `&` creating undeletable duplicate rows in the events table
 
-Fixes:
-- [hooks] Internal event hooks are validated on save: an unknown event type is rejected, and an event that names a cohort, hook or alert must name one belonging to the hook's own apps
-- [events] Fix sum chart tooltip displaying the raw floating-point value instead of a rounded number
-- [events] Fixed event descriptions (and custom names / count-sum-dur labels) not showing on the Events page for events whose key contains special characters (`.`, `$`, `\`, `&`, `<`, `>`, `"`, `'`)
-
 Security Fixes:
+- [star-rating] Consent link destinations are now checked as URLs, on save and again when rendered, so a link can only point at an http(s) url. HTML escaping never covered this, since a `javascript:` url contains no character that escaping touches. Link labels are also escaped before being used to build a regular expression
+- [core] CSV exports now neutralize cells that a spreadsheet client would read as a formula, in the streamed export path and in its header row as well as the values, and including values that begin with a tab or carriage return
+- [reports] Enabling, sending or rendering a report now checks that the apps it covers are still readable by the caller, and scheduled reports stop being emailed once the member they are scheduled as loses access to those apps
 - [hooks] Internal event hooks are now scoped to the apps the hook belongs to: app creation is a global-admin-only event, and remote-config, cohort, alert and hook-chaining events are only delivered when the event's app is one the hook is scoped to
 - [compliance-hub] The consents table now returns a fixed set of fields; a projection supplied on the request is no longer used to widen the response beyond the consent columns
 - [dashboards] Widgets are no longer copied when the copying user has no access to the apps they reference, and widget app ids are validated on widget create and update
 - [pipelines] Pin docker images to SHA digest (checksum) pins
+
+Enterprise Features:
+- [journey_engine] dynamic parameter support in deeplinks
 
 ## Version 25.03.50
 Fixes:
