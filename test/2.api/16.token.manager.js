@@ -662,42 +662,89 @@ describe('Testing token manager', function() {
                 });
         });
 
-        it('refuses a new token restricted by endpoint without permissions', function(done) {
-            request
-                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=refused&multi=true&ttl=300&endpoint=/o/token')
-                .expect(400)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    JSON.parse(res.text).should.have.property('result', 'A restricted token must state the permissions it grants');
-                    done();
-                });
+        //every value refused as an endpoint restriction: nothing but literal API paths with at least
+        //two segments, so no value can cover every path or a whole tree
+        [
+            ['endpoint', ''], ['endpoint', ' '], ['endpoint', '/'], ['endpoint', '/o'], ['endpoint', '.*'], ['endpoint', '^'],
+            ['endpoint', '(.*)'], ['endpoint', '/o/actions.*'], ['endpoint', '/o/actions,'], ['endpoint', '/o/[a-z]+'],
+            ['endpointquery', '[]'], ['endpointquery', 'x'], ['endpointquery', JSON.stringify([{endpoint: '/o', params: {method: 'get_events'}}])],
+            ['endpointquery', JSON.stringify([{endpoint: '/o/analytics', params: {method: '.*'}}])]
+        ].forEach(function(bad) {
+            it('refuses ' + bad[0] + ' ' + JSON.stringify(bad[1]), function(done) {
+                request
+                    .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=refused&multi=true&ttl=300&' + bad[0] + '=' + encodeURIComponent(bad[1]))
+                    .expect(400)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        JSON.parse(res.text).should.have.property('result', bad[0] === 'endpoint' ? 'Invalid endpoint' : 'Invalid endpointquery');
+                        testUtils.db.collection("auth_tokens").countDocuments({purpose: "refused"}, function(dbErr, count) {
+                            if (dbErr) {
+                                return done(dbErr);
+                            }
+                            count.should.equal(0);
+                            done();
+                        });
+                    });
+            });
         });
 
-        it('refuses a new token restricted by endpoint query without permissions', function(done) {
-            var endpointquery = encodeURIComponent(JSON.stringify([{"endpoint": '/o', "params": {method: "get_events"}}]));
+        var endpointToken = "";
+        it('creates a token limited to one endpoint, without permissions', function(done) {
             request
-                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=refused&multi=true&ttl=300&endpointquery=' + endpointquery + '&apps=' + APP_ID)
-                .expect(400)
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=endpoint&multi=true&ttl=300&endpoint=/o/apps/mine')
+                .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    JSON.parse(res.text).should.have.property('result', 'A restricted token must state the permissions it grants');
-                    testUtils.db.collection("auth_tokens").countDocuments({purpose: "refused"}, function(dbErr, count) {
-                        if (dbErr) {
-                            return done(dbErr);
+                    endpointToken = JSON.parse(res.text).result;
+                    testUtils.db.collection("auth_tokens").findOne({_id: endpointToken}, function(dbErr, doc) {
+                        if (dbErr || !doc) {
+                            return done(dbErr || "token missing");
                         }
-                        count.should.equal(0);
+                        doc.endpoint.should.eql(['^/o/apps/mine$']);
+                        doc.should.not.have.property('token_permission');
                         done();
                     });
                 });
         });
 
-        it('still creates an unrestricted token, including with an empty endpoint query', function(done) {
+        it('the endpoint token reaches its endpoint', function(done) {
             request
-                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=unrestricted&multi=true&ttl=300&apps=&endpointquery=%5B%5D')
+                .get('/o/apps/mine?auth_token=' + endpointToken)
+                .expect(200)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('the endpoint token reaches no other endpoint, nor a longer path', function(done) {
+            request
+                .get('/o/apps/details?app_id=' + APP_ID + '&auth_token=' + endpointToken)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'Token not valid');
+                    request
+                        .get('/o/apps/mine/x?auth_token=' + endpointToken)
+                        .expect(400)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            JSON.parse(res2.text).should.have.property('result', 'Token not valid');
+                            deleteToken(endpointToken, done);
+                        });
+                });
+        });
+
+        it('still creates an unrestricted token', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=unrestricted&multi=true&ttl=300&apps=')
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -709,7 +756,7 @@ describe('Testing token manager', function() {
                             return done(dbErr || "token missing");
                         }
                         doc.app.should.equal('');
-                        doc.endpoint.should.eql([]);
+                        doc.endpoint.should.equal('');
                         doc.should.not.have.property('token_permission');
                         deleteToken(token, done);
                     });
@@ -736,53 +783,55 @@ describe('Testing token manager', function() {
                 });
         });
 
-        //the token the heatmap link hands to the tracked website: read of views on one app, and
-        //no app membership, so routes that authorize on membership alone refuse it
-        var viewsReadToken = "";
+        //the token the heatmap link hands to the tracked website: read of views on one app, limited
+        //to the /o/actions endpoint, so it reaches nothing else, whatever app membership it carries.
+        ///o/actions itself serves heatmaps only with a drill database, so the exact match is covered
+        //by the authorizer unit tests
+        var heatmapToken = "";
         var viewsReadPermission = function(appId) {
             var permission = {_: {a: [], u: [[]]}, c: {}, r: {}, u: {}, d: {}};
             permission.r[appId] = {all: false, allowed: {views: true}};
             return encodeURIComponent(JSON.stringify(permission));
         };
 
-        it('creates a token reading only views, without app membership', function(done) {
+        it('creates the heatmap token: views read, limited to /o/actions', function(done) {
             request
-                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=View heatmap&multi=true&ttl=300&permission=' + viewsReadPermission(APP_ID))
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=View heatmap&multi=true&ttl=300&endpoint=/o/actions&permission=' + viewsReadPermission(APP_ID))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    viewsReadToken = JSON.parse(res.text).result;
-                    testUtils.db.collection("auth_tokens").findOne({_id: viewsReadToken}, function(dbErr, doc) {
+                    heatmapToken = JSON.parse(res.text).result;
+                    testUtils.db.collection("auth_tokens").findOne({_id: heatmapToken}, function(dbErr, doc) {
                         if (dbErr || !doc) {
                             return done(dbErr || "token missing");
                         }
-                        doc.token_permission._.should.eql({a: [], u: [[]]});
+                        doc.endpoint.should.eql(['^/o/actions$']);
                         doc.token_permission.r[APP_ID].allowed.should.eql({views: true});
                         done();
                     });
                 });
         });
 
-        it('the views read token reads views on its app', function(done) {
+        it('the heatmap token is refused on other routes, even those that ask only for app membership', function(done) {
             request
-                .get('/o?method=get_view_segments&app_id=' + APP_ID + '&auth_token=' + viewsReadToken)
-                .expect(200)
-                .end(function(err) {
-                    done(err);
-                });
-        });
-
-        it('the views read token is refused on a route that authorizes on app membership', function(done) {
-            request
-                .get('/o/app_users/download/appUser_' + APP_ID + '_1.json?app_id=' + APP_ID + '&auth_token=' + viewsReadToken)
-                .expect(401)
-                .end(function(err) {
+                .get('/o/app_users/download/appUser_' + APP_ID + '_1.json?app_id=' + APP_ID + '&auth_token=' + heatmapToken)
+                .expect(400)
+                .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    deleteToken(viewsReadToken, done);
+                    JSON.parse(res.text).should.have.property('result', 'Token not valid');
+                    request
+                        .get('/o?method=get_view_segments&app_id=' + APP_ID + '&auth_token=' + heatmapToken)
+                        .expect(400)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            deleteToken(heatmapToken, done);
+                        });
                 });
         });
 
@@ -828,15 +877,41 @@ describe('Testing token manager', function() {
                 });
         });
 
-        it('an endpoint restriction cannot be combined with permissions', function(done) {
+        it('an endpoint restriction combines with permissions, and both apply', function(done) {
             request
-                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&multi=true&ttl=300&endpoint=/o/users&permission=' + readCorePermission(APP_ID))
-                .expect(400)
-                .end(function(err) {
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=both&multi=true&ttl=300&endpoint=/o/apps/details&permission=' + readCorePermission(APP_ID))
+                .expect(200)
+                .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    done();
+                    var token = JSON.parse(res.text).result;
+                    request
+                        .get('/o/apps/details?app_id=' + APP_ID + '&auth_token=' + token)
+                        .expect(200)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            request
+                                .get('/o/apps/mine?auth_token=' + token)
+                                .expect(400)
+                                .end(function(err3) {
+                                    if (err3) {
+                                        return done(err3);
+                                    }
+                                    deleteToken(token, done);
+                                });
+                        });
+                });
+        });
+
+        it('an endpoint token cannot be given login permission', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=refused&multi=true&ttl=300&endpoint=/o/apps/mine&can_login=true')
+                .expect(403)
+                .end(function(err) {
+                    done(err);
                 });
         });
 

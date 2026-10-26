@@ -24,10 +24,10 @@
     };
 
     /**
-     * Create a token without permissions. The server refuses an endpoint or app restriction
-     * without permissions, so a token limited to an app is created with createTokenWithPermissions.
+     * Create a token without permissions. An app restriction needs permissions or endpoints, so a
+     * token limited to an app is created with createTokenWithPermissions.
      * @param {string} purpose - description of the token
-     * @param {string} endpoint - endpoint restriction, empty for none
+     * @param {string} endpoint - comma separated literal API paths, empty for none
      * @param {boolean} multi - can the token be used more than once
      * @param {string} apps - app restriction, empty for none
      * @param {number} ttl - seconds until the token expires, 0 never expires
@@ -35,16 +35,22 @@
      * @returns {object} jQuery ajax object
      */
     countlyTokenManager.createToken = function(purpose, endpoint, multi, apps, ttl, callback) {
+        var data = {
+            "purpose": purpose,
+            "multi": multi,
+            "ttl": ttl
+        };
+        //an empty endpoint or app list is refused, so only send what restricts the token
+        if (endpoint) {
+            data.endpoint = endpoint;
+        }
+        if (apps) {
+            data.apps = apps;
+        }
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/i/token/create",
-            data: {
-                "purpose": purpose,
-                "endpoint": endpoint,
-                "multi": multi,
-                "apps": apps,
-                "ttl": ttl
-            },
+            data: data,
             success: function(json) {
                 //token created
                 callback(null, json);
@@ -63,6 +69,8 @@
      * @param {number} options.ttl - seconds until the token expires, 0 never expires
      * @param {object=} options.permission - permission object limiting the token, omitted for a
      *   token that carries the creator's own permissions
+     * @param {string=} options.endpoint - comma separated literal API paths the token is limited
+     *   to, such as /o/actions; with a permission, both apply
      * @param {boolean=} options.canLogin - request permission to sign in to the dashboard. Granted
      *   only when the creating credential holds it and the token is not limited
      * @param {function} callback - called with (error, response)
@@ -76,6 +84,9 @@
         };
         if (options.permission) {
             data.permission = JSON.stringify(options.permission);
+        }
+        if (options.endpoint) {
+            data.endpoint = options.endpoint;
         }
         if (options.canLogin) {
             data.can_login = true;
@@ -95,9 +106,8 @@
     };
 
     /**
-     * A permission object allowing only to read one feature of one app. It grants no app
-     * membership: routes that authorize on membership alone, rather than on a feature, then
-     * refuse the token.
+     * A permission object allowing only to read one feature of one app, and naming no app
+     * membership of its own.
      * @param {string} appId - the app
      * @param {string} feature - the feature, e.g. "views"
      * @returns {object} permission object for createTokenWithPermissions
