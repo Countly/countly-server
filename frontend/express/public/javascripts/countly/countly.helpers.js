@@ -337,12 +337,9 @@
         }
         var payload = {};
         var persistent = msg.persistent;
-        if (msg.html) {
-            payload.text = msg.message;
-        }
-        else {
-            payload.text = countlyCommon.encodeHtml(msg.message);
-        }
+        //the notification renders the message as text unless the caller marked it as markup
+        payload.text = msg.message;
+        payload.html = !!msg.html;
         payload.autoHide = !msg.sticky;
         payload.id = msg.id;
         payload.width = msg.width;
@@ -1158,15 +1155,6 @@
                 url = data.url;
             }
 
-            var form = $('<form method="POST" action="' + url + '">');
-            $.each(data, function(k, v) {
-                if (CountlyHelpers.isJSON(v)) {
-                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
-                }
-                else {
-                    form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
-                }
-            });
             if (exportByAPI && url === "/o/export/requestQuery") {
                 if (Array.isArray(data.prop)) {
                     data.prop = data.prop.join(",");
@@ -1202,8 +1190,7 @@
                 });
             }
             else {
-                $('body').append(form);
-                form.submit();
+                countlyVue.helpers.submitExportForm(url, data);
             }
         });
         if (asDialog) {
@@ -1358,18 +1345,7 @@
             data.filename = getFileName(type);
 
             var url = countlyCommon.API_URL + "/o/export/data";
-            var form = $('<form method="POST" action="' + url + '">');
-
-            $.each(data, function(k, v) {
-                if (CountlyHelpers.isJSON(v)) {
-                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
-                }
-                else {
-                    form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
-                }
-            });
-            $('body').append(form);
-            form.submit();
+            countlyVue.helpers.submitExportForm(url, data);
         });
         if (asDialog) {
             revealDialog(dialog);

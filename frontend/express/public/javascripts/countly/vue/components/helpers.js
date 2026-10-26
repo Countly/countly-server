@@ -47,6 +47,8 @@
             props: {
                 text: {type: String, required: false},
                 color: {type: String, required: false, default: "light-warning"},
+                // text is rendered as text; set html only for trusted markup with no data in it
+                html: {type: Boolean, required: false, default: false}
             },
             computed: {
                 innerText: function() {
@@ -58,7 +60,8 @@
             },
             template: '<div class="cly-in-page-notification text-medium bu-p-2" :class="dynamicClasses">\
                             <slot name="innerText">\
-                                <span v-html="innerText"></span>\
+                                <span v-if="html" v-html="innerText"></span>\
+                                <span v-else>{{innerText}}</span>\
                             </slot>\
                         </div>'
         }
@@ -74,7 +77,8 @@
                             '<h3>{{title}}</h3>\n' +
                         '</div>\n' +
                         '<div class="text">\n' +
-                            '<span v-html="body"></span>\n' +
+                            '<span v-if="html" v-html="body"></span>\n' +
+                            '<span v-else>{{body}}</span>\n' +
                         '</div>\n' +
                     '</div>\n' +
                 '</div>',
@@ -82,7 +86,9 @@
         props: {
             title: { required: true, type: String },
             body: { required: true, type: String },
-            image: { type: String, default: null }
+            image: { type: String, default: null },
+            // body is rendered as text; set html only for trusted markup with no data in it
+            html: { type: Boolean, default: false }
         }
     }));
 
@@ -1118,13 +1124,18 @@
                         <div :style="dynamicStyle">
                             <slot>
                                 <span
+                                    v-if="html"
                                     class="alert-text"
                                     data-test-id="cly-notification-text"
                                     style="margin-block:auto"
                                     v-html="innerText"
-                                >
-                                    {{ text }}
-                                </span>
+                                />
+                                <span
+                                    v-else
+                                    class="alert-text"
+                                    data-test-id="cly-notification-text"
+                                    style="margin-block:auto"
+                                >{{ innerText }}</span>
                             </slot>
                             <span
                                 v-if="goTo.title"
@@ -1163,6 +1174,8 @@
         props: {
             id: {default: "", type: [String, Number], required: false},
             text: { default: "" },
+            // text is rendered as text; set html only for trusted markup with no data in it
+            html: { default: false, type: Boolean },
             color: { default: "light-warning", type: String},
             size: {default: "full", type: String},
             visible: {default: true, type: Boolean},
@@ -1289,8 +1302,8 @@
                                 <h3 v-else :data-test-id="testId + \'-empty-view-title\'" class="bu-has-text-centered color-cool-gray-100 bu-mt-4">{{title}}</h3>\
                             </slot>\
                             <slot name="subTitle">\
-								<div v-if="visual==\'framed\'" class="bu-mt-3 bu-mb-5 bu-ml-5 text-medium color-cool-gray-50 cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
-                                <div v-else class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span></div>\
+								<div v-if="visual==\'framed\'" class="bu-mt-3 bu-mb-5 bu-ml-5 text-medium color-cool-gray-50 cly-vue-empty-view__subtitle"><span v-if="html" :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span><span v-else :data-test-id="testId + \'-empty-view-subtitle\'">{{subTitle}}</span></div>\
+                                <div v-else class="bu-mt-4 bu-mb-5 text-medium color-cool-gray-50 bu-has-text-centered cly-vue-empty-view__subtitle"><span v-if="html" :data-test-id="testId + \'-empty-view-subtitle\'" v-html="subTitle"></span><span v-else :data-test-id="testId + \'-empty-view-subtitle\'">{{subTitle}}</span></div>\
                             </slot>\
                             <slot name="action" v-if="hasCreateRight && hasAction">\
 								<div v-if="visual==\'framed\'" style=\'width: 200px\' class="bu-ml-5 bu-pb-4"><el-button   :data-test-id="testId + \'-empty-view-action-button\'" @click="actionFunc"><i class=\'cly-countly-icon-outline cly-countly-icon-outline-plus-circle-16px bu-pr-4 bu-mr-1\'></i> {{actionTitle}}\</el-button></div>\
@@ -1309,7 +1322,9 @@
             hasAction: {default: false, type: Boolean},
             hasCreateRight: { default: true, type: Boolean },
             testId: {type: String, default: "cly-empty-view"},
-            visual: {type: String, default: "old"}
+            visual: {type: String, default: "old"},
+            // subTitle is rendered as text; set html only for trusted markup with no data in it
+            html: {type: Boolean, default: false}
         },
         data: function() {
             var settings = {
