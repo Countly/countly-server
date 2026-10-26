@@ -22,7 +22,6 @@ const plugins = require('../../plugins/pluginManager.js');
 const countlyConfig = require('./../config', 'dont-enclose');
 const argon2 = require('argon2');
 const mongodb = require('mongodb');
-const getRandomValues = require('get-random-values');
 const semver = require('semver');
 const _ = require('lodash');
 const path = require('path');
@@ -3080,7 +3079,7 @@ common.shuffleString = function(text) {
 };
 
 common.getRandomValue = function(charSet, length = 1) {
-    const randomValues = getRandomValues(new Uint8Array(charSet.length));
+    const randomValues = crypto.webcrypto.getRandomValues(new Uint8Array(charSet.length));
     let randomValue = "";
 
     if (length > charSet.length) {
