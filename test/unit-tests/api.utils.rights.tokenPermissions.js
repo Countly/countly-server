@@ -358,6 +358,28 @@ describe("token permissions", function() {
             owner.api_key.should.equal("OWNERKEY");
         });
 
+        it("gives a token membership only of the apps its own permission names", function() {
+            // validateUserForRead and validateUserForWrite authorize on membership alone, so a
+            // feature grant must not turn into membership
+            var featureOnly = permission({userApps: [], grants: [{type: "r", app: APP_A, allowed: {core: true}}]});
+            [member, globalAdmin].forEach(function(owner) {
+                var scoped = rights.applyTokenScope({token_data: {token_permission: featureOnly}}, owner);
+                rights.getUserApps(scoped).should.eql([]);
+                rights.hasReadRight("core", APP_A, scoped).should.equal(true);
+                rights.hasReadRight("core", APP_B, scoped).should.equal(false);
+            });
+            var named = rights.applyTokenScope({token_data: {token_permission: readCoreOnA}}, member);
+            rights.getUserApps(named).should.eql([APP_A]);
+            rights.hasReadRight("core", APP_A, named).should.equal(true);
+        });
+
+        it("still gives no membership the owner does not have", function() {
+            var ownerOfA = {global_admin: false, permission: permission({userApps: [APP_A], grants: [{type: "r", app: APP_A, allowed: {core: true}}]})};
+            var namesB = permission({userApps: [APP_A, APP_B], grants: [{type: "r", app: APP_A, allowed: {core: true}}]});
+            var scoped = rights.applyTokenScope({token_data: {token_permission: namesB}}, ownerOfA);
+            rights.getUserApps(scoped).should.eql([APP_A]);
+        });
+
         it("leaves a global admin's own token scope in force", function() {
             var scoped = rights.applyTokenScope(
                 {token_data: {token_permission: scopedToRead}}, globalAdmin);
