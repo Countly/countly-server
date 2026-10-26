@@ -154,8 +154,18 @@ const selectAppType = (appType) => {
     }
 };
 
+// Create stays disabled until the form's validation has re-validated the field
+// filled last (the country) and cly-form allows submission, a few ticks after
+// the value is set. A click inside that window is dropped without a request.
+// The click is forced (a toast can cover the button), so Cypress does not wait
+// for "enabled" on its own: wait for it here, then for the create request, so
+// the caller's search runs against an app list the new app is already in.
 const clickCreateButton = () => {
-    cy.clickElement(applicationsPageElements.CREATE_BUTTON, true);
+    cy.intercept('GET', /\/i\/apps\/create(\?|$)/).as('createApp');
+    cy.getElement(applicationsPageElements.CREATE_BUTTON).should('not.be.disabled');
+    cy.getElement(applicationsPageElements.CREATE_BUTTON).eq(0).click({ force: true });
+    cy.wait('@createApp').its('response.statusCode').should('eq', 200);
+    cy.getElement(applicationsPageElements.CREATE_BUTTON).should('not.exist');
 };
 
 const searchApp = (appName) => {
@@ -288,8 +298,15 @@ const verifyDeleteAppPopupElements = () => {
     });
 };
 
+// The delete's success handler switches the active app away from the deleted
+// one, which can navigate to the new app's home some time after the request
+// returns. Wait for the request, then reload: the reload drops that pending
+// switch, so the caller's navigation is the last one.
 const clickYesDeleteButton = () => {
-    cy.clickElement(applicationsPageElements.DELETE_APP_POPUP_DELETE_BUTTON);
+    cy.intercept('GET', /\/i\/apps\/delete(\?|$)/).as('deleteApp');
+    cy.getElement(applicationsPageElements.DELETE_APP_POPUP_DELETE_BUTTON).eq(0).click();
+    cy.wait('@deleteApp').its('response.statusCode').should('eq', 200);
+    cy.reload();
 };
 
 const verifyAppShouldBeDeleted = ()=> {
@@ -331,7 +348,10 @@ const verifyEditPopupElements = () => {
 };
 
 const clickSaveChangesButton = () => {
-    cy.clickElement(applicationsPageElements.EDIT_POPUP_SAVE_CHANGES_BUTTON);
+    cy.intercept('GET', /\/i\/apps\/update(\?|$)/).as('updateApp');
+    cy.getElement(applicationsPageElements.EDIT_POPUP_SAVE_CHANGES_BUTTON).eq(0).click();
+    cy.wait('@updateApp').its('response.statusCode').should('eq', 200);
+    cy.getElement(applicationsPageElements.APP_NAME_INPUT).should('not.exist');
 };
 
 const uploadAppIcon = (filePath) => {

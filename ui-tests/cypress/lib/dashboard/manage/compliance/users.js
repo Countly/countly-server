@@ -146,6 +146,8 @@ const verifyUsersDataFromTable = ({
         labelText: appVersion,
     });
 
+    // The consent cell renders either the opt in/out lists or a "-"; the nested list probes sit in the same block as the opt in label.
+    cy.waitForListSettled([usersDataTableElements(index).CONSENT_OPT_IN_LABEL, usersDataTableElements(index).CONSENT]);
     cy
         .elementExists(usersDataTableElements(index).CONSENT_OPT_IN_LABEL)
         .then((isExists) => {
