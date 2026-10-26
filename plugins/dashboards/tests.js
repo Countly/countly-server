@@ -291,3 +291,186 @@ describe('Testing dashboards cross-app widget scoping', function() {
             });
     });
 });
+
+/**
+ * Dashboards through a scoped token.
+ *
+ * Custom dashboards are opened by ownership and sharing, not per app, and
+ * whoever opens one reads every widget on it. So a scoped token reaches its
+ * owner's dashboards only through the dashboards grant of its permission
+ * (token_permission.dashboards), per operation. With the grant it has the
+ * owner's dashboard access, whatever apps it reads; without it, none. The
+ * owner's own api_key is not affected.
+ */
+describe('Dashboards and a scoped token', () => {
+    const tokens = {};
+    const createdDashboards = [];
+    let dashboardId;
+    let widgetId;
+
+    /**
+     * Read access to the given features on the test app, plus a dashboards grant.
+     * @param {string[]} features - feature names
+     * @param {object} [dashboards] - dashboards grant, e.g. {r: true}
+     * @returns {object} permission object
+     */
+    function permission(features, dashboards) {
+        const app = testUtils.get('APP_ID');
+        const allowed = {};
+        features.forEach((feature) => {
+            allowed[feature] = true;
+        });
+        const perm = {
+            _: { a: [], u: [[app]] },
+            c: {},
+            r: { [app]: { all: false, allowed } },
+            u: {},
+            d: {},
+        };
+        if (dashboards) {
+            perm.dashboards = dashboards;
+        }
+        return perm;
+    }
+
+    /**
+     * Create a token with the given permission.
+     * @param {object} perm - permission object
+     * @param {object} [creator] - credential creating it, the admin api_key by default
+     * @returns {Promise<object>} the response
+     */
+    function requestToken(perm, creator) {
+        return request.get('/i/token/create').query(Object.assign({
+            multi: true,
+            ttl: 600,
+            permission: JSON.stringify(perm),
+        }, creator || { api_key: testUtils.get('API_KEY_ADMIN') }));
+    }
+
+    /**
+     * Create a token for the admin and remember it for cleanup.
+     * @param {object} perm - permission object
+     * @returns {Promise<string>} token
+     */
+    async function createToken(perm) {
+        const res = await requestToken(perm);
+        res.status.should.equal(200, res.text);
+        return res.body.result;
+    }
+
+    before(async function() {
+        this.timeout(90000);
+        const apiKey = testUtils.get('API_KEY_ADMIN');
+
+        let res = await request.get('/i/dashboards/create').query({ api_key: apiKey, name: 'scoped token dashboard', share_with: 'none' });
+        res.status.should.equal(200, res.text);
+        dashboardId = res.body + '';
+
+        const widget = { widget_type: 'analytics', apps: [testUtils.get('APP_ID')], data_type: 'session', metrics: ['t'], visualization: 'number' };
+        res = await request.get('/i/dashboards/add-widget').query({ api_key: apiKey, dashboard_id: dashboardId, widget: JSON.stringify(widget) });
+        res.status.should.equal(200, res.text);
+        widgetId = res.body + '';
+
+        const widgetRes = await request.get('/o/dashboards/widget').query({ api_key: apiKey, dashboard_id: dashboardId, widget_id: widgetId });
+        widgetRes.status.should.equal(200, widgetRes.text);
+        widgetRes.body.length.should.equal(1);
+
+        // the widget reads core on the app, which this token cannot read: the grant is not per app
+        tokens.read = await createToken(permission(['crashes'], { r: true }));
+        tokens.none = await createToken(permission(['core']));
+        tokens.write = await createToken(permission(['core'], { c: true, r: true, u: true, d: true }));
+    });
+
+    after(async function() {
+        this.timeout(90000);
+        const apiKey = testUtils.get('API_KEY_ADMIN');
+        for (const id of [dashboardId].concat(createdDashboards).filter(Boolean)) {
+            const res = await request.get('/i/dashboards/delete').query({ api_key: apiKey, dashboard_id: id });
+            should(res.status).equal(200);
+            should.not.exist(await testUtils.db.collection('dashboards').findOne({ _id: testUtils.db.ObjectID(id) }));
+        }
+        for (const token of Object.values(tokens)) {
+            const res = await request.get('/i/token/delete').query({ api_key: apiKey, tokenid: token });
+            should(res.status).equal(200);
+        }
+    });
+
+    describe('a token without the dashboards grant', () => {
+        const refused = (res) => {
+            res.status.should.equal(403, res.text);
+            res.body.result.should.equal('Token has no access to dashboards');
+        };
+
+        it('is refused the dashboard', async() => {
+            refused(await request.get('/o/dashboards').query({ auth_token: tokens.none, dashboard_id: dashboardId }));
+        });
+
+        it('is refused the dashboard list', async() => {
+            refused(await request.get('/o/dashboards/all').query({ auth_token: tokens.none }));
+        });
+
+        it('is refused the widget and its data', async() => {
+            refused(await request.get('/o/dashboards/widget').query({ auth_token: tokens.none, dashboard_id: dashboardId, widget_id: widgetId }));
+            refused(await request.get('/o/dashboard/data').query({ auth_token: tokens.none, dashboard_id: dashboardId, widget_id: widgetId }));
+        });
+
+        it('is refused creating a dashboard', async() => {
+            refused(await request.get('/i/dashboards/create').query({ auth_token: tokens.none, name: 'refused', share_with: 'none' }));
+        });
+
+        it('cannot create a token with the grant', async() => {
+            const res = await requestToken(permission(['core'], { r: true }), { auth_token: tokens.none });
+            res.status.should.equal(403, res.text);
+        });
+    });
+
+    describe('a token with the dashboards read grant', () => {
+        it('gets the dashboard with the widget and its app', async() => {
+            const res = await request.get('/o/dashboards').query({ auth_token: tokens.read, dashboard_id: dashboardId });
+            res.status.should.equal(200, res.text);
+            res.body.widgets.map((w) => w._id + '').should.eql([widgetId]);
+            res.body.apps.map((a) => a._id + '').should.eql([testUtils.get('APP_ID')]);
+        });
+
+        it('gets the widget data of an app it cannot read', async() => {
+            const res = await request.get('/o/dashboard/data').query({ auth_token: tokens.read, dashboard_id: dashboardId, widget_id: widgetId });
+            res.status.should.equal(200, res.text);
+            should.not.exist(res.body.dashboard_access_denied);
+            (res.body._id + '').should.equal(widgetId);
+        });
+
+        it('is refused writes', async() => {
+            const created = await request.get('/i/dashboards/create').query({ auth_token: tokens.read, name: 'refused', share_with: 'none' });
+            created.status.should.equal(403, created.text);
+            const renamed = await request.get('/i/dashboards/update').query({ auth_token: tokens.read, dashboard_id: dashboardId, name: 'renamed', share_with: 'none' });
+            renamed.status.should.equal(403, renamed.text);
+        });
+
+        it('cannot create a token with a write grant', async() => {
+            const res = await requestToken(permission(['crashes'], { r: true, u: true }), { auth_token: tokens.read });
+            res.status.should.equal(403, res.text);
+        });
+    });
+
+    describe('a token with the dashboards write grant', () => {
+        it('creates and deletes a dashboard', async() => {
+            const created = await request.get('/i/dashboards/create').query({ auth_token: tokens.write, name: 'token dashboard', share_with: 'none' });
+            created.status.should.equal(200, created.text);
+            const id = created.body + '';
+            createdDashboards.push(id);
+            const deleted = await request.get('/i/dashboards/delete').query({ auth_token: tokens.write, dashboard_id: id });
+            deleted.status.should.equal(200, deleted.text);
+            createdDashboards.pop();
+            should.not.exist(await testUtils.db.collection('dashboards').findOne({ _id: testUtils.db.ObjectID(id) }));
+        });
+    });
+
+    describe('the owner api_key', () => {
+        it('still gets the widget data', async() => {
+            const res = await request.get('/o/dashboard/data').query({ api_key: testUtils.get('API_KEY_ADMIN'), dashboard_id: dashboardId, widget_id: widgetId });
+            res.status.should.equal(200, res.text);
+            should.not.exist(res.body.dashboard_access_denied);
+            (res.body._id + '').should.equal(widgetId);
+        });
+    });
+});

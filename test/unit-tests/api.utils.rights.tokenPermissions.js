@@ -271,8 +271,12 @@ describe("token permissions", function() {
 
         it("returns the member unchanged when the token carries no permissions", function() {
             // a legacy token inherits its owner's authority, which is the documented
-            // absent-means-unrestricted behaviour
-            rights.applyTokenScope({token_data: {app: [APP_A]}}, member).should.equal(member);
+            // absent-means-unrestricted behaviour; being restricted, it carries an empty
+            // dashboards grant and nothing else changes
+            var legacy = rights.applyTokenScope({token_data: {app: [APP_A]}}, member);
+            legacy.permission.should.equal(member.permission);
+            legacy.dashboard_grant.should.eql({c: false, r: false, u: false, d: false});
+            Object.keys(legacy).sort().should.eql(Object.keys(member).concat("dashboard_grant").sort());
             rights.applyTokenScope({}, member).should.equal(member);
             rights.applyTokenScope({token_data: null}, member).should.equal(member);
         });
@@ -309,4 +313,75 @@ describe("token permissions", function() {
         });
     });
 
+});
+
+describe("the dashboards grant of a token", function() {
+    var owner = {_id: "owner", api_key: "owner-key", global_admin: false, permission: member.permission};
+    var withGrant = function(grant) {
+        var perm = permission({userApps: [APP_A], grants: [{type: "r", app: APP_A, allowed: {core: true}}]});
+        perm.dashboards = grant;
+        return perm;
+    };
+
+    it("leaves the owner's api_key and an unrestricted token with full dashboard access", function() {
+        ["c", "r", "u", "d"].forEach(function(op) {
+            rights.hasDashboardAccess(rights.applyTokenScope({}, owner), op).should.equal(true);
+            rights.hasDashboardAccess(rights.applyTokenScope({token_data: {_id: "t", app: "", endpoint: ""}}, owner), op).should.equal(true);
+        });
+    });
+
+    it("gives a scoped token no dashboard access without the grant", function() {
+        var scoped = rights.applyTokenScope({token_data: {_id: "t", token_permission: readCoreOnA}}, owner);
+        scoped.dashboard_grant.should.eql({c: false, r: false, u: false, d: false});
+        ["c", "r", "u", "d"].forEach(function(op) {
+            rights.hasDashboardAccess(scoped, op).should.equal(false);
+        });
+    });
+
+    it("does not read all:true on an app as the grant", function() {
+        var allGrants = ["c", "r", "u", "d"].map(function(type) {
+            return {type: type, app: APP_A, all: true};
+        });
+        var allOnA = permission({userApps: [APP_A], grants: allGrants});
+        var scoped = rights.applyTokenScope({token_data: {_id: "t", token_permission: allOnA}}, globalAdmin);
+        rights.hasDashboardAccess(scoped, "r").should.equal(false);
+    });
+
+    it("gives a legacy app or endpoint restricted token no dashboard access", function() {
+        rights.hasDashboardAccess(rights.applyTokenScope({token_data: {_id: "t", app: [APP_A]}}, owner), "r").should.equal(false);
+        rights.hasDashboardAccess(rights.applyTokenScope({token_data: {_id: "t", endpoint: ["^/o/dashboards"]}}, owner), "r").should.equal(false);
+    });
+
+    it("grants exactly the operations set to true, whatever apps the token reads", function() {
+        var scoped = rights.applyTokenScope({token_data: {_id: "t", token_permission: withGrant({r: true, u: "true", d: 1})}}, owner);
+        rights.hasDashboardAccess(scoped, "r").should.equal(true);
+        rights.hasDashboardAccess(scoped, "c").should.equal(false);
+        rights.hasDashboardAccess(scoped, "u").should.equal(false);
+        rights.hasDashboardAccess(scoped, "d").should.equal(false);
+    });
+
+    it("refuses a missing member", function() {
+        rights.hasDashboardAccess(null, "r").should.equal(false);
+    });
+
+    describe("when a token creates a token", function() {
+        it("lets the owner grant any dashboards operation", function() {
+            rights.isPermissionSubset(withGrant({c: true, r: true, u: true, d: true}), owner).should.equal(true);
+        });
+
+        it("lets a scoped token pass on only the operations it holds", function() {
+            var parent = rights.applyTokenScope({token_data: {_id: "t", token_permission: withGrant({r: true})}}, owner);
+            rights.isPermissionSubset(withGrant({r: true}), parent).should.equal(true);
+            rights.isPermissionSubset(withGrant({r: true, u: true}), parent).should.equal(false);
+            var noGrant = rights.applyTokenScope({token_data: {_id: "t", token_permission: readCoreOnA}}, owner);
+            rights.isPermissionSubset(withGrant({r: true}), noGrant).should.equal(false);
+            rights.isPermissionSubset(withGrant({r: false}), noGrant).should.equal(true);
+        });
+
+        it("refuses a malformed grant", function() {
+            rights.isPermissionSubset(withGrant(null), owner).should.equal(false);
+            rights.isPermissionSubset(withGrant(true), owner).should.equal(false);
+            rights.isPermissionSubset(withGrant(["r"]), owner).should.equal(false);
+        });
+    });
 });
