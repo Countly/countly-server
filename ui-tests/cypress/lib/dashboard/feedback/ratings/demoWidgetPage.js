@@ -46,7 +46,9 @@ const goToDemoWidgetPage = (username, password, appName, widgetID) => {
     }).then((appsResponse) => {
         const apps = appsResponse.body.admin_of || {};
         const appKey = Object.keys(apps).map((id) => apps[id]).filter((app) => app.name === appName).map((app) => app.key)[0];
-        expect(appKey, 'app key of ' + appName).to.be.a('string');
+        if (typeof appKey !== 'string') {
+            throw new Error('No app key found for the app named ' + appName);
+        }
         cy.visit(`/feedback/rating?widget_id=${widgetID.trim()}&device_id=test&app_key=${appKey}&custom={"tc":1,"rw":1,"xb":1}`);
     });
 };
