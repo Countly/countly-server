@@ -109,7 +109,7 @@ plugins.setConfigs("systemlogs", {
                 try {
                     reg = new RegExp(".*" + params.qstring.sSearch + ".*", 'i');
                 }
-                catch (ex) {
+                catch {
                     console.log("Incorrect regex: " + params.qstring.sSearch);
                 }
                 if (reg) {
@@ -207,7 +207,7 @@ plugins.setConfigs("systemlogs", {
                 try {
                     params.qstring.data = JSON.parse(params.qstring.data);
                 }
-                catch (ex) {
+                catch {
                     console.log("Error parsing systemlogs data", params.qstring.data);
                 }
             }

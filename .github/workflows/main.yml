@@ -115,16 +115,13 @@ jobs:
 
       - name: ESLint
         shell: bash
-        # This step installs its own eslint rather than using the repo devDependencies, so
-        # every plugin named in .eslintrc.json has to be listed here too or the run fails
-        # with "Failed to load plugin".
-        #
-        # --rulesdir loads the in-repo rules in bin/eslint-rules. Grunt and lint-staged pass
-        # it too; without it here, eslint 8 fails every file matched by the
-        # no-prototype-pollution-sink override with "Definition for rule ... was not found".
+        # ESLint and its plugins come from the repo's devDependencies, at the versions
+        # package-lock.json pins; eslint.config.mjs loads the in-repo rules in bin/eslint-rules.
+        # eslint-suppressions.json is the baseline of findings that predate ESLint 10; a new
+        # finding fails, and fixing a baselined one needs `npx eslint . --prune-suppressions`.
         run: |
-         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0 eslint-plugin-security@3.0.1 eslint-plugin-no-unsanitized@4.0.2
-         npx eslint . --rulesdir bin/eslint-rules
+         npm ci --ignore-scripts
+         npm run lint
 
       - name: Check for any external web resources
         shell: bash

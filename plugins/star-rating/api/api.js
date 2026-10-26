@@ -197,7 +197,7 @@ const widgetPropertyPreprocessors = {
         try {
             return JSON.parse(targetPages);
         }
-        catch (jsonParseError) {
+        catch {
             if (Array.isArray(targetPages)) {
                 return targetPages;
             }
@@ -210,7 +210,7 @@ const widgetPropertyPreprocessors = {
         try {
             return JSON.parse(targeting);
         }
-        catch (jsonParseError) {
+        catch {
             return null;
         }
     },
@@ -219,7 +219,7 @@ const widgetPropertyPreprocessors = {
         try {
             parsed = JSON.parse(links);
         }
-        catch (jsonParseError) {
+        catch {
             parsed = Array.isArray(links) ? links : [];
         }
         //Both create and edit run every preprocessor, so this is the one place that sees
@@ -240,7 +240,7 @@ const widgetPropertyPreprocessors = {
         try {
             return JSON.parse(ratingsTexts);
         }
-        catch (jsonParseError) {
+        catch {
             if (Array.isArray(ratingsTexts)) {
                 return ratingsTexts;
             }
@@ -259,7 +259,7 @@ const widgetPropertyPreprocessors = {
         try {
             return !!JSON.parse(hideSticker);
         }
-        catch (jsonParseError) {
+        catch {
             return !!hideSticker;
         }
     },
@@ -267,7 +267,7 @@ const widgetPropertyPreprocessors = {
         try {
             return !!JSON.parse(status);
         }
-        catch (jsonParseError) {
+        catch {
             return !!status;
         }
     }
@@ -275,7 +275,7 @@ const widgetPropertyPreprocessors = {
 
 /**
 * Function to ensure we hav directory to upload files to
-* @param {function} callback - callback
+* @param {Function} callback - callback
 **/
 function create_upload_dir(callback) {
     var dir = path.resolve(__dirname, './../images');
@@ -309,7 +309,7 @@ var SNIFFED_TYPE_TO_EXT = {
 * @param {object} myfile - file object(if empty - returns)
 * @param {string} id - unique identifier
 * @param {string} appId - id of the app the caller was authorized for
-* @param {function} callback = callback function
+* @param {Function} callback = callback function
 **/
 function uploadFile(myfile, id, appId, callback) {
     if (!myfile) {
@@ -391,7 +391,7 @@ function uploadFile(myfile, id, appId, callback) {
                         }
                     });
                 }
-                catch (SyntaxError) {
+                catch {
                     fs.unlink(tmp_path, function() { });
                     callback("Failed to upload image");
                 }
@@ -426,7 +426,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 steps = JSON.parse(steps);
             }
-            catch (ex) {
+            catch {
                 return "Invalid query JSON";
             }
         }
@@ -446,7 +446,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 seg = JSON.parse(seg);
             }
-            catch (ex) {
+            catch {
                 return "Invalid query JSON";
             }
         }
@@ -554,7 +554,7 @@ function uploadFile(myfile, id, appId, callback) {
                             resolve();
                         });
                     }
-                    catch (SyntaxError) {
+                    catch {
                         fs.unlink(tmp_path, function() {});
                         reject(Error("feedback.imagee-error"));
                     }
@@ -812,7 +812,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
-            catch (e) {
+            catch {
                 common.returnMessage(obParams, 400, 'Invalid widget id.');
                 return false;
             }
@@ -874,7 +874,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
-            catch (e) {
+            catch {
                 common.returnMessage(params, 500, 'Invalid widget id.');
                 return false;
             }
@@ -1053,7 +1053,7 @@ function uploadFile(myfile, id, appId, callback) {
                 return true;
             }
         }
-        catch (jsonParseError) {
+        catch {
             common.returnMessage(ob.params, 400, 'invalid_event_request');
             return false;
         }
@@ -1189,7 +1189,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 data = JSON.parse(params.qstring.data);
             }
-            catch (error) {
+            catch {
                 common.returnMessage(params, 500, "Invalid parameter 'data'");
                 return false;
             }
@@ -1209,7 +1209,7 @@ function uploadFile(myfile, id, appId, callback) {
                 try {
                     widgetObjectId = common.db.ObjectID(key);
                 }
-                catch (e) {
+                catch {
                     common.returnMessage(params, 400, 'Invalid widget id: ' + key);
                     return false;
                 }
@@ -1397,7 +1397,7 @@ function uploadFile(myfile, id, appId, callback) {
                 var sort = {};
                 sort[colName] = sortType;
             }
-            catch (e) {
+            catch {
                 common.returnMessage(params, 400, 'Invalid column index for sorting');
                 return true;
             }
@@ -1458,7 +1458,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 widgets = JSON.parse(params.qstring.widgets);
             }
-            catch (jsonParseError) {
+            catch {
                 widgets = [];
             }
             var widgetIdsArray = widgets.map(function(d) {
@@ -1708,7 +1708,7 @@ function uploadFile(myfile, id, appId, callback) {
                         try {
                             params.qstring.period = JSON.parse(params.qstring.period);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             common.returnMessage(params, 400, 'Bad request parameter: period');
                             return true;
                         }
@@ -2028,7 +2028,7 @@ function uploadFile(myfile, id, appId, callback) {
 
             /**
              * fetch event data
-             * @return {object} - promise object
+             * @returns {object} - promise object
              **/
             const fetchData = () => {
                 return new Promise((resolve) => {

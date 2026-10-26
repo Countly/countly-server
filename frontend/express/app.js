@@ -17,7 +17,7 @@ if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
             IS_FLEX = true;
         }
     }
-    catch (e) {
+    catch {
         IS_FLEX = false;
     }
 }
@@ -401,7 +401,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     /**
     * Load theme files
     * @param {string} theme - theme name
-    * @param {function} callback - when loading files done
+    * @param {Function} callback - when loading files done
     **/
     app.loadThemeFiles = function(theme, callback) {
         if (!loadedThemes[theme]) {
@@ -986,7 +986,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     * Render dashboard
     * @param {object} req - request object
     * @param {object} res - response object
-    * @param {function} next - callback for next middleware
+    * @param {Function} next - callback for next middleware
     * @param {object} member - dashboard member document
     * @param {array} adminOfApps - list of apps member is admin of
     * @param {array} userOfApps - list of apps member is user of

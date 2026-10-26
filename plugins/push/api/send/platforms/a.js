@@ -242,7 +242,7 @@ function empty(msg) {
  * Finish data object after setting all the properties
  *
  * @param {object} data platform-specific data to finalize
- * @return {object} resulting object
+ * @returns {object} resulting object
  */
 function finish(data) {
     if (!data.data.message && !data.data.sound) {
@@ -462,7 +462,7 @@ const CREDS = {
                 try {
                     serviceAccountObject = JSON.parse(serviceAccountJSON);
                 }
-                catch (error) {
+                catch {
                     return ["Service account file includes an invalid JSON data"];
                 }
                 if (typeof serviceAccountObject !== "object"

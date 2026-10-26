@@ -8,8 +8,8 @@ const { cleanupCustomField, DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('../parts/
 class CleanupCustomFieldJob extends job.Job {
     /** function run
      * @param {object} countlyDb - db connection object
-     * @param {function} doneJob - function to call when finishing Job
-     * @param {function} progressJob - fnction to call while running job
+     * @param {Function} doneJob - function to call when finishing Job
+     * @param {Function} progressJob - fnction to call while running job
     */
     run(countlyDb, doneJob, progressJob) {
         var total = 0;

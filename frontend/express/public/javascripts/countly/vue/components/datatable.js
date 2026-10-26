@@ -350,7 +350,7 @@
 
                     return defaultState;
                 }
-                catch (ex) {
+                catch {
                     return defaultState;
                 }
             },

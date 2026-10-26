@@ -191,7 +191,7 @@ const processRequest = (params) => {
                     try {
                         requests = JSON.parse(requests);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
                         requests = null;
                     }
@@ -218,7 +218,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse %s JSON failed. URL: %s, Body: %s', apiPath, params.req.url, JSON.stringify(params.req.body));
                     }
                 }
@@ -354,7 +354,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
@@ -437,7 +437,7 @@ const processRequest = (params) => {
                         try {
                             params.qstring.data = JSON.parse(params.qstring.data);
                         }
-                        catch (ex) {
+                        catch {
                             console.log("Could not parse data", params.qstring.data);
                             common.returnMessage(params, 400, 'Could not parse parameter "data": ' + params.qstring.data);
                             return false;
@@ -472,7 +472,7 @@ const processRequest = (params) => {
                         try {
                             params.qstring.update = JSON.parse(params.qstring.update);
                         }
-                        catch (ex) {
+                        catch {
                             console.log("Could not parse update", params.qstring.update);
                             common.returnMessage(params, 400, 'Could not parse parameter "update": ' + params.qstring.update);
                             return false;
@@ -718,7 +718,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
@@ -924,7 +924,7 @@ const processRequest = (params) => {
                                 try {
                                     params.qstring.whitelisted_segments = JSON.parse(params.qstring.whitelisted_segments);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     params.qstring.whitelisted_segments = {}; console.log('Parse ' + params.qstring.whitelisted_segments + ' JSON failed', params.req.url, params.req.body);
                                 }
 
@@ -999,7 +999,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.order = JSON.parse(params.qstring.event_order);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.order = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', params.req.url, params.req.body);
                                 }
                             }
@@ -1011,7 +1011,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.overview = JSON.parse(params.qstring.event_overview);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', params.req.url, params.req.body);
                                 }
                                 if (update_array.overview && Array.isArray(update_array.overview)) {
@@ -1067,7 +1067,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.omitted_segments = JSON.parse(JSON.stringify(event.omitted_segments));
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.omitted_segments = {};
                                 }
                             }
@@ -1080,7 +1080,7 @@ const processRequest = (params) => {
                                         omitted_segments_empty = true;
                                     }
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     params.qstring.omitted_segments = {}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);
                                 }
 
@@ -1106,7 +1106,7 @@ const processRequest = (params) => {
                                 try {
                                     params.qstring.event_map = JSON.parse(params.qstring.event_map);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     params.qstring.event_map = {}; console.log('Parse ' + params.qstring.event_map + ' JSON failed', params.req.url, params.req.body);
                                 }
 
@@ -1114,7 +1114,7 @@ const processRequest = (params) => {
                                     try {
                                         update_array.map = JSON.parse(JSON.stringify(event.map));
                                     }
-                                    catch (SyntaxError) {
+                                    catch {
                                         update_array.map = {};
                                     }
                                 }
@@ -1307,7 +1307,7 @@ const processRequest = (params) => {
                         try {
                             idss = JSON.parse(params.qstring.events);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             idss = [];
                         }
 
@@ -1470,7 +1470,7 @@ const processRequest = (params) => {
                             try {
                                 idss = JSON.parse(params.qstring.events);
                             }
-                            catch (SyntaxError) {
+                            catch {
                                 idss = [];
                             }
                             if (!Array.isArray(idss)) {
@@ -1481,7 +1481,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.map = JSON.parse(JSON.stringify(event.map));
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.map = {};
                                     console.log('Parse ' + event.map + ' JSON failed', params.req.url, params.req.body);
                                 }
@@ -1585,7 +1585,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.events = JSON.parse(params.qstring.events);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
                     }
                 }
@@ -2170,7 +2170,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.projection = JSON.parse(params.qstring.projection);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.projection = null;
                             }
                         }
@@ -2178,7 +2178,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.projection = JSON.parse(params.qstring.project);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.projection = null;
                             }
                         }
@@ -2192,7 +2192,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.sort = JSON.parse(params.qstring.sort);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.sort = null;
                             }
                         }
@@ -2201,7 +2201,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.formatFields = JSON.parse(params.qstring.formatFields);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.formatFields = null;
                             }
                         }
@@ -2210,7 +2210,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.get_index = JSON.parse(params.qstring.get_index);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.get_index = null;
                             }
                         }
@@ -2266,7 +2266,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.projection = JSON.parse(params.qstring.projection);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.projection = {};
                             }
                         }
@@ -2275,7 +2275,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.columnNames = JSON.parse(params.qstring.columnNames);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.columnNames = {};
                             }
                         }
@@ -2283,7 +2283,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.mapper = JSON.parse(params.qstring.mapper);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.mapper = {};
                             }
                         }
@@ -2322,7 +2322,7 @@ const processRequest = (params) => {
                                 //is something else entirely
                                 requested = new URL(params.qstring.path + "", "http://localhost");
                             }
-                            catch (ex) {
+                            catch {
                                 common.returnMessage(params, 400, 'Invalid parameter "path"');
                                 return false;
                             }
@@ -2510,7 +2510,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.data = JSON.parse(params.qstring.data);
                             }
-                            catch (ex) {
+                            catch {
                                 common.returnMessage(params, 400, 'Incorrect parameter "data"');
                                 return false;
                             }
@@ -2679,7 +2679,7 @@ const processRequest = (params) => {
                                 try {
                                     tokenPermission = JSON.parse(params.qstring.permission);
                                 }
-                                catch (ex) {
+                                catch {
                                     common.returnMessage(params, 400, "Invalid permission object");
                                     return;
                                 }
@@ -2778,7 +2778,7 @@ const processRequest = (params) => {
                             try {
                                 endpoint = JSON.parse(params.qstring.endpointquery); //structure with also info for qstring params.
                             }
-                            catch (ex) {
+                            catch {
                                 if (params.qstring.endpoint) {
                                     endpoint = params.qstring.endpoint.split(',');
                                 }
@@ -3086,7 +3086,7 @@ const processRequest = (params) => {
                         try {
                             params.qstring.events = JSON.parse(params.qstring.events);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
@@ -3396,7 +3396,7 @@ const processRequest = (params) => {
  * Process Request Data
  * @param {Params} params - params object
  * @param {object} app - app document
- * @param {function} done - callbck when processing done
+ * @param {Function} done - callbck when processing done
  */
 const processRequestData = (params, app, done) => {
 
@@ -3466,14 +3466,14 @@ const processRequestData = (params, app, done) => {
  * Process fetch request from sdk
  * @param  {object} params - params object
  * @param  {object} app - app document
- * @param  {function} done - callback when processing done
+ * @param  {Function} done - callback when processing done
  */
 const processFetchRequest = (params, app, done) => {
     if (params.qstring.metrics) {
         try {
             countlyApi.data.usage.returnAllProcessedMetrics(params);
         }
-        catch (ex) {
+        catch {
             console.log("Could not process metrics");
         }
     }
@@ -3701,7 +3701,7 @@ function validateRedirect(ob) {
                         var resp = JSON.parse(response.body);
                         message = resp.result || resp;
                     }
-                    catch (e) {
+                    catch {
                         if (response.result) {
                             message = response.result;
                         }
@@ -3739,7 +3739,7 @@ function validateRedirect(ob) {
  * Checks app_key from the http request against "apps" collection.
  * This is the first step of every write request to API.
  * @param {Params} params - params object
- * @param {function} done - callback when processing done
+ * @param {Function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
  * @returns {void} void
  */
@@ -3841,7 +3841,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 try {
                     params.qstring.metrics = JSON.parse(params.qstring.metrics);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
                 }
             }
@@ -3900,9 +3900,9 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 /**
  * Validate app for fetch API from sdk
  * @param  {object} params - params object
- * @param  {function} done - callback when processing done
+ * @param  {Function} done - callback when processing done
  * @param  {number} try_times - how many times request was retried
- * @returns {function} done - done callback
+ * @returns {Function} done - done callback
  */
 const validateAppForFetchAPI = (params, done, try_times) => {
     if (ignorePossibleDevices(params)) {
@@ -3940,7 +3940,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
             try {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse metrics JSON failed for sdk fetch request', params.qstring.metrics, params.req.url, params.req.body);
             }
         }
@@ -3983,10 +3983,10 @@ const validateAppForFetchAPI = (params, done, try_times) => {
 /**
  * Restart Request
  * @param {Params} params - params object
- * @param {function} initiator - function which initiated request
- * @param {function} done - callback when processing done
+ * @param {Function} initiator - function which initiated request
+ * @param {Function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
- * @param {function} fail - callback when restart limit reached
+ * @param {Function} fail - callback when restart limit reached
  * @returns {void} void
  */
 const restartRequest = (params, initiator, done, try_times, fail) => {
@@ -4010,8 +4010,8 @@ const restartRequest = (params, initiator, done, try_times, fail) => {
 
 /**
  * @param  {object} params - params object
- * @param  {function} initiator - function which initiated request
- * @param  {function} done - callback when processing done
+ * @param  {Function} initiator - function which initiated request
+ * @param  {Function} done - callback when processing done
  * @param  {number} try_times - how many times request was retried
  * @returns {Promise} - resolved
  */
@@ -4111,8 +4111,8 @@ const fetchAppUser = (params) => {
 /**
  * Add devices to ignore them
  * @param  {Params} params - params object
- * @param  {function} done - callback when processing done
- * @returns {function} done
+ * @param  {Function} done - callback when processing done
+ * @returns {Function} done
  */
 const ignorePossibleDevices = (params) => {
     //ignore possible opted out users for ios 10
@@ -4127,7 +4127,7 @@ const ignorePossibleDevices = (params) => {
 
 /**
  * Fetches version mark history (filesystem)
- * @param {function} callback - callback when response is ready
+ * @param {Function} callback - callback when response is ready
  * @returns {void} void
  */
 function loadFsVersionMarks(callback) {
@@ -4162,7 +4162,7 @@ function loadFsVersionMarks(callback) {
 
 /**
  * Fetches version mark history (database)
- * @param {function} callback - callback when response is ready
+ * @param {Function} callback - callback when response is ready
  * @returns {void} void
  */
 function loadDbVersionMarks(callback) {

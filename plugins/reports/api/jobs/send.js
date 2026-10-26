@@ -14,8 +14,8 @@ class ReportsJob extends job.Job {
     /**
     * run task
     * @param {object} countlyDb - db object
-    * @param {function} doneJob - callback function
-    * @param {function} progressJob - function for reporting progress
+    * @param {Function} doneJob - callback function
+    * @param {Function} progressJob - function for reporting progress
     */
     run(countlyDb, doneJob, progressJob) {
         log.d("starting send job");

@@ -189,7 +189,7 @@ var spawn = require('child_process').spawn,
             try {
                 sort = EJSON.parse(sort);
             }
-            catch (SyntaxError) {
+            catch {
                 sort = {};
             }
             //EJSON.parse("null") yields null (typeof null === "object"), so
@@ -218,7 +218,7 @@ var spawn = require('child_process').spawn,
             try {
                 projection = EJSON.parse(projection);
             }
-            catch (SyntaxError) {
+            catch {
                 projection = {};
             }
             //EJSON.parse("null") yields null and an array is also typeof
@@ -303,7 +303,7 @@ var spawn = require('child_process').spawn,
                             try {
                                 return EJSON.stringify(objectIdCheck(doc));
                             }
-                            catch (SyntaxError) {
+                            catch {
                                 return JSON.stringify(objectIdCheck(doc));
                             }
                         }
@@ -373,7 +373,7 @@ var spawn = require('child_process').spawn,
                 /**
                 * Get collections of database
                 * @param {string} name - database name
-                * @param {function} callback - callback method
+                * @param {Function} callback - callback method
                 **/
                 function getCollections(name, callback) {
                     if (dbs[name]) {
@@ -495,8 +495,8 @@ var spawn = require('child_process').spawn,
         * @param {object} parameters - {@link parameters} object
         * @param {string} collection - collection will be checked for access
         * @param {string} appId - appId to which to restrict access
-        * @param {function} callback - callback method includes boolean variable as argument  
-        * @returns {function} returns callback
+        * @param {Function} callback - callback method includes boolean variable as argument  
+        * @returns {Function} returns callback
          */
         async function userHasAccess(parameters, collection, appId, callback) {
             if (typeof appId === "function") {
@@ -609,7 +609,7 @@ var spawn = require('child_process').spawn,
                         //contract does not change
                         aggregate(params.qstring.collection, aggregation, guard.changes);
                     }
-                    catch (e) {
+                    catch {
                         common.returnMessage(params, 500, 'Aggregation object is not valid.');
                     }
                 };

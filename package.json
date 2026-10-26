@@ -15,24 +15,27 @@
   },
   "scripts": {
     "test": "grunt --verbose",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test:merge-shepherd": "node --test .github/scripts/merge-shepherd.test.js",
     "prepare": "husky",
     "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
   },
   "lint-staged": {
-    "*.{js,vue}": [
-      "eslint --fix --no-quiet --rulesdir bin/eslint-rules"
+    "*.{js,mjs,cjs}": [
+      "eslint --fix --no-quiet --pass-on-unpruned-suppressions"
     ]
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^3.1.0",
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "docdash": "^2.0.1",
-    "eslint": "^8.56.0",
-    "eslint-plugin-no-unsanitized": "~4.0.2",
-    "eslint-plugin-security": "^4.0.1",
-    "eslint-plugin-vue": "^10.2.0",
+    "eslint": "^10.13.0",
+    "eslint-plugin-jsdoc": "^65.4.2",
+    "eslint-plugin-no-unsanitized": "^4.1.5",
+    "eslint-plugin-security": "^4.2.0",
+    "globals": "^17.13.0",
     "grunt-contrib-watch": "1.1.0",
-    "grunt-eslint": "24.3.0",
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "husky": "^9.1.7",

@@ -1060,25 +1060,25 @@
             changeDur = countlyCommon.getPercentChange(previousDur, currentDur);
 
         dataArr =
-        {
-            usage: {
-                "event-total": {
-                    "total": currentTotal,
-                    "change": changeTotal.percent,
-                    "trend": changeTotal.trend
-                },
-                "event-sum": {
-                    "total": currentSum,
-                    "change": changeSum.percent,
-                    "trend": changeSum.trend
-                },
-                "event-dur": {
-                    "total": countlyCommon.formatSecond(currentDur),
-                    "change": changeDur.percent,
-                    "trend": changeDur.trend
+            {
+                usage: {
+                    "event-total": {
+                        "total": currentTotal,
+                        "change": changeTotal.percent,
+                        "trend": changeTotal.trend
+                    },
+                    "event-sum": {
+                        "total": currentSum,
+                        "change": changeSum.percent,
+                        "trend": changeSum.trend
+                    },
+                    "event-dur": {
+                        "total": countlyCommon.formatSecond(currentDur),
+                        "change": changeDur.percent,
+                        "trend": changeDur.trend
+                    }
                 }
-            }
-        };
+            };
 
         var eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             mapKey = _activeEvent.replace(/\\/g, "\\\\").replace(/\$/g, "\\u0024").replace(/\./g, '\\u002e'),
@@ -1266,7 +1266,7 @@
     /**
      * Deferred function to get events for target appids
      * @param  {Array} appIds - app ids
-     * @param  {function} callback - callback style provided
+     * @param  {Function} callback - callback style provided
      */
     countlyEvent.getEventsForApps = function(appIds, callback) {
         /**

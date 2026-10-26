@@ -289,7 +289,7 @@ describe("authorizer token record", function() {
         * Verify a token through the public entry point, handing back the document or false.
         * @param {object} db - stub
         * @param {string} id - token id
-        * @param {function} cb - called with the verify result
+        * @param {Function} cb - called with the verify result
         * @returns {void}
         */
         function verify(db, id, cb) {

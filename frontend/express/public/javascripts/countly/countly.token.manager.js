@@ -54,7 +54,7 @@
      *   token that carries the creator's own permissions
      * @param {boolean=} options.canLogin - request permission to sign in to the dashboard. Granted
      *   only when the creating credential holds it and the token is not limited
-     * @param {function} callback - called with (error, response)
+     * @param {Function} callback - called with (error, response)
      * @returns {object} jQuery ajax object
      */
     countlyTokenManager.createTokenWithPermissions = function(options, callback) {

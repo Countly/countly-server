@@ -16,7 +16,7 @@ class DoFlush extends Transform {
 
     /**
      * A method to be overridden
-     * @param {function} callback flush callback
+     * @param {Function} callback flush callback
      */
     do_flush(/*callback*/) {
         throw new Error('Must be overridden');
@@ -25,7 +25,7 @@ class DoFlush extends Transform {
     /**
      * Flush the stream delegating the job to do_flush() method
      * 
-     * @param {function} callback flush callback
+     * @param {Function} callback flush callback
      */
     _flush(callback) {
         this.log.d('flushing');

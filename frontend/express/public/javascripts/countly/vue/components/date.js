@@ -1105,7 +1105,7 @@
                                 this.doCommit(val, true);
                             }
                         }
-                        catch (error) {
+                        catch {
                             val = "30days";
                             this.doCommit(val, true);
                         }
@@ -1357,7 +1357,7 @@
                             this.tableType = "day"; //in case of chosen inBetween-montly in retention
                         }
                     }
-                    catch (error) {
+                    catch {
                         this.rangeMode = "inBetween";
                     }
                 }
