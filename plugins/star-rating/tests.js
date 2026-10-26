@@ -234,8 +234,9 @@ describe('Testing Rating plugin', function() {
     describe('Widget show counter', function() {
         //the popup page fetches the widget with nfd=1 and no credential; only the
         //owning app's key may count the show, and the widget is returned either way.
-        //The count is written after the response, so each case that must not count
-        //waits before reading, and the last case expects exactly one more show.
+        //A show is written after the response, in request order, so each case that must
+        //not count is followed by one that must: once that show is visible, a show
+        //wrongly counted before it is visible too, and the exact total catches it.
         var otherAppId = "";
         var otherAppKey = "";
         var shownBefore = 0;
@@ -261,6 +262,16 @@ describe('Testing Rating plugin', function() {
                 });
         }
 
+        async function expectTimesShown(expected) {
+            var started = Date.now();
+            var n = await timesShown();
+            while (n < expected && Date.now() - started < 20000 * scale) {
+                await wait(250 * scale);
+                n = await timesShown();
+            }
+            (await timesShown()).should.eql(expected);
+        }
+
         before(async function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_KEY = testUtils.get("APP_KEY");
@@ -275,25 +286,19 @@ describe('Testing Rating plugin', function() {
 
         it('returns the widget without counting a show when no app key is sent', async function() {
             await fetchForSdk('');
-            await wait(1000 * scale);
-            (await timesShown()).should.eql(shownBefore);
+            await fetchForSdk('&app_key=' + APP_KEY);
+            await expectTimesShown(shownBefore + 1);
         });
 
         it('returns the widget without counting a show for another app\'s key', async function() {
             await fetchForSdk('&app_key=' + otherAppKey);
-            await wait(1000 * scale);
-            (await timesShown()).should.eql(shownBefore);
+            await fetchForSdk('&app_key=' + APP_KEY);
+            await expectTimesShown(shownBefore + 2);
         });
 
         it('returns the widget and counts one show for the owning app\'s key', async function() {
             await fetchForSdk('&app_key=' + APP_KEY);
-            var started = Date.now();
-            var n = await timesShown();
-            while (n !== shownBefore + 1 && Date.now() - started < 20000 * scale) {
-                await wait(250 * scale);
-                n = await timesShown();
-            }
-            n.should.eql(shownBefore + 1);
+            await expectTimesShown(shownBefore + 3);
         });
 
         after(async function() {
