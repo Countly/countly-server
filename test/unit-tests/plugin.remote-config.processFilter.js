@@ -74,6 +74,41 @@ describe("remote-config processFilter", function() {
         issues.length.should.be.above(0);
     });
 
+    describe("a rule it cannot evaluate, wherever it sits", function() {
+        /**
+        * Evaluate a query and collect the diagnostics
+        * @param {object} query - targeting query
+        * @returns {object} the result and the diagnostics
+        **/
+        function run(query) {
+            var issues = [];
+            var matched = remoteConfig.processFilter({sc: 5, p: "Android"}, query, issues);
+            return {matched: matched, issues: issues};
+        }
+
+        [
+            ["after a failing operator", {sc: {$gt: 10, $mod: [2, 0]}}],
+            ["before a failing operator", {sc: {$mod: [2, 0], $gt: 10}}],
+            ["under $not, after a failing operator", {sc: {$not: {$gt: 10, $mod: [2, 0]}}}],
+            ["under $not, before a failing operator", {sc: {$not: {$mod: [2, 0], $gt: 10}}}],
+            ["after a failing sibling property", {p: "iOS", sc: {$mod: [2, 0]}}],
+            ["under $nor, after a failing sibling property", {$nor: [{p: "iOS", sc: {$mod: [2, 0]}}]}],
+            ["in an $or branch after a matching one", {$or: [{p: "Android"}, {sc: {$mod: [2, 0]}}]}]
+        ].forEach(function(entry) {
+            it("is reported and matches nobody " + entry[0], function() {
+                var result = run(entry[1]);
+                result.matched.should.equal(false);
+                result.issues.length.should.be.above(0);
+            });
+        });
+
+        it("still matches $not and $nor queries it can evaluate", function() {
+            run({sc: {$not: {$gt: 10}}}).should.eql({matched: true, issues: []});
+            run({$nor: [{p: "iOS"}]}).should.eql({matched: true, issues: []});
+            run({$or: [{p: "iOS"}, {sc: {$lt: 10}}]}).should.eql({matched: true, issues: []});
+        });
+    });
+
     it("does not match on an empty query", function() {
         should(evaluate({})).equal(false);
     });
