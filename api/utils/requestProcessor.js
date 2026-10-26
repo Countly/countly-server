@@ -2671,7 +2671,9 @@ const processRequest = (params) => {
                         // instead of permissions. That scope is not carried into params.member, so
                         // there is nothing to bound such a token's grants by - refuse rather than
                         // issue a child that could be wider than its parent.
-                        const creatorIsLegacyRestricted = !!creatorToken && !creatorToken.token_permission && (isScopeRestricted(creatorToken.app) || isScopeRestricted(creatorToken.endpoint));
+                        // An endpoint restriction is not part of a permission object either, so a
+                        // token limited to endpoints cannot pass it on, with or without permissions.
+                        const creatorIsLegacyRestricted = !!creatorToken && (isScopeRestricted(creatorToken.endpoint) || (!creatorToken.token_permission && isScopeRestricted(creatorToken.app)));
                         if (creatorIsLegacyRestricted) {
                             common.returnMessage(params, 403, "A restricted token cannot create tokens");
                             return;

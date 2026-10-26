@@ -835,6 +835,34 @@ describe('Testing token manager', function() {
                 });
         });
 
+        it('a token limited to endpoints cannot create tokens, even with permissions', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=parent&multi=true&ttl=300&endpoint=/i/token/create&permission=' + readCorePermission(APP_ID))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var parent = JSON.parse(res.text).result;
+                    request
+                        .get('/i/token/create?auth_token=' + parent + '&purpose=endpoint-child&multi=true&ttl=300&permission=' + readCorePermission(APP_ID))
+                        .expect(403)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            JSON.parse(res2.text).should.have.property('result', 'A restricted token cannot create tokens');
+                            testUtils.db.collection("auth_tokens").countDocuments({purpose: "endpoint-child"}, function(dbErr, count) {
+                                if (dbErr) {
+                                    return done(dbErr);
+                                }
+                                count.should.equal(0);
+                                deleteToken(parent, done);
+                            });
+                        });
+                });
+        });
+
         it('a legacy app-restricted token cannot create tokens', function(done) {
             request
                 .get('/i/token/create?auth_token=' + legacyRestrictedToken + '&multi=true&ttl=300')
