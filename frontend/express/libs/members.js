@@ -808,30 +808,36 @@ membersUtility.reset = function(req, callback) {
         if (req.body.password && req.body.again && req.body.prid) {
             req.body.prid += "";
             var secret = membersUtility.countlyConfig.passwordSecret || "";
-            argon2Hash(req.body.password + secret).then(password => {
-                membersUtility.db.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
-                    if (err || !passwordReset || !passwordReset.user_id) {
-                        callback(false, undefined);
-                        return;
-                    }
-                    //enforce the same 10 minute expiry the reset page checks; the
-                    //password change endpoint previously did not, so an expired
-                    //(e.g. leaked/old) reset link stayed usable indefinitely
-                    var nowTs = Math.round(new Date().getTime() / 1000);
-                    if (nowTs > (passwordReset.timestamp + 600)) {
-                        membersUtility.db.collection('password_reset').remove({ prid: req.body.prid }, function() { });
-                        callback(false, undefined);
-                        return;
-                    }
-                    membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
-                        member = member && member.ok ? member.value : null;
-                        //answer once the old sessions and tokens are gone
-                        killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db, true).then(function() {
-                            plugins.callMethod("passwordReset", { req: req, data: member }); //only req, used for systemolgs
-                            callback(false, member);
+            argon2Hash(req.body.password + secret).then(async password => {
+                //take the link before using it: two submissions of one link can no longer both set a password
+                var claim = await membersUtility.db.collection('password_reset').findOneAndDelete({ prid: req.body.prid });
+                var passwordReset = claim && Object.prototype.hasOwnProperty.call(claim, "value") ? claim.value : claim;
+                if (!passwordReset || !passwordReset.user_id) {
+                    callback(false, undefined);
+                    return;
+                }
+                //enforce the same 10 minute expiry the reset page checks; the
+                //password change endpoint previously did not, so an expired
+                //(e.g. leaked/old) reset link stayed usable indefinitely
+                var nowTs = Math.round(new Date().getTime() / 1000);
+                if (nowTs > (passwordReset.timestamp + 600)) {
+                    callback(false, undefined);
+                    return;
+                }
+                membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
+                    if (err2) {
+                        //the password was not set: give the link back so it can be used again
+                        membersUtility.db.collection('password_reset').insertOne(passwordReset).catch(function() {}).then(function() {
+                            callback(false, undefined);
                         });
+                        return;
+                    }
+                    member = member && member.ok ? member.value : null;
+                    //answer once the old sessions and tokens are gone
+                    killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db, true).then(function() {
+                        plugins.callMethod("passwordReset", { req: req, data: member }); //only req, used for systemolgs
+                        callback(false, member);
                     });
-                    membersUtility.db.collection('password_reset').remove({ prid: req.body.prid }, function() { });
                 });
             }).catch(function() {
                 callback(false, undefined);

@@ -331,6 +331,7 @@ usersApi.createUser = async function(params) {
 /**
     * Removes all active sessions and tokens of a user
     * @param {string} userId - id of the user for which to remove sessions
+    * @returns {Promise} resolves once the tokens are revoked
     **/
 function killAllSessionForUser(userId) {
     const userIdString = userId + "";
@@ -354,8 +355,9 @@ function killAllSessionForUser(userId) {
             common.db.collection('sessions_').remove({ '_id': { $in: delete_us } });
         }
     });
-    //every token the member owns: used when an admin sets the password and when the member is deleted
-    authorize.revokeMemberTokens({db: common.db, owner: userIdString}).catch(function(err) {
+    //every token the member owns: used when an admin sets the password, locks the member,
+    //and when the member is deleted
+    return authorize.revokeMemberTokens({db: common.db, owner: userIdString}).catch(function(err) {
         console.log('Revoking tokens of member ' + userIdString + ' failed', err);
     });
 
@@ -600,6 +602,10 @@ usersApi.updateUser = async function(params) {
                     if (updatedMember.password && params.member._id + "" !== updatedMember._id + "") {
                         killAllSessionForUser(updatedMember._id);
                     }
+                    //locking ends what the member is signed in with, so unlocking does not bring it back
+                    if (updatedMember.locked === true && !(memberBefore && memberBefore.locked === true)) {
+                        killAllSessionForUser(updatedMember._id);
+                    }
 
                     if (updatedMember.email) {
                         //remove password reset e-mail
@@ -670,7 +676,7 @@ usersApi.deleteUser = async function(params) {
                             reject(false);
                         }
                         else {
-                            await common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
+                            await killAllSessionForUser(userIds[i]);
                             await usersApi.deleteUserNotes({ member: { _id: userIds[i] } });
                             await common.db.collection('members').remove({_id: common.db.ObjectID(userIds[i])});
                             deleteUserPresets(userIds[i]);
@@ -836,7 +842,7 @@ usersApi.deleteOwnAccount = function(params) {
                 else {
                     try {
                         await common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")});
-                        killAllSessionForUser(member._id);
+                        await killAllSessionForUser(member._id);
                         deleteUserPresets(member._id);
                         common.returnMessage(params, 200, 'Success');
                     }

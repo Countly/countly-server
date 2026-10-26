@@ -247,4 +247,70 @@ describe('Password change revokes tokens', function() {
             login.headers.location.should.equal('/dashboard');
         });
     });
+
+    describe('the same reset link submitted twice at once', function() {
+        let member;
+
+        before(async function() {
+            member = await createMember();
+        });
+
+        after(async function() {
+            await deleteMember(member._id);
+        });
+
+        it('sets the password once', async function() {
+            const prid = await resetLink(member._id);
+            const agents = [supertest.agent(testUtils.url), supertest.agent(testUtils.url)];
+            const pages = await Promise.all(agents.map((agent) => agent.get('/reset/' + prid)));
+            const passwords = ['Tokens-first-p4ss!', 'Tokens-second-p4ss!'];
+            const results = await Promise.all(agents.map((agent, i) => agent.post('/reset').type('form')
+                .send({ password: passwords[i], again: passwords[i], prid, _csrf: testUtils.CSRFfromBody(pages[i].text) })
+                .redirects(0)));
+            results.filter((res) => res.headers.location === '/login').should.have.length(1);
+            const logins = [];
+            for (const password of passwords) {
+                const agent = supertest.agent(testUtils.url);
+                const loginPage = await agent.get('/login');
+                logins.push(await agent.post('/login').type('form').send({ username: member.username, password, _csrf: testUtils.CSRFfromBody(loginPage.text) }).redirects(0));
+            }
+            logins.filter((res) => res.headers.location === '/dashboard').should.have.length(1);
+        });
+    });
+
+
+    describe('locking a member through /i/users/update', function() {
+        let member;
+        let tokens;
+
+        before(async function() {
+            member = await createMember();
+            tokens = [await otherBrowserToken(member._id), await integrationToken(member.api_key)];
+        });
+
+        after(async function() {
+            await deleteMember(member._id);
+        });
+
+        it('revokes every token', async function() {
+            const res = await request.get('/i/users/update').query({ api_key: testUtils.get('API_KEY_ADMIN'), args: JSON.stringify({ user_id: member._id, locked: true }) });
+            res.status.should.equal(200, res.text);
+            await untilOnly(member._id, []);
+            (await apiStatus(tokens[0])).should.equal(400);
+            (await apiStatus(tokens[1])).should.equal(400);
+        });
+    });
+
+
+    describe('deleting a member', function() {
+        it('revokes every token through /i/users/delete', async function() {
+            const member = await createMember();
+            const tokens = [await otherBrowserToken(member._id), await integrationToken(member.api_key)];
+            await deleteMember(member._id);
+            (await tokensOf(member._id)).should.have.length(0);
+            for (const token of tokens) {
+                (await apiStatus(token)).should.equal(400);
+            }
+        });
+    });
 });
