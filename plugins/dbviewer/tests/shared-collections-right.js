@@ -35,6 +35,8 @@ describe('DBViewer shared collections right', () => {
     /** users read on APP_A, no dbviewer anywhere. */
     let usersKey = '';
     const memberIds = [];
+    /** A token with the dbviewer read on APP_A and no app membership (no `_.u`). */
+    let viewerToken = '';
     let countlyDb;
 
     const marker = 'dbv_shared_' + uniq;
@@ -131,9 +133,27 @@ describe('DBViewer shared collections right', () => {
         return request.get('/o/db').query({ api_key: key, app_id: APP_A, dbs: 'countly', collection: 'events_data', document: app + '_' + marker });
     }
 
+    /**
+     * Create a token for the admin holding only the dbviewer read on APP_A.
+     * @returns {Promise<string>} the token
+     */
+    async function createViewerToken() {
+        const res = await request.get('/i/token/create').query({
+            api_key: API_KEY_ADMIN,
+            multi: true,
+            ttl: 600,
+            permission: JSON.stringify({ _: { a: [], u: [] }, c: {}, r: { [APP_A]: { all: false, allowed: { dbviewer: true } } }, u: {}, d: {} }),
+        });
+        should(res.status).equal(200, res.text);
+        return res.body.result;
+    }
+
     after(async() => {
         if (countlyDb) {
             await countlyDb.collection('events_data').deleteMany({ marker });
+        }
+        if (viewerToken) {
+            await request.get('/i/token/delete').query({ api_key: API_KEY_ADMIN, tokenid: viewerToken });
         }
         if (memberIds.length) {
             await manage('/i/users/delete', { user_ids: memberIds });
@@ -248,5 +268,27 @@ describe('DBViewer shared collections right', () => {
 
     it('should accept a drill_events export with the users right', async() => {
         should((await exportCollection(usersKey, 'countly_drill', 'drill_events')).status).equal(200);
+    });
+
+    // ── A token with the dbviewer read on one app and no membership ──────────
+
+    it('should list events_data for the app a token holds the dbviewer read on, and not for another app', async() => {
+        viewerToken = await createViewerToken();
+        const names = async(app) => {
+            const res = await request.get('/o/db').query({ auth_token: viewerToken, app_id: app });
+            should(res.status).equal(200);
+            return res.body.reduce((all, db) => all.concat(Object.values(db.collections || {})), []);
+        };
+        should(await names(APP_A)).containEql('events_data');
+        should(await names(APP_B)).not.containEql('events_data');
+    });
+
+    it('should return a token only the events_data rows of the app it holds the dbviewer read on', async() => {
+        const res = await request.get('/o/db').query({ auth_token: viewerToken, app_id: APP_A, dbs: 'countly', collection: 'events_data', filter: JSON.stringify({ marker }), limit: 100 });
+        should(res.status).equal(200);
+        should(res.body.collections.map((row) => row._id)).eql([APP_A + '_' + marker]);
+        const other = await request.get('/o/db').query({ auth_token: viewerToken, app_id: APP_A, dbs: 'countly', collection: 'events_data', document: APP_B + '_' + marker });
+        should(other.status).equal(200);
+        should(other.body).eql({});
     });
 });

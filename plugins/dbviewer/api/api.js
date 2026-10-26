@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
@@ -519,12 +519,13 @@ var spawn = require('child_process').spawn,
                 }
             }
             else {
-                var userApps = getUserApps(parameters.member);
+                //the apps the member (or token) holds the dbviewer read on, member or not
+                var userApps = getUserAppsWithReadRight(parameters.member, FEATURE_NAME);
                 if (collection === "events_data" || collection === "drill_events") {
                     //the shared collections hold every app's rows: readable when the
                     //member holds the dbviewer read right on at least one app, and the
                     //rows are then scoped to those apps by getBaseAppFilter
-                    return callback(getUserAppsWithReadRight(parameters.member, FEATURE_NAME).length > 0);
+                    return callback(userApps.length > 0);
                 }
                 //go through all apps of user and check if any of them has access to collection
                 var result = await Promise.all(userApps.map(function(id) {
@@ -661,7 +662,8 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     var apps = [];
-                    var userApps = getUserApps(params.member);
+                    //the apps the member (or token) holds the dbviewer read on, member or not
+                    var userApps = getUserAppsWithReadRight(params.member, FEATURE_NAME);
                     if (params.qstring.app_id) {
                         //if we have app_id, check permissions
                         if (userApps.length > 0 && userApps.indexOf(params.qstring.app_id) !== -1) {
