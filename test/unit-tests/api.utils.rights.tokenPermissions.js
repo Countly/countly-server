@@ -385,3 +385,19 @@ describe("the dashboards grant of a token", function() {
         });
     });
 });
+
+describe("apps a member reads a feature on", function() {
+    it("includes an app where the permission grants the read without membership", function() {
+        var tokenMember = {global_admin: false, permission: permission({grants: [{type: "r", app: APP_A, allowed: {dbviewer: true}}]})};
+        rights.getUserAppsWithReadRight(tokenMember, "dbviewer").should.eql([APP_A]);
+    });
+
+    it("leaves out an app the member belongs to without the read", function() {
+        var plain = {global_admin: false, permission: permission({userApps: [APP_A, APP_B], grants: [{type: "r", app: APP_A, allowed: {dbviewer: true}}]})};
+        rights.getUserAppsWithReadRight(plain, ["dbviewer", "drill"]).should.eql([APP_A]);
+    });
+
+    it("includes the apps a member administers", function() {
+        rights.getUserAppsWithReadRight(adminOfA, "dbviewer").should.eql([APP_A]);
+    });
+});

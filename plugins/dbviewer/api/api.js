@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight, getBaseAppFilter } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
@@ -524,9 +524,7 @@ var spawn = require('child_process').spawn,
                     //the shared collections hold every app's rows: readable when the
                     //member holds the dbviewer read right on at least one app, and the
                     //rows are then scoped to those apps by getBaseAppFilter
-                    return callback(userApps.some(function(id) {
-                        return hasReadRight(FEATURE_NAME, id, parameters.member);
-                    }));
+                    return callback(getUserAppsWithReadRight(parameters.member, FEATURE_NAME).length > 0);
                 }
                 //go through all apps of user and check if any of them has access to collection
                 var result = await Promise.all(userApps.map(function(id) {

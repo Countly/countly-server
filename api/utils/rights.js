@@ -1190,7 +1190,15 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
  */
 exports.getUserAppsWithReadRight = function(member, feature) {
     var features = Array.isArray(feature) ? feature : [feature];
-    return (exports.getUserApps(member) || []).filter(function(id) {
+    //a token can hold a feature's read on an app without being its member, so the
+    //apps carrying read grants are candidates too; hasReadRight decides each one
+    var candidates = (exports.getUserApps(member) || []).map(String);
+    Object.keys((member.permission && member.permission.r) || {}).forEach(function(id) {
+        if (candidates.indexOf(id) === -1) {
+            candidates.push(id);
+        }
+    });
+    return candidates.filter(function(id) {
         return features.some(function(f) {
             return exports.hasReadRight(f, id, member);
         });
