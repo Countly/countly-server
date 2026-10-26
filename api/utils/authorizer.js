@@ -482,4 +482,27 @@ authorizer.clean = function(options) {
     }, options.callback);
 };
 
+/**
+* Revoke the tokens a member owns. Used when a member signs out (purpose LoggedInAuth only)
+* and when their password changes (every token, of any purpose).
+* The owner is matched as a string, because save() stores it as one.
+* @param {object} options - options for the task
+* @param {object=} options.db - database connection
+* @param {string|object} options.owner - id of the member whose tokens are revoked
+* @param {string=} options.purpose - only revoke tokens with this purpose; every token when omitted
+* @param {string=} options.keepToken - token to keep, such as the one of the current session
+* @returns {Promise} resolves once the tokens are removed
+*/
+authorizer.revokeMemberTokens = async function(options) {
+    var db = options.db || common.db;
+    var query = {owner: options.owner + ''};
+    if (options.purpose) {
+        query.purpose = options.purpose;
+    }
+    if (options.keepToken) {
+        query._id = {$ne: options.keepToken + ''};
+    }
+    await db.collection('auth_tokens').deleteMany(query);
+};
+
 module.exports = authorizer;
