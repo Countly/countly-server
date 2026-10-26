@@ -422,6 +422,15 @@ function isAppVersionProperty(prop) {
 }
 
 /**
+ * Convert a string to the number it spells out in full
+ * @param  {String} value - string to convert
+ * @returns {Number} the number, or NaN when the string is empty or not entirely numeric
+ */
+function stringToNumber(value) {
+    return value.trim() === '' ? NaN : Number(value);
+}
+
+/**
  * Function to compare a user value against a range operator
  * @param  {String} prop - query property
  * @param  {*} userValue - value from the user document
@@ -438,12 +447,13 @@ function compareValues(prop, userValue, op, expected) {
     var right = expected;
 
     //Coerce the string side when the other side is numeric, so a metric
-    //stored as "5" still compares against a numeric threshold
+    //stored as "5" still compares against a numeric threshold. The whole
+    //string has to be a number: "12points" is not 12.
     if (typeof left === 'string' && typeof right === 'number') {
-        left = parseFloat(left);
+        left = stringToNumber(left);
     }
     else if (typeof right === 'string' && typeof left === 'number') {
-        right = parseFloat(right);
+        right = stringToNumber(right);
     }
 
     if (typeof left === 'number' && isNaN(left)) {

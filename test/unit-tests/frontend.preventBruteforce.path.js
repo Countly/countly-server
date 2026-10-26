@@ -88,17 +88,29 @@ describe('preventBruteforce middleware path matching', function() {
 });
 
 describe('preventBruteforce login counter key', function() {
-    it('gives every whitespace and case variant of a username one key', function() {
-        [" admin", "admin ", "Admin", " ADMIN "].forEach(function(typed) {
+    it('trims a username and keeps its case, as the username lookup does', function() {
+        [" admin", "admin ", " admin "].forEach(function(typed) {
             preventBruteforce.loginKey(typed).should.equal("admin");
+        });
+        preventBruteforce.loginKey(" Admin ").should.equal("Admin");
+    });
+
+    it('gives usernames that differ only in case separate counters', function() {
+        preventBruteforce.loginKey("Alice").should.not.equal(preventBruteforce.loginKey("alice"));
+    });
+
+    it('trims an email and folds its case, as the email lookup does', function() {
+        [" Admin@Example.com", "ADMIN@EXAMPLE.COM ", "admin@example.com"].forEach(function(typed) {
+            preventBruteforce.loginKey(typed).should.equal("admin@example.com");
         });
     });
 
-    it('lists the normalized counter first and the verbatim one second', function() {
-        preventBruteforce.loginCounterIds("Admin").should.eql([JSON.stringify(["login", "admin"]), JSON.stringify(["login", "Admin"])]);
+    it('lists the normalized counter first and the verbatim one second, once each', function() {
+        preventBruteforce.loginCounterIds(" Admin ").should.eql([JSON.stringify(["login", "Admin"]), JSON.stringify(["login", " Admin "])]);
+        preventBruteforce.loginCounterIds("Admin").should.eql([JSON.stringify(["login", "Admin"])]);
     });
 
-    it('clears both counters of a member by username and by email', function(done) {
+    it('clears every counter of a member by username and by email', function(done) {
         const saved = preventBruteforce.db;
         let removed = null;
         preventBruteforce.db = {
@@ -111,13 +123,12 @@ describe('preventBruteforce login counter key', function() {
                 };
             }
         };
-        preventBruteforce.resetForMember({username: "Admin", email: "admin@example.com"}, function() {
+        preventBruteforce.resetForMember({username: "Admin", email: "Admin@Example.com"}, function() {
             preventBruteforce.db = saved;
             removed._id.$in.should.eql([
-                JSON.stringify(["login", "admin"]),
                 JSON.stringify(["login", "Admin"]),
                 JSON.stringify(["login", "admin@example.com"]),
-                JSON.stringify(["login", "admin@example.com"])
+                JSON.stringify(["login", "Admin@Example.com"])
             ]);
             done();
         });

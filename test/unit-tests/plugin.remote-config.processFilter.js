@@ -43,6 +43,12 @@ describe("remote-config processFilter", function() {
         evaluate({sc: {$gt: 5}}).should.equal(false);
     });
 
+    it("compares a numeric string by its whole value", function() {
+        remoteConfig.processFilter({custom: {score: "15"}}, {"custom.score": {$gt: 10}}).should.equal(true);
+        remoteConfig.processFilter({custom: {score: "12points"}}, {"custom.score": {$gt: 10}}).should.equal(false);
+        remoteConfig.processFilter({custom: {score: ""}}, {"custom.score": {$gte: 0}}).should.equal(false);
+    });
+
     it("ANDs sibling properties", function() {
         evaluate({p: "Android", cc: "US"}).should.equal(true);
         evaluate({p: "Android", cc: "DE"}).should.equal(false);

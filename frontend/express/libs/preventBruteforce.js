@@ -124,14 +124,17 @@ preventBruteforce.registeredPath = function(path) {
 
 /**
  * The key the login failure counter is stored under for a login identifier.
- * Logins trim the identifier before checking it, so every whitespace and case
- * variant of one account shares one counter. Anything that reads, bumps or
- * clears the "login" counter goes through this.
+ * It normalizes the identifier the way the credential lookup does: trimmed,
+ * and an email in lower case. Usernames are matched case-sensitively, so
+ * they keep their case and two members whose names differ only in case keep
+ * separate counters. Anything that reads, bumps or clears the "login"
+ * counter goes through this.
  * @param {string} identifier - username or email as typed, or as stored
  * @returns {string} the counter key
  **/
 preventBruteforce.loginKey = function(identifier) {
-    return (identifier + "").trim().toLowerCase();
+    var key = (identifier + "").trim();
+    return key.indexOf("@") !== -1 ? key.toLowerCase() : key;
 };
 
 /**
@@ -141,7 +144,8 @@ preventBruteforce.loginKey = function(identifier) {
  * @returns {Array<string>} failed_logins document ids
  **/
 preventBruteforce.loginCounterIds = function(identifier) {
-    return [JSON.stringify(["login", preventBruteforce.loginKey(identifier)]), JSON.stringify(["login", identifier])];
+    var ids = [JSON.stringify(["login", preventBruteforce.loginKey(identifier)]), JSON.stringify(["login", identifier])];
+    return ids[0] === ids[1] ? [ids[0]] : ids;
 };
 
 /**
@@ -154,7 +158,11 @@ preventBruteforce.resetForMember = function(member, callback) {
     var ids = [];
     [member.username, member.email].forEach(function(value) {
         if (typeof value === "string" && value.length) {
-            ids = ids.concat(preventBruteforce.loginCounterIds(value));
+            preventBruteforce.loginCounterIds(value).forEach(function(id) {
+                if (ids.indexOf(id) === -1) {
+                    ids.push(id);
+                }
+            });
         }
     });
     preventBruteforce.db.collection("failed_logins").remove({_id: {$in: ids}}, callback);

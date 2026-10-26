@@ -21,6 +21,7 @@ function clearCounters(names) {
     var ids = [];
     names.forEach(function(name) {
         ids.push(JSON.stringify(["login", name]));
+        ids.push(JSON.stringify(["login", name.trim()]));
         ids.push(JSON.stringify(["login", name.trim().toLowerCase()]));
     });
     return testUtils.db.collection('failed_logins').deleteMany({_id: {$in: ids}});
@@ -39,7 +40,8 @@ function loadCSRF(agent, page) {
 }
 
 describe('Legacy login failure counter', function() {
-    var VARIANTS = [testUtils.username, " " + testUtils.username, testUtils.username + " ", testUtils.username.toUpperCase(), " " + testUtils.username + " "];
+    var EMAIL = testUtils.email;
+    var VARIANTS = [testUtils.username, " " + testUtils.username, testUtils.username + " ", "  " + testUtils.username, testUtils.username.toUpperCase(), " " + testUtils.username + " ", EMAIL, EMAIL.toUpperCase()];
 
     before(function() {
         return clearCounters(VARIANTS);
@@ -49,14 +51,33 @@ describe('Legacy login failure counter', function() {
     });
 
     describe('GET /api-key', function() {
-        it('counts whitespace and case variants of a username as one account', async function() {
+        it('counts whitespace variants of a username as one account', async function() {
             var agent = request.agent(testUtils.url);
-            var typed = [" " + testUtils.username, testUtils.username + " ", testUtils.username.toUpperCase()];
+            var typed = [" " + testUtils.username, testUtils.username + " ", "  " + testUtils.username];
             for (var i = 0; i < LOGIN_TRIES; i++) {
                 await agent.get('/api-key').auth(typed[i], 'wrong password').expect(401);
             }
             var res = await agent.get('/api-key').auth(" " + testUtils.username + " ", testUtils.password).expect(401);
             res.text.should.equal("-1");
+        });
+
+        it('counts whitespace and case variants of an email as one account', async function() {
+            var agent = request.agent(testUtils.url);
+            var typed = [" " + EMAIL.toUpperCase(), EMAIL + " ", EMAIL.charAt(0).toUpperCase() + EMAIL.slice(1)];
+            for (var i = 0; i < LOGIN_TRIES; i++) {
+                await agent.get('/api-key').auth(typed[i], 'wrong password').expect(401);
+            }
+            var res = await agent.get('/api-key').auth(EMAIL, testUtils.password).expect(401);
+            res.text.should.equal("-1");
+        });
+
+        it('keeps a username that differs only in case on its own counter', async function() {
+            var agent = request.agent(testUtils.url);
+            for (var i = 0; i < LOGIN_TRIES; i++) {
+                await agent.get('/api-key').auth(testUtils.username.toUpperCase(), 'wrong password').expect(401);
+            }
+            var res = await agent.get('/api-key').auth(testUtils.username, testUtils.password).expect(200);
+            res.text.should.equal(testUtils.get("API_KEY_ADMIN"));
         });
 
         it('still returns the api key for the right password when not blocked', async function() {
