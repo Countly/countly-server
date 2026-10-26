@@ -1816,11 +1816,13 @@ exports.intersectPermission = function(member, tokenPermission) {
         if (!member.global_admin && memberApps.indexOf(appId) === -1) {
             return;
         }
+        var grantsAnything = false;
         for (var t = 0; t < PERMISSION_TYPES.length; t++) {
             var type = PERMISSION_TYPES[t];
             var tokenAll = principalAllowsAll(tokenPrincipal, type, appId);
             if (tokenAll && principalAllowsAll(member, type, appId)) {
                 result[type][appId] = {all: true, allowed: {}};
+                grantsAnything = true;
                 continue;
             }
             //whichever side is not "all" has a finite feature list, and that is what to walk
@@ -1835,6 +1837,7 @@ exports.intersectPermission = function(member, tokenPermission) {
             });
             if (any) {
                 result[type][appId] = {all: false, allowed: allowed};
+                grantsAnything = true;
             }
         }
         //membership of either kind is granted only where the owner is itself a member. hasAdminAccess
@@ -1845,12 +1848,9 @@ exports.intersectPermission = function(member, tokenPermission) {
         if (isAdmin) {
             result._.a.push(appId);
         }
-        else if (tokenUserApps.indexOf(appId) !== -1 && ownerIsMember) {
-            //membership comes only from the token's own _.u, and only while the owner is a member
-            //too. A feature grant is not membership: validateUserForRead and validateUserForWrite
-            //authorize on membership alone, so deriving it from features would let a token that
-            //reads one feature pass routes that never ask about features (isPermissionSubset
-            //treats the two the same way)
+        else if ((grantsAnything || tokenUserApps.indexOf(appId) !== -1) && ownerIsMember) {
+            //an app the token grants anything on - or names as a user app - stays visible, but
+            //only while the owner is a member of it too
             userApps.push(appId);
         }
     });
