@@ -97,18 +97,34 @@ function messageQuery(message) {
 module.exports.drillPreprocessQuery = ({query, params}) => {
     if (query) {
         if (query.push) {
-            if (query.push.$nin) {
-                query.$and = query.push.$nin.map(tk => {
-                    return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
+            // Each push condition is ANDed with the rest of the query. A $and or $or the
+            // query already has is kept as it is: callers put conditions, an app scope
+            // among them, there.
+            let conditions = [];
+            if (Array.isArray(query.push.$nin)) {
+                query.push.$nin.forEach(tk => {
+                    conditions.push({$or: [{[tk]: false}, {[tk]: {$exists: false}}]});
                 });
             }
-            if (query.push.$in) {
-                let q = query.push.$in.map(tk => {
-                    return {[tk]: true};
+            if (Array.isArray(query.push.$in)) {
+                conditions.push({
+                    $or: query.push.$in.map(tk => {
+                        return {[tk]: true};
+                    })
                 });
-                query.$or = q;
             }
             delete query.push;
+            if (conditions.length) {
+                if (query.$and === undefined) {
+                    query.$and = conditions;
+                }
+                else if (Array.isArray(query.$and)) {
+                    query.$and.push(...conditions);
+                }
+                else {
+                    query.$and = [{$and: query.$and}, ...conditions];
+                }
+            }
         }
 
         if (query.message) {

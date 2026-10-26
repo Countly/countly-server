@@ -1305,6 +1305,37 @@ exports.getBaseAppFilter = function(member, dbName, collectionName) {
     }
     return base_filter;
 };
+
+/**
+* App scope of a DB export from the collections shared by all apps (drill_events, events_data).
+* A global admin is not scoped.
+* @param {object} member - member object
+* @param {string} dbName - name of the database
+* @param {string} collectionName - name of the collection
+* @returns {object|null} the base app filter, or null when the export is not scoped
+*/
+exports.getExportAppFilter = function(member, dbName, collectionName) {
+    if (member.global_admin || (collectionName !== "drill_events" && collectionName !== "events_data")) {
+        return null;
+    }
+    var base_filter = exports.getBaseAppFilter(member, dbName, collectionName);
+    return base_filter && Object.keys(base_filter).length > 0 ? base_filter : null;
+};
+
+/**
+* Restrict a query to an app scope. The query is kept as given and both must hold.
+* Apply it last, after /drill/preprocess_query, right before the read: a listener
+* rewrites the query in place and must not be able to reshape the scope.
+* @param {object} appFilter - app scope from getExportAppFilter, or null
+* @param {object} query - query to restrict
+* @returns {object} the restricted query
+*/
+exports.scopeQueryToApps = function(appFilter, query) {
+    if (!appFilter) {
+        return query;
+    }
+    return {$and: [appFilter, query || {}]};
+};
 /**
 * Validate user for create access by api_key for provided app_id (both required parameters for the request).
 * @param {params} params - {@link params} object
