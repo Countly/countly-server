@@ -1,3 +1,13 @@
+## Version 25.03.57-LTS
+Security Fixes:
+- [core] `upgrade.python.certifi.sh` also distrusts the emSign roots certifi dropped in the OS certificate store (G1 is kept)
+- [ab-testing] pip and certifi upgrade also covers servers where pip is missing or installed by apt/dnf
+
+Enterprise Fixes:
+- [ab-testing] `setup.sh` no longer requires a `countly` user
+- [ab-testing] `setup.sh` reinstalls CmdStan when it is missing
+- [ab-testing] `setup.sh` supports Ubuntu 20
+
 ## Version 25.03.56-LTS
 Security Fixes:
 - [docker] Node.js 24.22.1 in the api and frontend images (Brotli decoder fix, CVE-2026-111497)
