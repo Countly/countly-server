@@ -182,7 +182,7 @@ describe('Password change revokes tokens', function() {
         it('changes the password', async function() {
             const dashboard = await agent.get('/dashboard');
             dashboard.status.should.equal(200);
-            const csrf = /"csrf_token":"([^"]+)"/.exec(dashboard.text);
+            const csrf = /countlyGlobal\["csrf_token"\] = "([^"]+)"/.exec(dashboard.text);
             should.exist(csrf, 'csrf token on the dashboard page');
             const res = await agent.post('/user/settings').type('form').send({
                 username: member.username,
