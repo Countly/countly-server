@@ -272,15 +272,15 @@ describe('DBViewer shared collections right', () => {
 
     // ── A token with the dbviewer read on one app and no membership ──────────
 
-    it('should list events_data for the app a token holds the dbviewer read on, and not for another app', async() => {
+    it('should list events_data for the app a token holds the dbviewer read on, and refuse the token another app', async() => {
         viewerToken = await createViewerToken();
-        const names = async(app) => {
-            const res = await request.get('/o/db').query({ auth_token: viewerToken, app_id: app });
-            should(res.status).equal(200);
-            return res.body.reduce((all, db) => all.concat(Object.values(db.collections || {})), []);
-        };
-        should(await names(APP_A)).containEql('events_data');
-        should(await names(APP_B)).not.containEql('events_data');
+        const own = await request.get('/o/db').query({ auth_token: viewerToken, app_id: APP_A });
+        should(own.status).equal(200);
+        should(own.body.reduce((all, db) => all.concat(Object.values(db.collections || {})), [])).containEql('events_data');
+        // a token's apps come from its permission, so naming another app fails the token check
+        const other = await request.get('/o/db').query({ auth_token: viewerToken, app_id: APP_B });
+        should(other.status).equal(400);
+        should(other.body.result).equal('Token not valid');
     });
 
     it('should return a token only the events_data rows of the app it holds the dbviewer read on', async() => {
