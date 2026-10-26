@@ -4,8 +4,17 @@ var fs = require("fs");
 var path = require("path");
 var async = require("async");
 
-//how many files are uploaded at the same time, uploading whole folders at once exhausts the host on large folders (crash symbols)
-var CONCURRENCY = 2;
+//how many files are uploaded at the same time by default, uploading whole folders at once exhausts the host on large folders (crash symbols)
+var DEFAULT_CONCURRENCY = 2;
+//GridFS stores a second copy of the files in MongoDB, chunk documents and indexes add to their size
+var GRIDFS_OVERHEAD = 1.1;
+var GB = 1024 * 1024 * 1024;
+
+var FOLDERS = [
+    {path: "../../../frontend/express/public/appimages", name: "appimages"},
+    {path: "../../../frontend/express/public/userimages", name: "userimages"},
+    {path: "../../../plugins/crash_symbolication/crashsymbols", name: "crash_symbols"}
+];
 
 function listFiles(dir, prefix) {
     var exclude = [".", "..", ".gitignore"];
@@ -33,12 +42,47 @@ function listFiles(dir, prefix) {
     return list;
 }
 
-function importFiles(pathToFolder, name, callback) {
+//bytes of the files in folders that are not stored in GridFS yet
+function bytesToStore(folders) {
+    var db = countlyFs.getHandler();
+    return Promise.all(folders.map(function(folder) {
+        return db.collection(folder.name + ".files").find({}, {projection: {length: 1}}).toArray().then(function(stored) {
+            var lengths = new Map(stored.map(function(file) {
+                return [file._id, file.length];
+            }));
+            return listFiles(path.resolve(__dirname, folder.path), "").reduce(function(sum, file) {
+                return lengths.get(file.id) === file.size ? sum : sum + file.size;
+            }, 0);
+        });
+    })).then(function(sums) {
+        return sums.reduce(function(a, b) {
+            return a + b;
+        }, 0);
+    });
+}
+
+//error message when the MongoDB disk (dbStats of countly_fs) has no room for needed bytes, null when it has or does not report its size
+function freeSpaceError(needed, stats) {
+    if (!stats || typeof stats.fsTotalSize !== "number" || typeof stats.fsUsedSize !== "number") {
+        console.log("MongoDB does not report its free disk space, not checking it");
+        return null;
+    }
+    var required = needed * GRIDFS_OVERHEAD;
+    var free = stats.fsTotalSize - stats.fsUsedSize;
+    console.log("Files to store:", (needed / GB).toFixed(1), "GB, free on MongoDB disk:", (free / GB).toFixed(1), "GB");
+    if (free < required) {
+        return "Not enough free disk space for MongoDB: storing the files needs about " + (required / GB).toFixed(1) +
+            " GB, only " + (free / GB).toFixed(1) + " GB is free. Free up space or grow the disk, then run the migration again.";
+    }
+    return null;
+}
+
+function importFiles(pathToFolder, name, callback, concurrency) {
     console.log("Procesing", name);
     var files = listFiles(path.resolve(__dirname, pathToFolder), "");
     var db = countlyFs.getHandler();
     var processed = 0;
-    async.eachLimit(files, CONCURRENCY, function(file, done) {
+    async.eachLimit(files, concurrency || DEFAULT_CONCURRENCY, function(file, done) {
         var progress = "[" + (++processed) + "/" + files.length + "]";
         db.collection(name + ".files").findOne({_id: file.id}, {projection: {length: 1}})
             .then(function(existing) {
@@ -108,13 +152,24 @@ function exportFiles(pathToFolder, name, callback) {
     });
 }
 
-function fs2gridfs() {
-    importFiles("../../../frontend/express/public/appimages", "appimages", function() {
-        importFiles("../../../frontend/express/public/userimages", "userimages", function() {
-            importFiles("../../../plugins/crash_symbolication/crashsymbols", "crash_symbols", function() {
-                countlyFs.getHandler().close();
-            });
+function fs2gridfs(concurrency) {
+    var db = countlyFs.getHandler();
+    Promise.all([bytesToStore(FOLDERS), db.command({dbStats: 1})]).then(function(result) {
+        var error = freeSpaceError(result[0], result[1]);
+        if (error) {
+            console.log(error);
+            process.exitCode = 1;
+            return db.close();
+        }
+        async.eachSeries(FOLDERS, function(folder, done) {
+            importFiles(folder.path, folder.name, done, concurrency);
+        }, function() {
+            db.close();
         });
+    }).catch(function(err) {
+        console.log("Cannot check free disk space", err);
+        process.exitCode = 1;
+        db.close();
     });
 }
 
@@ -135,11 +190,19 @@ var conversions = {
 
 if (require.main === module) {
     var myArgs = process.argv.slice(2);
+    var concurrency = DEFAULT_CONCURRENCY;
+    if (typeof myArgs[3] !== "undefined" && myArgs[3] !== "") {
+        concurrency = parseInt(myArgs[3], 10);
+        if (!(concurrency >= 1) || String(concurrency) !== myArgs[3]) {
+            console.log("Concurrency must be a whole number of 1 or more, got", myArgs[3]);
+            process.exit(1);
+        }
+    }
     pluginManager.dbConnection("countly_fs").then((db) => {
         countlyFs.setHandler(db);
         if (myArgs[0] == "migrate") {
             if (myArgs[1] && myArgs[2] && conversions[myArgs[1]] && conversions[myArgs[1]][myArgs[2]]) {
-                conversions[myArgs[1]][myArgs[2]]();
+                conversions[myArgs[1]][myArgs[2]](concurrency);
             }
             else {
                 console.log("Storage from", myArgs[1], "to", myArgs[2], "not supported");
@@ -153,4 +216,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = {importFiles: importFiles};
+module.exports = {importFiles: importFiles, bytesToStore: bytesToStore, freeSpaceError: freeSpaceError};
