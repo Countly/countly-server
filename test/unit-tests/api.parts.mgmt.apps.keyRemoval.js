@@ -19,6 +19,8 @@ describe("apps update: retiring accepted keys", function() {
     var app;
     var failWrites;
     var invalidated;
+    var holdPushOf;
+    var releasePush;
 
     /**
      * Whether a stored app matches the filters updateApp writes with.
@@ -30,6 +32,9 @@ describe("apps update: retiring accepted keys", function() {
             return k.key;
         });
         if (query._id && query._id !== app._id) {
+            return false;
+        }
+        if (query.key && query.key !== app.key) {
             return false;
         }
         if (query["keys.0"] && keys.length) {
@@ -98,6 +103,14 @@ describe("apps update: retiring accepted keys", function() {
             return p;
         },
         updateOne: function(query, update) {
+            if (holdPushOf && update.$push && update.$push.keys.key === holdPushOf) {
+                holdPushOf = null;
+                return new Promise(function(resolve) {
+                    releasePush = resolve;
+                }).then(function() {
+                    return apps.updateOne(query, update);
+                });
+            }
             return later(function() {
                 if (failWrites) {
                     throw new Error("write failed");
@@ -181,6 +194,8 @@ describe("apps update: retiring accepted keys", function() {
     beforeEach(function() {
         failWrites = false;
         invalidated = [];
+        holdPushOf = null;
+        releasePush = null;
         app = {
             _id: APP_ID,
             name: "app",
@@ -224,6 +239,23 @@ describe("apps update: retiring accepted keys", function() {
         app.keys.map(function(k) {
             return k.key;
         }).should.eql([K2, K3]);
+    });
+
+    it("does not add back a rotated key that a later rotation retired", async function() {
+        holdPushOf = K3;
+        var first = update({key: K3});
+        while (app.key !== K3) {
+            await later(function() {});
+        }
+        var K4 = "retirekey000000000000000000000000000000e";
+        var second = await update({key: K4, remove_keys: [K3]});
+        should.exist(second.output);
+        releasePush();
+        should.exist((await first).output);
+        app.key.should.equal(K4);
+        app.keys.map(function(k) {
+            return k.key;
+        }).should.eql([K0, K1, K2, K4]);
     });
 
     it("materializes the keys of an app that predates them, then removes nothing else", async function() {

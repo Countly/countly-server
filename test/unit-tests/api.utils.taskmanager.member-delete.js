@@ -2,7 +2,7 @@
  * A deleted member's tasks stop refreshing themselves: /i/users/delete turns off
  * auto-refresh on every task the member created, and nobody else's.
  */
-const should = require('should');
+require('should');
 
 const common = require('../../api/utils/common.js');
 const taskmanager = require('../../api/utils/taskmanager.js');

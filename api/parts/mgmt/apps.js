@@ -1241,7 +1241,7 @@ function appKeyValues(app) {
 * Write an app update and its accepted-keys changes, then read the stored keys
 * back into updatedApp (the response and the /i/apps/update payload carry them).
 * Removed keys are pulled from the stored array and the current key is added
-* only when absent, so two updates that each retire a key both take effect.
+* only when absent and still current, so two updates that each retire a key both take effect.
 * A removed key is also dropped from the app-by-key cache straight away.
 * @param {object} appId - app _id
 * @param {object} appBefore - app document read before the update
@@ -1261,7 +1261,9 @@ async function writeAppUpdate(appId, appBefore, updatedApp, keysToRemove, curren
         update.$pull = {keys: {key: {$in: keysToRemove, $ne: currentKey}}};
     }
     await apps.updateOne({_id: appId}, update);
-    await apps.updateOne({_id: appId, "keys.key": {$ne: currentKey}}, {$push: {keys: {key: currentKey, added_at: nowSec, last_data: 0}}});
+    //only while it is still the current key: a later rotation that already
+    //replaced and retired it must not get it back
+    await apps.updateOne({_id: appId, key: currentKey, "keys.key": {$ne: currentKey}}, {$push: {keys: {key: currentKey, added_at: nowSec, last_data: 0}}});
     keysToRemove.forEach(function(k) {
         common.invalidateAppByKey(k);
     });
