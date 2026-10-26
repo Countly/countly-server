@@ -519,6 +519,10 @@ membersUtility.loginWithToken = function(req, callback) {
                     plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner}});
                     callback(undefined);
                 }
+                else if (member.locked) {
+                    plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "locked"}});
+                    callback(undefined);
+                }
                 else {
                     plugins.callMethod("tokenLoginSuccessful", {req: req, data: {username: member.username}});
 

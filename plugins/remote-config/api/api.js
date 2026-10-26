@@ -869,7 +869,22 @@ plugins.setConfigs("remote-config", {
                             var deviceId = params.qstring.device_id || "";
                             user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
 
-                            var conditionStatus = remoteConfig.processFilter(user, conditionObj.condition);
+                            var conditionIssues = [];
+                            var conditionStatus = false;
+
+                            try {
+                                conditionStatus = remoteConfig.processFilter(user, conditionObj.condition, conditionIssues);
+                            }
+                            catch (e) {
+                                log.e("Failed to evaluate condition " + conditionObj._id + common.reqInfo(params) + ": " + e.message);
+                                continue;
+                            }
+
+                            if (conditionIssues.length) {
+                                log.w("Condition " + conditionObj._id + " matches nobody" + common.reqInfo(params) +
+                                    ": " + conditionIssues.join("; "));
+                                continue;
+                            }
 
                             if (conditionStatus) {
                                 parameterValue = conditionObj.value;
