@@ -352,19 +352,18 @@ function evaluateOperators(prop, userValue, found, condition, ctx) {
             });
             break;
         case '$in':
-        case '$nin': {
+        case '$nin':
             if (!Array.isArray(expected)) {
                 report(ctx, prop, op + " expects an array");
                 return false;
             }
-            let inList = found && expected.some(function(candidate) {
+            var inList = found && expected.some(function(candidate) {
                 return anyValue(userValue, function(value) {
                     return valuesEqual(value, candidate);
                 });
             });
             matched = op === '$in' ? inList : !inList;
             break;
-        }
         case '$all':
             if (!Array.isArray(expected)) {
                 report(ctx, prop, "$all expects an array");
@@ -387,8 +386,8 @@ function evaluateOperators(prop, userValue, found, condition, ctx) {
                 return compareValues(prop, value, op, expected);
             });
             break;
-        case '$regex': {
-            let regex = toRegExp(expected, condition.$options);
+        case '$regex':
+            var regex = toRegExp(expected, condition.$options);
             if (!regex) {
                 report(ctx, prop, "$regex is not a usable regular expression");
                 return false;
@@ -397,7 +396,6 @@ function evaluateOperators(prop, userValue, found, condition, ctx) {
                 return typeof value !== 'object' && regex.test(String(value));
             });
             break;
-        }
         case '$not':
             matched = !matchesCondition(prop, userValue, found, expected, ctx);
             break;

@@ -7,6 +7,7 @@ var request = require('supertest');
 var should = require('should');
 var testUtils = require("../testUtils");
 var countlyFs = require('../../api/utils/countlyFs.js');
+var plugins = require('../../plugins/pluginManager.js');
 var authorize = require('../../api/utils/authorizer.js');
 
 var LOGIN_TRIES = 3;
@@ -273,8 +274,12 @@ describe('Public screenshots route', function() {
         });
     }
 
+    var fsDb = null;
+
     before(async function() {
-        countlyFs.setHandler(testUtils.db);
+        // files live in their own database, the one the dashboard reads them from
+        fsDb = await plugins.dbConnection("countly_fs");
+        countlyFs.setHandler(fsDb);
         // a screenshot saved the way /o/render does: under its own name
         await save(stored, PNG, {writeMode: "overwrite"});
         // a record under the shared id older versions saved every render to
@@ -284,6 +289,7 @@ describe('Public screenshots route', function() {
     after(async function() {
         await remove(stored, {});
         await remove(shared, {id: "core"});
+        await fsDb.client.close();
     });
 
     it('serves a stored screenshot by its name without a session', async function() {
