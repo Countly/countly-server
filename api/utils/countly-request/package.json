@@ -22,7 +22,7 @@
     "should": "^13.2.3"
   },
   "overrides": {
-    "serialize-javascript": "^7.0.5",
+    "serialize-javascript": "^7.1.4",
     "js-yaml": "^4.3.0",
     "brace-expansion": "^2.1.2"
   }
