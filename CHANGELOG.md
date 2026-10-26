@@ -1,12 +1,12 @@
 ## Version 25.03.57-LTS
 Security Fixes:
-- [core] `bin/upgrade/25.03/upgrade.python.certifi.sh` also removes trust in the emSign root certificates that certifi dropped (all except emSign Root CA - G1) from the server's OS certificate store, on every server it runs on, with or without ab-testing, and exits with an error if any are still trusted
-- [ab-testing] The pip and certifi upgrade in `setup.sh` and `upgrade.python.certifi.sh` also reaches servers where pip is missing or was installed by apt or dnf, without removing a pip or certifi that another package depends on
+- [core] `upgrade.python.certifi.sh` also distrusts the emSign roots certifi dropped in the OS certificate store (G1 is kept)
+- [ab-testing] pip and certifi upgrade also covers servers where pip is missing or installed by apt/dnf
 
 Enterprise Fixes:
-- [ab-testing] `setup.sh` no longer fails on servers without a `countly` user; the plugin folder is given to the owner of the Countly folder
-- [ab-testing] `setup.sh` reinstalls CmdStan when the models are compiled but CmdStan is missing
-- [ab-testing] `setup.sh` installs on Ubuntu 20 by building Python 3.12.15 from source, and links python3.12 into /usr/bin when it does not run as root
+- [ab-testing] `setup.sh` no longer requires a `countly` user
+- [ab-testing] `setup.sh` reinstalls CmdStan when it is missing
+- [ab-testing] `setup.sh` supports Ubuntu 20
 
 ## Version 25.03.56-LTS
 Security Fixes:
