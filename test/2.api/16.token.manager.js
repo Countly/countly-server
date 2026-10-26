@@ -736,6 +736,56 @@ describe('Testing token manager', function() {
                 });
         });
 
+        //the token the heatmap link hands to the tracked website: read of views on one app, and
+        //no app membership, so routes that authorize on membership alone refuse it
+        var viewsReadToken = "";
+        var viewsReadPermission = function(appId) {
+            var permission = {_: {a: [], u: [[]]}, c: {}, r: {}, u: {}, d: {}};
+            permission.r[appId] = {all: false, allowed: {views: true}};
+            return encodeURIComponent(JSON.stringify(permission));
+        };
+
+        it('creates a token reading only views, without app membership', function(done) {
+            request
+                .get('/i/token/create?api_key=' + API_KEY_ADMIN + '&purpose=View heatmap&multi=true&ttl=300&permission=' + viewsReadPermission(APP_ID))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    viewsReadToken = JSON.parse(res.text).result;
+                    testUtils.db.collection("auth_tokens").findOne({_id: viewsReadToken}, function(dbErr, doc) {
+                        if (dbErr || !doc) {
+                            return done(dbErr || "token missing");
+                        }
+                        doc.token_permission._.should.eql({a: [], u: [[]]});
+                        doc.token_permission.r[APP_ID].allowed.should.eql({views: true});
+                        done();
+                    });
+                });
+        });
+
+        it('the views read token reads views on its app', function(done) {
+            request
+                .get('/o?method=get_view_segments&app_id=' + APP_ID + '&auth_token=' + viewsReadToken)
+                .expect(200)
+                .end(function(err) {
+                    done(err);
+                });
+        });
+
+        it('the views read token is refused on a route that authorizes on app membership', function(done) {
+            request
+                .get('/o/app_users/download/appUser_' + APP_ID + '_1.json?app_id=' + APP_ID + '&auth_token=' + viewsReadToken)
+                .expect(401)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    deleteToken(viewsReadToken, done);
+                });
+        });
+
         it('a legacy app-restricted token cannot create tokens', function(done) {
             request
                 .get('/i/token/create?auth_token=' + legacyRestrictedToken + '&multi=true&ttl=300')

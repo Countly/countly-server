@@ -95,13 +95,15 @@
     };
 
     /**
-     * A permission object allowing only to read one feature of one app.
+     * A permission object allowing only to read one feature of one app. It grants no app
+     * membership: routes that authorize on membership alone, rather than on a feature, then
+     * refuse the token.
      * @param {string} appId - the app
      * @param {string} feature - the feature, e.g. "views"
      * @returns {object} permission object for createTokenWithPermissions
      */
     countlyTokenManager.readPermission = function(appId, feature) {
-        var permission = {_: {a: [], u: [[appId]]}, c: {}, r: {}, u: {}, d: {}};
+        var permission = {_: {a: [], u: [[]]}, c: {}, r: {}, u: {}, d: {}};
         permission.r[appId] = {all: false, allowed: {}};
         permission.r[appId].allowed[feature] = true;
         return permission;
