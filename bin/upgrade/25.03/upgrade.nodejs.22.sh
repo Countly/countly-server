@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root"
+    exit 1
+fi
+
 #we have to check since we cannot continue unless
 if [ -f /etc/redhat-release ]; then
     CENTOS_MAJOR="$(cat /etc/redhat-release |awk -F'[^0-9]+' '{ print $2 }')"
@@ -22,7 +27,7 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
 #npm 11 removed --unsafe-perm and --build-from-source, which the commands below still use
-sudo npm install -g npm@10;
+npm install -g npm@10;
 
 if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
     rm /usr/local/bin/npm
@@ -55,5 +60,15 @@ fi
 rm -rf "$DIR/../node_modules"
 rm -rf "$DIR/../plugins/hooks/node_modules"
 
-(cd "$DIR/.." && sudo npm install --unsafe-perm && sudo npm install argon2 --build-from-source)
-(cd "$DIR/../plugins/hooks" && sudo npm install --unsafe-perm)
+#no sudo: the script runs as root, and sudo would reset PATH and drop
+#npm_config_python, losing the RHEL 8 toolchain set up above
+(cd "$DIR/.." && npm install --unsafe-perm && npm install argon2 --build-from-source)
+(cd "$DIR/../plugins/hooks" && npm install --unsafe-perm)
+
+#isolated-vm (hooks custom code) needs node started with --no-node-snapshot on
+#Node.js 20 and later; add it to the supervisord commands of an existing install
+SUPERVISORD_CONF="$DIR/config/supervisord.conf"
+if [ -f "$SUPERVISORD_CONF" ] && ! grep -q -- "--no-node-snapshot" "$SUPERVISORD_CONF"; then
+    sed -i 's#^command=node #command=node --no-node-snapshot #' "$SUPERVISORD_CONF"
+    echo "Added --no-node-snapshot to $SUPERVISORD_CONF; it applies when Countly restarts"
+fi

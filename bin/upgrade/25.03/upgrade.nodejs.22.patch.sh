@@ -16,6 +16,7 @@
 # patched; the message then says which script to run instead.
 
 NODE_MIN="22.23.4"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
 if [ "$(id -u)" != "0" ]; then
     echo "This script must be run as root"
@@ -75,8 +76,16 @@ if [ "$(printf '%s\n%s\n' "$NODE_MIN" "$AFTER" | sort -V | head -n1)" != "$NODE_
     exit 1
 fi
 
-if [ "$BEFORE" = "$AFTER" ]; then
-    echo "Node.js was already up to date, nothing to restart"
+#isolated-vm (hooks custom code) needs node started with --no-node-snapshot on
+#Node.js 20 and later; add it to the supervisord commands of an existing install
+SUPERVISORD_CONF="$DIR/config/supervisord.conf"
+if [ -f "$SUPERVISORD_CONF" ] && ! grep -q -- "--no-node-snapshot" "$SUPERVISORD_CONF"; then
+    sed -i 's#^command=node #command=node --no-node-snapshot #' "$SUPERVISORD_CONF"
+    SUPERVISORD_CONF_CHANGED=1
+fi
+
+if [ "$BEFORE" = "$AFTER" ] && [ -z "$SUPERVISORD_CONF_CHANGED" ]; then
+    echo "Node.js was already up to date and supervisord already passes --no-node-snapshot, nothing to restart"
     exit 0
 fi
 
