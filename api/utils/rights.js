@@ -77,10 +77,51 @@ function validate_token_if_exists(params) {
 */
 function applyTokenScope(params, member) {
     if (params.token_data && params.token_data.token_permission) {
-        return exports.intersectPermission(member, params.token_data.token_permission);
+        member = exports.intersectPermission(member, params.token_data.token_permission);
+    }
+    //custom dashboards are not app scoped: a dashboard is opened by ownership and sharing, and
+    //everyone who opens it reads every widget on it, whatever app the widget reads. So a scoped
+    //token reaches the owner's dashboards only through a grant of its own, kept here because
+    //intersectPermission rebuilds the per-app permission and drops it
+    if (member && exports.isScopedCredential(params)) {
+        member = Object.assign({}, member);
+        member.dashboard_grant = dashboardGrant(params.token_data.token_permission);
     }
     return member;
 }
+
+/**
+* The dashboard operations a token_permission grants under its dashboards key.
+*
+* Only an explicit true counts: per-app grants, all:true included, never imply it.
+* @param {object} tokenPermission - token_permission of a token, or undefined for a legacy token
+* @returns {{c: boolean, r: boolean, u: boolean, d: boolean}} granted operations
+*/
+function dashboardGrant(tokenPermission) {
+    var grant = (tokenPermission && tokenPermission.dashboards && typeof tokenPermission.dashboards === "object") ? tokenPermission.dashboards : {};
+    return {c: grant.c === true, r: grant.r === true, u: grant.u === true, d: grant.d === true};
+}
+
+/**
+* Whether a member may use custom dashboards for an operation.
+*
+* A member reached through its own api_key or an unrestricted token (a dashboard session) is the
+* owner and is decided by dashboard ownership and sharing alone. A scoped credential, marked by
+* applyTokenScope with its dashboard_grant, needs the operation in that grant; with it, it has the
+* owner's whole dashboard access.
+* @param {object} member - params.member, bounded by applyTokenScope
+* @param {string} operation - c, r, u or d
+* @returns {boolean} true if the member may use dashboards for this operation
+*/
+exports.hasDashboardAccess = function(member, operation) {
+    if (!member) {
+        return false;
+    }
+    if (!member.dashboard_grant) {
+        return true;
+    }
+    return member.dashboard_grant[operation] === true;
+};
 
 //exported so a route that resolves its own token can apply the same bounding rights.js
 //applies for every other route
@@ -398,7 +439,9 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
                 }
 
                 if (!member.global_admin) {
-                    if (!member.permission || member.permission._.a.indexOf(params.qstring.app_id) === -1) {
+                    //a permission without its app lists grants admin of no app; it must not throw here,
+                    //which answered every app admin call of such a member as if they did not exist
+                    if (!member.permission || !member.permission._ || !Array.isArray(member.permission._.a) || member.permission._.a.indexOf(params.qstring.app_id) === -1) {
                         common.returnMessage(params, 401, 'User does not have right');
                         reject('User does not have right');
                         return false;
@@ -1577,6 +1620,19 @@ exports.isPermissionSubset = function(childPermission, ceiling) {
             }
         }
     }
+    //the dashboards grant is not per app: a child may hold an operation only where the ceiling
+    //may use dashboards for it, so a scoped token cannot hand out a grant it lacks
+    var dashboards = childPermission.dashboards;
+    if (typeof dashboards !== "undefined") {
+        if (!dashboards || typeof dashboards !== "object" || Array.isArray(dashboards)) {
+            return false;
+        }
+        for (t = 0; t < PERMISSION_TYPES.length; t++) {
+            if (dashboards[PERMISSION_TYPES[t]] === true && !exports.hasDashboardAccess(ceiling, PERMISSION_TYPES[t])) {
+                return false;
+            }
+        }
+    }
     return true;
 };
 
@@ -1708,10 +1764,12 @@ exports.getUserApps = function(member) {
     }
     else {
         if (typeof member.permission !== "undefined") {
-            for (var i = 0; i < member.permission._.u.length; i++) {
-                userApps = userApps.concat(member.permission._.u[i]);
+            var lists = (member.permission && member.permission._) || {};
+            var userOf = Array.isArray(lists.u) ? lists.u : [];
+            for (var i = 0; i < userOf.length; i++) {
+                userApps = userApps.concat(userOf[i] || []);
             }
-            return userApps.concat(member.permission._.a);
+            return userApps.concat(Array.isArray(lists.a) ? lists.a : []);
         }
         else {
             return member.user_of;
@@ -1742,7 +1800,8 @@ exports.getAdminApps = function(member) {
     }
     else {
         if (typeof member.permission !== "undefined") {
-            return member.permission._.a;
+            var lists = (member.permission && member.permission._) || {};
+            return Array.isArray(lists.a) ? lists.a : [];
         }
         else {
             return member.admin_of;
