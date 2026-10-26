@@ -436,8 +436,11 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
 * @param {string} my_token - current auth token
 * @param {string} my_session - current session id
 * @param {object} countlyDb  -data base reference
+* @param {boolean=} passwordChanged - the password changed: revoke every token the member owns, of any purpose, instead of only the dashboard login tokens
+* @returns {Promise} resolves once the tokens are revoked
 **/
-function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
+function killOtherSessionsForUser(userId, my_token, my_session, countlyDb, passwordChanged) {
+    userId = userId + "";
     countlyDb.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
         var delete_us = [];
         if (sessions) {
@@ -450,7 +453,7 @@ function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
                     console.log(error);
                 }
 
-                if ((!my_session || sessions[i]._id !== my_session) && parsed_data && parsed_data.uid === userId) {
+                if ((!my_session || sessions[i]._id !== my_session) && parsed_data && (parsed_data.uid + "") === userId) {
                     delete_us.push(sessions[i]._id);
                 }
             }
@@ -459,13 +462,14 @@ function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
             }
         }
     });
-    //delete other auth tokens with purpose:"LoggedInAuth"
-    if (my_token) {
-        countlyDb.collection('auth_tokens').remove({'owner': countlyDb.ObjectID(userId), 'purpose': "LoggedInAuth", '_id': {$ne: my_token}});
-    }
-    else {
-        countlyDb.collection('auth_tokens').remove({'owner': countlyDb.ObjectID(userId), 'purpose': "LoggedInAuth"});
-    }
+    return authorize.revokeMemberTokens({
+        db: countlyDb,
+        owner: userId,
+        purpose: passwordChanged ? undefined : "LoggedInAuth",
+        keepToken: my_token || undefined
+    }).catch(function(err) {
+        console.log("Revoking tokens of member " + userId + " failed", err);
+    });
 }
 
 /**
@@ -821,9 +825,11 @@ membersUtility.reset = function(req, callback) {
                     }
                     membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
                         member = member && member.ok ? member.value : null;
-                        killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db);
-                        plugins.callMethod("passwordReset", { req: req, data: member }); //only req, used for systemolgs
-                        callback(false, member);
+                        //answer once the old sessions and tokens are gone
+                        killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db, true).then(function() {
+                            plugins.callMethod("passwordReset", { req: req, data: member }); //only req, used for systemolgs
+                            callback(false, member);
+                        });
                     });
                     membersUtility.db.collection('password_reset').remove({ prid: req.body.prid }, function() { });
                 });
@@ -972,9 +978,11 @@ membersUtility.settings = function(req, callback) {
                                 updatedUser.password_changed = Math.round(new Date().getTime() / 1000);
                                 membersUtility.db.collection('members').update({"_id": membersUtility.db.ObjectID(req.session.uid + "")}, {'$set': updatedUser, $push: {password_history: {$each: [newPassword_ARGON2], $slice: -parseInt(plugins.getConfig('security').password_rotation)}}}, {safe: true}, function(err3, result) {
                                     if (result && result.result && result.result.ok && result.result.nModified > 0 && !err3) {
-                                        killOtherSessionsForUser(req.session.uid, req.session.auth_token, req.sessionID, membersUtility.db);
-                                        plugins.callMethod("userSettings", {req: req, data: member});
-                                        callback(true, updatedUser.password_changed + "");
+                                        //keeps this session and its token, revokes every other one
+                                        killOtherSessionsForUser(req.session.uid, req.session.auth_token, req.sessionID, membersUtility.db, true).then(function() {
+                                            plugins.callMethod("userSettings", {req: req, data: member});
+                                            callback(true, updatedUser.password_changed + "");
+                                        });
                                     }
                                     else {
                                         callback(false, "user-settings.old-password-not-match");

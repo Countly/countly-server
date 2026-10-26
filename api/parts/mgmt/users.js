@@ -13,6 +13,7 @@ var usersApi = {},
 
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
+const authorize = require('../../utils/authorizer.js');
 const _ = require('lodash');
 
 //for password checking when deleting own account. Could be removed after merging with next
@@ -328,11 +329,12 @@ usersApi.createUser = async function(params) {
 };
 
 /**
-    * Removes all active sessions for user
+    * Removes all active sessions and tokens of a user
     * @param {string} userId - id of the user for which to remove sessions
     **/
 function killAllSessionForUser(userId) {
-    common.db.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
+    const userIdString = userId + "";
+    common.db.collection('sessions_').find({"session": { $regex: userIdString }}).toArray(function(err, sessions) {
 
         var delete_us = [];
         sessions = sessions || [];
@@ -344,7 +346,7 @@ function killAllSessionForUser(userId) {
             catch (SyntaxError) {
                 console.log('Parse ' + sessions[i].session + ' JSON failed');
             }
-            if (parsed_data && parsed_data.uid === userId) {
+            if (parsed_data && (parsed_data.uid + "") === userIdString) {
                 delete_us.push(sessions[i]._id);
             }
         }
@@ -352,10 +354,9 @@ function killAllSessionForUser(userId) {
             common.db.collection('sessions_').remove({ '_id': { $in: delete_us } });
         }
     });
-    //delete auth tokens
-    common.db.collection('auth_tokens').remove({
-        'owner': userId,
-        'purpose': "LoggedInAuth"
+    //every token the member owns: used when an admin sets the password and when the member is deleted
+    authorize.revokeMemberTokens({db: common.db, owner: userIdString}).catch(function(err) {
+        console.log('Revoking tokens of member ' + userIdString + ' failed', err);
     });
 
 }
