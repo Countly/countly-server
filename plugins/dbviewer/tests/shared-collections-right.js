@@ -4,9 +4,13 @@
  * to the apps the member holds that right on, not to every app they belong to.
  * The DB export (/o/export/db) follows the same rule.
  *
- * THE ORDER IS THE TEST: the setup case creates a second app, two limited
- * members and one row per app in each shared collection; every case after it
- * reads against them.
+ * This server has no `countly_drill` database (it is connected only when the
+ * drill plugin is installed), so the DB Viewer reads are checked on
+ * `events_data`, and `drill_events` only through the export access rule.
+ *
+ * THE ORDER IS THE TEST: the setup case creates a second app, the limited
+ * members and one row per app in events_data; every case after it reads
+ * against them.
  */
 const should = require('should');
 let request = require('supertest');
@@ -32,7 +36,6 @@ describe('DBViewer shared collections right', () => {
     let usersKey = '';
     const memberIds = [];
     let countlyDb;
-    let drillDb;
 
     const marker = 'dbv_shared_' + uniq;
 
@@ -129,8 +132,7 @@ describe('DBViewer shared collections right', () => {
     }
 
     after(async() => {
-        if (drillDb) {
-            await drillDb.collection('drill_events').deleteMany({ marker });
+        if (countlyDb) {
             await countlyDb.collection('events_data').deleteMany({ marker });
         }
         if (memberIds.length) {
@@ -145,7 +147,6 @@ describe('DBViewer shared collections right', () => {
         API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
         APP_A = testUtils.get('APP_ID');
         countlyDb = testUtils.client.db('countly');
-        drillDb = testUtils.client.db('countly_drill');
 
         const appRes = await manage('/i/apps/create', {
             name: `dbvSharedB${uniq}`,
@@ -163,10 +164,6 @@ describe('DBViewer shared collections right', () => {
         drillKey = await createMember('dbvdrill', readPermission({ [APP_A]: ['drill'] }));
         usersKey = await createMember('dbvusers', readPermission({ [APP_A]: ['users'] }));
 
-        await drillDb.collection('drill_events').insertMany([
-            { a: APP_A, e: 'dbv_shared', marker, ts: Date.now() },
-            { a: APP_B, e: 'dbv_shared', marker, ts: Date.now() },
-        ]);
         await countlyDb.collection('events_data').insertMany([
             { _id: APP_A + '_' + marker, marker },
             { _id: APP_B + '_' + marker, marker },
@@ -175,29 +172,17 @@ describe('DBViewer shared collections right', () => {
 
     // ── No dbviewer right anywhere ───────────────────────────────────────────
 
-    it('should refuse drill_events to a member without the dbviewer right', async() => {
-        const res = await readCollection(noViewerKey, 'countly_drill', 'drill_events');
-        should(res.status).equal(401);
-    });
-
     it('should refuse events_data to a member without the dbviewer right', async() => {
         const res = await readCollection(noViewerKey, 'countly', 'events_data');
         should(res.status).equal(401);
     });
 
-    it('should refuse a drill_events aggregation to a member without the dbviewer right', async() => {
-        const res = await readCollection(noViewerKey, 'countly_drill', 'drill_events', { aggregation: JSON.stringify([{ $match: { marker } }]) });
+    it('should refuse an events_data aggregation to a member without the dbviewer right', async() => {
+        const res = await readCollection(noViewerKey, 'countly', 'events_data', { aggregation: JSON.stringify([{ $match: { marker } }]) });
         should(res.status).equal(401);
     });
 
     // ── dbviewer right on one app, membership of another ─────────────────────
-
-    it('should return only the rows of the apps with the dbviewer right from drill_events', async() => {
-        const res = await readCollection(viewerKey, 'countly_drill', 'drill_events', { filter: JSON.stringify({ marker }) });
-        should(res.status).equal(200);
-        const apps = res.body.collections.map((row) => row.a);
-        should(apps).eql([APP_A]);
-    });
 
     it('should return only the rows of the apps with the dbviewer right from events_data', async() => {
         const res = await readCollection(viewerKey, 'countly', 'events_data', { filter: JSON.stringify({ marker }) });
@@ -206,11 +191,11 @@ describe('DBViewer shared collections right', () => {
         should(ids).eql([APP_A + '_' + marker]);
     });
 
-    it('should aggregate only the rows of the apps with the dbviewer right', async() => {
-        const res = await readCollection(viewerKey, 'countly_drill', 'drill_events', { aggregation: JSON.stringify([{ $match: { marker } }]) });
+    it('should aggregate only the events_data rows of the apps with the dbviewer right', async() => {
+        const res = await readCollection(viewerKey, 'countly', 'events_data', { aggregation: JSON.stringify([{ $match: { marker } }]) });
         should(res.status).equal(200);
-        const apps = res.body.aaData.map((row) => row.a);
-        should(apps).eql([APP_A]);
+        const ids = res.body.aaData.map((row) => row._id);
+        should(ids).eql([APP_A + '_' + marker]);
     });
 
     // ── DB export ────────────────────────────────────────────────────────────
@@ -228,16 +213,14 @@ describe('DBViewer shared collections right', () => {
 
     // ── Collection list and single documents ─────────────────────────────────
 
-    it('should leave the shared collections out of the database list without the dbviewer right', async() => {
+    it('should leave events_data out of the database list without the dbviewer right', async() => {
         const names = await listedCollections(noViewerKey);
         should(names).not.containEql('events_data');
-        should(names).not.containEql('drill_events');
     });
 
-    it('should list the shared collections with the dbviewer right', async() => {
+    it('should list events_data with the dbviewer right', async() => {
         const names = await listedCollections(viewerKey);
         should(names).containEql('events_data');
-        should(names).containEql('drill_events');
     });
 
     it('should refuse an events_data document without the dbviewer right', async() => {
@@ -255,17 +238,15 @@ describe('DBViewer shared collections right', () => {
     });
 
     // ── drill_events exports with the drill or users right ───────────────────
+    // Without a countly_drill database there are no rows to compare, so these
+    // check the access rule: the export is accepted, not refused.
 
-    it('should export the drill_events rows of the app with the drill right, and refuse events_data to it', async() => {
-        const res = await exportCollection(drillKey, 'countly_drill', 'drill_events');
-        should(res.status).equal(200);
-        should(JSON.parse(res.text).map((row) => row.a)).eql([APP_A]);
+    it('should accept a drill_events export with the drill right, and refuse events_data to it', async() => {
+        should((await exportCollection(drillKey, 'countly_drill', 'drill_events')).status).equal(200);
         should((await exportCollection(drillKey, 'countly', 'events_data')).status).equal(401);
     });
 
-    it('should export the drill_events rows of the app with the users right', async() => {
-        const res = await exportCollection(usersKey, 'countly_drill', 'drill_events');
-        should(res.status).equal(200);
-        should(JSON.parse(res.text).map((row) => row.a)).eql([APP_A]);
+    it('should accept a drill_events export with the users right', async() => {
+        should((await exportCollection(usersKey, 'countly_drill', 'drill_events')).status).equal(200);
     });
 });
