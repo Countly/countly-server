@@ -8,6 +8,7 @@ request = request(testUtils.url);
 //  - per-key last_data is recorded on ingestion
 //  - key uniqueness is enforced across current and old keys of all apps
 //  - old keys can be retired; the current key cannot be removed
+//  - two old keys retired at the same time are both removed
 //  - lazy materialization for apps that predate the `keys` array
 
 var API_KEY_ADMIN = "";
@@ -202,6 +203,66 @@ describe('App multiple keys (rotation grace)', function() {
                     JSON.parse(res.text).should.have.property('result', 'App does not exist');
                     done();
                 });
+        });
+    });
+
+    describe('retiring two old keys at the same time', function() {
+        var KEY_B = "multikey0000000000000000000000000000000b";
+        var KEY_C = "multikey0000000000000000000000000000000c";
+
+        /**
+         * Rotate the app to a key, keeping the previous ones accepted.
+         * @param {string} key - new current key
+         * @returns {Promise} resolves when rotated
+         */
+        function rotate(key) {
+            return request
+                .get('/i/apps/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({app_id: APP_ID, key: key}))
+                .expect(200);
+        }
+
+        /**
+         * Retire one key.
+         * @param {string} key - key to retire
+         * @returns {Promise} the response
+         */
+        function retire(key) {
+            return request
+                .get('/i/apps/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({app_id: APP_ID, remove_keys: [key]}))
+                .expect(200);
+        }
+
+        it('should rotate twice, leaving three accepted keys', async function() {
+            await rotate(KEY_B);
+            await rotate(KEY_C);
+            var app = await testUtils.db.collection('apps').findOne({key: KEY_C});
+            app.keys.map(function(k) {
+                return k.key;
+            }).should.eql([NEW_KEY, KEY_B, KEY_C]);
+        });
+
+        it('should remove both keys when retired concurrently, keeping the current one', async function() {
+            await Promise.all([retire(NEW_KEY), retire(KEY_B)]);
+            var app = await testUtils.db.collection('apps').findOne({key: KEY_C});
+            app.keys.map(function(k) {
+                return k.key;
+            }).should.eql([KEY_C]);
+        });
+
+        it('should refuse data on both retired keys straight away', async function() {
+            for (var key of [NEW_KEY, KEY_B]) {
+                var res = await request
+                    .get('/i?device_id=' + DEVICE_ID + '&app_key=' + key + '&begin_session=1&metrics=' + JSON.stringify(METRICS))
+                    .expect(400);
+                JSON.parse(res.text).should.have.property('result', 'App does not exist');
+            }
+        });
+
+        it('should still accept data on the current key', async function() {
+            var res = await request
+                .get('/i?device_id=' + DEVICE_ID + '&app_key=' + KEY_C + '&begin_session=1&metrics=' + JSON.stringify(METRICS))
+                .expect(200);
+            JSON.parse(res.text).should.have.property('result', 'Success');
         });
     });
 

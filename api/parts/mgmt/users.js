@@ -13,6 +13,7 @@ var usersApi = {},
 
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
+const authorize = require('../../utils/authorizer.js');
 const _ = require('lodash');
 
 //for password checking when deleting own account. Could be removed after merging with next
@@ -328,11 +329,13 @@ usersApi.createUser = async function(params) {
 };
 
 /**
-    * Removes all active sessions for user
+    * Removes all active sessions and tokens of a user
     * @param {string} userId - id of the user for which to remove sessions
+    * @returns {Promise} resolves once the tokens are revoked
     **/
 function killAllSessionForUser(userId) {
-    common.db.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
+    const userIdString = userId + "";
+    common.db.collection('sessions_').find({"session": { $regex: userIdString }}).toArray(function(err, sessions) {
 
         var delete_us = [];
         sessions = sessions || [];
@@ -344,7 +347,7 @@ function killAllSessionForUser(userId) {
             catch (SyntaxError) {
                 console.log('Parse ' + sessions[i].session + ' JSON failed');
             }
-            if (parsed_data && parsed_data.uid === userId) {
+            if (parsed_data && (parsed_data.uid + "") === userIdString) {
                 delete_us.push(sessions[i]._id);
             }
         }
@@ -352,10 +355,10 @@ function killAllSessionForUser(userId) {
             common.db.collection('sessions_').remove({ '_id': { $in: delete_us } });
         }
     });
-    //delete auth tokens
-    common.db.collection('auth_tokens').remove({
-        'owner': userId,
-        'purpose': "LoggedInAuth"
+    //every token the member owns: used when an admin sets the password, locks the member,
+    //and when the member is deleted
+    return authorize.revokeMemberTokens({db: common.db, owner: userIdString}).catch(function(err) {
+        console.log('Revoking tokens of member ' + userIdString + ' failed', err);
     });
 
 }
@@ -571,6 +574,24 @@ usersApi.updateUser = async function(params) {
         delete updatedMember.user_of;
     }
 
+    //a permission sent without its app lists gets them here, as it does on creation: the rights
+    //checks read permission._, so a member saved without it was refused on every app admin call
+    if (updatedMember.permission) {
+        if (typeof updatedMember.permission._ !== "object" || updatedMember.permission._ === null) {
+            updatedMember.permission._ = {};
+        }
+        if (!Array.isArray(updatedMember.permission._.a)) {
+            updatedMember.permission._.a = [];
+        }
+        if (!Array.isArray(updatedMember.permission._.u)) {
+            updatedMember.permission._.u = [];
+        }
+        ["c", "r", "u", "d"].forEach(function(accessType) {
+            if (typeof updatedMember.permission[accessType] !== "object" || updatedMember.permission[accessType] === null) {
+                updatedMember.permission[accessType] = {};
+            }
+        });
+    }
 
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function(errUpdatingUser) {
@@ -597,6 +618,10 @@ usersApi.updateUser = async function(params) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
                     if (updatedMember.password && params.member._id + "" !== updatedMember._id + "") {
+                        killAllSessionForUser(updatedMember._id);
+                    }
+                    //locking ends what the member is signed in with, so unlocking does not bring it back
+                    if (updatedMember.locked === true && !(memberBefore && memberBefore.locked === true)) {
                         killAllSessionForUser(updatedMember._id);
                     }
 
@@ -669,7 +694,7 @@ usersApi.deleteUser = async function(params) {
                             reject(false);
                         }
                         else {
-                            await common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
+                            await killAllSessionForUser(userIds[i]);
                             await usersApi.deleteUserNotes({ member: { _id: userIds[i] } });
                             await common.db.collection('members').remove({_id: common.db.ObjectID(userIds[i])});
                             deleteUserPresets(userIds[i]);
@@ -835,7 +860,7 @@ usersApi.deleteOwnAccount = function(params) {
                 else {
                     try {
                         await common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")});
-                        killAllSessionForUser(member._id);
+                        await killAllSessionForUser(member._id);
                         deleteUserPresets(member._id);
                         common.returnMessage(params, 200, 'Success');
                     }
