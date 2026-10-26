@@ -952,7 +952,7 @@
                         })
                         .catch(function(err) {
                             if (err.responseJSON) {
-                                self.symbolicationErrorDialog.msg = err.responseJSON.result;
+                                self.symbolicationErrorDialog.msg = countlyCommon.unescapeHtml(err.responseJSON.result);
                             }
                             else {
                                 self.symbolicationErrorDialog.msg = err.statusText;
