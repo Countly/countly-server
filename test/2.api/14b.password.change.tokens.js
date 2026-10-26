@@ -50,6 +50,8 @@ function otherBrowserToken(memberId) {
             db: testUtils.db,
             owner: memberId,
             purpose: 'LoggedInAuth',
+            // a dashboard sign-in token is used for many requests, as setLoggedInVariables saves it
+            multi: true,
             ttl: 1800,
             can_login: true,
             callback: (err, token) => (err ? reject(err) : resolve(token)),
