@@ -233,7 +233,9 @@ describe('Testing Rating plugin', function() {
 
     describe('Widget show counter', function() {
         //the popup page fetches the widget with nfd=1 and no credential; only the
-        //owning app's key may count the show, and the widget is returned either way
+        //owning app's key may count the show, and the widget is returned either way.
+        //The count is written after the response, so each case that must not count
+        //waits before reading, and the last case expects exactly one more show.
         var otherAppId = "";
         var otherAppKey = "";
         var shownBefore = 0;
@@ -273,6 +275,7 @@ describe('Testing Rating plugin', function() {
 
         it('returns the widget without counting a show when no app key is sent', async function() {
             await fetchForSdk('');
+            await wait(1000 * scale);
             (await timesShown()).should.eql(shownBefore);
         });
 
