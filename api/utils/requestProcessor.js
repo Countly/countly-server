@@ -12,7 +12,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -2225,28 +2225,14 @@ const processRequest = (params) => {
                                 else {
                                     db = common.db;
                                 }
-                                if (!params.member.global_admin && params.qstring.collection === "drill_events" || params.qstring.collection === "events_data") {
-                                    var base_filter = getBaseAppFilter(params.member, params.qstring.db, params.qstring.collection);
-                                    if (base_filter && Object.keys(base_filter).length > 0) {
-                                        params.qstring.query = params.qstring.query || {};
-                                        for (var key in base_filter) {
-                                            if (params.qstring.query[key]) {
-                                                params.qstring.query.$and = params.qstring.query.$and || [];
-                                                params.qstring.query.$and.push({[key]: base_filter[key]});
-                                                params.qstring.query.$and.push({[key]: params.qstring.query[key]});
-                                                delete params.qstring.query[key];
-                                            }
-                                            else {
-                                                params.qstring.query[key] = base_filter[key];
-                                            }
-                                        }
-                                    }
-                                }
                                 countlyApi.data.exports.fromDatabase({
                                     db: db,
                                     params: params,
                                     collection: params.qstring.collection,
                                     query: params.qstring.query,
+                                    //the app scope of the shared collections; the user query is run as
+                                    //given and the scope is combined around it, never merged into it
+                                    appFilter: getExportAppFilter(params.member, params.qstring.db, params.qstring.collection),
                                     projection: params.qstring.projection,
                                     sort: params.qstring.sort,
                                     limit: params.qstring.limit,
