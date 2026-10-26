@@ -859,7 +859,7 @@
                             }
                         }
                         return acc;
-                    }, ["api_key=" + countlyGlobal.member.api_key]).join("&"));
+                    }, [countlyGlobal.auth_token ? "auth_token=" + encodeURIComponent(countlyGlobal.auth_token) : "api_key=" + countlyGlobal.member.api_key]).join("&"));
 
                     formData = {
                         type: params.type,
@@ -915,17 +915,7 @@
                     });
                 }
                 else {
-                    var form = $('<form method="POST" action="' + url + '">');
-                    $.each(formData, function(k, v) {
-                        if (CountlyHelpers.isJSON(v)) {
-                            form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
-                        }
-                        else {
-                            form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
-                        }
-                    });
-                    $('body').append(form);
-                    form.submit();
+                    countlyVue.helpers.submitExportForm(url, formData);
                 }
             },
             getMatching: function(options) {
