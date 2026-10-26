@@ -440,3 +440,39 @@ describe("the dashboards grant of a token", function() {
         });
     });
 });
+
+describe("per-app collections of a member", function() {
+    /**
+    * dbUserHasAccessToCollection as a promise
+    * @param {object} who - member
+    * @param {string} collection - collection name
+    * @param {string} appId - app id restriction
+    * @returns {Promise<boolean>} access
+    */
+    function access(who, collection, appId) {
+        return new Promise(function(resolve) {
+            rights.dbUserHasAccessToCollection({member: who, qstring: {}}, collection, appId, resolve);
+        });
+    }
+
+    //the permission editor writes an empty read entry for every app, member or not
+    var memberOfA = {
+        global_admin: false,
+        permission: permission({
+            userApps: [APP_A],
+            grants: [
+                {type: "r", app: APP_A, allowed: {core: true}},
+                {type: "r", app: APP_B, allowed: {}}
+            ]
+        })
+    };
+
+    it("grants a collection of an app the member belongs to", async function() {
+        (await access(memberOfA, "app_users" + APP_A, APP_A)).should.equal(true);
+    });
+
+    it("refuses a collection of an app with only an empty read entry", async function() {
+        (await access(memberOfA, "app_users" + APP_B, APP_B)).should.equal(false);
+        (await access(memberOfA, "app_users" + APP_B)).should.equal(false);
+    });
+});
