@@ -20,7 +20,7 @@
     "template"
   ],
   "dependencies": {
-    "v8-sandbox": "3.2.12"
+    "isolated-vm": "^6.0.2"
   },
   "private": true
 }

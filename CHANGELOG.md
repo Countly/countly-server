@@ -1,3 +1,10 @@
+## Version 24.05.55
+Security Fixes:
+- [docker] Node.js 24.22.1 in the api and frontend images (Brotli decoder fix, CVE-2026-111497)
+- [core] Package installs move to Node.js 22: `bin/upgrade/24.05/upgrade.nodejs.22.sh` upgrades an existing install, and `bin/upgrade/24.05/upgrade.nodejs.22.patch.sh` updates Node.js 22 to 22.23.4 or later (same CVE)
+- [ab-testing] Python 3.12.15 with pip 26.2.2 and certifi 2026.10.19 in the api image; `bin/upgrade/24.05/upgrade.python.certifi.sh` updates existing installs and limits the OS CA store to the emSign root certifi keeps
+- [hooks] Custom code runs in `isolated-vm` instead of `v8-sandbox`, which does not build on Node.js 22
+
 ## Version 24.05.54
 Enterprise Fixes:
 - [data-manager] Fixed event processing when multiple events have to be deleted after merging
