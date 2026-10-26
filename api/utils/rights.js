@@ -879,14 +879,8 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
     var apps = [];
     var userApps = module.exports.getUserApps(params.member);
     var hashValue = "";
-    //use whatever user has permission for: its member apps, and the apps a token
-    //holds a read grant on without membership; callers check the feature right
-    apps = (userApps || []).slice();
-    Object.keys((params.member.permission && params.member.permission.r) || {}).forEach(function(id) {
-        if (apps.indexOf(id) === -1) {
-            apps.push(id);
-        }
-    });
+    //use whatever user has permission for
+    apps = userApps || [];
     // also check for app based restrictions
     if (params.member.app_restrict) {
         for (var appid in params.member.app_restrict) {

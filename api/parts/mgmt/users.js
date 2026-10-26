@@ -1117,12 +1117,6 @@ usersApi.fetchUserAppIds = async function(params) {
                 appIds.push(userApps[i]);
             }
         }
-        //a token can hold a read on an app without being its member; callers check the right
-        Object.keys((params.member.permission && params.member.permission.r) || {}).forEach(function(id) {
-            if (appIds.indexOf(id) === -1) {
-                appIds.push(id);
-            }
-        });
     }
     if (appIds.length > 0) {
         query._id = {$in: appIds};
