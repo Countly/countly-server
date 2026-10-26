@@ -472,30 +472,25 @@ appsApi.updateApp = function(params) {
                 updatedApp.id_key = appBefore.key;
             }
 
-            //maintain the set of accepted keys. Lazily materialize it for apps
+            //maintain the set of accepted keys: lazily materialize it for apps
             //that predate the keys array (no upgrade script needed), keep old
             //keys valid after a rotation, and apply any requested removals
-            //(never the current key, which always stays accepted).
+            //(never the current key, which always stays accepted). Each change
+            //is its own guarded update on the stored array, never a rewrite of
+            //the array read above, so concurrent updates cannot restore a key
+            //another one removed.
             var nowSec = Math.floor(Date.now() / 1000);
-            var keysArr = (Array.isArray(appBefore.keys) && appBefore.keys.length)
-                ? appBefore.keys.slice()
-                : [{key: appBefore.key, added_at: appBefore.created_at || nowSec, last_data: appBefore.last_data || 0}];
             var currentKey = (typeof updatedApp.key !== "undefined" && updatedApp.key !== "") ? updatedApp.key : appBefore.key;
-            if (removeKeys.length) {
-                keysArr = keysArr.filter(function(k) {
-                    return removeKeys.indexOf(k.key) === -1 || k.key === currentKey;
-                });
-            }
-            if (!keysArr.some(function(k) {
-                return k.key === currentKey;
-            })) {
-                keysArr.push({key: currentKey, added_at: nowSec, last_data: 0});
-            }
-            updatedApp.keys = keysArr;
+            var keysToRemove = removeKeys.map(function(k) {
+                return k + "";
+            }).filter(function(k) {
+                return k !== currentKey;
+            });
+            var appObjectId = common.db.ObjectID(params.qstring.args.app_id);
 
             checkUniqueKey(params, function() {
                 if ((params.member && params.member.global_admin) || hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
-                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
+                    writeAppUpdate(appObjectId, appBefore, updatedApp, keysToRemove, currentKey, nowSec).then(function() {
                         plugins.dispatch("/i/apps/update", {
                             params: params,
                             appId: params.qstring.args.app_id,
@@ -513,6 +508,9 @@ appsApi.updateApp = function(params) {
                             .then(function() {
                                 common.returnOutput(params, updatedApp);
                             });
+                    }, function(writeErr) {
+                        log.e("Updating app %s failed: %j", params.qstring.args.app_id + "", writeErr);
+                        common.returnMessage(params, 500, 'Error updating app');
                     });
                 }
                 else {
@@ -798,6 +796,11 @@ appsApi.deleteApp = function(params) {
                 common.returnMessage(params, 500, 'Error deleting app');
                 return false;
             }
+
+            //a deleted app's keys stop resolving from the app-by-key cache at once
+            appKeyValues(app).forEach(function(k) {
+                common.invalidateAppByKey(k);
+            });
 
             var iconPath = __dirname + '/../../../frontend/express/public/appimages/' + appId + '.png';
             countlyFs.deleteFile("appimages", iconPath, {id: appId + ".png"}, function() {});
@@ -1214,6 +1217,56 @@ function isValidCountry(country) {
     var countries = ["AF", "AX", "AL", "DZ", "AS", "AD", "AO", "AI", "AQ", "AG", "AR", "AM", "AW", "AU", "AT", "AZ", "BS", "BH", "BD", "BB", "BY", "BE", "BZ", "BJ", "BM", "BT", "BO", "BQ", "BA", "BW", "BV", "BR", "IO", "BN", "BG", "BF", "BI", "KH", "CM", "CA", "CV", "KY", "CF", "TD", "CL", "CN", "CX", "CC", "CO", "KM", "CG", "CD", "CK", "CR", "CI", "HR", "CU", "CW", "CY", "CZ", "DK", "DJ", "DM", "DO", "EC", "EG", "SV", "GQ", "ER", "EE", "ET", "FK", "FO", "FJ", "FI", "FR", "GF", "PF", "TF", "GA", "GM", "GE", "DE", "GH", "GI", "GR", "GL", "GD", "GP", "GU", "GT", "GG", "GN", "GW", "GY", "HT", "HM", "VA", "HN", "HK", "HU", "IS", "IN", "ID", "IR", "IQ", "IE", "IM", "IL", "IT", "JM", "JP", "JE", "JO", "KZ", "KE", "KI", "KP", "KR", "KW", "KG", "LA", "LV", "LB", "LS", "LR", "LY", "LI", "LT", "LU", "MO", "MK", "MG", "MW", "MY", "MV", "ML", "MT", "MH", "MQ", "MR", "MU", "YT", "MX", "FM", "MD", "MC", "MN", "ME", "MS", "MA", "MZ", "MM", "NA", "NR", "NP", "NL", "NC", "NZ", "NI", "NE", "NG", "NU", "NF", "MP", "NO", "OM", "PK", "PW", "PS", "PA", "PG", "PY", "PE", "PH", "PN", "PL", "PT", "PR", "QA", "RE", "RO", "RU", "RW", "BL", "SH", "KN", "LC", "MF", "PM", "VC", "WS", "SM", "ST", "SA", "SN", "RS", "SC", "SL", "SG", "SX", "SK", "SI", "SB", "SO", "ZA", "GS", "SS", "ES", "LK", "SD", "SR", "SJ", "SZ", "SE", "CH", "SY", "TW", "TJ", "TZ", "TH", "TL", "TG", "TK", "TO", "TT", "TN", "TR", "TM", "TC", "TV", "UG", "UA", "AE", "GB", "US", "UM", "UY", "UZ", "VU", "VE", "VN", "VG", "VI", "WF", "EH", "YE", "ZM", "ZW"];
 
     return countries.indexOf(country) !== -1;
+}
+
+/**
+* Every key an app document is resolved by: its current key and its accepted keys.
+* @param {object} app - app document
+* @returns {Array<string>} distinct key values
+**/
+function appKeyValues(app) {
+    var values = [];
+    if (app && app.key) {
+        values.push(app.key + "");
+    }
+    ((app && Array.isArray(app.keys)) ? app.keys : []).forEach(function(k) {
+        if (k && k.key && values.indexOf(k.key + "") === -1) {
+            values.push(k.key + "");
+        }
+    });
+    return values;
+}
+
+/**
+* Write an app update and its accepted-keys changes, then read the stored keys
+* back into updatedApp (the response and the /i/apps/update payload carry them).
+* Removed keys are pulled from the stored array and the current key is added
+* only when absent, so two updates that each retire a key both take effect.
+* A removed key is also dropped from the app-by-key cache straight away.
+* @param {object} appId - app _id
+* @param {object} appBefore - app document read before the update
+* @param {object} updatedApp - fields to set; its keys are filled in on success
+* @param {Array<string>} keysToRemove - keys to retire, never the current key
+* @param {string} currentKey - the key the app has after this update
+* @param {number} nowSec - timestamp for keys added by this update
+* @returns {Promise} resolves when written, rejects on any write error
+**/
+async function writeAppUpdate(appId, appBefore, updatedApp, keysToRemove, currentKey, nowSec) {
+    var apps = common.db.collection('apps');
+    if (!Array.isArray(appBefore.keys) || !appBefore.keys.length) {
+        await apps.updateOne({_id: appId, "keys.0": {$exists: false}}, {$set: {keys: [{key: appBefore.key, added_at: appBefore.created_at || nowSec, last_data: appBefore.last_data || 0}]}});
+    }
+    var update = {$set: updatedApp, "$unset": {"checksum_salt": ""}};
+    if (keysToRemove.length) {
+        update.$pull = {keys: {key: {$in: keysToRemove, $ne: currentKey}}};
+    }
+    await apps.updateOne({_id: appId}, update);
+    await apps.updateOne({_id: appId, "keys.key": {$ne: currentKey}}, {$push: {keys: {key: currentKey, added_at: nowSec, last_data: 0}}});
+    keysToRemove.forEach(function(k) {
+        common.invalidateAppByKey(k);
+    });
+    var stored = await apps.findOne({_id: appId}, {projection: {keys: 1}});
+    updatedApp.keys = (stored && stored.keys) || [];
 }
 
 /**
