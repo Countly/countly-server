@@ -83,7 +83,7 @@ describe("old dashboard text props", function() {
     sandbox.CV = sandbox.window.countlyVue;
     vm.runInContext(fs.readFileSync(path.join(ROOT, "frontend/express/public/javascripts/countly/vue/components/helpers.js"), "utf8"), sandbox);
 
-    var MARKUP = "<img src=x onerror=alert(1)>";
+    var MARKUP = "<b>bold</b> & <i>x</i>";
 
     /**
      * Render a registered component to its virtual DOM.
