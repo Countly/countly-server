@@ -175,8 +175,6 @@ countlyFs.gridfs = {};
     * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
     * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
     * @param {object} options.metadata - Optional object to store in the file document's metadata field
-    * @param {string} options.contentType - Optional string to store in the file document's contentType field
-    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
@@ -208,8 +206,6 @@ countlyFs.gridfs = {};
     * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
     * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
     * @param {object} options.metadata - Optional object to store in the file document's metadata field
-    * @param {string} options.contentType - Optional string to store in the file document's contentType field
-    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
@@ -244,8 +240,6 @@ countlyFs.gridfs = {};
     * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
     * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
     * @param {object} options.metadata - Optional object to store in the file document's metadata field
-    * @param {string} options.contentType - Optional string to store in the file document's contentType field
-    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
@@ -1123,8 +1117,6 @@ countlyFs.exists = function() {
 * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
 * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
 * @param {object} options.metadata - Optional object to store in the file document's metadata field
-* @param {string} options.contentType - Optional string to store in the file document's contentType field
-* @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
 * @param {function} callback - function called when saving was completed or errored, providing error object as first param
 * @example
 * countlyFs.saveFile("test", "./CHANGELOG", "./CHANGELOG.md", function(err){
@@ -1146,8 +1138,6 @@ countlyFs.saveFile = function() {
 * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
 * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
 * @param {object} options.metadata - Optional object to store in the file document's metadata field
-* @param {string} options.contentType - Optional string to store in the file document's contentType field
-* @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
 * @param {function} callback - function called when saving was completed or errored, providing error object as first param
 * @example
 * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
@@ -1169,8 +1159,6 @@ countlyFs.saveData = function() {
 * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
 * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
 * @param {object} options.metadata - Optional object to store in the file document's metadata field
-* @param {string} options.contentType - Optional string to store in the file document's contentType field
-* @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
 * @param {function} callback - function called when saving was completed or errored, providing error object as first param
 * @example
 * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){

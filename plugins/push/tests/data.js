@@ -1,4 +1,6 @@
-const { ObjectID } = require('bson');
+const { ObjectId } = require('mongodb');
+// bson stopped exporting the callable ObjectID alias; keep this file's call style
+const ObjectID = (id) => new ObjectId(id);
 
 const d = Date.now(),
     {hash} = require('../api/send').util;

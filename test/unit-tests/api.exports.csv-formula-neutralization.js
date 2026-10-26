@@ -1,4 +1,5 @@
 require("should");
+var Readable = require("stream").Readable;
 var exportsApi = require("../../api/parts/data/exports.js");
 
 // Analytics data is written by whoever holds the app key, which ships inside published
@@ -36,14 +37,7 @@ describe("csv formula neutralization on export", function() {
             };
             var stream = {
                 stream: function() {
-                    return {
-                        on: function(ev, cb) {
-                            if (ev === "data") {
-                                cb(doc);
-                            }
-                            return this;
-                        }
-                    };
+                    return Readable.from([doc]);
                 },
                 once: function(ev, cb) {
                     if (ev === "close") {
