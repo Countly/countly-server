@@ -1190,21 +1190,12 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData.json.autoUpdate = ((!options.dirty) && (options.autoUpdate || false)); //If dirty  set autoUpdate to false
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
+                        //a rerun is signed only with its creator's own key: there is no
+                        //fallback to anyone else, so a task whose creator is gone does not
+                        //run again
                         if (member && member.api_key) {
                             reqData.json.api_key = member.api_key;
                             runTask(options, reqData, callback);
-                        }
-                        else if (res.global) {
-                            //AD and other outer login users might not have their user documents
-                            options.db.collection("members").findOne({global_admin: true}, function(err2, admin) {
-                                if (admin && admin.api_key) {
-                                    reqData.json.api_key = admin.api_key;
-                                    runTask(options, reqData, callback);
-                                }
-                                else {
-                                    callback(null, "No permission to run this task");
-                                }
-                            });
                         }
                         else {
                             callback(null, "No permission to run this task");
@@ -1266,4 +1257,36 @@ function getResult(callback, options) {
         }
     };
 }
+
+/**
+ * Stop the auto-refresh of every task a member created.
+ *
+ * A rerun is signed with its creator's own credential, so a deleted member's task cannot run
+ * again; turning off its auto-refresh also keeps the task job from retrying it. The results
+ * stay readable to whoever could read them before.
+ * @param {object} db - countly database
+ * @param {string} memberId - _id of the member
+ * @returns {Promise} resolves when written
+ */
+taskmanager.stopMemberTasks = function(db, memberId) {
+    return (db || common.db).collection("long_tasks").updateMany({creator: memberId + "", autoRefresh: true}, {$set: {autoRefresh: false}});
+};
+
+/**
+ * /i/users/delete listener: every member deletion path dispatches it before the member is
+ * removed, and a failure rejects the deletion, so a deleted member never leaves
+ * self-refreshing tasks behind.
+ * @param {object} ob - dispatch payload, data is the member being deleted
+ * @returns {Promise} resolves when the member's tasks are stopped
+ */
+taskmanager.onMemberDeleted = function(ob) {
+    var memberId = ob && ob.data && ob.data._id;
+    if (!memberId) {
+        return Promise.resolve();
+    }
+    return taskmanager.stopMemberTasks(common.db, memberId);
+};
+
+plugins.register("/i/users/delete", taskmanager.onMemberDeleted);
+
 module.exports = taskmanager;

@@ -403,6 +403,23 @@ var verify_token = function(options, return_owner, return_data) {
 
                     //consume token if expired or not multi
                     if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000)) || pastBound) {
+                        if (valid && !res.multi) {
+                            // A single use token is valid only for the request that removes it. The
+                            // read above is not a claim: requests arriving together all find the
+                            // document before any of them deletes it, so each would pass. The delete
+                            // is the claim instead, and only the caller whose delete removed the
+                            // document gets the token.
+                            options.db.collection("auth_tokens").deleteOne({_id: options.token}, {}, function(errDelete, deleted) {
+                                if (errDelete || !deleted || deleted.deletedCount !== 1) {
+                                    valid = false;
+                                    expires_after = 0;
+                                }
+                                if (typeof options.callback === "function") {
+                                    options.callback(valid, expires_after);
+                                }
+                            });
+                            return;
+                        }
                         options.db.collection("auth_tokens").remove({_id: options.token});
                     }
                 }
@@ -463,6 +480,29 @@ authorizer.clean = function(options) {
         ends: {$lt: Math.round(Date.now() / 1000)},
         ttl: {$ne: 0}
     }, options.callback);
+};
+
+/**
+* Revoke the tokens a member owns. Used when a member signs out (purpose LoggedInAuth only)
+* and when their password changes (every token, of any purpose).
+* The owner is matched as a string, because save() stores it as one.
+* @param {object} options - options for the task
+* @param {object=} options.db - database connection
+* @param {string|object} options.owner - id of the member whose tokens are revoked
+* @param {string=} options.purpose - only revoke tokens with this purpose; every token when omitted
+* @param {string=} options.keepToken - token to keep, such as the one of the current session
+* @returns {Promise} resolves once the tokens are removed
+*/
+authorizer.revokeMemberTokens = async function(options) {
+    var db = options.db || common.db;
+    var query = {owner: options.owner + ''};
+    if (options.purpose) {
+        query.purpose = options.purpose;
+    }
+    if (options.keepToken) {
+        query._id = {$ne: options.keepToken + ''};
+    }
+    await db.collection('auth_tokens').deleteMany(query);
 };
 
 module.exports = authorizer;
