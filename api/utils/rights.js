@@ -1200,7 +1200,12 @@ exports.getUserAppsWithReadRight = function(member, feature) {
             candidates.push(id);
         }
     });
+    var readGrants = (member.permission && member.permission.r) || {};
     return candidates.filter(function(id) {
+        //a blanket read on the app grants every feature, as validateRead counts it
+        if (readGrants[id] && readGrants[id].all === true) {
+            return true;
+        }
         return features.some(function(f) {
             return exports.hasReadRight(f, id, member);
         });

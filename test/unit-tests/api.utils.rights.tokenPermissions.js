@@ -400,4 +400,9 @@ describe("apps a member reads a feature on", function() {
     it("includes the apps a member administers", function() {
         rights.getUserAppsWithReadRight(adminOfA, "dbviewer").should.eql([APP_A]);
     });
+
+    it("includes an app with a blanket read, as validateRead counts it", function() {
+        var allReader = {global_admin: false, permission: permission({userApps: [APP_A, APP_B], grants: [{type: "r", app: APP_A, all: true}]})};
+        rights.getUserAppsWithReadRight(allReader, ["dbviewer", "drill"]).should.eql([APP_A]);
+    });
 });
