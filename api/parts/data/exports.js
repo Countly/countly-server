@@ -11,6 +11,7 @@ var exports = {},
     json2csv = require('json2csv');
 
 const log = require('./../../utils/log.js')('core:export');
+const { scopeQueryToApps } = require('./../../utils/rights.js');
 
 var XLSXTransformStream = require('xlsx-write-stream');
 const Transform = require('stream').Transform;
@@ -649,7 +650,10 @@ exports.fromDatabase = function(options) {
             if (options.query._id && isObjectId(options.query._id)) {
                 options.query._id = common.db.ObjectID(options.query._id);
             }
-            var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
+            // The app scope is added only now, after every listener has rewritten the
+            // query, so no listener can reshape or drop it.
+            var findQuery = scopeQueryToApps(options.appFilter, options.query);
+            var cursor = options.db.collection(options.collection).find(findQuery, {"projection": options.projection});
             // Strip credential material from privileged collections before it
             // can reach an export file, mirroring the DB Viewer read paths. This
             // runs at the cursor level so it applies regardless of output type
