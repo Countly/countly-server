@@ -769,3 +769,5 @@ describe('Testing Hooks trigger configuration validation', function() {
         });
     });
 });
+
+require('./tests/custom_code_sandbox.js');

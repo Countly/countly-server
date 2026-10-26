@@ -1,71 +1,80 @@
-FROM node:iron-bookworm-slim
+# node:24-trixie-slim -- Node.js 24 (Krypton LTS) on Debian trixie-slim.
+# Multi-arch manifest list digest, resolved 2026-10-23.
+FROM node:24-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea AS builder
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 # Countly Enterprise:
 #ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides
 
-EXPOSE 6001
-HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:6001/ping || exit 1
-
-USER root
-
-# Core dependencies
-## Tini
 ENV COUNTLY_CONTAINER="frontend" \
 	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
-	COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0" \
-	NODE_OPTIONS="--max-old-space-size=2048" \
-	TINI_VERSION="0.18.0"
+	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot" \
+	npm_config_allow_git=root \
+	npm_config_dangerously_allow_all_scripts=true \
+	PUPPETEER_SKIP_DOWNLOAD=true
+
+# Build dependencies live only in this stage and are never shipped
+RUN apt-get update && \
+	apt-get install -y curl wget git make gcc g++ unzip xz-utils build-essential sudo \
+		python3 python3-setuptools sqlite3 ca-certificates
 
 WORKDIR /opt/countly
 COPY . .
-# install required dependencies which slim image doesn't have
-RUN apt-get update && \
-	apt-get install -y iputils-ping net-tools telnet apt-transport-https procps curl wget git make gcc g++ unzip xz-utils
 
-RUN apt-get update && \
-	apt-get upgrade -y && \
-	cd /usr/src && \
-	wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tar.xz && \
-	tar -xf Python-3.8.12.tar.xz && \
-	apt-get install -y build-essential sudo zlib1g-dev libssl3 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
-	cd Python-3.8.12 && \
-	./configure --enable-optimizations --enable-shared && \
-	make && \
-	make altinstall && \
-	ldconfig /usr/src/Python-3.8.12 && \
-	ln -s /usr/local/bin/python3.8 /usr/bin/python3
-
-RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
-	dpkg -i /tmp/tini.deb && \
-	\
-	# modify standard distribution
-	apt-get update && apt-get install -y sqlite3 && \
+# Frontend never runs models; the marker makes ab-testing's setup.sh a no-op
+RUN { [ ! -d plugins/ab-testing/api/bayesian ] || touch plugins/ab-testing/api/bayesian/.ab_disabled; } && \
 	./bin/docker/modify.sh && \
-	\
-	# preinstall
 	cp -n ./api/config.sample.js ./api/config.js && \
 	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
 	cp -n ./frontend/express/public/javascripts/countly/countly.config.sample.js ./frontend/express/public/javascripts/countly/countly.config.js && \
-	HOME=/tmp npm install --unsafe-perm=true --allow-root && \
-	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
+	HOME=/tmp npm install -g npm@11.19.0 && \
+	HOME=/tmp npm install && \
+	HOME=/tmp npm_config_build_from_source=true npm install argon2 && \
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
 	countly update sdk-web && \
-	\
-	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest puppeteer && \
-	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
-	apt-get autoremove -y && \
-	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
-	\
-	# temporary to remove npm bug message
-	mkdir /.npm && chown -R 1001:0 /.npm && \
-	\
+	# CE builds carry only a stub ab-testing dir; drop it so it never ships
+	{ [ -f plugins/ab-testing/package.json ] || rm -rf plugins/ab-testing; } && \
+	rm -rf test /tmp/* /var/tmp/* /root/.npm && \
 	chown -R 1001:0 /opt/countly && \
 	chmod -R g=u /opt/countly
 
+
+FROM node:24-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea AS runtime
+
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
+
+EXPOSE 6001
+HEALTHCHECK --start-period=400s CMD bash -c '\
+  if [ "$COUNTLY_CONFIG_FRONTEND_WEB_SSL_ENABLED" = "true" ] || [ "$COUNTLY_CONFIG_FRONTEND_WEB_SSL_ENABLED" = "\"true\"" ]; then \
+    curl -k --fail https://localhost:6001/ping || exit 1; \
+  else \
+    curl --fail http://localhost:6001/ping || exit 1; \
+  fi'
+
+ENV COUNTLY_CONTAINER="frontend" \
+	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
+	COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0" \
+	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot" \
+	HOME=/tmp
+
+# Runtime-only packages: init, healthcheck, ops tools
+RUN apt-get update && apt-get upgrade -y && \
+	apt-get install -y --no-install-recommends \
+		tini curl procps iputils-ping net-tools ca-certificates \
+		sudo telnet xz-utils apt-transport-https lsb-release && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* && \
+	echo "Etc/UTC" > /etc/timezone
+
+WORKDIR /opt/countly
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /opt/countly /opt/countly
+
+# npm stays for in-container plugin rebuilds (countly task dist-all -> npx grunt)
+RUN ln -sf /opt/countly/bin/commands/countly.sh /usr/bin/countly && \
+	chown 1001:0 /opt/countly && chmod g=u /opt/countly && \
+	mkdir -p /.npm && chown -R 1001:0 /.npm && chmod -R g=u /.npm
 
 USER 1001:0
 
