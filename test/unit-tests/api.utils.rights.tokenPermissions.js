@@ -462,3 +462,40 @@ describe("the dashboards grant of a token", function() {
         });
     });
 });
+
+describe("per-app collections a token reads without membership", function() {
+    /**
+    * dbUserHasAccessToCollection as a promise
+    * @param {object} member - member
+    * @param {string} collection - collection name
+    * @param {string} appId - app id restriction
+    * @returns {Promise<boolean>} access
+    */
+    function access(member, collection, appId) {
+        return new Promise(function(resolve) {
+            rights.dbUserHasAccessToCollection({member: member, qstring: {}}, collection, appId, resolve);
+        });
+    }
+
+    var featureOnly = {global_admin: false, permission: permission({grants: [{type: "r", app: APP_A, allowed: {dbviewer: true}}]})};
+
+    it("grants an app's collection where the token holds a read grant", async function() {
+        (await access(featureOnly, "app_users" + APP_A, APP_A)).should.equal(true);
+    });
+
+    it("refuses another app's collection", async function() {
+        (await access(featureOnly, "app_users" + APP_B, APP_B)).should.equal(false);
+        (await access(featureOnly, "app_users" + APP_B)).should.equal(false);
+    });
+});
+
+describe("default note apps of a token without membership", function() {
+    var usersApi = require("../../api/parts/mgmt/users.js");
+
+    it("includes the apps a token reads on, once", async function() {
+        var featureOnly = {global_admin: false, permission: permission({grants: [{type: "r", app: APP_A, allowed: {core: true}}]})};
+        (await usersApi.fetchUserAppIds({member: featureOnly})).should.eql([APP_A]);
+        var named = {global_admin: false, permission: permission({userApps: [APP_A], grants: [{type: "r", app: APP_A, allowed: {core: true}}]})};
+        (await usersApi.fetchUserAppIds({member: named})).should.eql([APP_A]);
+    });
+});
