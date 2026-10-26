@@ -1277,12 +1277,12 @@ taskmanager.stopMemberTasks = function(db, memberId) {
  * removed, and a failure rejects the deletion, so a deleted member never leaves
  * self-refreshing tasks behind.
  * @param {object} ob - dispatch payload, data is the member being deleted
- * @returns {Promise|undefined} resolves when the member's tasks are stopped
+ * @returns {Promise} resolves when the member's tasks are stopped
  */
 taskmanager.onMemberDeleted = function(ob) {
     var memberId = ob && ob.data && ob.data._id;
     if (!memberId) {
-        return;
+        return Promise.resolve();
     }
     return taskmanager.stopMemberTasks(common.db, memberId);
 };

@@ -52,9 +52,9 @@ describe('long tasks of a deleted member', function() {
         writes.should.eql([{name: 'long_tasks', query: {creator: MEMBER_ID, autoRefresh: true}, update: {$set: {autoRefresh: false}}}]);
     });
 
-    it('does nothing for a member that no longer exists', function() {
-        should.not.exist(taskmanager.onMemberDeleted({data: {}}));
-        should.not.exist(taskmanager.onMemberDeleted({}));
+    it('does nothing for a member that no longer exists', async function() {
+        await taskmanager.onMemberDeleted({data: {}});
+        await taskmanager.onMemberDeleted({});
         writes.should.eql([]);
     });
 

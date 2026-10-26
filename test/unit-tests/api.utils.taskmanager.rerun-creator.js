@@ -81,7 +81,7 @@ describe('long task rerun signing', function() {
         json.api_key.should.equal('CREATORKEY');
     });
 
-    it('never falls back to a global admin for a global task whose creator is gone', async function() {
+    it('does not rerun a global task whose creator is gone', async function() {
         tasks = [task({_id: 't2', creator: GONE_ID, global: true, autoRefresh: true})];
         const result = await rerun('t2');
         should.not.exist(result.json);
