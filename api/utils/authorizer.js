@@ -403,6 +403,23 @@ var verify_token = function(options, return_owner, return_data) {
 
                     //consume token if expired or not multi
                     if (!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now() / 1000)) || pastBound) {
+                        if (valid && !res.multi) {
+                            // A single use token is valid only for the request that removes it. The
+                            // read above is not a claim: requests arriving together all find the
+                            // document before any of them deletes it, so each would pass. The delete
+                            // is the claim instead, and only the caller whose delete removed the
+                            // document gets the token.
+                            options.db.collection("auth_tokens").deleteOne({_id: options.token}, {}, function(errDelete, deleted) {
+                                if (errDelete || !deleted || deleted.deletedCount !== 1) {
+                                    valid = false;
+                                    expires_after = 0;
+                                }
+                                if (typeof options.callback === "function") {
+                                    options.callback(valid, expires_after);
+                                }
+                            });
+                            return;
+                        }
                         options.db.collection("auth_tokens").remove({_id: options.token});
                     }
                 }

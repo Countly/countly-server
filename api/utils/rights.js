@@ -398,7 +398,9 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
                 }
 
                 if (!member.global_admin) {
-                    if (!member.permission || member.permission._.a.indexOf(params.qstring.app_id) === -1) {
+                    //a permission without its app lists grants admin of no app; it must not throw here,
+                    //which answered every app admin call of such a member as if they did not exist
+                    if (!member.permission || !member.permission._ || !Array.isArray(member.permission._.a) || member.permission._.a.indexOf(params.qstring.app_id) === -1) {
                         common.returnMessage(params, 401, 'User does not have right');
                         reject('User does not have right');
                         return false;
@@ -1708,10 +1710,12 @@ exports.getUserApps = function(member) {
     }
     else {
         if (typeof member.permission !== "undefined") {
-            for (var i = 0; i < member.permission._.u.length; i++) {
-                userApps = userApps.concat(member.permission._.u[i]);
+            var lists = (member.permission && member.permission._) || {};
+            var userOf = Array.isArray(lists.u) ? lists.u : [];
+            for (var i = 0; i < userOf.length; i++) {
+                userApps = userApps.concat(userOf[i] || []);
             }
-            return userApps.concat(member.permission._.a);
+            return userApps.concat(Array.isArray(lists.a) ? lists.a : []);
         }
         else {
             return member.user_of;
@@ -1742,7 +1746,8 @@ exports.getAdminApps = function(member) {
     }
     else {
         if (typeof member.permission !== "undefined") {
-            return member.permission._.a;
+            var lists = (member.permission && member.permission._) || {};
+            return Array.isArray(lists.a) ? lists.a : [];
         }
         else {
             return member.admin_of;
