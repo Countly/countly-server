@@ -12,7 +12,7 @@ var pluginOb = {},
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
     mail = require("../../../api/parts/mgmt/mail"),
-    { validateUser, getUserApps, getAdminApps} = require('../../../api/utils/rights.js');
+    { validateUser, getUserApps, getAdminApps, hasDashboardAccess} = require('../../../api/utils/rights.js');
 
 var ejs = require("ejs");
 
@@ -121,6 +121,9 @@ plugins.setConfigs("dashboards", {
             }
 
             validateUser(params, function() {
+                if (refuseDashboardToken(params, "r")) {
+                    return;
+                }
                 var member = params.member,
                     memberId = member._id + "";
 
@@ -334,6 +337,9 @@ plugins.setConfigs("dashboards", {
         }
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
@@ -432,6 +438,9 @@ plugins.setConfigs("dashboards", {
         let just_schema = params.qstring.just_schema;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             var member = params.member,
                 memberId = member._id + "",
                 memberEmail = member.email,
@@ -560,6 +569,9 @@ plugins.setConfigs("dashboards", {
         }
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 //return the same access-denied shape whether the dashboard is
                 //missing or not viewable, so dashboard ids cannot be enumerated
@@ -604,6 +616,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "c")) {
+                return;
+            }
             var dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit || [],
                 sharedEmailView = params.qstring.shared_email_view || [],
@@ -900,6 +915,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "u")) {
+                return;
+            }
             var dashboardId = params.qstring.dashboard_id,
                 dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit,
@@ -1121,6 +1139,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "d")) {
+                return;
+            }
             var dashboardId = params.qstring.dashboard_id,
                 memberId = params.member._id + "";
 
@@ -1204,6 +1225,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "c")) {
+                return;
+            }
 
             var dashboardId = params.qstring.dashboard_id,
                 widget = params.qstring.widget || {};
@@ -1307,6 +1331,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "u")) {
+                return;
+            }
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -1431,6 +1458,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "d")) {
+                return;
+            }
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -1668,6 +1698,9 @@ plugins.setConfigs("dashboards", {
             var report = ob.report;
 
             if (report.report_type === "dashboards") {
+                if (!hasDashboardAccess(params.member, "r")) {
+                    return resolve();
+                }
                 var dashboardId = report.dashboards;
                 common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                     if (err) {
@@ -1744,6 +1777,23 @@ plugins.setConfigs("dashboards", {
         common.db.collection("members").find({$or: [{_id: { $in: dashboardUserIds }}, {email: { $in: emails }} ]}, {_id: 1, full_name: 1, email: 1, username: 1}).toArray(function(err, users) {
             return callback(null, users);
         });
+    }
+
+    /**
+     * Answer 403 to a scoped token that has no dashboards grant for the operation.
+     *
+     * Dashboards are opened by ownership and sharing, not per app, so a token scoped to some apps
+     * reaches them only through the dashboards grant of its token_permission.
+     * @param  {Object} params - params object, member already validated
+     * @param  {String} operation - c, r, u or d
+     * @returns {Boolean} true if the request was answered and the handler must stop
+     */
+    function refuseDashboardToken(params, operation) {
+        if (hasDashboardAccess(params.member, operation)) {
+            return false;
+        }
+        common.returnMessage(params, 403, "Token has no access to dashboards");
+        return true;
     }
 
     /**
@@ -2263,6 +2313,9 @@ plugins.setConfigs("dashboards", {
         }
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
