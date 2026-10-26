@@ -12,7 +12,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter, getUserAppsWithReadRight, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -2215,8 +2215,11 @@ const processRequest = (params) => {
                             }
                         }
 
+                        //the shared event collections hold every app's rows: exportable with the read right of a
+                        //feature that reads them on at least one app, and scoped to those apps below
+                        var sharedFeatures = getSharedCollectionExportFeatures(params.qstring.db, params.qstring.collection);
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
-                            if (hasAccess || (params.qstring.db === "countly_drill" && params.qstring.collection === "drill_events") || (params.qstring.db === "countly" && params.qstring.collection === "events_data")) {
+                            if (hasAccess || (sharedFeatures && (params.member.global_admin || getUserAppsWithReadRight(params.member, sharedFeatures).length > 0))) {
                                 var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
                                 var db = "";
                                 if (params.qstring.db && dbs[params.qstring.db]) {
@@ -2226,7 +2229,7 @@ const processRequest = (params) => {
                                     db = common.db;
                                 }
                                 if (!params.member.global_admin && params.qstring.collection === "drill_events" || params.qstring.collection === "events_data") {
-                                    var base_filter = getBaseAppFilter(params.member, params.qstring.db, params.qstring.collection);
+                                    var base_filter = getBaseAppFilter(params.member, params.qstring.db, params.qstring.collection, sharedFeatures);
                                     if (base_filter && Object.keys(base_filter).length > 0) {
                                         params.qstring.query = params.qstring.query || {};
                                         for (var key in base_filter) {

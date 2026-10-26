@@ -136,7 +136,7 @@ var spawn = require('child_process').spawn,
                     // outside the caller's app scope by supplying its _id.
                     var docFilter = { _id: params.qstring.document };
                     if (!params.member.global_admin) {
-                        var docBaseFilter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                        var docBaseFilter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection, FEATURE_NAME);
                         if (docBaseFilter && Object.keys(docBaseFilter).length > 0) {
                             docFilter = { $and: [docBaseFilter, docFilter] };
                         }
@@ -252,7 +252,7 @@ var spawn = require('child_process').spawn,
 
             var base_filter = {};
             if (!params.member.global_admin) {
-                base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection, FEATURE_NAME);
             }
 
             if (base_filter && Object.keys(base_filter).length > 0) {
@@ -382,7 +382,7 @@ var spawn = require('child_process').spawn,
                             async.each(results, function(col, done) {
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
                                     userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
-                                        if (hasAccess || col.collectionName === "events_data" || col.collectionName === "drill_events") {
+                                        if (hasAccess) {
                                             ob = parseCollectionName(col.collectionName, lookup);
                                             db.collections[ob.pretty] = ob.name;
                                         }
@@ -436,7 +436,7 @@ var spawn = require('child_process').spawn,
                     aggregation.splice(0, 0, {"$addFields": {"_id": "***redacted***"}});
                 }
                 else if ((collection === "events_data" || collection === "drill_events") && !params.member.global_admin) {
-                    var base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                    var base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection, FEATURE_NAME);
                     aggregation.splice(0, 0, {"$match": base_filter});
                 }
                 // check task is already running?
@@ -520,6 +520,14 @@ var spawn = require('child_process').spawn,
             }
             else {
                 var userApps = getUserApps(parameters.member);
+                if (collection === "events_data" || collection === "drill_events") {
+                    //the shared collections hold every app's rows: readable when the
+                    //member holds the dbviewer read right on at least one app, and the
+                    //rows are then scoped to those apps by getBaseAppFilter
+                    return callback(userApps.some(function(id) {
+                        return hasReadRight(FEATURE_NAME, id, parameters.member);
+                    }));
+                }
                 //go through all apps of user and check if any of them has access to collection
                 var result = await Promise.all(userApps.map(function(id) {
                     if (hasReadRight(FEATURE_NAME, id, parameters.member)) {
@@ -618,7 +626,7 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
-                        if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
+                        if (hasAccess) {
                             runAggregation(ALLOWED_OPERATORS_USER);
                         }
                         else {
@@ -634,7 +642,7 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
-                        if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
+                        if (hasAccess) {
                             dbGetCollection();
                         }
                         else {
