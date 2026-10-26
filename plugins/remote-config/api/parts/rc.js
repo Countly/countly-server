@@ -446,6 +446,13 @@ function compareValues(prop, userValue, op, expected) {
     var left = userValue;
     var right = expected;
 
+    //Against a number, only a number or a numeric string compares: null, a
+    //boolean or an object is not a value on that scale
+    if ((typeof right === 'number' && typeof left !== 'number' && typeof left !== 'string') ||
+        (typeof left === 'number' && typeof right !== 'number' && typeof right !== 'string')) {
+        return false;
+    }
+
     //Coerce the string side when the other side is numeric, so a metric
     //stored as "5" still compares against a numeric threshold. The whole
     //string has to be a number: "12points" is not 12.

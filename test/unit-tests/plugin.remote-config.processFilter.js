@@ -49,6 +49,13 @@ describe("remote-config processFilter", function() {
         remoteConfig.processFilter({custom: {score: ""}}, {"custom.score": {$gte: 0}}).should.equal(false);
     });
 
+    it("does not compare null, a boolean or an object against a number", function() {
+        [null, false, true, {}, []].forEach(function(score) {
+            remoteConfig.processFilter({custom: {score: score}}, {"custom.score": {$lt: 10}}).should.equal(false, JSON.stringify(score));
+        });
+        remoteConfig.processFilter({custom: {score: 0}}, {"custom.score": {$lt: 10}}).should.equal(true);
+    });
+
     it("ANDs sibling properties", function() {
         evaluate({p: "Android", cc: "US"}).should.equal(true);
         evaluate({p: "Android", cc: "DE"}).should.equal(false);
