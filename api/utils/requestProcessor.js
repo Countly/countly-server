@@ -2805,6 +2805,15 @@ const processRequest = (params) => {
                             endpoint = params.qstring.endpoint.split(',');
                         }
 
+                        // An app or endpoint restriction on its own is the format from before the
+                        // permission model. Tokens already stored that way keep working, bounded to
+                        // their apps by applyTokenScope, but new ones must say what they grant: the
+                        // permission object is what every route authorizes against.
+                        if (!tokenPermission && (isScopeRestricted(apps) || isScopeRestricted(endpoint))) {
+                            common.returnMessage(params, 400, "A restricted token must state the permissions it grants");
+                            return;
+                        }
+
                         if (params.qstring.purpose) {
                             purpose = params.qstring.purpose;
                         }

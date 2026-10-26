@@ -269,12 +269,59 @@ describe("token permissions", function() {
             grants: [{type: "r", app: APP_A, allowed: {core: true}}]
         });
 
-        it("returns the member unchanged when the token carries no permissions", function() {
-            // a legacy token inherits its owner's authority, which is the documented
-            // absent-means-unrestricted behaviour
-            rights.applyTokenScope({token_data: {app: [APP_A]}}, member).should.equal(member);
+        it("returns the member unchanged for an unscoped credential", function() {
             rights.applyTokenScope({}, member).should.equal(member);
             rights.applyTokenScope({token_data: null}, member).should.equal(member);
+            rights.applyTokenScope({token_data: {app: "", endpoint: ""}}, member).should.equal(member);
+        });
+
+        it("keeps an endpoint restricted token's permission but drops its owner's api_key", function() {
+            // a legacy token inherits its owner's authority, which is the documented
+            // absent-means-unrestricted behaviour - but not the owner's key, which reaches
+            // every endpoint the restriction keeps the token away from
+            var owner = Object.assign({api_key: "OWNERKEY"}, member);
+            var scoped = rights.applyTokenScope({token_data: {_id: "TOKEN", app: "", endpoint: ["^/o/analytics"]}}, owner);
+            scoped.should.not.equal(owner);
+            scoped.permission.should.equal(owner.permission);
+            scoped.should.not.have.property("api_key");
+            owner.api_key.should.equal("OWNERKEY");
+            // marked with a reference to the token, never the token itself
+            scoped.scoped_credential.should.equal(rights.credentialRef("TOKEN"));
+            scoped.scoped_credential.should.not.equal("TOKEN");
+        });
+
+        it("bounds an app restricted legacy token to its owner's authority on those apps", function() {
+            // authorizer.js checks the restriction only against a request's app_id, so a route
+            // without one saw the owner at full strength
+            var owner = Object.assign({api_key: "OWNERKEY"}, member);
+            [[APP_A], APP_A].forEach(function(app) {
+                var scoped = rights.applyTokenScope({token_data: {app: app, endpoint: ""}}, owner);
+                rights.hasReadRight("events", APP_A, scoped).should.equal(true);
+                rights.hasCreateRight("core", APP_A, scoped).should.equal(true);
+                rights.hasReadRight("core", APP_B, scoped).should.equal(false);
+                rights.getUserApps(scoped).should.eql([APP_A]);
+                scoped.should.not.have.property("api_key");
+            });
+            var adminScoped = rights.applyTokenScope({token_data: {app: [APP_A]}}, globalAdmin);
+            adminScoped.global_admin.should.equal(false);
+            rights.hasReadRight("core", APP_A, adminScoped).should.equal(true);
+            rights.hasReadRight("core", APP_B, adminScoped).should.equal(false);
+        });
+
+        it("does not restore global authority for an existing token with only empty app entries", function() {
+            var owner = Object.assign({api_key: "OWNERKEY"}, globalAdmin);
+            var scoped = rights.applyTokenScope({token_data: {app: ["", ""], endpoint: ""}}, owner);
+            scoped.global_admin.should.equal(false);
+            rights.getUserApps(scoped).should.eql([]);
+            scoped.should.not.have.property("api_key");
+            owner.api_key.should.equal("OWNERKEY");
+        });
+
+        it("uses only valid entries in a mixed legacy app list", function() {
+            var scoped = rights.applyTokenScope({token_data: {app: ["", APP_A], endpoint: ""}}, globalAdmin);
+            scoped.global_admin.should.equal(false);
+            rights.hasReadRight("core", APP_A, scoped).should.equal(true);
+            rights.hasReadRight("core", APP_B, scoped).should.equal(false);
         });
 
         it("bounds the member by the token when it does", function() {
@@ -300,6 +347,15 @@ describe("token permissions", function() {
             });
             var scoped = rights.applyTokenScope({token_data: {token_permission: wider}}, member);
             rights.hasDeleteRight("core", APP_A, scoped).should.equal(false);
+        });
+
+        it("never carries the owner's api_key on a permission scoped member", function() {
+            var owner = Object.assign({api_key: "OWNERKEY"}, member);
+            var scoped = rights.applyTokenScope({token_data: {token_permission: scopedToRead}}, owner);
+            scoped.should.not.have.property("api_key");
+            scoped.scoped_credential.should.equal(true);
+            // the owner's document is untouched
+            owner.api_key.should.equal("OWNERKEY");
         });
 
         it("leaves a global admin's own token scope in force", function() {

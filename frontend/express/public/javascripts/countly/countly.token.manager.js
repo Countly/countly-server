@@ -23,6 +23,17 @@
         return _data;
     };
 
+    /**
+     * Create a token without permissions. The server refuses an endpoint or app restriction
+     * without permissions, so a token limited to an app is created with createTokenWithPermissions.
+     * @param {string} purpose - description of the token
+     * @param {string} endpoint - endpoint restriction, empty for none
+     * @param {boolean} multi - can the token be used more than once
+     * @param {string} apps - app restriction, empty for none
+     * @param {number} ttl - seconds until the token expires, 0 never expires
+     * @param {function} callback - called with (error, response)
+     * @returns {object} jQuery ajax object
+     */
     countlyTokenManager.createToken = function(purpose, endpoint, multi, apps, ttl, callback) {
         return $.ajax({
             type: "GET",
@@ -81,6 +92,19 @@
                 callback(error);
             }
         });
+    };
+
+    /**
+     * A permission object allowing only to read one feature of one app.
+     * @param {string} appId - the app
+     * @param {string} feature - the feature, e.g. "views"
+     * @returns {object} permission object for createTokenWithPermissions
+     */
+    countlyTokenManager.readPermission = function(appId, feature) {
+        var permission = {_: {a: [], u: [[appId]]}, c: {}, r: {}, u: {}, d: {}};
+        permission.r[appId] = {all: false, allowed: {}};
+        permission.r[appId].allowed[feature] = true;
+        return permission;
     };
 
     countlyTokenManager.deleteToken = function(id, callback) {
