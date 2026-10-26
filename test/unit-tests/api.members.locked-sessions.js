@@ -124,6 +124,12 @@ describe("locking a member", function() {
         result.removedSessions.should.eql([]);
     });
 
+    it("does not end the session of an admin who saves their own account locked", async function() {
+        var result = await update(MEMBER_ID, {locked: true});
+        result.status.should.equal(200);
+        result.sessionQueries.should.eql([]);
+    });
+
     it("ends nothing again when a member who is already locked is saved", async function() {
         var result = await update(ADMIN_ID, {locked: true, full_name: "Renamed"}, {locked: true});
         result.status.should.equal(200);

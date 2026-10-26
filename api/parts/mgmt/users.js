@@ -619,12 +619,10 @@ usersApi.updateUser = async function(params) {
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
-                    //a password another admin sets ends the member's sessions, and so does locking,
-                    //so unlocking does not bring them back. Sessions are the member's own, never
-                    //the admin's saving the change.
-                    var passwordSetByAnother = updatedMember.password && params.member._id + "" !== updatedMember._id + "";
+                    //a new password or a new lock ends the member's sessions and tokens, so unlocking
+                    //does not bring them back; never the session of the admin saving it
                     var newlyLocked = updatedMember.locked === true && !(memberBefore && memberBefore.locked === true);
-                    if (passwordSetByAnother || newlyLocked) {
+                    if ((updatedMember.password || newlyLocked) && params.member._id + "" !== updatedMember._id + "") {
                         killAllSessionForUser(updatedMember._id);
                     }
 
