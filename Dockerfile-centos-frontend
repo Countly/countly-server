@@ -14,7 +14,7 @@ USER root
 ENV COUNTLY_CONTAINER="frontend" \
 	COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
 	COUNTLY_CONFIG_FRONTEND_WEB_HOST="0.0.0.0" \
-	NODE_OPTIONS="--max-old-space-size=2048" \
+	NODE_OPTIONS="--max-old-space-size=2048 --no-node-snapshot" \
 	TINI_VERSION="0.18.0" \
 	CMDSTAN="/opt/cmdstan/cmdstan-2.36.0" \
 	PATH="/opt/rh/rh-nodejs10/root/usr/bin:${PATH}"
