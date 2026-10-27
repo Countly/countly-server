@@ -632,16 +632,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
-        var screenshotPath = common.resolvePathInBase(__dirname + '/public', req.path);
+        // Public on purpose: emailed links are opened without a session. A
+        // screenshot is found by its random file name (the only name /o/render
+        // gives one), never by a shared id.
+        var fileName = path.basename(req.path);
+        if (!/^screenshot_[a-f0-9]{32}\.png$/.test(fileName)) {
+            return res.send(false);
+        }
+        var screenshotPath = common.resolvePathInBase(__dirname + '/public/images/screenshots', fileName);
         if (!screenshotPath) {
             return res.send(false);
         }
-        countlyFs.getStats("screenshots", screenshotPath, {id: "core"}, function(err, stats) {
+        countlyFs.getStats("screenshots", screenshotPath, {}, function(err, stats) {
             if (err || !stats || !stats.size) {
                 return res.send(false);
             }
 
-            countlyFs.getStream("screenshots", screenshotPath, {id: "core"}, function(err2, stream) {
+            countlyFs.getStream("screenshots", screenshotPath, {}, function(err2, stream) {
                 if (err2 || !stream) {
                     return res.send(false);
                 }
@@ -836,7 +843,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     for (let pathPart of ["/login", "/mobile/login"]) {
         const absPath = countlyConfig.path + pathPart;
         preventBruteforce.pathIdentifiers[absPath] = "login";
-        preventBruteforce.userIdentifiers[absPath] = (req) => req.body.username;
+        // The same key the login handlers count failures under
+        preventBruteforce.userIdentifiers[absPath] = (req) => preventBruteforce.loginKey(req.body.username);
     }
 
     preventBruteforce.blockHooks.login = function(uid, req, res) { // eslint-disable-line no-unused-vars
@@ -1190,7 +1198,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
         else {
             countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
-                if (member) {
+                if (member && member.locked) {
+                    membersUtility.clearReqAndRes(req, res);
+                    res.redirect(countlyConfig.path + '/login?message=login.locked');
+                }
+                else if (member) {
                     plugins.callPromisedAppMethod('checkMemberLicense', { req, member }).then(licenseCheck => {
                         common.licenseAssign(req, licenseCheck);
                         req.session.cookie.maxAge = countlyConfig.cookie.maxAgeLogin;
@@ -1596,22 +1608,34 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/login', function(req, res/*, next*/) {
-        membersUtility.login(req, res, function(member) {
-            if (member) {
-                if (member.locked) {
-                    res.redirect(countlyConfig.path + '/login?message=login.locked');
+        var bruteforceKey = preventBruteforce.loginKey(req.body.username);
+        preventBruteforce.isBlocked("login", bruteforceKey, function(isBlocked, fails, err) {
+            if (isBlocked) {
+                if (err) {
+                    res.status(500).send('Server Error');
                 }
                 else {
-                    res.redirect(countlyConfig.path + '/dashboard');
-                    preventBruteforce.reset("login", req.body.username);
+                    res.redirect(countlyConfig.path + '/login?message=login.blocked');
                 }
+                return;
             }
-            else {
-                res.redirect(countlyConfig.path + '/login?message=login.result');
-                if (req.body.username) {
-                    preventBruteforce.fail("login", req.body.username);
+            membersUtility.login(req, res, function(member) {
+                if (member) {
+                    if (member.locked) {
+                        res.redirect(countlyConfig.path + '/login?message=login.locked');
+                    }
+                    else {
+                        res.redirect(countlyConfig.path + '/dashboard');
+                        preventBruteforce.resetForMember(member);
+                    }
                 }
-            }
+                else {
+                    res.redirect(countlyConfig.path + '/login?message=login.result');
+                    if (req.body.username) {
+                        preventBruteforce.fail("login", bruteforceKey);
+                    }
+                }
+            });
         });
     });
 
@@ -1627,7 +1651,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
         var user = basicAuth(req);
         if (user && user.name && user.pass) {
-            preventBruteforce.isBlocked("login", user.name, function(isBlocked, fails, err) {
+            var bruteforceKey = preventBruteforce.loginKey(user.name);
+            preventBruteforce.isBlocked("login", bruteforceKey, function(isBlocked, fails, err) {
                 if (isBlocked) {
                     if (err) {
                         res.status(500).send('Server Error');
@@ -1646,14 +1671,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             }
                             else {
                                 plugins.callMethod("apikeySuccessful", {req: req, res: res, next: next, data: {username: member.username}});
-                                preventBruteforce.reset("login", user.name);
+                                preventBruteforce.resetForMember(member);
                                 countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                                 res.status(200).send(member.api_key);
                             }
                         }
                         else {
                             plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: user.name}});
-                            preventBruteforce.fail("login", user.name);
+                            preventBruteforce.fail("login", bruteforceKey);
                             unauthorized(res);
                         }
                     });
@@ -1681,25 +1706,37 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
         if (req.body.username && req.body.password) {
             req.body.username = (req.body.username + "").trim();
+            var bruteforceKey = preventBruteforce.loginKey(req.body.username);
 
-            verifyMemberArgon2Hash(req.body.username, req.body.password, (err, member) => {
-                if (member) {
-                    if (member.locked) {
-                        plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                        res.render('mobile/login', { "message": "login.locked", "csrf": req.csrfToken() });
+            preventBruteforce.isBlocked("login", bruteforceKey, function(isBlocked, fails, blockErr) {
+                if (isBlocked) {
+                    if (blockErr) {
+                        res.status(500).send('Server Error');
                     }
                     else {
-                        plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
-                        preventBruteforce.reset("login", req.body.username);
-                        countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
-                        res.render('mobile/key', { "key": member.api_key || -1 });
+                        res.render('mobile/login', { "message": "login.blocked", "csrf": req.csrfToken() });
                     }
+                    return;
                 }
-                else {
-                    plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                    preventBruteforce.fail("login", req.body.username);
-                    res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
-                }
+                verifyMemberArgon2Hash(req.body.username, req.body.password, (err, member) => {
+                    if (member) {
+                        if (member.locked) {
+                            plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
+                            res.render('mobile/login', { "message": "login.locked", "csrf": req.csrfToken() });
+                        }
+                        else {
+                            plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
+                            preventBruteforce.resetForMember(member);
+                            countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
+                            res.render('mobile/key', { "key": member.api_key || -1 });
+                        }
+                    }
+                    else {
+                        plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
+                        preventBruteforce.fail("login", bruteforceKey);
+                        res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
+                    }
+                });
             });
         }
         else {
@@ -2005,7 +2042,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         membersUtility.loginWithToken(req, function(member) {
             if (member) {
                 var serverSideRendering = req.query.ssr || false;
-                preventBruteforce.reset("login", member.username);
+                preventBruteforce.resetForMember(member);
                 var options = "";
                 if (serverSideRendering) {
                     options += "ssr=" + serverSideRendering;

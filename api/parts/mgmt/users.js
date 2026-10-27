@@ -8,6 +8,7 @@ var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
+    preventBruteforce = require('../../../frontend/express/libs/preventBruteforce.js'),
     plugins = require('../../../plugins/pluginManager.js'),
     { hasAdminAccess, getUserApps, getAdminApps, hasReadRight } = require('./../../utils/rights.js');
 
@@ -113,7 +114,8 @@ usersApi.getAllUsers = function(params) {
             var membersObj = {};
 
             for (let i = 0; i < members.length; i++) {
-                const result = failedLogins.find(x => (x._id === JSON.stringify(["login", members[i].username]))) || { fails: 0 };
+                const counterIds = preventBruteforce.loginCounterIds(members[i].username);
+                const result = failedLogins.find(x => x._id === counterIds[0]) || failedLogins.find(x => x._id === counterIds[1]) || { fails: 0 };
 
                 if (result.fails > 0 && result.fails % bruteforceFails === 0 && Math.floor(new Date().getTime() / 1000) < (((result.fails / bruteforceFails) * bruteforceWait) + result.lastFail)) {
                     members[i].blocked = true;
@@ -145,7 +147,7 @@ usersApi.getAllUsers = function(params) {
 * @returns {boolean} true if timeban reseted
 **/
 usersApi.resetTimeBan = function(params) {
-    common.db.collection('failed_logins').remove({_id: JSON.stringify(["login", params.qstring.username])}, (err) => {
+    common.db.collection('failed_logins').remove({_id: {$in: preventBruteforce.loginCounterIds(params.qstring.username)}}, (err) => {
         if (err) {
             common.returnMessage(params, 500, 'Remove from collection failed.');
             return false;
@@ -617,11 +619,10 @@ usersApi.updateUser = async function(params) {
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
-                    if (updatedMember.password && params.member._id + "" !== updatedMember._id + "") {
-                        killAllSessionForUser(updatedMember._id);
-                    }
-                    //locking ends what the member is signed in with, so unlocking does not bring it back
-                    if (updatedMember.locked === true && !(memberBefore && memberBefore.locked === true)) {
+                    //a new password or a new lock ends the member's sessions and tokens, so unlocking
+                    //does not bring them back; never the session of the admin saving it
+                    var newlyLocked = updatedMember.locked === true && !(memberBefore && memberBefore.locked === true);
+                    if ((updatedMember.password || newlyLocked) && params.member._id + "" !== updatedMember._id + "") {
                         killAllSessionForUser(updatedMember._id);
                     }
 
