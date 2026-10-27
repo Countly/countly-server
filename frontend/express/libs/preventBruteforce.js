@@ -151,7 +151,7 @@ preventBruteforce.loginCounterIds = function(identifier) {
 /**
  * Clear every login failure counter of a member, by username and by email
  * @param {object} member - member document
- * @param {function} callback - callback to call when done
+ * @param {Function} callback - callback to call when done
  **/
 preventBruteforce.resetForMember = function(member, callback) {
     callback = callback || function() {};

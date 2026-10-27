@@ -201,7 +201,7 @@ function valuesEqual(userValue, queryValue) {
         try {
             return JSON.stringify(userValue) === JSON.stringify(queryValue);
         }
-        catch (e) {
+        catch {
             return false;
         }
     }
@@ -244,7 +244,7 @@ function toRegExp(pattern, options) {
         try {
             return new RegExp(pattern, typeof options === 'string' ? options : '');
         }
-        catch (e) {
+        catch {
             return null;
         }
     }

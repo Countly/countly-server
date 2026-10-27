@@ -870,7 +870,7 @@ plugins.setConfigs("remote-config", {
                             user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
 
                             var conditionIssues = [];
-                            var conditionStatus = false;
+                            var conditionStatus;
 
                             try {
                                 conditionStatus = remoteConfig.processFilter(user, conditionObj.condition, conditionIssues);

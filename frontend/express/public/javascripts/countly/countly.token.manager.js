@@ -31,7 +31,7 @@
      * @param {boolean} multi - can the token be used more than once
      * @param {string} apps - app restriction, empty for none
      * @param {number} ttl - seconds until the token expires, 0 never expires
-     * @param {function} callback - called with (error, response)
+     * @param {Function} callback - called with (error, response)
      * @returns {object} jQuery ajax object
      */
     countlyTokenManager.createToken = function(purpose, endpoint, multi, apps, ttl, callback) {

@@ -337,7 +337,7 @@ function parseEndpointRestriction(endpointParam, endpointQueryParam) {
     try {
         entries = typeof endpointQueryParam === "string" ? JSON.parse(endpointQueryParam) : endpointQueryParam;
     }
-    catch (ex) {
+    catch {
         return {error: "Invalid endpointquery"};
     }
     if (!Array.isArray(entries) || entries.length === 0) {
