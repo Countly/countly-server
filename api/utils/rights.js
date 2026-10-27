@@ -69,8 +69,9 @@ function validate_token_if_exists(params) {
 * this model exists to prevent. Applied as soon as the member is loaded, so that the validators'
 * own permission checks already see the bounded member.
 *
-* A token with no token_permission (an api_key request, a dashboard session token, or a token
-* created before this model) is returned unchanged, so existing integrations are unaffected.
+* A token created before this model with an app restriction is bounded to its owner's authority
+* on those apps. A token with no restriction at all (an api_key request, a dashboard session
+* token) is returned unchanged, so existing integrations are unaffected.
 * @param {params} params - {@link params} object, carrying token_data when a token was used
 * @param {object} member - member document loaded for the token owner
 * @returns {object} the member, bounded by the token's permissions when the token is scoped
@@ -79,16 +80,89 @@ function applyTokenScope(params, member) {
     if (params.token_data && params.token_data.token_permission) {
         member = exports.intersectPermission(member, params.token_data.token_permission);
     }
-    //custom dashboards are not app scoped: a dashboard is opened by ownership and sharing, and
-    //everyone who opens it reads every widget on it, whatever app the widget reads. So a scoped
-    //token reaches the owner's dashboards only through a grant of its own, kept here because
-    //intersectPermission rebuilds the per-app permission and drops it
+    else if (member && params.token_data && isScopeRestricted(params.token_data.app)) {
+        //a legacy token restricted to apps carries its owner's authority on those apps and none
+        //elsewhere. authorizer.js only enforces the restriction against a request's app_id, so a
+        //route that takes no app_id - an app listing, user management - saw the owner at full
+        //strength, global_admin included. Bounding the member to those apps holds everywhere.
+        //A malformed stored list can contain only empty entries. It is still a
+        //restriction, and intersecting with no apps must remove global authority.
+        member = exports.intersectPermission(member, appOnlyPermission(legacyTokenApps(params.token_data)));
+    }
+    //the owner's api_key is the owner's full authority, and the member left on params is what
+    //every handler acts with: anything that later reached for params.member.api_key would run with
+    //more than the token holds, and keep running after the token is revoked. A scoped credential
+    //carries no key, so such code finds nothing rather than an escalation. A legacy app/endpoint
+    //restricted token is scoped as well, so it loses the key even without token_permission.
+    //It is also marked with a reference to the token (credentialRef - never the token itself,
+    //which is a bearer secret; true when it has no id), so that code which authorizes on who the
+    //member is can tell the token apart from its owner.
     if (member && exports.isScopedCredential(params)) {
         member = Object.assign({}, member);
+        delete member.api_key;
+        member.scoped_credential = exports.credentialRef(params.token_data._id) || true;
+        //custom dashboards are not app scoped: a dashboard is opened by ownership and sharing, and
+        //everyone who opens it reads every widget on it, whatever app the widget reads. So a scoped
+        //token reaches the owner's dashboards only through a grant of its own, kept here because
+        //intersectPermission rebuilds the per-app permission and drops it
         member.dashboard_grant = dashboardGrant(params.token_data.token_permission);
     }
     return member;
 }
+
+/**
+* Apps a legacy (pre-permission-model) token is restricted to.
+* @param {object} token - auth_tokens document
+* @returns {string[]} app ids, empty when the token has no app restriction
+*/
+function legacyTokenApps(token) {
+    var apps = token.app;
+    if (typeof apps === "string") {
+        apps = apps === "" ? [] : [apps];
+    }
+    return Array.isArray(apps) ? apps.filter(function(appId) {
+        return typeof appId === "string" && appId !== "";
+    }) : [];
+}
+
+/**
+* Whether a legacy token scope field asks for a restriction, including a
+* malformed non-empty list whose entries normalize to no valid apps.
+* @param {string|Array} scope - token app or endpoint field
+* @returns {boolean} true if the field represents a restriction
+*/
+function isScopeRestricted(scope) {
+    return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+}
+
+/**
+* A permission granting everything on the given apps, to intersect an owner with: the result is
+* exactly the owner's own authority on those apps.
+* @param {string[]} apps - app ids
+* @returns {object} permission object
+*/
+function appOnlyPermission(apps) {
+    var permission = {_: {a: apps.slice(), u: [apps.slice()]}, c: {}, r: {}, u: {}, d: {}};
+    apps.forEach(function(appId) {
+        ["c", "r", "u", "d"].forEach(function(type) {
+            permission[type][appId] = {all: true, allowed: {}};
+        });
+    });
+    return permission;
+}
+
+/**
+* A non-secret reference to a token: what may be stored or compared where the token itself, a
+* bearer credential, must not appear - on params.member.
+* @param {string} tokenId - auth_tokens _id (the token string)
+* @returns {string|null} the reference, or null for a missing id
+*/
+exports.credentialRef = function(tokenId) {
+    if (typeof tokenId !== "string" || tokenId === "") {
+        return null;
+    }
+    return crypto.createHash("sha256").update("countly-credential-ref:" + tokenId).digest("hex");
+};
 
 /**
 * The dashboard operations a token_permission grants under its dashboards key.
@@ -1685,14 +1759,6 @@ exports.isScopedCredential = function(params) {
     if (token.token_permission) {
         return true;
     }
-    /**
-    * Whether a legacy scope value restricts anything.
-    * @param {string|Array} scope - the app or endpoint field of a token
-    * @returns {boolean} true if restricted
-    */
-    var isScopeRestricted = function(scope) {
-        return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
-    };
     return isScopeRestricted(token.app) || isScopeRestricted(token.endpoint);
 };
 
