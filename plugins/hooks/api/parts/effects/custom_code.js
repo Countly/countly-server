@@ -1,7 +1,32 @@
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_custom_code_effect");
-const ivm = require("isolated-vm");
+
+let ivmModule = null;
+let ivmLoadError = null;
+
+/**
+ * Load isolated-vm on first use. It is a native module that needs Node.js 22 or later,
+ * and a failed require at module load would stop the whole hooks plugin from loading,
+ * so on an older Node.js only custom code effects fail.
+ * @returns {object} isolated-vm module
+ */
+function loadIvm() {
+    if (ivmModule) {
+        return ivmModule;
+    }
+    if (!ivmLoadError) {
+        try {
+            ivmModule = require("isolated-vm");
+            return ivmModule;
+        }
+        catch (e) {
+            ivmLoadError = e;
+            log.e("isolated-vm could not be loaded, custom code effects will fail", e);
+        }
+    }
+    throw new Error("Custom code effects need Node.js 22 or later (isolated-vm could not be loaded: " + ivmLoadError.message + ")");
+}
 
 /**
  * custom code effect
@@ -27,6 +52,7 @@ class CustomCodeEffect {
 
         try {
             const code = effect.configuration.code;
+            const ivm = loadIvm();
 
             // Create isolated VM instance
             isolate = new ivm.Isolate({ memoryLimit: 128 });
