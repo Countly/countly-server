@@ -16,6 +16,7 @@
   "scripts": {
     "test": "grunt --verbose",
     "test:merge-shepherd": "node --test .github/scripts/merge-shepherd.test.js",
+    "geonames:update": "node bin/offline-geocoder/scripts/update_geonames_bundle.js",
     "prepare": "husky",
     "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
   },
@@ -41,7 +42,8 @@
     "nyc": "18.0.0",
     "should": "13.2.3",
     "supertest": "7.3.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "yauzl": "^3.3.1"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
@@ -95,14 +97,12 @@
     "nginx-conf": "2.1.0",
     "nodemailer": "10.2.1",
     "object-hash": "3.0.0",
-    "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.6.0",
     "puppeteer": "^25.7.0",
     "rate-limiter-flexible": "^11.0.0",
     "sass": "1.106.1",
     "semver": "^7.7.1",
     "sharp": "^0.35.0",
-    "sqlite3": "^5.1.7",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
     "underscore": "1.13.8",
