@@ -77,7 +77,7 @@
      * @namespace starRatingPlugin
      * @method requestPlatformVersion
      * @param {boolean} isRefresh - is it refresh?
-     * @return {func} ajax func to request data and store in _pv
+     * @returns {func} ajax func to request data and store in _pv
      */
     starRatingPlugin.requestPlatformVersion = function(isRefresh) {
         var periodString = countlyCommon.getPeriodForAjax();
@@ -102,7 +102,7 @@
      * @namespace starRatingPlugin
      * @method requestRatingInPeriod
      * @param {boolean} isRefresh - is it refresh?
-     * @return {func} ajax func to request data and store in _rating
+     * @returns {func} ajax func to request data and store in _rating
      */
     starRatingPlugin.requestRatingInPeriod = function(isRefresh) {
         var periodString = countlyCommon.getPeriodForAjax();
@@ -129,7 +129,7 @@
      * This is for fetching period object from server side when selected period is 'month' in frontend
      * @namespace starRatingPlugin
      * @method requesPeriod
-     * @return {func} ajax func to request data and store in _period
+     * @returns {func} ajax func to request data and store in _period
      */
     starRatingPlugin.requesPeriod = function() {
         var periodString = countlyCommon.getPeriodForAjax();
@@ -154,7 +154,7 @@
      * @namespace starRatingPlugin
      * @method requestFeedbackData
      * @param {object} filterObj -  filter querys for feedback data list
-     * @return {func} ajax func to request data and store in _fd
+     * @returns {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var data = {app_id: countlyCommon.ACTIVE_APP_ID};
@@ -202,7 +202,7 @@
      * @method requestSingleWidget
      * @param {string} id - id of widget
      * @param {func} callback - callback method
-     * @return {func} ajax func to request data and store in _fd
+     * @returns {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestSingleWidget = function(id, callback) {
         // returning promise
@@ -274,7 +274,7 @@
      * This is for fetching feedback comments objects from server side
      * @namespace starRatingPlugin
      * @method requestFeedbackData
-     * @return {func} ajax func to request data and store in _fd
+     * @returns {func} ajax func to request data and store in _fd
      */
     starRatingPlugin.requestFeedbackWidgetsData = function() {
         // returning promise

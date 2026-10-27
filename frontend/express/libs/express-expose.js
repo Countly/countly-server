@@ -27,7 +27,7 @@ var _name = 'javascript';
  * @param {Object|String|Function} obj - object to expose
  * @param {String} namespace - namespace for exposing
  * @param {String} name - name of the key
- * @return {HTTPServer} for chaining
+ * @returns {HTTPServer} for chaining
  * @api public
  */
 function expose(obj, namespace, name) {
@@ -109,7 +109,7 @@ function expose(obj, namespace, name) {
  * Render the exposed javascript.
  *
  * @param {string} name - name of exposed value
- * @return {String} exposed value
+ * @returns {String} exposed value
  * @api private
  */
 function exposed(name) {
@@ -132,7 +132,7 @@ function exposed(name) {
  *    foo.bar.baz = foo.bar.baz || {};
  *
  * @param {String} str - namespace name
- * @return {String} rendered string to be used in source
+ * @returns {String} rendered string to be used in source
  * @api private
  */
 function renderNamespace(str) {
@@ -151,7 +151,7 @@ function renderNamespace(str) {
  *
  * @param {Object} obj - object to render
  * @param {String} namespace - render ybder provided namespace
- * @return {String} rendered object
+ * @returns {String} rendered object
  * @api private
  */
 function renderObject(obj, namespace) {
@@ -165,7 +165,7 @@ function renderObject(obj, namespace) {
  * Return a string representation of `obj`.
  *
  * @param {Mixed} obj - object to stringify
- * @return {String} stringified object
+ * @returns {String} stringified object
  * @api private
  */
 function string(obj) {
@@ -204,7 +204,7 @@ function string(obj) {
 * Escape special characters that could break JavaScript string context
 *
 * @param  {string} str - The string to escape
-* @return {string} escaped string
+* @returns {string} escaped string
 * @public
 */
 function escape_js_string(str) {

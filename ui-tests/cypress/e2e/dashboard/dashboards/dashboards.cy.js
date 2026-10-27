@@ -1,4 +1,3 @@
-/* eslint-env mocha */
 /* global cy, Cypress, expect */
 
 import user from '../../../fixtures/user.json';

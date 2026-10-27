@@ -12,9 +12,17 @@ var crypto = require('crypto');
 //test if added
 //ask for getTable
 //recalculate
+// Re-read at the start of each block that builds expectations from it (see the
+// before() hooks below), never only at module load: mocha requires every test file
+// before running any, so a load-time clock is as old as the whole run up to here.
+// Views are sent at offsets from myTime, but getTable resolves "hour" (today) and
+// "yesterday" from the server's clock in the app's calendar - once a stale myTime
+// and the real clock sit on different app-local dates, every backdated view lands
+// one day off. On CI (UTC runner, Europe/Istanbul fixture app) that is any run that
+// loaded before 21:00 UTC and reached this file after it.
 var myTime = Date.now();
-var start = new Date(new Date().getFullYear(), 0, 0);
-var startMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
+var moment = require('moment-timezone');
+var {resolveAppTimezone} = require("../../../test/lib/dateKeys.js");
 
 var tableResponse = {};
 var userObject = {};
@@ -244,14 +252,22 @@ function verifyTotals(period, order, orderString) {
 //chose testDay(yesterday)
 describe('Testing views plugin', function() {
     describe('verify empty views tables', function() {
-        it('should have 0 views', function(done) {
-            days_this_year = Math.floor((myTime - start) / (1000 * 24 * 60 * 60));
-            days_this_month = Math.floor((myTime - startMonth) / (1000 * 24 * 60 * 60));
-            console.log("days gone in this month:" + days_this_month);
-            console.log("days gone in this year:" + days_this_year);
+        before(async function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
+            myTime = Date.now();
+            // Which periods a backdated view falls into is decided by the APP's
+            // calendar, not the runner's: on UTC CI they disagree every evening for
+            // an app east of UTC (the fixture app is Europe/Istanbul). Day of year
+            // and day of month are what "days gone" measured from the local clock.
+            var appNow = moment.tz(myTime, await resolveAppTimezone(testUtils.db, APP_ID));
+            days_this_year = appNow.dayOfYear();
+            days_this_month = appNow.date();
+            console.log("days gone in this month:" + days_this_month);
+            console.log("days gone in this year:" + days_this_year);
+        });
+        it('should have 0 views', function(done) {
             db = testUtils.client.db("countly");
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days')
@@ -927,6 +943,10 @@ describe('Testing views plugin', function() {
     });
 
     describe('verify empty views tables', function() {
+        before(function() {
+            // The blocks below assert on "hour" again, minutes after the clock above was read.
+            myTime = Date.now();
+        });
         it('should have 0 views', function(done) {
             tableResponse.hour = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
             tableResponse.yesterday = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};

@@ -1,3 +1,4 @@
+/* global expect */
 import {
     feedbackRatingWidgetsPageElements,
     feedbackRatingWidgetAddUserConsentElements,
@@ -418,6 +419,7 @@ const verifyDevicesAndTargetingPageDefaultElements = () => {
 };
 
 const clickAddNewWidgetButton = () => {
+    cy.waitForListSettled([feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ADD_NEW_WIDGET_BUTTON, '.el-table__row']);
     cy
         .elementExists(feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ADD_NEW_WIDGET_BUTTON)
         .then((isExists) => {
@@ -443,9 +445,21 @@ const clickPreviousStepButton = () => {
     cy.clickElement(feedbackRatingWidgetsPageElements.PREVIOUS_STEP_BUTTON);
 };
 
+// Wait for the save request and the drawer closing, not for the global Pace
+// loader: any other request restarts Pace, and it never tracked the save.
 const clickSaveButton = () => {
-    cy.clickElement(feedbackRatingWidgetsPageElements.SAVE_BUTTON);
-    cy.checkPaceActive();
+    cy.intercept('POST', /\/i\/feedback\/widgets\/(create|edit)/).as('widgetSave');
+    cy.getElement(feedbackRatingWidgetsPageElements.SAVE_BUTTON).eq(0).click();
+    cy.wait('@widgetSave', { responseTimeout: 60000 })
+        .its('response.statusCode')
+        // create answers 201, edit 200
+        .should('be.oneOf', [200, 201]);
+    cy.get('body').should(($body) => {
+        expect(
+            $body.find(`[data-test-id="${feedbackRatingWidgetsPageElements.SAVE_BUTTON}"]:visible`).length,
+            'drawer save button still visible (drawer did not close)'
+        ).to.equal(0);
+    });
 };
 
 const typeQuestion = (question) => {
@@ -901,7 +915,11 @@ const searchWidgetOnDataTable = (widgetName) => {
 };
 
 const getWidgetIdFromDataTable = (index) => {
-    return cy.getElement(widgetsDataTableElements(index).WIDGET_ID).eq(0).getText();
+    return cy.getElement(widgetsDataTableElements(index).WIDGET_ID).eq(0)
+        .should(($el) => {
+            expect($el.text().trim(), 'widget id rendered').to.not.be.empty;
+        })
+        .getText();
 };
 
 const navigateToWidgetsDetailPage = (widgetName) => {
@@ -1120,6 +1138,12 @@ const deleteWidget = () => {
 };
 
 const shouldBeWidgetDeleted = (question) => {
+    const rowSelector = `[data-test-id^="${widgetsDataTableElements('').WIDGET_NAME}"]`;
+    cy.waitForListSettled([
+        feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ADD_NEW_WIDGET_BUTTON,
+        rowSelector
+    ]);
+    cy.shouldNotListName(rowSelector, question);
     cy
         .elementExists(feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ADD_NEW_WIDGET_BUTTON)
         .then((isExists) => {

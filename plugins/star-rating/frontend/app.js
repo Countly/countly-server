@@ -98,7 +98,7 @@ var STAR_RATING_EXT_TO_MIME = {
                     try {
                         img = Buffer.from(data.slice(commaIdx + 1), 'base64');
                     }
-                    catch (e) {
+                    catch {
                         res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         return;
                     }

@@ -1545,7 +1545,7 @@
         * @param {object} db - countly standard metric data object
         * @param {string} propertyName - name of the property to extract
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} explainRange - function to convert range/bucket index to meaningful label
+        * @param {Function} explainRange - function to convert range/bucket index to meaningful label
         * @param {array} myorder - arrays of preferred order for give keys. Optional. If not passed - sorted by values
         * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
         * @example <caption>Extracting session frequency from users collection</caption>
@@ -1639,7 +1639,7 @@
         * Extract single level data without metrics/segments, like total user data from users collection
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} chartData - prefill chart data with labels, colors, etc
         * @param {object} dataProperties - describing which properties and how to extract
         * @param {string}  metric  - metric to select
@@ -1870,7 +1870,7 @@
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} dataProperties - describing which properties and how to extract
         * @param {object=} estOverrideMetric - data from total users api request to correct unique user values
         * @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
@@ -2168,11 +2168,11 @@
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-        * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
         * @param {String} metric - name of the metric to use ordering and returning
         * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
-        * @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
+        * @param {Function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -2202,8 +2202,8 @@
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-        * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -3486,7 +3486,7 @@
         * @param {array} properties - array of all properties to extract
         * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
         * @param {object} estOverrideMetric - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
-        * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {string=} segment - segment value for which to fetch metric data
         * @returns {object} dashboard data object
         * @example
@@ -3668,7 +3668,7 @@
         * @memberof countlyCommon
         * @param {object} data - countly metric model data
         * @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
-        * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @returns {object} object with sparkleline data for each property
         * @example
         * var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
@@ -3872,7 +3872,7 @@
                 try {
                     period = JSON.parse(period);
                 }
-                catch (SyntaxError) {
+                catch {
                     period = "30days";
                 }
             }
@@ -4656,7 +4656,7 @@
         * @memberof countlyCommon
         * @param {array} chartDPs  - chart data points
         * @param {string} labelName  - label name
-        * @return {array} chartDPs
+        * @returns {array} chartDPs
         * @example
         * for example:
         *     chartDPs = [
@@ -4812,7 +4812,7 @@
                 try {
                     period = JSON.parse(period);
                 }
-                catch (SyntaxError) {
+                catch {
                     period = countlyCommon.DEFAULT_PERIOD;
                 }
             }
@@ -4876,7 +4876,7 @@
         try {
             collator = (typeof Intl !== "undefined" && typeof Intl.Collator !== "undefined") ? Intl.Collator("generic", { sensitivity: "base" }) : null;
         }
-        catch (err) {
+        catch {
             // console.log("Failed to initialize collator for Levenshtein\n" + err.stack);
         }
 
@@ -4896,7 +4896,7 @@
             * @param {string} str2 String the second string.
             * @param {object} [options] Additional options.
             * @param {boolean} [options.useCollator] Use `Intl.Collator` for locale-sensitive string comparison.
-            * @return {number} Integer the levenshtein distance (0 and above).
+            * @returns {number} Integer the levenshtein distance (0 and above).
             */
             get: function(str1, str2, options) {
                 var useCollator = (options && collator && options.useCollator);

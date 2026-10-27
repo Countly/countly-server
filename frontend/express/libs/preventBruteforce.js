@@ -64,7 +64,7 @@ preventBruteforce.blockHooks = {};
  * Middleware to listen to specific paths and check if user is blocked
  * @param {object} req - request object
  * @param {object} res - response object
- * @param {function} next - callback to call next middleware
+ * @param {Function} next - callback to call next middleware
  * @example
  * app.use(preventBruteforce.middleware);
  **/
@@ -151,7 +151,7 @@ preventBruteforce.loginCounterIds = function(identifier) {
 /**
  * Clear every login failure counter of a member, by username and by email
  * @param {object} member - member document
- * @param {function} callback - callback to call when done
+ * @param {Function} callback - callback to call when done
  **/
 preventBruteforce.resetForMember = function(member, callback) {
     callback = callback || function() {};
@@ -172,7 +172,7 @@ preventBruteforce.resetForMember = function(member, callback) {
  * Check if user is blocked for provided namepsace and user idendtifier
  * @param {string} pid - namespace of the block
  * @param {string} uid - user identifier
- * @param {function} callback - callback to call with result
+ * @param {Function} callback - callback to call with result
  * @example
  * var username, pass;
  * preventBruteforce.isBlocked("login", username, function(isBlocked, fails, err) {
@@ -212,7 +212,7 @@ preventBruteforce.isBlocked = function(pid, uid, callback) {
  * Reset fails for provided namepsace and user
  * @param {string} pid - namespace of the block
  * @param {string} uid - user identifier
- * @param {function} callback - callback to call when done
+ * @param {Function} callback - callback to call when done
  * @example
  * preventBruteforce.reset("login", username);
  **/
@@ -226,7 +226,7 @@ preventBruteforce.reset = function(pid, uid, callback) {
  * Increase fails for provided namepsace and user
  * @param {string} pid - namespace of the block
  * @param {string} uid - user identifier
- * @param {function} callback - callback to call when done
+ * @param {Function} callback - callback to call when done
  * @example
  * preventBruteforce.fail("login", username);
  **/

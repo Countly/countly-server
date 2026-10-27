@@ -9,6 +9,5 @@ if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-serve
         mv deploy-key ~/.ssh/id_rsa;
         chmod 600 ~/.ssh/id_rsa;
         ssh -oStrictHostKeyChecking=no "countly@release-2503.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-github.log 2>&1 &"
-        ssh -oStrictHostKeyChecking=no "countly@ce.count.ly" "bash /home/countly/deploy.sh > /home/countly/logs/countly-deploy-github.log 2>&1 &"
     fi
 fi
