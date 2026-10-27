@@ -8,9 +8,9 @@ var CustomCodeEffect = require("../../plugins/hooks/api/parts/effects/custom_cod
 // the sandbox on whatever Node.js this suite runs on.
 describe("hooks isolated-vm by Node.js version", function() {
     it("prefers 6 on Node.js 22 and 7 on Node.js 24 and later", function() {
-        isolatedVm.candidates("22.23.4").should.eql(["isolated-vm-6", "isolated-vm-7"]);
-        isolatedVm.candidates("24.15.0").should.eql(["isolated-vm-7", "isolated-vm-6"]);
-        isolatedVm.candidates("26.12.1").should.eql(["isolated-vm-7", "isolated-vm-6"]);
+        isolatedVm.candidates("22.23.4").should.eql(["isolated-vm-6", "isolated-vm-7", "isolated-vm"]);
+        isolatedVm.candidates("24.15.0").should.eql(["isolated-vm-7", "isolated-vm-6", "isolated-vm"]);
+        isolatedVm.candidates("26.12.1").should.eql(["isolated-vm-7", "isolated-vm-6", "isolated-vm"]);
     });
 
     it("falls back to the other build when the preferred one did not install", function() {
@@ -26,12 +26,22 @@ describe("hooks isolated-vm by Node.js version", function() {
         tried.should.eql(["isolated-vm-7", "isolated-vm-6"]);
     });
 
-    it("names both attempts when no build loads", function() {
+    it("falls back to the unversioned package that earlier installs carry", function() {
+        var ivm = isolatedVm.load(function(name) {
+            if (name !== "isolated-vm") {
+                throw new Error("Cannot find module '" + name + "'");
+            }
+            return {build: name};
+        }, "22.23.4");
+        ivm.should.eql({build: "isolated-vm"});
+    });
+
+    it("names every attempt when no build loads", function() {
         (function() {
             isolatedVm.load(function(name) {
                 throw new Error("missing " + name);
             }, "22.23.4");
-        }).should.throw(/No isolated-vm build loads on Node\.js 22\.23\.4.*missing isolated-vm-6.*missing isolated-vm-7/);
+        }).should.throw(/No isolated-vm build loads on Node\.js 22\.23\.4.*missing isolated-vm-6.*missing isolated-vm-7.*missing isolated-vm\b/);
     });
 
     it("runs custom code in the sandbox on this Node.js", async function() {
