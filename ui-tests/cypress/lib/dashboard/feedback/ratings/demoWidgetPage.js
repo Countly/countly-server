@@ -1,5 +1,4 @@
-const getApiKey = require('../../../../api/getApiKey');
-const getApps = require('../../../../api/getApps');
+const base64 = require('base-64');
 const helper = require('../../../../support/helper');
 
 const demoPageElements = {
@@ -24,20 +23,34 @@ const demoPageElements = {
 };
 
 const goToDemoWidgetPage = (username, password, appName, widgetID) => {
-    getApiKey.request(username, password)
-        .then((response) => {
-            const apiKey = response;
-            return getApps.request(apiKey);
-        })
-        .then((response) => {
-            for (const key in response.admin_of) {
-                if (response.admin_of[key].name === appName) {
-
-                    const appKey = response.admin_of[key].key;
-                    cy.visit(`/feedback/rating?widget_id=${widgetID.trim()}&device_id=test&app_key=${appKey}&custom={"tc":1,"rw":1,"xb":1}`);
-                }
-            }
+    // Cypress commands all the way: getApiKey and getApps answer through a
+    // Cypress.Promise, so a cy.visit inside their .then ran outside the command
+    // queue, and the checks that follow could start on the widgets page before
+    // the popup opened.
+    cy.request({
+        method: 'GET',
+        url: '/api-key',
+        headers: {
+            accept: 'text/plain',
+            authorization: `Basic ${base64.encode(username + ":" + password)}`,
+        },
+    }).then((keyResponse) => {
+        const apiKey = keyResponse.body;
+        return cy.request({
+            method: 'GET',
+            url: `/o/apps/mine?api_key=${apiKey}`,
+            headers: {
+                accept: 'text/plain',
+            },
         });
+    }).then((appsResponse) => {
+        const apps = appsResponse.body.admin_of || {};
+        const appKey = Object.keys(apps).map((id) => apps[id]).filter((app) => app.name === appName).map((app) => app.key)[0];
+        if (typeof appKey !== 'string') {
+            throw new Error('No app key found for the app named ' + appName);
+        }
+        cy.visit(`/feedback/rating?widget_id=${widgetID.trim()}&device_id=test&app_key=${appKey}&custom={"tc":1,"rw":1,"xb":1}`);
+    });
 };
 
 const verifyDemoPageElementsAndRate = ({

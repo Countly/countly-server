@@ -269,16 +269,62 @@ describe("token permissions", function() {
             grants: [{type: "r", app: APP_A, allowed: {core: true}}]
         });
 
-        it("returns the member unchanged when the token carries no permissions", function() {
-            // a legacy token inherits its owner's authority, which is the documented
-            // absent-means-unrestricted behaviour; being restricted, it carries an empty
-            // dashboards grant and nothing else changes
-            var legacy = rights.applyTokenScope({token_data: {app: [APP_A]}}, member);
-            legacy.permission.should.equal(member.permission);
-            legacy.dashboard_grant.should.eql({c: false, r: false, u: false, d: false});
-            Object.keys(legacy).sort().should.eql(Object.keys(member).concat("dashboard_grant").sort());
+        it("returns the member unchanged for an unscoped credential", function() {
             rights.applyTokenScope({}, member).should.equal(member);
             rights.applyTokenScope({token_data: null}, member).should.equal(member);
+            rights.applyTokenScope({token_data: {app: "", endpoint: ""}}, member).should.equal(member);
+        });
+
+        it("keeps an endpoint restricted token's permission but drops its owner's api_key", function() {
+            // a legacy token inherits its owner's authority, which is the documented
+            // absent-means-unrestricted behaviour - but not the owner's key, which reaches
+            // every endpoint the restriction keeps the token away from
+            var owner = Object.assign({api_key: "OWNERKEY"}, member);
+            var scoped = rights.applyTokenScope({token_data: {_id: "TOKEN", app: "", endpoint: ["^/o/analytics"]}}, owner);
+            scoped.should.not.equal(owner);
+            scoped.permission.should.equal(owner.permission);
+            scoped.should.not.have.property("api_key");
+            owner.api_key.should.equal("OWNERKEY");
+            // being restricted, it carries an empty dashboards grant
+            scoped.dashboard_grant.should.eql({c: false, r: false, u: false, d: false});
+            // marked with a reference to the token, never the token itself
+            scoped.scoped_credential.should.equal(rights.credentialRef("TOKEN"));
+            scoped.scoped_credential.should.not.equal("TOKEN");
+        });
+
+        it("bounds an app restricted legacy token to its owner's authority on those apps", function() {
+            // authorizer.js checks the restriction only against a request's app_id, so a route
+            // without one saw the owner at full strength
+            var owner = Object.assign({api_key: "OWNERKEY"}, member);
+            [[APP_A], APP_A].forEach(function(app) {
+                var scoped = rights.applyTokenScope({token_data: {app: app, endpoint: ""}}, owner);
+                rights.hasReadRight("events", APP_A, scoped).should.equal(true);
+                rights.hasCreateRight("core", APP_A, scoped).should.equal(true);
+                rights.hasReadRight("core", APP_B, scoped).should.equal(false);
+                rights.getUserApps(scoped).should.eql([APP_A]);
+                scoped.should.not.have.property("api_key");
+                scoped.dashboard_grant.should.eql({c: false, r: false, u: false, d: false});
+            });
+            var adminScoped = rights.applyTokenScope({token_data: {app: [APP_A]}}, globalAdmin);
+            adminScoped.global_admin.should.equal(false);
+            rights.hasReadRight("core", APP_A, adminScoped).should.equal(true);
+            rights.hasReadRight("core", APP_B, adminScoped).should.equal(false);
+        });
+
+        it("does not restore global authority for an existing token with only empty app entries", function() {
+            var owner = Object.assign({api_key: "OWNERKEY"}, globalAdmin);
+            var scoped = rights.applyTokenScope({token_data: {app: ["", ""], endpoint: ""}}, owner);
+            scoped.global_admin.should.equal(false);
+            rights.getUserApps(scoped).should.eql([]);
+            scoped.should.not.have.property("api_key");
+            owner.api_key.should.equal("OWNERKEY");
+        });
+
+        it("uses only valid entries in a mixed legacy app list", function() {
+            var scoped = rights.applyTokenScope({token_data: {app: ["", APP_A], endpoint: ""}}, globalAdmin);
+            scoped.global_admin.should.equal(false);
+            rights.hasReadRight("core", APP_A, scoped).should.equal(true);
+            rights.hasReadRight("core", APP_B, scoped).should.equal(false);
         });
 
         it("bounds the member by the token when it does", function() {
@@ -304,6 +350,15 @@ describe("token permissions", function() {
             });
             var scoped = rights.applyTokenScope({token_data: {token_permission: wider}}, member);
             rights.hasDeleteRight("core", APP_A, scoped).should.equal(false);
+        });
+
+        it("never carries the owner's api_key on a permission scoped member", function() {
+            var owner = Object.assign({api_key: "OWNERKEY"}, member);
+            var scoped = rights.applyTokenScope({token_data: {token_permission: scopedToRead}}, owner);
+            scoped.should.not.have.property("api_key");
+            scoped.scoped_credential.should.equal(true);
+            // the owner's document is untouched
+            owner.api_key.should.equal("OWNERKEY");
         });
 
         it("leaves a global admin's own token scope in force", function() {
@@ -383,5 +438,62 @@ describe("the dashboards grant of a token", function() {
             rights.isPermissionSubset(withGrant(true), owner).should.equal(false);
             rights.isPermissionSubset(withGrant(["r"]), owner).should.equal(false);
         });
+    });
+});
+
+describe("apps a member reads a feature on", function() {
+    it("includes an app where the permission grants the read without membership", function() {
+        var tokenMember = {global_admin: false, permission: permission({grants: [{type: "r", app: APP_A, allowed: {dbviewer: true}}]})};
+        rights.getUserAppsWithReadRight(tokenMember, "dbviewer").should.eql([APP_A]);
+    });
+
+    it("leaves out an app the member belongs to without the read", function() {
+        var plain = {global_admin: false, permission: permission({userApps: [APP_A, APP_B], grants: [{type: "r", app: APP_A, allowed: {dbviewer: true}}]})};
+        rights.getUserAppsWithReadRight(plain, ["dbviewer", "drill"]).should.eql([APP_A]);
+    });
+
+    it("includes the apps a member administers", function() {
+        rights.getUserAppsWithReadRight(adminOfA, "dbviewer").should.eql([APP_A]);
+    });
+
+    it("includes an app with a blanket read, as validateRead counts it", function() {
+        var allReader = {global_admin: false, permission: permission({userApps: [APP_A, APP_B], grants: [{type: "r", app: APP_A, all: true}]})};
+        rights.getUserAppsWithReadRight(allReader, ["dbviewer", "drill"]).should.eql([APP_A]);
+    });
+});
+
+describe("per-app collections of a member", function() {
+    /**
+    * dbUserHasAccessToCollection as a promise
+    * @param {object} who - member
+    * @param {string} collection - collection name
+    * @param {string} appId - app id restriction
+    * @returns {Promise<boolean>} access
+    */
+    function access(who, collection, appId) {
+        return new Promise(function(resolve) {
+            rights.dbUserHasAccessToCollection({member: who, qstring: {}}, collection, appId, resolve);
+        });
+    }
+
+    //the permission editor writes an empty read entry for every app, member or not
+    var memberOfA = {
+        global_admin: false,
+        permission: permission({
+            userApps: [APP_A],
+            grants: [
+                {type: "r", app: APP_A, allowed: {core: true}},
+                {type: "r", app: APP_B, allowed: {}}
+            ]
+        })
+    };
+
+    it("grants a collection of an app the member belongs to", async function() {
+        (await access(memberOfA, "app_users" + APP_A, APP_A)).should.equal(true);
+    });
+
+    it("refuses a collection of an app with only an empty read entry", async function() {
+        (await access(memberOfA, "app_users" + APP_B, APP_B)).should.equal(false);
+        (await access(memberOfA, "app_users" + APP_B)).should.equal(false);
     });
 });

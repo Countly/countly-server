@@ -999,22 +999,30 @@ function uploadFile(myfile, id, appId, callback) {
             }
         });
     };
+    //Counts a show only for the app the widget belongs to. The widget lookup answers
+    //without a session, so the request's app_key is what names the app: with no key, or
+    //a key for another app, nothing is counted and the widget is still returned.
     var increaseWidgetShowCount = function(ob) {
         var obParams = ob.params;
         var widgetId = obParams.qstring.widget_id;
+        var appKey = obParams.qstring.app_key;
+        if (!appKey) {
+            return true;
+        }
 
-        common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId)}, { $inc: { timesShown: 1 } }, function(err, widget) {
-            if (!err && widget) {
-                return true;
+        common.resolveAppByKey(appKey, function(appErr, app) {
+            if (appErr) {
+                log.e('increaseWidgetShowCount: ' + appErr);
+                return;
             }
-            else if (err) {
-                log.e('increaseWidgetShowCount: ' + err);
-                return false;
+            if (!app) {
+                return;
             }
-            else {
-                log.e('increaseWidgetShowCount: widget not found');
-                return false;
-            }
+            common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId), "app_id": app._id + ""}, { $inc: { timesShown: 1 } }, function(err) {
+                if (err) {
+                    log.e('increaseWidgetShowCount: ' + err);
+                }
+            });
         });
         return true;
     };
@@ -1504,7 +1512,8 @@ function uploadFile(myfile, id, appId, callback) {
      * @apiDescription Get feedback widgets with or without filters
      * @apiQuery {String} app_id app_id of related application
      * @apiQuery {Boolean} is_active is_active option for widgets
-     * 
+     * @apiQuery {String} widget_id optional, return only the widget with this id
+     *
      * @apiSuccessExample {json} Success-Response:
      * HTTP/1.1 200 OK
      * [ 
@@ -1548,6 +1557,12 @@ function uploadFile(myfile, id, appId, callback) {
 
             if (params.qstring.app_id) {
                 query.app_id = params.qstring.app_id;
+            }
+            //the dashboard reads a single widget through here rather than through the
+            //anonymous /o/feedback/widget, which withholds targeting and cohortID
+            if (typeof params.qstring.widget_id !== "undefined") {
+                query._id = common.db.ObjectID(params.qstring.widget_id + "");
+                query.app_id = params.app_id + "";
             }
             common.db.collection(collectionName).find(query).toArray(function(err, docs) {
                 if (!err) {
