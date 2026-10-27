@@ -393,8 +393,9 @@ const processRequest = (params) => {
 
                     var imageName = "screenshot_" + common.crypto.randomBytes(16).toString("hex") + ".png";
 
+                    //no source: the screenshot is stored under its own random file name,
+                    //which is what the public screenshots route looks it up by
                     options.savePath = path.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + imageName);
-                    options.source = "core";
 
                     authorize.save({
                         db: common.db,
@@ -2629,9 +2630,12 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Creates spesific token
                  * @apiQuery {String} purpose, Purpose is description of the created token
-                 * @apiQuery {Array} endpointquery, Includes "params" and  "endpoint" inside
-                 * {"params":{qString Key: qString Val}
-                 * "endpoint": "_endpointAdress"
+                 * @apiQuery {String} endpoint, Comma separated API paths the token is limited to, each
+                 * a literal path with at least two segments, such as /o/actions, matched exactly
+                 * @apiQuery {Array} endpointquery, Instead of endpoint: [{"endpoint": "/o/path",
+                 * "params": {qString Key: qString Val}}], with literal paths and values matched exactly
+                 * @apiQuery {Object} permission, Permissions the token grants; required for an app
+                 * restriction without endpoints
                  * @apiQuery {Boolean} multi, Defines availability multiple times
                  * @apiQuery {Boolean} apps, App Id of selected application
                  * @apiQuery {Boolean} ttl, expiration time for token
@@ -2671,7 +2675,9 @@ const processRequest = (params) => {
                         // instead of permissions. That scope is not carried into params.member, so
                         // there is nothing to bound such a token's grants by - refuse rather than
                         // issue a child that could be wider than its parent.
-                        const creatorIsLegacyRestricted = !!creatorToken && !creatorToken.token_permission && (isScopeRestricted(creatorToken.app) || isScopeRestricted(creatorToken.endpoint));
+                        // An endpoint restriction is not part of a permission object either, so a
+                        // token limited to endpoints cannot pass it on, with or without permissions.
+                        const creatorIsLegacyRestricted = !!creatorToken && (isScopeRestricted(creatorToken.endpoint) || (!creatorToken.token_permission && isScopeRestricted(creatorToken.app)));
                         if (creatorIsLegacyRestricted) {
                             common.returnMessage(params, 403, "A restricted token cannot create tokens");
                             return;
@@ -2694,13 +2700,6 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, "Invalid permission object");
                                 return;
                             }
-                            // The endpoint regex is not an authorization boundary and is ignored for
-                            // permission-scoped tokens. Reject rather than store an inert restriction
-                            // that would read as if it were enforced.
-                            if (params.qstring.endpoint || params.qstring.endpointquery) {
-                                common.returnMessage(params, 400, "Endpoint restrictions cannot be combined with permissions");
-                                return;
-                            }
                             if (!isPermissionSubset(tokenPermission, params.member)) {
                                 common.returnMessage(params, 403, "Token permissions must be a subset of the creating credential's permissions");
                                 return;
@@ -2717,6 +2716,16 @@ const processRequest = (params) => {
                             return;
                         }
 
+                        // A new endpoint restriction names concrete API paths and is matched exactly
+                        // (authorizer.parseEndpointRestriction). A token may carry it alone, or with
+                        // permissions, and is then held to both.
+                        const endpointRestriction = authorize.parseEndpointRestriction(params.qstring.endpoint, params.qstring.endpointquery);
+                        if (endpointRestriction.error) {
+                            common.returnMessage(params, 400, endpointRestriction.error);
+                            return;
+                        }
+                        endpoint = endpointRestriction.endpoint;
+
                         // Login is a capability of the token, never of its purpose string, and it is
                         // only ever passed on by a credential that holds it, to a child that is not
                         // narrowed. That makes a scoped token unable to produce a session, which is
@@ -2727,7 +2736,7 @@ const processRequest = (params) => {
                             //a token created before this model that carries no restriction at all is a
                             //full-permission credential, and keeps the login authority it has today
                             const creatorHasLogin = !creatorToken || creatorToken.can_login === true || (typeof creatorToken.can_login === "undefined" && !creatorToken.token_permission);
-                            if (!creatorHasLogin || tokenPermission) {
+                            if (!creatorHasLogin || tokenPermission || isScopeRestricted(endpoint)) {
                                 common.returnMessage(params, 403, "The creating credential cannot grant login permission");
                                 return;
                             }
@@ -2777,21 +2786,13 @@ const processRequest = (params) => {
                             apps = getPermissionApps(tokenPermission);
                         }
 
-                        if (params.qstring.endpointquery && params.qstring.endpointquery !== "") {
-                            try {
-                                endpoint = JSON.parse(params.qstring.endpointquery); //structure with also info for qstring params.
-                            }
-                            catch (ex) {
-                                if (params.qstring.endpoint) {
-                                    endpoint = params.qstring.endpoint.split(',');
-                                }
-                                else {
-                                    endpoint = "";
-                                }
-                            }
-                        }
-                        else if (params.qstring.endpoint) {
-                            endpoint = params.qstring.endpoint.split(',');
+                        // An app restriction on its own is the format from before the permission
+                        // model: it carries the owner's whole authority on those apps, on every path.
+                        // Tokens already stored that way keep working, bounded to their apps by
+                        // applyTokenScope, but a new one must state permissions or name its endpoints.
+                        if (!tokenPermission && isScopeRestricted(apps) && !isScopeRestricted(endpoint)) {
+                            common.returnMessage(params, 400, "A restricted token must state the permissions it grants");
+                            return;
                         }
 
                         if (params.qstring.purpose) {

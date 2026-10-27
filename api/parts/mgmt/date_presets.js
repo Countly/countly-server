@@ -692,6 +692,13 @@ presetsApi.getById = function(params) {
             return false;
         }
         preset.is_owner = (preset.owner_id === memberId) || member.global_admin;
+        //who a preset is shared with is shown only to those who may edit it, as in getAll
+        if (!canEditPreset(preset, member, groups || [])) {
+            preset.shared_email_edit = false;
+            preset.shared_email_view = false;
+            preset.shared_user_groups_edit = false;
+            preset.shared_user_groups_view = false;
+        }
         let fav = preset.fav || [];
         preset.fav = fav.includes(memberId);
         common.returnOutput(params, preset);
