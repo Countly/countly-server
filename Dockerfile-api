@@ -91,7 +91,7 @@ RUN ./bin/docker/modify.sh && \
 	HOME=/tmp npm_config_build_from_source=true npm install argon2 && \
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
-	npm remove -y --no-save mocha nyc should supertest && \
+	npm remove -y --no-save mocha should supertest && \
 	# CE builds carry only a stub ab-testing dir from the ab-models COPY; drop it
 	{ [ -f plugins/ab-testing/package.json ] || rm -rf plugins/ab-testing; } && \
 	rm -rf test /tmp/* /var/tmp/* /root/.npm && \
