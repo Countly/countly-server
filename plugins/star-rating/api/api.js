@@ -1495,7 +1495,8 @@ function uploadFile(myfile, id, appId, callback) {
      * @apiDescription Get feedback widgets with or without filters
      * @apiQuery {String} app_id app_id of related application
      * @apiQuery {Boolean} is_active is_active option for widgets
-     * 
+     * @apiQuery {String} widget_id optional, return only the widget with this id
+     *
      * @apiSuccessExample {json} Success-Response:
      * HTTP/1.1 200 OK
      * [ 
@@ -1539,6 +1540,12 @@ function uploadFile(myfile, id, appId, callback) {
 
             if (params.qstring.app_id) {
                 query.app_id = params.qstring.app_id;
+            }
+            //the dashboard reads a single widget through here rather than through the
+            //anonymous /o/feedback/widget, which withholds targeting and cohortID
+            if (typeof params.qstring.widget_id !== "undefined") {
+                query._id = common.db.ObjectID(params.qstring.widget_id + "");
+                query.app_id = params.app_id + "";
             }
             common.db.collection(collectionName).find(query).toArray(function(err, docs) {
                 if (!err) {
