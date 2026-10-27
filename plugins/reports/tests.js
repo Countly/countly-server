@@ -4,7 +4,6 @@ var crypto = require('crypto');
 var moment = require('moment-timezone');
 var testUtils = require("../../test/testUtils");
 var pluginManager = require("../../plugins/pluginManager.js");
-var Promise = require("../../api/utils/promise.js");
 request = request(testUtils.url);
 
 
