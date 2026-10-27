@@ -73,7 +73,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	bash /opt/countly/bin/scripts/detect.init.sh && \
 	\
 	# cleanup & chown
-	npm remove -y --no-save mocha nyc should supertest && \
+	npm remove -y --no-save mocha should supertest && \
 	rm -rf /opt/app-root/src/.npm && \
 	yum remove -y git wget unzip make && \
 	yum --setopt=groupremove_leaf_only=1 groupremove -y 'Development Tools' && \

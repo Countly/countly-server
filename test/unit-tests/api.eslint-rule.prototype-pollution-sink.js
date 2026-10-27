@@ -12,7 +12,7 @@ var rule = require("../../bin/eslint-rules/no-prototype-pollution-sink.js");
 // deepMerge, getMergedEventData, an unnamed inline loop, an `action` loop and a
 // `summed` loop.
 
-var ruleTester = new RuleTester({ parserOptions: { ecmaVersion: 2022, sourceType: "script" } });
+var ruleTester = new RuleTester({ languageOptions: { ecmaVersion: 2022, sourceType: "script" } });
 
 describe("no-prototype-pollution-sink", function() {
     it("reports writes through an enumerated key and allows writes at it", function() {
@@ -90,11 +90,11 @@ describe("no-prototype-pollution-sink", function() {
 
     it("points at guarding the loop, there being no exceptions list to add to", function() {
         var linter = new (require("eslint").Linter)();
-        linter.defineRule("t", rule);
-        var messages = linter.verify("for (var k in doc) { acc[k].x = 1; }", {
-            parserOptions: { ecmaVersion: 2022 },
-            rules: { t: "error" },
-        }, path.join(process.cwd(), "api/zz.js"));
+        var messages = linter.verify("for (var k in doc) { acc[k].x = 1; }", [{
+            plugins: { local: { rules: { t: rule } } },
+            languageOptions: { ecmaVersion: 2022, sourceType: "script" },
+            rules: { "local/t": "error" },
+        }], path.join(process.cwd(), "api/zz.js"));
         messages[0].message.should.match(/Skip the prototype member names/);
     });
 });

@@ -42,7 +42,7 @@ class ScheduleJob extends J.Job {
 
     /** run
      * @param {object} db - data base connection
-     * @param {function} done - callback function
+     * @param {Function} done - callback function
      */
     async run(db, done) {
         let update, error;

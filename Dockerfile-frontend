@@ -33,7 +33,7 @@ RUN { [ ! -d plugins/ab-testing/api/bayesian ] || touch plugins/ab-testing/api/b
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
 	countly update sdk-web && \
-	npm remove -y --no-save mocha nyc should supertest puppeteer && \
+	npm remove -y --no-save mocha should supertest puppeteer && \
 	# CE builds carry only a stub ab-testing dir; drop it so it never ships
 	{ [ -f plugins/ab-testing/package.json ] || rm -rf plugins/ab-testing; } && \
 	rm -rf test /tmp/* /var/tmp/* /root/.npm && \

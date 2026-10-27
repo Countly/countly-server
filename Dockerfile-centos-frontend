@@ -76,7 +76,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	countly update sdk-web && \
 	\
 	# cleanup & chown
-	npm remove -y --no-save mocha nyc should supertest puppeteer && \
+	npm remove -y --no-save mocha should supertest puppeteer && \
 	rm -rf /opt/app-root/src/.npm && \
 	yum remove -y git wget unzip make && \
 	yum --setopt=groupremove_leaf_only=1 groupremove -y 'Development Tools' && \

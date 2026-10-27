@@ -217,7 +217,7 @@ presetsApi.create = function(params) {
                 throw new SyntaxError();
             }
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid range');
             return false;
         }
@@ -227,7 +227,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_email_edit = JSON.parse(params.qstring.shared_email_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_edit');
             return false;
         }
@@ -237,7 +237,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_email_view = JSON.parse(params.qstring.shared_email_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_view');
             return false;
         }
@@ -247,7 +247,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_user_groups_edit = JSON.parse(params.qstring.shared_user_groups_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_edit');
             return false;
         }
@@ -257,7 +257,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_user_groups_view = JSON.parse(params.qstring.shared_user_groups_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_view');
             return false;
         }
@@ -267,7 +267,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.exclude_current_day = JSON.parse(params.qstring.exclude_current_day);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid exclude_current_day');
             return false;
         }
@@ -413,7 +413,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.range = JSON.parse(params.qstring.range);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid range');
             return false;
         }
@@ -423,7 +423,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_email_edit = JSON.parse(params.qstring.shared_email_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_edit');
             return false;
         }
@@ -433,7 +433,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_email_view = JSON.parse(params.qstring.shared_email_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_view');
             return false;
         }
@@ -443,7 +443,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_user_groups_edit = JSON.parse(params.qstring.shared_user_groups_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_edit');
             return false;
         }
@@ -453,7 +453,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_user_groups_view = JSON.parse(params.qstring.shared_user_groups_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_view');
             return false;
         }
@@ -463,7 +463,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.exclude_current_day = JSON.parse(params.qstring.exclude_current_day);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid exclude_current_day');
             return false;
         }
@@ -473,7 +473,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.fav = JSON.parse(params.qstring.fav);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid fav');
             return false;
         }
@@ -483,7 +483,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.sort_order = JSON.parse(params.qstring.sort_order);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid sort_order');
             return false;
         }

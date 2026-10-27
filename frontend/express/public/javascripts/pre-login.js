@@ -61,7 +61,7 @@ function encodeSomeHtml(html, options) {
 * @memberof Pre Login
 * @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
 * @param {string} path - url path to where the localization file currently resides relative to the page you want to load it from
-* @param {function} callback - callback executed when localization file is loaded
+* @param {Function} callback - callback executed when localization file is loaded
 * @memberof Pre Login
 * @example
 * addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');

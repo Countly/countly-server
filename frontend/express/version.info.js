@@ -6,7 +6,7 @@ try {
     var plugins = require('../../plugins/pluginManager.js');
     plugins.extendModule("version.info", versionInfo);
 }
-catch (_) {
+catch {
     //silent try
 }
 module.exports = versionInfo;

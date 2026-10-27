@@ -636,7 +636,7 @@ plugins.setConfigs("dashboards", {
                     refreshRate = parseInt(params.qstring.refreshRate, 10);
                     refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
                 }
-                catch (ex) {
+                catch {
                     refreshRate = 0;
                     log.e("passed unexpected refresh rate");
                 }
@@ -646,28 +646,28 @@ plugins.setConfigs("dashboards", {
             try {
                 sharedEmailEdit = JSON.parse(sharedEmailEdit);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_email_edit failed', sharedEmailEdit);
             }
 
             try {
                 sharedEmailView = JSON.parse(sharedEmailView);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_email_view failed', sharedEmailView);
             }
 
             try {
                 sharedUserGroupEdit = JSON.parse(sharedUserGroupEdit);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_user_groups_edit failed', sharedUserGroupEdit);
             }
 
             try {
                 sharedUserGroupView = JSON.parse(sharedUserGroupView);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_user_groups_view failed', sharedUserGroupView);
             }
 
@@ -935,7 +935,7 @@ plugins.setConfigs("dashboards", {
                     refreshRate = parseInt(params.qstring.refreshRate, 10);
                     refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
                 }
-                catch (ex) {
+                catch {
                     refreshRate = 0;
                     log.e("passed unexpected refresh rate");
                 }
@@ -961,7 +961,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedEmailEdit = JSON.parse(sharedEmailEdit);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_email_edit failed', sharedEmailEdit);
                 }
 
@@ -975,7 +975,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedEmailView = JSON.parse(sharedEmailView);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_email_view failed', sharedEmailView);
                 }
 
@@ -989,7 +989,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedUserGroupEdit = JSON.parse(sharedUserGroupEdit);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_user_groups_edit failed', sharedUserGroupEdit);
                 }
 
@@ -1003,7 +1003,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedUserGroupView = JSON.parse(sharedUserGroupView);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_user_groups_view failed', sharedUserGroupView);
                 }
 
@@ -1235,7 +1235,7 @@ plugins.setConfigs("dashboards", {
             try {
                 widget = JSON.parse(common.sanitizeHTML(widget));
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse widget failed', widget);
             }
 
@@ -1342,7 +1342,7 @@ plugins.setConfigs("dashboards", {
             try {
                 widget = JSON.parse(common.sanitizeHTML(widget));
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse widget failed', widget);
             }
 
@@ -1469,7 +1469,7 @@ plugins.setConfigs("dashboards", {
             try {
                 widget = JSON.parse(widget);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse widget failed', widget);
             }
 
@@ -1594,7 +1594,7 @@ plugins.setConfigs("dashboards", {
                                 options.waitForRegexAfterCbfn = true;
 
                                 //options.beforeScrnCbFn = function() {
-                                // eslint-disable-next-line no-undef
+
                                 //var $ = window.$;
                                 //$(".funnels table colgroup col:first-child").width("145px");
                                 //$(".funnels table colgroup col:last-child").width("80px");
@@ -2419,7 +2419,7 @@ plugins.setConfigs("dashboards", {
                         }
                     });
                 }
-                catch (e) {
+                catch {
                     // ignore
                 }
                 if (funnelIds.length) {

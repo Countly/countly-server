@@ -59,7 +59,7 @@ countlyEvents.processEvents = function(params) {
                     try {
                         params.qstring.events[i].key = JSON.stringify(params.qstring.events[i].key);
                     }
-                    catch (error) {
+                    catch {
                         params.qstring.events[i].key += "";
                     }
                 }
@@ -179,7 +179,7 @@ countlyEvents.processEvents = function(params) {
             /**
             * Fetch event meta
             * @param {string} id - id to of event to fetchEventMeta
-            * @param {function} callback - for result
+            * @param {Function} callback - for result
             **/
             function fetchEventMeta(id, callback) {
                 common.readBatcher.getOne("events_data", {'_id': metaToFetch[id].app_id + "_" + metaToFetch[id].coll + "_" + metaToFetch[id].id}, {meta_v2: 1}, (err2, eventMetaDoc) => {
@@ -201,7 +201,7 @@ countlyEvents.processEvents = function(params) {
 * @param {params} params - params object
 * @param {array} omitted_segments - array of segments to omit
 * @param {array} whitelisted_segments - array of segments to keep
-* @param {function} done - callback function to call when done processing
+* @param {Function} done - callback function to call when done processing
 **/
 function processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, done) {
     var events = [],
@@ -356,7 +356,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     try {
                         tmpSegVal = tmpSegVal + "";
                     }
-                    catch (ex) {
+                    catch {
                         tmpSegVal = "";
                     }
 
@@ -634,7 +634,7 @@ function mergeEvents(firstObj, secondObj) {
 /**
 * Merge multiple event document objects
 * @param {object} eventDoc - document with information about event
-* @param {function} callback - to call when update done
+* @param {Function} callback - to call when update done
 **/
 /*function updateEventDb(eventDoc, callback) {
     common.db.collection(eventDoc.collection).update({'_id': eventDoc._id}, eventDoc.updateObj, {
@@ -659,7 +659,7 @@ function mergeEvents(firstObj, secondObj) {
 /**
 * Rollback already updated events in case error happened and we have safe api enabled
 * @param {object} eventUpdateResult - db result object of updating event document
-* @param {function} callback - to call when rollback done
+* @param {Function} callback - to call when rollback done
 **/
 /*function rollbackEventDb(eventUpdateResult, callback) {
     if (eventUpdateResult.status === "failed") {

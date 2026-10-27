@@ -95,7 +95,7 @@ plugins.setConfigs("remote-config", {
                 try {
                     keys = JSON.parse(params.qstring.keys);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse keys failed: ', params.qstring.keys);
                 }
             }
@@ -313,7 +313,7 @@ plugins.setConfigs("remote-config", {
             try {
                 JSON.parse(params.qstring.keys);
             }
-            catch (ex) {
+            catch {
                 problems.push("Could not parse keys");
             }
         }
@@ -322,7 +322,7 @@ plugins.setConfigs("remote-config", {
             try {
                 JSON.parse(params.qstring.omit_keys);
             }
-            catch (SyntaxError) {
+            catch {
                 problems.push("Could not parse omit keys");
             }
         }
@@ -385,7 +385,7 @@ plugins.setConfigs("remote-config", {
             parameter = JSON.parse(params.qstring.parameter);
             common.stripRequestCredentials(parameter);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse parameter failed: ', params.qstring.parameter);
         }
         if (!parameter.status) {
@@ -500,7 +500,7 @@ plugins.setConfigs("remote-config", {
         try {
             config = JSON.parse(params.qstring.config);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse config failed: ', params.qstring.config);
         }
 
@@ -731,7 +731,7 @@ plugins.setConfigs("remote-config", {
                 try {
                     keys = JSON.parse(params.qstring.keys);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse keys failed: ', params.qstring.keys);
                 }
             }
@@ -740,7 +740,7 @@ plugins.setConfigs("remote-config", {
                 try {
                     omitKeys = JSON.parse(params.qstring.omit_keys);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse omit keys failed: ', params.qstring.omit_keys);
                 }
             }
@@ -860,7 +860,7 @@ plugins.setConfigs("remote-config", {
                                     query: conditionObj.condition
                                 });
                             }
-                            catch (e) {
+                            catch {
                                 log.w("Skipping condition", conditionObj);
                                 continue;
                             }
@@ -870,7 +870,7 @@ plugins.setConfigs("remote-config", {
                             user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
 
                             var conditionIssues = [];
-                            var conditionStatus = false;
+                            var conditionStatus;
 
                             try {
                                 conditionStatus = remoteConfig.processFilter(user, conditionObj.condition, conditionIssues);
@@ -973,7 +973,7 @@ plugins.setConfigs("remote-config", {
             parameter = JSON.parse(params.qstring.parameter);
             common.stripRequestCredentials(parameter);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse parameter failed: ', params.qstring.parameter);
         }
         if (!parameter.status) {
@@ -1190,7 +1190,7 @@ plugins.setConfigs("remote-config", {
             condition = JSON.parse(params.qstring.condition);
             common.stripRequestCredentials(condition);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse condition failed: ', params.qstring.condition);
         }
 
@@ -1399,7 +1399,7 @@ plugins.setConfigs("remote-config", {
             condition = JSON.parse(params.qstring.condition);
             common.stripRequestCredentials(condition);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse condition failed: ', params.qstring.condition);
         }
 
@@ -1609,7 +1609,7 @@ plugins.setConfigs("remote-config", {
         try {
             parameter.default_value = JSON.parse(parameter.default_value);
         }
-        catch (e) {
+        catch {
             //Error
         }
 
@@ -1619,7 +1619,7 @@ plugins.setConfigs("remote-config", {
             try {
                 parameter.conditions[i].value = JSON.parse(parameter.conditions[i].value);
             }
-            catch (e) {
+            catch {
                 //Error
             }
 
@@ -1719,7 +1719,7 @@ plugins.setConfigs("remote-config", {
                     }
                 });
             }
-            catch (e) {
+            catch {
                 // ignore
             }
         });

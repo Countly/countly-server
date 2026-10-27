@@ -268,10 +268,11 @@ Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
         actual: undefined
     });
 
+    // Retried, not read once: a metric card still loading shows its
+    // placeholder ("0") for a moment before the real value lands.
     cy.getElement(element)
-        .invoke('text')
-        .then((actual) => {
-            actual = actual.trim();
+        .should(($el) => {
+            const actual = $el.text().trim();
             setDebugContext({ actual });
             expect(actual).not.to.equal(text);
         });
@@ -355,6 +356,66 @@ Cypress.Commands.add('elementExists', (selector, { parent = 'body' } = {}) => {
     return cy.get(parent, { log: false }).then($parent => {
         const exists = $parent.find(selector).length > 0;
         return exists;
+    });
+});
+
+/**
+ * Turn a data-test-id into a CSS selector; raw `[` / `.` / `#` selectors pass through.
+ *
+ * @param {string} marker data-test-id or raw selector
+ * @returns {string} CSS selector
+ */
+const markerSelector = (marker) => {
+    return marker.includes('[') || marker.startsWith('.') || marker.startsWith('#') ? marker : `[data-test-id="${marker}"]`;
+};
+
+/**
+ * Wait until at least one of the given states is visible. Retries, so an
+ * `elementExists` snapshot that follows branches on a rendered UI. List the
+ * states the UI can settle in (present and absent variants), never the
+ * optional element alone.
+ *
+ * @param {string[]} markers data-test-ids (or raw . / # selectors) of every state the UI can settle in
+ * @param {number} [timeout] retry budget in ms, the configured default when omitted
+ * @returns {Cypress.Chainable} chainable that resolves once one marker is visible
+ */
+Cypress.Commands.add('waitForAnyVisible', (markers, timeout) => {
+    const visible = markers.map((marker) => `${markerSelector(marker)}:visible`).join(', ');
+
+    return cy.get('body', timeout ? { log: false, timeout } : { log: false }).should(($body) => {
+        expect($body.find(visible).length, `one of [${markers.join(', ')}] visible`).to.be.greaterThan(0);
+    });
+});
+
+/**
+ * Wait until a list page has settled: at least one of the given state markers
+ * is visible and no loading mask is active. Retries, so a following
+ * `elementExists` snapshot branches on a rendered page instead of a loading one.
+ *
+ * @param {string[]} markers data-test-ids (or raw . / # selectors) of every state the page can settle in, empty and populated
+ * @returns {Cypress.Chainable} chainable that resolves once the page has settled
+ */
+Cypress.Commands.add('waitForListSettled', (markers) => {
+    const selectors = markers.map(markerSelector);
+
+    return cy.get('body', { log: false }).should(($body) => {
+        expect($body.find('.el-loading-mask:visible').length, 'list loading complete').to.equal(0);
+        expect($body.find(selectors.map((selector) => `${selector}:visible`).join(', ')).length, 'list settled').to.be.greaterThan(0);
+    });
+});
+
+/**
+ * Assert that no visible list row is named exactly the given name.
+ *
+ * @param {string} rowSelector CSS selector matching the name element of every list row
+ * @param {string} name non-empty exact (trimmed) name that must be absent
+ * @returns {Cypress.Chainable} chainable that resolves once the name is absent
+ */
+Cypress.Commands.add('shouldNotListName', (rowSelector, name) => {
+    expect(name, 'deleted item name').to.be.a('string').and.not.be.empty;
+    return cy.get('body', { log: false }).should(($body) => {
+        const rows = $body.find(`${rowSelector}:visible`).filter((index, row) => row.textContent.trim() === name);
+        expect(rows.length, `deleted item "${name}" absent`).to.equal(0);
     });
 });
 

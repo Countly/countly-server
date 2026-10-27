@@ -15,31 +15,32 @@
   },
   "scripts": {
     "test": "grunt --verbose",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test:merge-shepherd": "node --test .github/scripts/merge-shepherd.test.js",
     "geonames:update": "node bin/offline-geocoder/scripts/update_geonames_bundle.js",
     "prepare": "husky",
     "postinstall": "mkdir -p frontend/express/public/sdk/web && cp -rf node_modules/countly-sdk-web/lib/* frontend/express/public/sdk/web/"
   },
   "lint-staged": {
-    "*.{js,vue}": [
-      "eslint --fix --no-quiet --rulesdir bin/eslint-rules"
+    "*.{js,mjs,cjs}": [
+      "eslint --fix --no-quiet --pass-on-unpruned-suppressions"
     ]
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^3.1.0",
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "docdash": "^2.0.1",
-    "eslint": "^8.56.0",
-    "eslint-plugin-no-unsanitized": "~4.0.2",
-    "eslint-plugin-security": "^4.0.1",
-    "eslint-plugin-vue": "^10.2.0",
+    "eslint": "^10.13.0",
+    "eslint-plugin-jsdoc": "^65.4.2",
+    "eslint-plugin-no-unsanitized": "^4.1.5",
+    "eslint-plugin-security": "^4.2.0",
+    "globals": "^17.13.0",
     "grunt-contrib-watch": "1.1.0",
-    "grunt-eslint": "24.3.0",
-    "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.2",
-    "mocha": "10.8.2",
-    "nyc": "18.0.0",
+    "mocha": "11.8.0",
     "should": "13.2.3",
     "supertest": "7.3.1",
     "typescript": "^7.0.2",
@@ -57,7 +58,6 @@
     "connect-flash": "0.1.1",
     "cookie-parser": "1.4.7",
     "countly-request": "file:api/utils/countly-request",
-    "countly-root": "file:api/utils/countly-root",
     "countly-sdk-nodejs": "*",
     "countly-sdk-web": "*",
     "csurf": "^1.11.0",
@@ -94,7 +94,6 @@
     "moment-timezone": "0.6.5",
     "mongodb": "6.20.0",
     "mongodb-connection-string-url": "^7.0.1",
-    "nginx-conf": "2.1.0",
     "nodemailer": "10.2.1",
     "object-hash": "3.0.0",
     "properties-parser": "0.6.0",
@@ -103,12 +102,14 @@
     "sass": "1.106.1",
     "semver": "^7.7.1",
     "sharp": "^0.35.0",
-    "tslib": "^2.6.3",
-    "uglify-js": "3.19.3",
     "underscore": "1.13.8",
     "xlsx-write-stream": "^1.0.0"
   },
   "overrides": {
+    "mocha": {
+      "diff": "^8.0.4"
+    },
+    "zod": "^4.6.7",
     "qs": "^6.16.0",
     "csurf": {
       "cookie": "^0.7.1"

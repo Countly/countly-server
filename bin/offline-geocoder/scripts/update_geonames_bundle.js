@@ -110,7 +110,7 @@ function redactUrl(url) {
     try {
         parsed = new URL(url);
     }
-    catch (e) {
+    catch {
         // Not parseable, so nothing can be selectively removed. Say so rather
         // than echoing a string that might carry a token.
         return '<unparseable url>';
@@ -158,7 +158,7 @@ function bundleUrl(file) {
     try {
         parsed = new URL(BASE_URL);
     }
-    catch (e) {
+    catch {
         // Not parseable; let download() fail with its own message rather than
         // guessing at a repair here.
         return BASE_URL + '/' + file;
@@ -362,7 +362,7 @@ function recoverInterruptedSwap(dir = BUNDLE_DIR) {
     try {
         entries = fs.readdirSync(dir);
     }
-    catch (e) {
+    catch {
         return;
     }
     for (const entry of entries.filter(n => n.startsWith('.backup-'))) {

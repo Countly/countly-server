@@ -17,15 +17,6 @@
             "group": "none"
         },
         {
-            "label": "Grunt: Coverage",
-            "type": "shell",
-            "command": "npx grunt coverage",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "group": "build"
-        },
-        {
             "label": "Grunt: Default (mochaTest)",
             "type": "shell",
             "command": "npx grunt default",

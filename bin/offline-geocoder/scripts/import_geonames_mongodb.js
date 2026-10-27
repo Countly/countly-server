@@ -284,7 +284,8 @@ async function swapIntoPlace(db) {
                 `Could not swap ${from} into ${to}: ${err.message}. `
                 + 'The live set may hold a mix of two bundles until the next run '
                 + 'rebuilds it — the swap-in-progress marker is still set, so that '
-                + 'rebuild is guaranteed.'
+                + 'rebuild is guaranteed.',
+                {cause: err}
             );
         }
     }
@@ -598,7 +599,7 @@ async function loadBundle(db, manifest, want) {
             }
             catch (err) {
                 if (!err || (err.code !== NS_NOT_FOUND && err.codeName !== 'NamespaceNotFound')) {
-                    throw new Error(`Could not clear staging collection ${tmp.collectionName}: ${err.message}`);
+                    throw new Error(`Could not clear staging collection ${tmp.collectionName}: ${err.message}`, {cause: err});
                 }
             }
             staging[name] = tmp;
