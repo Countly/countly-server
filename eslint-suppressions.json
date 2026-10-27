@@ -324,9 +324,6 @@
     "jsdoc/require-returns-check": {
       "count": 1
     },
-    "no-constant-binary-expression": {
-      "count": 2
-    },
     "no-useless-assignment": {
       "count": 11
     }
