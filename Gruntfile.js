@@ -1,16 +1,6 @@
 module.exports = function(grunt) {
 
     grunt.initConfig({
-        eslint: {
-            options: {
-                configFile: './.eslintrc.json',
-                //grunt-eslint forwards options to new ESLint(), and rulePaths is a valid
-                //eslint 8 option, so the local rules in bin/eslint-rules resolve by bare
-                //name without publishing a plugin. Keep in step with --rulesdir below.
-                rulePaths: ['./bin/eslint-rules']
-            },
-            target: ['./']
-        },
         concat: {
             options: {
                 separator: ';'
@@ -292,7 +282,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-mocha-test');
 
     grunt.registerTask('default', ['mochaTest']);

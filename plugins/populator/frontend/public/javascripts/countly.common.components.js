@@ -362,7 +362,7 @@
                     }
                     this.users.splice(index, 1);
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),
@@ -436,7 +436,7 @@
                 try {
                     this.users[index].values.splice(valueIndex, 1);
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),
@@ -456,7 +456,7 @@
                         this.users[index].conditions[conditionIndex].values.splice(valueIndex, 1);
                     }
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),
@@ -468,7 +468,7 @@
                 try {
                     this.users[index].conditions[conditionIndex].values.push({key: "", probability: 0});
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-adding-condition"),
@@ -600,7 +600,7 @@
                     }
                     this.events[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),
@@ -612,7 +612,7 @@
                 try {
                     this.events[index].segmentations[segmentIndex].values.push({key: "", probability: 0});
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-adding-condition"),
@@ -632,7 +632,7 @@
                         this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
                     }
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),
@@ -778,7 +778,7 @@
                     }
                     this.views[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),
@@ -790,7 +790,7 @@
                 try {
                     this.views[index].segmentations[valueIndex].values.push({key: "", probability: 0});
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-adding-condition"),
@@ -810,7 +810,7 @@
                         this.views[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
                     }
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),
@@ -1027,7 +1027,7 @@
                 try {
                     this.sequences[index].steps.splice(stepIndex, 1);
                 }
-                catch (error) {
+                catch {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
                         message: CV.i18n("populator-template.error-while-removing-value"),

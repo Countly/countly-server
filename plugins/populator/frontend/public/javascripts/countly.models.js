@@ -189,7 +189,7 @@
                 item.key = JSON.parse(item.key);
             });
         }
-        catch (e) {
+        catch {
             //
         }
         return jsonString;
@@ -1640,8 +1640,8 @@
      * @param {string} parameter_key - Parameter Key
      * @param {string} description - Parameter description
      * @param {string} default_value - Default value of parameter
-     * @param {function} callback - callback method
-     * @return {function} returns ajax get request
+     * @param {Function} callback - callback method
+     * @returns {Function} returns ajax get request
      **/
     function addParameter(parameter_key, description, default_value, callback) {
         var parameter = {
@@ -1668,8 +1668,8 @@
     /**
      * Add Parameter
      * @param {string} name - Name
-     * @param {function} callback - callback method
-     * @return {function} returns ajax get request
+     * @param {Function} callback - callback method
+     * @returns {Function} returns ajax get request
      **/
     function addExperiment(name, callback) {
         var experiment = {
@@ -1738,8 +1738,8 @@
      * @param {string} target_page - Only selected pages? or all pages (one of these; "all","selected")
      * @param {boolean} is_active - Is feedback popup active?
      * @param {boolean} hide_sticker - Hide sticker option
-     * @param {function} callback - callback method
-     * @return {function} returns ajax get request
+     * @param {Function} callback - callback method
+     * @returns {Function} returns ajax get request
      **/
     function createFeedbackWidget(popup_header_text, popup_comment_callout, popup_email_callout, popup_button_callout, popup_thanks_message, trigger_position, trigger_bg_color, trigger_font_color, trigger_button_text, target_devices, target_pages, target_page, is_active, hide_sticker, callback) {
         return $.ajax({
@@ -1785,8 +1785,8 @@
      *  @param {string} style - type of displaying widget (full or outline)
      *  @param {string} show - show until specific action from user
      *  @param {string} color - color theme
-     *  @param {function} callback - callback method
-     *  @return {function} returns ajax get request
+     *  @param {Function} callback - callback method
+     *  @returns {Function} returns ajax get request
      */
     function createNPSWidget(name, followUpType, mainQuestion, followUpPromoter, followUpPassive, followUpDetractor, followUpAll, thanks, style, show, color, callback) {
         return $.ajax({
@@ -1841,8 +1841,8 @@
      *  @param {string} color - color theme
      *  @param {string} logo - link to logo
      *  @param {string} exitPolicy - what to count as exit
-     *  @param {function} callback - callback method
-     *  @return {function} returns ajax get request
+     *  @param {Function} callback - callback method
+     *  @returns {Function} returns ajax get request
      */
     function createSurveyWidget(name, questions, thanks, position, show, color, logo, exitPolicy, callback) {
         return $.ajax({
@@ -1883,7 +1883,7 @@
 
         /**
          *  Create rating widgets
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateRatingWidgets(callback) {
             if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating") && _featuresToPopulate.includes("star-rating")) {
@@ -1915,7 +1915,7 @@
 
         /**
          *  Create NPS widgets
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateNPSWidgets(callback) {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys") && _featuresToPopulate.includes("surveys")) {
@@ -1930,7 +1930,7 @@
 
         /**
          *  Create survey widget 1
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveyWidgets1(callback) {
             createSurveyWidget("Customer support example", [
@@ -1974,7 +1974,7 @@
 
         /**
          *  Create survey widget 2
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveyWidgets2(callback) {
             createSurveyWidget("Product Feedback example", [
@@ -2018,7 +2018,7 @@
 
         /**
          *  Create survey widget 3
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveyWidgets3(callback) {
             createSurveyWidget("User Experience example", [
@@ -2062,7 +2062,7 @@
 
         /**
          *  Create 3 survey widgets
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveryWidgets(callback) {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys") && _featuresToPopulate.includes("surveys")) {
@@ -2308,7 +2308,7 @@
                     const partialUserList = await Promise.allSettled(userBatch);
                     return partialUserList;
                 }
-                catch (error) {
+                catch {
                     return [];
                 }
             }
@@ -2392,7 +2392,7 @@
                     const partialUserList = await Promise.allSettled(batchPromises);
                     return partialUserList;
                 }
-                catch (error) {
+                catch {
                     return [];
                 }
             }
@@ -2887,7 +2887,7 @@
                         var body = JSON.parse(xhr && xhr.responseText);
                         reason = (body && (body.result || body.message)) || "";
                     }
-                    catch (ignored) {
+                    catch {
                         reason = "";
                     }
                     CountlyHelpers.notify({message: reason || CV.i18n("populator.failed-to-remove-template", templateId), type: "error"});

@@ -45,7 +45,7 @@ const localizationPath = path.join(pluginPath, 'frontend', 'public', 'localizati
     try {
         await access(pluginPath, fs.constants.F_OK);
     }
-    catch (err) {
+    catch {
         console.error(`Error: Plugin '${pluginName}' not found at ${pluginPath}`);
         process.exit(1);
     }
@@ -54,7 +54,7 @@ const localizationPath = path.join(pluginPath, 'frontend', 'public', 'localizati
     try {
         await access(localizationPath, fs.constants.F_OK);
     }
-    catch (err) {
+    catch {
         console.error(`Error: Properties file not found at ${localizationPath}`);
         console.error(`Make sure the plugin has a localization file at: frontend/public/localization/${propertiesFileName}.properties`);
         process.exit(1);

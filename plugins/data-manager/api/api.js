@@ -49,7 +49,7 @@ try {
         require('./api.extended')();
     }
 }
-catch (e) {
+catch {
     log.d('running in basic mode');
 }
 

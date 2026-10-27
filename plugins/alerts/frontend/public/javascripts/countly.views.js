@@ -1167,9 +1167,9 @@
             },
             handleAlertEditCommand: function(command, scope) {
                 if (command === "edit-comment") {
-                    /* eslint-disable */
+
                     var data = Object.assign({}, scope.row);
-                    /* eslint-enable */
+
                     this.$parent.$parent.openDrawer("home", data);
                 }
                 else if (command === "delete-comment") {

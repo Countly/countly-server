@@ -1,0 +1,810 @@
+{
+  "api/jobs/topEvents.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    },
+    "jsdoc/valid-types": {
+      "count": 1
+    }
+  },
+  "api/lib/countly.common.js": {
+    "no-useless-assignment": {
+      "count": 29
+    }
+  },
+  "api/parts/data/cache.js": {
+    "jsdoc/require-returns-check": {
+      "count": 2
+    }
+  },
+  "api/parts/data/events.js": {
+    "no-useless-assignment": {
+      "count": 12
+    }
+  },
+  "api/parts/data/exports.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "api/parts/data/fetch.js": {
+    "jsdoc/require-returns-description": {
+      "count": 3
+    },
+    "no-useless-assignment": {
+      "count": 5
+    }
+  },
+  "api/parts/data/geoData.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "api/parts/data/usage.js": {
+    "no-useless-assignment": {
+      "count": 3
+    }
+  },
+  "api/parts/jobs/job.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    }
+  },
+  "api/parts/jobs/manager.js": {
+    "jsdoc/require-returns-check": {
+      "count": 2
+    }
+  },
+  "api/parts/jobs/resource.js": {
+    "jsdoc/require-param-description": {
+      "count": 1
+    },
+    "jsdoc/require-returns-check": {
+      "count": 1
+    }
+  },
+  "api/parts/jobs/retry.js": {
+    "jsdoc/require-param-description": {
+      "count": 1
+    }
+  },
+  "api/parts/mgmt/cms.js": {
+    "jsdoc/require-returns-check": {
+      "count": 2
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "api/parts/mgmt/date_presets.js": {
+    "jsdoc/require-returns-check": {
+      "count": 2
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "api/parts/mgmt/event_groups.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    }
+  },
+  "api/parts/mgmt/mail.js": {
+    "no-useless-assignment": {
+      "count": 3
+    }
+  },
+  "api/parts/mgmt/tracker.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    }
+  },
+  "api/parts/mgmt/users.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "api/utils/authorizer.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "api/utils/common.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "api/utils/countlyFs.js": {
+    "jsdoc/check-param-names": {
+      "count": 10
+    },
+    "no-useless-assignment": {
+      "count": 10
+    }
+  },
+  "api/utils/log.js": {
+    "jsdoc/require-returns-check": {
+      "count": 2
+    },
+    "jsdoc/valid-types": {
+      "count": 1
+    }
+  },
+  "api/utils/models.js": {
+    "jsdoc/require-returns": {
+      "count": 8
+    }
+  },
+  "api/utils/requestProcessor.js": {
+    "jsdoc/check-param-names": {
+      "count": 2
+    },
+    "jsdoc/require-returns-check": {
+      "count": 2
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "api/utils/rights.js": {
+    "jsdoc/require-jsdoc": {
+      "count": 1
+    },
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 9
+    }
+  },
+  "api/utils/ssrf-protection.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "api/utils/taskmanager.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "bin/scripts/continious-data-population.js": {
+    "no-useless-assignment": {
+      "count": 7
+    }
+  },
+  "bin/scripts/data-cleanup/remove_old_crashes.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "bin/scripts/data-reports/compare_drill_aggregated.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "bin/scripts/export-data/count_event_datapoints.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "bin/scripts/modify-data/changeOwner.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "bin/scripts/version_marks.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "frontend/express/config.sample.js": {
+    "jsdoc/valid-types": {
+      "count": 1
+    }
+  },
+  "frontend/express/libs/members.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/core/events/javascripts/countly.details.models.js": {
+    "no-useless-assignment": {
+      "count": 6
+    }
+  },
+  "frontend/express/public/core/events/javascripts/countly.details.views.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/core/geo-countries/javascripts/countly.views.js": {
+    "no-useless-assignment": {
+      "count": 3
+    }
+  },
+  "frontend/express/public/core/onboarding/javascripts/countly.views.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.auth.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.carrier.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.common.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-param": {
+      "count": 2
+    },
+    "jsdoc/require-returns-check": {
+      "count": 2
+    },
+    "jsdoc/valid-types": {
+      "count": 3
+    },
+    "no-useless-assignment": {
+      "count": 45
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.device.detail.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.device.js": {
+    "jsdoc/require-returns": {
+      "count": 2
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.event.js": {
+    "no-useless-assignment": {
+      "count": 9
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.helpers.js": {
+    "jsdoc/require-param": {
+      "count": 1
+    },
+    "jsdoc/require-returns-check": {
+      "count": 3
+    },
+    "jsdoc/valid-types": {
+      "count": 2
+    },
+    "no-useless-assignment": {
+      "count": 15
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.template.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "jsdoc/valid-types": {
+      "count": 3
+    },
+    "no-useless-assignment": {
+      "count": 10
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.total.users.js": {
+    "jsdoc/require-jsdoc": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.view.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/javascripts/countly/countly.views.js": {
+    "jsdoc/require-jsdoc": {
+      "count": 1
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/components/datatable.js": {
+    "no-useless-assignment": {
+      "count": 4
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/components/date.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "no-constant-binary-expression": {
+      "count": 2
+    },
+    "no-useless-assignment": {
+      "count": 11
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/components/helpers.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/components/input.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/components/sidebar.js": {
+    "no-useless-assignment": {
+      "count": 3
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/components/vis.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 9
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/data/vuex.js": {
+    "no-useless-assignment": {
+      "count": 7
+    }
+  },
+  "frontend/express/public/javascripts/countly/vue/datatable-legacy.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "plugins/alerts/api/alertModules/crashes.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/alerts/api/alertModules/revenue.js": {
+    "jsdoc/require-param": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/alerts/api/api.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/alerts/api/parts/common-lib.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/alerts/api/parts/utils.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/browser/frontend/public/javascripts/countly.models.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/crashes/api/parts/stacktrace.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/crashes/frontend/public/javascripts/countly.models.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/crashes/frontend/public/javascripts/countly.views.js": {
+    "no-useless-assignment": {
+      "count": 4
+    }
+  },
+  "plugins/dashboards/api/api.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    },
+    "jsdoc/require-returns-check": {
+      "count": 3
+    }
+  },
+  "plugins/dashboards/api/parts/dashboards.js": {
+    "jsdoc/require-returns": {
+      "count": 6
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "plugins/dashboards/frontend/public/javascripts/countly.widgets.events.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/dbviewer/api/api.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/hooks/api/api.js": {
+    "jsdoc/require-jsdoc": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 3
+    }
+  },
+  "plugins/hooks/api/parts/triggers/api_endpoint.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/hooks/api/parts/triggers/incoming_data.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/hooks/api/parts/triggers/internal_event.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/hooks/api/parts/triggers/scheduled.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/hooks/api/utils.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/hooks/frontend/public/javascripts/countly.views.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "plugins/pluginManager.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/populator/api/api.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/populator/frontend/public/javascripts/countly.models.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 11
+    }
+  },
+  "plugins/push/api/api-auto.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/api-dashboard.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/api-message.js": {
+    "jsdoc/require-returns": {
+      "count": 5
+    }
+  },
+  "plugins/push/api/api.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "jsdoc/valid-types": {
+      "count": 4
+    }
+  },
+  "plugins/push/api/jobs/schedule.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/jobs/util/do_finish.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/jobs/util/do_flush.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/jobs/util/state.js": {
+    "jsdoc/require-returns": {
+      "count": 2
+    }
+  },
+  "plugins/push/api/jobs/util/syn.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/parts/note.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "jsdoc/valid-types": {
+      "count": 2
+    }
+  },
+  "plugins/push/api/send/audience.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/data/const.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/data/content.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/data/creds.js": {
+    "jsdoc/require-returns": {
+      "count": 3
+    }
+  },
+  "plugins/push/api/send/data/error.js": {
+    "jsdoc/require-returns": {
+      "count": 6
+    }
+  },
+  "plugins/push/api/send/data/filter.js": {
+    "jsdoc/require-returns": {
+      "count": 2
+    }
+  },
+  "plugins/push/api/send/data/info.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/data/message.js": {
+    "jsdoc/require-returns": {
+      "count": 4
+    }
+  },
+  "plugins/push/api/send/data/result.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/data/trigger.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 6
+    }
+  },
+  "plugins/push/api/send/hash-bench.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/platforms/i.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 3
+    }
+  },
+  "plugins/push/api/send/platforms/index.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/platforms/t.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/platforms/utils/splitter.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/pool.js": {
+    "jsdoc/require-returns": {
+      "count": 3
+    }
+  },
+  "plugins/push/api/send/pools.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 2
+    }
+  },
+  "plugins/push/api/send/sender.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/std.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 1
+    }
+  },
+  "plugins/push/api/send/worker.js": {
+    "jsdoc/require-returns": {
+      "count": 3
+    }
+  },
+  "plugins/push/frontend/public/javascripts/countly.models.js": {
+    "no-useless-assignment": {
+      "count": 5
+    }
+  },
+  "plugins/remote-config/api/api.js": {
+    "jsdoc/require-returns": {
+      "count": 1
+    },
+    "jsdoc/require-returns-check": {
+      "count": 5
+    }
+  },
+  "plugins/remote-config/api/parts/rc.js": {
+    "jsdoc/valid-types": {
+      "count": 1
+    }
+  },
+  "plugins/reports/api/api.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/reports/api/reports.js": {
+    "jsdoc/valid-types": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "plugins/sdk/frontend/public/javascripts/countly.models.js": {
+    "no-useless-assignment": {
+      "count": 6
+    }
+  },
+  "plugins/server-stats/api/api.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/star-rating/api/api.js": {
+    "jsdoc/check-param-names": {
+      "count": 1
+    },
+    "jsdoc/require-returns": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "plugins/star-rating/api/input-utils.js": {
+    "jsdoc/valid-types": {
+      "count": 1
+    }
+  },
+  "plugins/times-of-day/api/api.js": {
+    "jsdoc/require-returns-check": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 5
+    }
+  },
+  "plugins/two-factor-auth/frontend/public/javascripts/countly.views.js": {
+    "no-useless-assignment": {
+      "count": 3
+    }
+  },
+  "plugins/views/api/api.js": {
+    "no-useless-assignment": {
+      "count": 6
+    }
+  },
+  "plugins/views/api/jobs/cleanupMeta.js": {
+    "jsdoc/require-jsdoc": {
+      "count": 1
+    }
+  },
+  "plugins/views/api/parts/viewsUtils.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/views/frontend/public/javascripts/countly.models.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "plugins/views/scripts/omitViewSegments.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "test/2.api/16.token.manager.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "test/3.api.write/5.write.app.events.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "ui-tests/cypress/lib/dashboard/analytics/loyalty/slippingAway.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "ui-tests/cypress/lib/dashboard/analytics/loyalty/timesOfDay.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "ui-tests/cypress/lib/dashboard/analytics/sessions/durations.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "ui-tests/cypress/lib/dashboard/analytics/users/overview.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "ui-tests/cypress/lib/dashboard/feedback/ratings/widgets.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  }
+}

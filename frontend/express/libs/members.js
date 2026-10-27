@@ -200,7 +200,7 @@ var getSessionTimeoutInMs = function(req) {
 * @param {object} req - request object
 * @param {object} member - member object
 * @param {object} countlyDb  -data base reference
-* @param {function} callback - callback function, called after token and variables are set. Returns nothing.
+* @param {Function} callback - callback function, called after token and variables are set. Returns nothing.
 **/
 function setLoggedInVariables(req, member, countlyDb, callback) {
     req.session.uid = member._id;
@@ -261,7 +261,7 @@ membersUtility.clearReqAndRes = function(req, res) {
 *
 * @param {string} username - username or the email address of the user
 * @param {string} password - password
-* @param {function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
+* @param {Function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
 * @example
 *   membersUtility.verifyCredentials(username, password, function(member) {
         if (member) {
@@ -306,7 +306,7 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 * @param {string} req.body.username - username
 * @param {string} req.body.password - password
 * @param {object} res - response object
-* @param {function} callback - callback function. First parameter in callback
+* @param {Function} callback - callback function. First parameter in callback
 * function is member object, if it could be retrieved succesfully. Second
 * parameter is a boolean that is true when logged in succesfully.
 * @example
@@ -370,7 +370,7 @@ membersUtility.login = function(req, res, callback) {
 * @param {object} req - request object
 * @param {string} req.body.username - username
 * @param {object} res - response object
-* @param {function} callback - callback function. First parameter in callback
+* @param {Function} callback - callback function. First parameter in callback
 * function is member object, if it could be retrieved succesfully. Second
 * parameter is a boolean that is true when logged in succesfully.
 * @example
@@ -475,7 +475,7 @@ function killOtherSessionsForUser(userId, my_token, my_session, countlyDb, passw
 /**
 * Logins user with token
 * @param {object} req - request object
-* @param {function} callback - callback function
+* @param {Function} callback - callback function
 **/
 membersUtility.loginWithToken = function(req, callback) {
     var token = req.params.token;
@@ -619,7 +619,7 @@ membersUtility.extendSession = function(req) {
  * @param {string} req.body.username - Username. Mandatory.
  * @param {string} req.body.password  - Password. Mandatory.
  * @param {string} req.body.email  - E-mail. Mandatory.
- * @param {function} callback  - Function with one return value - error (if there is one)
+ * @param {Function} callback  - Function with one return value - error (if there is one)
  * @example
  *   membersUtility.setup(req, res, countlyConfig, function(error) {
  *      if(error) {
@@ -712,7 +712,7 @@ membersUtility.setup = function(req, callback) {
 /**
  * Function validates if email is not used by any other member.
  * @param {string} email - mandatory. E-mail to check
- * @param {function} callback -  function with one return value. Returns true if email is not used, false if taken.
+ * @param {Function} callback -  function with one return value. Returns true if email is not used, false if taken.
  * @example
  * membersUtility.checkEmail(email, function(isFree) {
  *      if(isFree ===true) {
@@ -737,7 +737,7 @@ membersUtility.checkEmail = function(email, callback) {
 /**
  * Function validates if username is not used by any other member.
  * @param {string} username - mandatory. Username to check.
- * @param {function} callback -  function with one return value. Returns true if username is free, false if taken.
+ * @param {Function} callback -  function with one return value. Returns true if username is free, false if taken.
  * @example
  * membersUtility.checkUsername(username, function(isFree) {
  *      if(isFree ===true) {
@@ -764,7 +764,7 @@ membersUtility.checkUsername = function(username, callback) {
  * @param {object} req - request object.
  * @param {string} req.body.email - mandatory. User email.
  * @param {string} req.body.lang - optional. Language.(default "en"  - english)
- * @param {function} callback  - function with one return value. Returns member object if successful.
+ * @param {Function} callback  - function with one return value. Returns member object if successful.
  * @example
  * membersUtility.forgot(req, function(member) {
  *      if(member) {
@@ -804,7 +804,7 @@ membersUtility.forgot = function(req, callback) {
  * @param {string} req.body.password - mandatory. new password.
  * @param {string} req.body.again - mandatory.
  * @param {string} req.body.prid - mandatory. Password reset id.
- * @param {function} callback - function with one two return values. First one is password validation error(false if no error) and second one is member object if reset is sucessful.
+ * @param {Function} callback - function with one two return values. First one is password validation error(false if no error) and second one is member object if reset is sucessful.
 */
 membersUtility.reset = function(req, callback) {
     var result = validatePassword(req.body.password);
@@ -863,7 +863,7 @@ membersUtility.reset = function(req, callback) {
  * @param {string} req.body.api_key - mandatory. User API KEY (current or the one to change to)
  * @param {string} req.body.old_pwd  - Old password. Optional. Passed if changing password.
  * @param {string} req.body.new_pwd  - New password. Optional. Passed if changing password.
- * @param {function} callback  - function with two return values. First one is true - if successful (false if not sucessful) and the second one - error message(in some cases).
+ * @param {Function} callback  - function with two return values. First one is true - if successful (false if not sucessful) and the second one - error message(in some cases).
 */
 membersUtility.settings = function(req, callback) {
     var updatedUser = {};
@@ -919,7 +919,7 @@ membersUtility.settings = function(req, callback) {
                             try {
                                 match = await verifyArgon2Hash(member.password, req.body.old_pwd);
                             }
-                            catch (ex) {
+                            catch {
                                 match = null;
                             }
                             if (!match) {
@@ -941,13 +941,13 @@ membersUtility.settings = function(req, callback) {
                                 return callback(false, "user-settings.old-password-not-match");
                             }
                         }
-                        // eslint-disable-next-line require-atomic-updates
+
                         member.change.password = true;
                         try {
                             var newPassword_SHA5 = sha512Hash(req.body.new_pwd),
                                 newPassword_ARGON2 = await argon2Hash(req.body.new_pwd);
                         }
-                        catch (ex) {
+                        catch {
                             callback(false);
                             return;
                         }
@@ -974,7 +974,7 @@ membersUtility.settings = function(req, callback) {
                                     const promiseResults = await Promise.all(promises);
                                     isUsedBefore = promiseResults.some(x => x === true);
                                 }
-                                catch (ex) {
+                                catch {
                                     callback(false);
                                     return;
                                 }
@@ -1032,7 +1032,7 @@ membersUtility.settings = function(req, callback) {
 /**
  * Searches for a user with the given username/email. Useful for the input from the login prompt.
  * @param {string} input - username or the email address of the user we are looking for
- * @param {function} callback - function with one parameter, the member object if a user is found, undefined otherwise
+ * @param {Function} callback - function with one parameter, the member object if a user is found, undefined otherwise
 */
 membersUtility.findByUsernameOrEmail = function(input, callback) {
     input = (input + "").trim();
@@ -1195,7 +1195,7 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     }
     catch (error) {
         console.error(`create member error ${provider} ${error.message}`, error);
-        throw new Error(error);
+        throw new Error(error, { cause: error });
     }
 };
 

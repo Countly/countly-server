@@ -63,7 +63,7 @@
                     resp = null;
                 }
             }
-            catch (ex) {
+            catch {
                 resp = null;
             }
         }
@@ -88,7 +88,7 @@
                     try {
                         json.data = JSON.parse(json.data);
                     }
-                    catch (e) { /**/ }
+                    catch { /**/ }
                 }
                 if (json.request) {
                     json.request = JSON.parse(json.request);
@@ -122,7 +122,7 @@
                     try {
                         json.data = JSON.parse(json.data);
                     }
-                    catch (e) { /**/ }
+                    catch { /**/ }
                 }
                 if (json.request) {
                     json.request = JSON.parse(json.request);

@@ -113,13 +113,13 @@ countlyCommon.union = function(a, b) {
 //the frontend file is not a module, so its functions are lifted out by name and
 //evaluated here. Both rules name the same five calls, and the source they run is
 //read from the repo, not from input.
-/* eslint-disable no-eval, security/detect-eval-with-expression */
+/* eslint-disable security/detect-eval-with-expression */
 eval(methodSrc("isForbiddenFieldName"));
 eval(methodSrc("mergeMetricsByName"));
 eval(methodSrc("extendDbObj"));
 var extendMeta = eval("(" + blockSrc("    function extendMeta() {", "    }").trim() + ")");
 eval(blockSrc("    countlyEvent.getEventsWithSegmentations = function() {", "    };"));
-/* eslint-enable no-eval, security/detect-eval-with-expression */
+/* eslint-enable security/detect-eval-with-expression */
 
 describe("countly client: segmentation value prototype pollution", function() {
     afterEach(function() {
@@ -255,10 +255,9 @@ describe("countly dashboard + plugin prototype-pollution guards", function() {
         });
     });
 
-    // NB: no assertion here reads .eslintrc.json - CI runs these tests from a copy made
-    // with `cp -rf ./* /opt/countly`, which skips dotfiles, so the config at the test cwd
-    // is not the PR's. The rule's scoping is enforced by the `lint` CI job and the rule's
-    // own RuleTester suite; this file only proves the guarded source stays clean.
+    // NB: no assertion here reads eslint.config.mjs. The rule's scoping is enforced by
+    // the `lint` CI job and the rule's own RuleTester suite; this file only proves the
+    // guarded source stays clean.
 
     describe("the two global plugin sinks stay out of Object.prototype", function() {
         function isForbidden(n) {

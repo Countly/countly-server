@@ -162,10 +162,10 @@ const CREDS = {
 
                             var tpks = safeBag.cert.getExtension({id: '1.2.840.113635.100.6.3.6'});
                             if (tpks) {
-                                tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '') //eslint-disable-line no-useless-escape
+                                tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
                                     .replace('\f\f', '\f')
                                     .split('\f')
-                                    .map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
+                                    .map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim());
                                 tpks.shift();
 
                                 for (var i = 0; i < tpks.length; i++) {
@@ -867,7 +867,7 @@ class APN extends Base {
      *
      * @param {string} host APN hostname
      * @param {int} port APN port
-     * @param {function} callback callback to call in the end, first param is error
+     * @param {Function} callback callback to call in the end, first param is error
      */
     ensureProxy(host, port, callback) {
         if (!this._options.proxy || !this._options.proxy.host || !this._options.proxy.port) {
@@ -896,7 +896,7 @@ class APN extends Base {
      * Gracefully shutdown the worker
      *
      * @param {Error} error optional error
-     * @param {function} callback callback to call once done destroying
+     * @param {Function} callback callback to call once done destroying
      */
     _destroy(error, callback) {
         if (error) {
