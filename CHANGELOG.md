@@ -4,6 +4,16 @@ Security Fixes:
 - [core] Package installs move to Node.js 22: `bin/upgrade/24.05/upgrade.nodejs.22.sh` upgrades an existing install, and `bin/upgrade/24.05/upgrade.nodejs.22.patch.sh` updates Node.js 22 to 22.23.4 or later (same CVE)
 - [ab-testing] Python 3.12.15 with pip 26.2.2 and certifi 2026.10.19 in the api image; `bin/upgrade/24.05/upgrade.python.certifi.sh` updates existing installs and limits the OS CA store to the emSign root certifi keeps
 - [hooks] Custom code runs in `isolated-vm` instead of `v8-sandbox`, which does not build on Node.js 22
+- [core] A token restricted to apps must state the permissions it grants; existing app-restricted tokens without permissions are limited to their owner's rights on those apps, and endpoint restrictions match exact API paths
+- [core] `/o/app_users/loyalty` requires the core read right on the app, as `/o/analytics/loyalty` does
+- [dashboards] A token created with a permission needs an explicit dashboards grant to read or change custom dashboards
+
+Fixes:
+- [star-rating] The widget details view shows the widget's targeting again
+
+Enterprise Fixes:
+- [ab-testing] Models run on Python 3.12 with CmdStanPy in place of PyStan; the setup script supports Ubuntu 20/22/24 and RHEL 8/9 (RHEL 7 is no longer handled)
+- [drill] A payment-overdue banner is shown to all members when the licence is marked as payment overdue
 
 ## Version 24.05.54
 Enterprise Fixes:
