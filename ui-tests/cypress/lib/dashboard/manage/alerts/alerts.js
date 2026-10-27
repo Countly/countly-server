@@ -1,3 +1,4 @@
+/* global expect */
 import {
     alertsPageElements,
     alertDrawerPageElements,
@@ -370,6 +371,7 @@ const verifyAlertDrawerPageElements = ({
 };
 
 const clickAddNewAlertButton = () => {
+    cy.waitForListSettled([alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON, '.el-table__row']);
     cy
         .elementExists(alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON)
         .then((isExists) => {
@@ -567,6 +569,7 @@ const verifyAlertsDataFromTable = ({
 };
 
 const getActiveAlertsCount = () => {
+    cy.waitForListSettled([alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON, alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL]);
     return cy
         .elementExists(alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON)
         .then((isExists) => {
@@ -575,6 +578,9 @@ const getActiveAlertsCount = () => {
             }
             else {
                 return cy.getElement(alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL)
+                    .should(($el) => {
+                        expect($el.text(), 'active alerts count rendered').to.match(/\d/);
+                    })
                     .invoke('text')
                     .then((text) => {
                         return parseInt(text);
