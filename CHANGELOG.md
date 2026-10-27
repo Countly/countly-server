@@ -10,6 +10,7 @@ Security Fixes:
 
 Fixes:
 - [star-rating] The widget details view shows the widget's targeting again
+- [hooks] The hooks plugin loads on Node.js versions older than 22; only custom code effects need Node.js 22 (run `bin/upgrade/24.05/upgrade.nodejs.22.sh` on package installs), and they fail with an error saying so
 
 Enterprise Fixes:
 - [ab-testing] Models run on Python 3.12 with CmdStanPy in place of PyStan; the setup script supports Ubuntu 20/22/24 and RHEL 8/9 (RHEL 7 is no longer handled)
