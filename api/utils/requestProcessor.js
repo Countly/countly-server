@@ -393,8 +393,9 @@ const processRequest = (params) => {
 
                     var imageName = "screenshot_" + common.crypto.randomBytes(16).toString("hex") + ".png";
 
+                    //no source: the screenshot is stored under its own random file name,
+                    //which is what the public screenshots route looks it up by
                     options.savePath = path.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + imageName);
-                    options.source = "core";
 
                     authorize.save({
                         db: common.db,
