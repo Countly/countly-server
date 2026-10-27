@@ -9,7 +9,7 @@ const JOB = require('./job.js'),
     STATUS = JOB.STATUS,
     log = require('../../utils/log.js')('jobs:manager'),
     manager = require('../../../plugins/pluginManager.js'),
-    later = require('later');
+    later = require('@breejs/later');
 
 const DELAY_BETWEEN_CHECKS = 1000,
     MAXIMUM_IN_LINE_JOBS_PER_NAME = 10,

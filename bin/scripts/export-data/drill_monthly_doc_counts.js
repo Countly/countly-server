@@ -7,7 +7,7 @@
 
 const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
-const { Parser } = require('json2csv');
+const { Parser } = require('@json2csv/plainjs');
 const fs = require('fs');
 
 const pluginManager = require('../../../plugins/pluginManager.js');

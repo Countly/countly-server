@@ -3,7 +3,7 @@
 /* jshint ignore:start */
 
 const EventEmitter = require('events'),
-    later = require('later'),
+    later = require('@breejs/later'),
     ipc = require('./ipc.js'),
     log = require('../../utils/log.js')('jobs:job'),
     retry = require('./retry.js'),

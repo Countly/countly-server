@@ -4,7 +4,7 @@ const log = require('../../utils/log.js')('cache:' + process.pid),
     // common = require('../../utils/common.js'),
     { CentralWorker, CentralMaster } = require('../jobs/ipc.js'),
     { Jsonable } = require('../../utils/models'),
-    LRU = require('lru-cache'),
+    { LRUCache: LRU } = require('lru-cache'),
     config = require('../../config.js');
 
 const CENTRAL = 'cache', OP = {INIT: 'i', PURGE: 'p', READ: 'r', WRITE: 'w', UPDATE: 'u'};
