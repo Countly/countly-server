@@ -82,7 +82,7 @@ async function findFeature(geocoder, latitude, longitude, callback) {
 function formatResult(rows) {
     const row = rows[0];
 
-    if (!row || row === undefined) {
+    if (!row) {
         return {};
     }
     else {
