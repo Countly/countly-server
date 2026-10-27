@@ -162,6 +162,11 @@ const selectAppType = (appType) => {
 // the caller's search runs against an app list the new app is already in.
 const clickCreateButton = () => {
     cy.intercept('GET', /\/i\/apps\/create(\?|$)/).as('createApp');
+    // The form validates when the pointer enters the button's wrapper
+    // (app-management.html: @mouseenter="formScope.validate()"), and the button
+    // stays disabled until it has. A user hovers before clicking; without it the
+    // button can wait on field-level validation alone and stay disabled.
+    cy.getElement(applicationsPageElements.CREATE_BUTTON).eq(0).parent().trigger('mouseenter');
     cy.getElement(applicationsPageElements.CREATE_BUTTON).should('not.be.disabled');
     cy.getElement(applicationsPageElements.CREATE_BUTTON).eq(0).click({ force: true });
     cy.wait('@createApp').its('response.statusCode').should('eq', 200);
