@@ -41,6 +41,7 @@ It runs from:
 - `bin/countly.install_ubuntu.sh` and `bin/countly.install_rhel.sh`, on a new install;
 - `bin/docker/postinstall.sh`, at every start of an API container, so a newer
   image's bundle reaches an existing database;
+- `countly upgrade`, on every update of an existing install, before the restart;
 - `bin/upgrade/25.03/upgrade_db.sh`, for installs upgraded from the sqlite-based
   geocoder.
 
