@@ -76,7 +76,10 @@ jobs:
         if: ${{ always() }}
         run: sudo cat /var/log/nginx/error.log
   lint:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -144,7 +147,10 @@ jobs:
         working-directory: /opt/countly
         run: sudo countly task dist-all
   test-api-core:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -196,7 +202,10 @@ jobs:
           node bin/scripts/test.connection.js
           npx grunt mochaTest
   test-api-plugins:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -255,7 +264,10 @@ jobs:
           npx grunt mochaTest       
 
   ui-tests:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
