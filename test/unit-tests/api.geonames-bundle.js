@@ -193,6 +193,39 @@ describe('geonames bundle: is the loaded data actually usable', function() {
         };
     }
 
+    /**
+     * fakeDb() with a geonames_bundle sentinel in plugins.
+     * @param {object} sentinel - the recorded bundle, or null for none
+     * @returns {object} a db-like object with collection()
+     */
+    function dbWithSentinel(sentinel) {
+        const db = fakeDb();
+        const collection = db.collection;
+        db.collection = function(name) {
+            if (name === 'plugins') {
+                return {findOne: async() => sentinel};
+            }
+            return collection(name);
+        };
+        return db;
+    }
+
+    // Asked again under the load lease: an older image that decided to load before
+    // a newer one finished must stand down rather than overwrite the newer data.
+    it('keeps a newer intact bundle that another process loaded meanwhile', async function() {
+        const manifest = Object.assign({fetched: '2026-08-20'}, MANIFEST);
+        const newer = {fetched: '2026-08-21', fingerprint: 'cccc'};
+        assert.strictEqual(await importer.shouldLoad(dbWithSentinel(newer), manifest, 'bbbb'), false);
+    });
+
+    it('loads over an older bundle, a missing one, or an unfinished swap', async function() {
+        const manifest = Object.assign({fetched: '2026-08-20'}, MANIFEST);
+        const older = {fetched: '2026-08-19', fingerprint: 'aaaa'};
+        assert.strictEqual(await importer.shouldLoad(dbWithSentinel(older), manifest, 'bbbb'), true);
+        assert.strictEqual(await importer.shouldLoad(dbWithSentinel(null), manifest, 'bbbb'), true);
+        assert.strictEqual(await importer.shouldLoad(dbWithSentinel({fingerprint: 'bbbb', swapInProgress: true}), manifest, 'bbbb'), true);
+    });
+
     it('reports nothing missing for a healthy load', async function() {
         assert.deepStrictEqual(await importer.missingCollections(fakeDb(), MANIFEST), []);
     });

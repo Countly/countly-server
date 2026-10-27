@@ -333,49 +333,8 @@ async function importBundle() {
     const db = await pluginManager.dbConnection();
 
     try {
-        if (IF_CHANGED) {
-            // One rule. Load when: nothing is recorded, a previous swap did not
-            // finish, the loaded generation is this one but damaged, or a
-            // DIFFERENT generation is loaded and this bundle is newer. Keep the
-            // loaded data when it is a different, newer (or same-day) generation
-            // that is intact — two images of one release built on different
-            // days must converge on the newest data instead of taking turns.
-            const loaded = await db.collection('plugins').findOne({_id: SENTINEL_ID});
-            if (!loaded) {
-                console.log('No GeoNames bundle recorded in the database — loading.');
-            }
-            else if (loaded.swapInProgress) {
-                console.log('A previous GeoNames swap did not finish — reloading.');
-            }
-            else if (loaded.fingerprint === want) {
-                // Our own generation: the manifest's counts are the real counts
-                // of the loaded data, so hold it to them exactly.
-                const missing = await missingCollections(db, manifest, true);
-                {
-                    if (!missing.length) {
-                        console.log(`GeoNames data already current (fetched ${loaded.fetched}, loaded ${loaded.loadedAt}) — nothing to do.`);
-                        return;
-                    }
-                    console.log(`GeoNames marker is current but ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing or short — reloading.`);
-                }
-            }
-            else {
-                // A different generation: its counts are not ours to know, so
-                // only non-empty and indexed can be asked of it.
-                const missing = await missingCollections(db, manifest);
-                if (loaded.fetched && manifest.fetched && keepDatabaseBundle(loaded, manifest, want)) {
-                    if (!missing.length) {
-                        console.log(`Database holds a newer GeoNames bundle (fetched ${loaded.fetched}) than this image `
-                            + `(fetched ${manifest.fetched}) — keeping the loaded data.`);
-                        return;
-                    }
-                    console.log(`Database records a newer GeoNames bundle (fetched ${loaded.fetched}) but `
-                        + `${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing — loading this image's bundle.`);
-                }
-                else {
-                    console.log(`Database holds an older GeoNames bundle (fetched ${loaded.fetched}) — reloading.`);
-                }
-            }
+        if (IF_CHANGED && !await shouldLoad(db, manifest, want)) {
+            return;
         }
 
         if (!await takeLoadLease(db)) {
@@ -383,6 +342,12 @@ async function importBundle() {
             return;
         }
         try {
+            // Decide again while holding the lease. Another process may have
+            // loaded a newer bundle between the first check and taking the lease,
+            // and this one must not overwrite it with older data.
+            if (IF_CHANGED && !await shouldLoad(db, manifest, want)) {
+                return;
+            }
             await loadBundle(db, manifest, want);
         }
         finally {
@@ -392,6 +357,59 @@ async function importBundle() {
     finally {
         db.close();
     }
+}
+
+/**
+ * Decide whether --if-changed has to load this bundle.
+ *
+ * One rule. Load when: nothing is recorded, a previous swap did not finish, the
+ * loaded generation is this one but damaged, or a DIFFERENT generation is loaded
+ * and this bundle is newer. Keep the loaded data when it is a different, newer
+ * (or same-day) generation that is intact: two images of one release built on
+ * different days must converge on the newest data instead of taking turns.
+ * @param {object} db - open database connection
+ * @param {object} manifest - parsed MANIFEST.json
+ * @param {string} want - this bundle's fingerprint
+ * @returns {Promise<boolean>} true when this bundle should be loaded
+ */
+async function shouldLoad(db, manifest, want) {
+    const loaded = await db.collection('plugins').findOne({_id: SENTINEL_ID});
+    if (!loaded) {
+        console.log('No GeoNames bundle recorded in the database — loading.');
+    }
+    else if (loaded.swapInProgress) {
+        console.log('A previous GeoNames swap did not finish — reloading.');
+    }
+    else if (loaded.fingerprint === want) {
+        // Our own generation: the manifest's counts are the real counts
+        // of the loaded data, so hold it to them exactly.
+        const missing = await missingCollections(db, manifest, true);
+        {
+            if (!missing.length) {
+                console.log(`GeoNames data already current (fetched ${loaded.fetched}, loaded ${loaded.loadedAt}) — nothing to do.`);
+                return false;
+            }
+            console.log(`GeoNames marker is current but ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing or short — reloading.`);
+        }
+    }
+    else {
+        // A different generation: its counts are not ours to know, so
+        // only non-empty and indexed can be asked of it.
+        const missing = await missingCollections(db, manifest);
+        if (loaded.fetched && manifest.fetched && keepDatabaseBundle(loaded, manifest, want)) {
+            if (!missing.length) {
+                console.log(`Database holds a newer GeoNames bundle (fetched ${loaded.fetched}) than this image `
+                    + `(fetched ${manifest.fetched}) — keeping the loaded data.`);
+                return false;
+            }
+            console.log(`Database records a newer GeoNames bundle (fetched ${loaded.fetched}) but `
+                + `${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing — loading this image's bundle.`);
+        }
+        else {
+            console.log(`Database holds an older GeoNames bundle (fetched ${loaded.fetched}) — reloading.`);
+        }
+    }
+    return true;
 }
 
 /**
@@ -715,6 +733,7 @@ module.exports = {
     bundleManifest,
     missingCollections,
     keepDatabaseBundle,
+    shouldLoad,
     REQUIRED_INDEXES,
     SENTINEL_ID,
     BUNDLE_DIR
