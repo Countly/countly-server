@@ -37,7 +37,7 @@
     "grunt-mocha-test": "0.13.3",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.2",
-    "mocha": "10.8.2",
+    "mocha": "11.8.0",
     "nyc": "18.0.0",
     "should": "13.2.3",
     "supertest": "7.3.1",
@@ -109,6 +109,9 @@
     "xlsx-write-stream": "^1.0.0"
   },
   "overrides": {
+    "mocha": {
+      "diff": "^8.0.4"
+    },
     "qs": "^6.16.0",
     "csurf": {
       "cookie": "^0.7.1"
