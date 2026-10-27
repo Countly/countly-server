@@ -121,3 +121,5 @@ describe('Testing DBViewer', function() {
         });
     });
 });
+
+require('./tests/shared-collections-right.js');
