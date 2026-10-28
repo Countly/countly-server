@@ -3,7 +3,7 @@
 const job = require('../parts/jobs/job.js'),
     plugins = require('../../plugins/pluginManager.js'),
     log = require('../utils/log.js')('job:userMerge');
-var Promise = require("bluebird");
+var Promise = require("../utils/promise.js");
 var usersApi = require('../parts/mgmt/app_users.js');
 
 

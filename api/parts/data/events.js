@@ -8,7 +8,7 @@ var countlyEvents = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../../utils/promise.js"),
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
@@ -121,7 +121,9 @@ countlyEvents.processEvents = function(params) {
                         var tmpSegVal;
                         var myValues = [];
                         if (Array.isArray(currEvent.segmentation[segKey])) {
-                            currEvent.segmentation[segKey] = currEvent.segmentation[segKey].splice(0, (pluginsGetConfig.array_list_limit || 10));
+                            // slice, not splice: drill trims this same request array too,
+                            // and splice empties the array it is called on
+                            currEvent.segmentation[segKey] = currEvent.segmentation[segKey].slice(0, (pluginsGetConfig.array_list_limit || 10));
                             //myValues = currEvent.segmentation[segKey];
                             myValues = []; //ignore array values.
                         }

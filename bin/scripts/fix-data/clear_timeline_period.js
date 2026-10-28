@@ -6,7 +6,7 @@
  */
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 const APPS = []; //leave array empty to process all apps;
 var query_ids = {"_id": {"$regex": "^2024:1:30.*"}};
 

@@ -39,7 +39,7 @@ var timeout = 500; //timeout in miliseconds between deletion. (One second  ==== 
 
 
 var async = require('async'),
-    Promise = require("bluebird"),
+    Promise = require("../../../api/utils/promise.js"),
     plugins = require('../../../plugins/pluginManager.js');
 
 var errorCn = 0;
