@@ -49,7 +49,9 @@ Only one process loads at a time, holding a lease in
 `plugins.{_id: 'geonames_bundle_load'}` that it renews while it loads. The others
 wait up to three minutes for it to finish, then check again. A lease left by a
 killed loader expires within two minutes, so a waiting process takes over the
-load instead of starting the API on missing data.
+load instead of starting the API on missing data. A loader that loses its lease
+(it was cut off from MongoDB for longer than that, and another process took
+over) stops before its next write instead of finishing the load.
 
 To load a bundle from somewhere other than `bundled/` (a mounted volume, say),
 point `COUNTLY_GEONAMES_BUNDLE_DIR` at a directory holding the same four files.

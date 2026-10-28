@@ -301,10 +301,12 @@ async function swapIntoPlace(db) {
  * Insert documents in bounded batches so peak memory stays flat on a 170k-row load.
  * @param {object} collection - MongoDB collection
  * @param {object[]} docs - documents to insert
+ * @param {Function} ensureHeld - renews the load lease, throws when it was lost
  * @returns {Promise<void>} resolves once every batch is written
  */
-async function insertInBatches(collection, docs) {
+async function insertInBatches(collection, docs, ensureHeld) {
     for (let i = 0; i < docs.length; i += INSERT_BATCH) {
+        await ensureHeld();
         await collection.insertMany(docs.slice(i, i + INSERT_BATCH), {ordered: false});
     }
 }
@@ -353,7 +355,7 @@ async function importBundle() {
             console.log(`Another process is still loading the GeoNames bundle after ${LOCK_WAIT_MS / 1000}s — leaving it to finish.`);
             return;
         }
-        const stopRenewing = renewLoadLease(db);
+        const lease = renewLoadLease(db);
         try {
             // Decide again while holding the lease. Another process may have
             // loaded a newer bundle between the first check and taking the lease,
@@ -361,10 +363,10 @@ async function importBundle() {
             if (IF_CHANGED && !await shouldLoad(db, manifest, want)) {
                 return;
             }
-            await loadBundle(db, manifest, want);
+            await loadBundle(db, manifest, want, lease.ensureHeld);
         }
         finally {
-            stopRenewing();
+            lease.stop();
             await db.collection('plugins').deleteOne({_id: LOCK_ID, owner: LOCK_OWNER});
         }
     }
@@ -486,19 +488,51 @@ async function waitForLoadTurn(db, stillNeeded, {waitMs = LOCK_WAIT_MS, pollMs =
 }
 
 /**
- * Keep this process's lease alive while it loads.
+ * Keep this process's lease alive while it loads, and let the load check it
+ * still holds it.
+ *
+ * Renewal only extends a lease this process owns that has not yet expired. If
+ * this process lost MongoDB for longer than LOCK_MS, another one may have taken
+ * the expired lease and started its own load; a renewal then matches nothing,
+ * the lease is marked lost, and ensureHeld() throws, so this process stops
+ * before it touches the other loader's staging collections or publishes.
  * @param {object} db - open database connection
  * @param {number} [everyMs] - renewal interval, for tests
- * @returns {Function} stops renewing
+ * @returns {{stop: Function, ensureHeld: Function}} stop renewing; renew now and throw unless the lease is still held
  */
 function renewLoadLease(db, everyMs = LOCK_RENEW_MS) {
+    let lost = false;
+    const renew = async function() {
+        if (lost) {
+            return false;
+        }
+        const now = new Date();
+        const res = await db.collection('plugins').updateOne(
+            {_id: LOCK_ID, owner: LOCK_OWNER, until: {$gt: now}},
+            {$set: {until: new Date(now.getTime() + LOCK_MS)}}
+        );
+        if (!res || res.matchedCount !== 1) {
+            lost = true;
+        }
+        return !lost;
+    };
     const timer = setInterval(function() {
-        db.collection('plugins').updateOne(
-            {_id: LOCK_ID, owner: LOCK_OWNER},
-            {$set: {until: new Date(Date.now() + LOCK_MS)}}
-        ).catch(err => console.error('Could not renew the GeoNames load lease: ' + (err.message || err)));
+        renew().then(held => {
+            if (!held) {
+                clearInterval(timer);
+                console.error('Lost the GeoNames load lease — another process may be loading; this load will stop.');
+            }
+        }).catch(err => console.error('Could not renew the GeoNames load lease: ' + (err.message || err)));
     }, everyMs);
-    return () => clearInterval(timer);
+    return {
+        stop: () => clearInterval(timer),
+        ensureHeld: async function() {
+            if (!await renew()) {
+                clearInterval(timer);
+                throw new Error('Lost the GeoNames load lease (it expired and may have been taken by another process); stopping this load.');
+            }
+        }
+    };
 }
 
 /**
@@ -631,9 +665,10 @@ function parseBundle(manifest) {
  * @param {object} db - open database connection
  * @param {object} manifest - parsed MANIFEST.json
  * @param {string} want - fingerprint to record once the load succeeds
+ * @param {Function} ensureHeld - renews the load lease, throws when it was lost
  * @returns {Promise<void>} resolves once the collections and indexes exist
  */
-async function loadBundle(db, manifest, want) {
+async function loadBundle(db, manifest, want, ensureHeld) {
     const {featuresArray, coordinatesArray, admin1Array, countriesArray} = parseBundle(manifest);
 
     {
@@ -651,6 +686,10 @@ async function loadBundle(db, manifest, want) {
         // asynchronously on a replica set, so recreating the namespace and indexing
         // it could collide with the pending drop — "Collection ... is being
         // dropped" — which the upgrade-path test caught.)
+        // Every step that writes a staging collection or publishes first renews
+        // the lease and stops if it was lost, so a loader that lost it never
+        // writes into, drops or swaps in another loader's staging collections.
+        await ensureHeld();
         const staging = {};
         for (const name of ['features', 'coordinates', 'admin1', 'countries']) {
             const tmp = db.collection(COLLECTION_PREFIX + name + STAGING_SUFFIX);
@@ -673,19 +712,20 @@ async function loadBundle(db, manifest, want) {
         const countries = staging.countries;
 
         console.log(`Inserting ${featuresArray.length} features...`);
-        await insertInBatches(features, featuresArray);
+        await insertInBatches(features, featuresArray, ensureHeld);
 
         console.log(`Inserting ${coordinatesArray.length} coordinates...`);
-        await insertInBatches(coordinates, coordinatesArray);
+        await insertInBatches(coordinates, coordinatesArray, ensureHeld);
 
         console.log(`Inserting ${admin1Array.length} admin1 records...`);
-        await insertInBatches(admin1, admin1Array);
+        await insertInBatches(admin1, admin1Array, ensureHeld);
 
         console.log(`Inserting ${countriesArray.length} countries...`);
-        await insertInBatches(countries, countriesArray);
+        await insertInBatches(countries, countriesArray, ensureHeld);
 
         // Indexed BEFORE the swap, so the collections are fully queryable the
         // instant they become live.
+        await ensureHeld();
         console.log("Creating indexes...");
         await coordinates.createIndex({ latitude: 1, longitude: 1 });
         await coordinates.createIndex({ feature_id: 1 });
@@ -694,6 +734,7 @@ async function loadBundle(db, manifest, want) {
         await admin1.createIndex({ country_id: 1, id: 1 });
         await countries.createIndex({ id: 1 });
 
+        await ensureHeld();
         console.log("Swapping the refreshed collections into place...");
         await swapIntoPlace(db);
 

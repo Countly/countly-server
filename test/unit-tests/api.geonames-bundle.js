@@ -449,9 +449,11 @@ describe('geonames bundle: waiting for another loader', function() {
                         state.lease = Object.assign({_id: filter._id}, update.$set);
                     },
                     async updateOne(filter, update) {
-                        if (state.lease && state.lease.owner === filter.owner) {
+                        if (state.lease && state.lease.owner === filter.owner && state.lease.until > filter.until.$gt) {
                             Object.assign(state.lease, update.$set);
+                            return {matchedCount: 1};
                         }
+                        return {matchedCount: 0};
                     }
                 };
             }
@@ -494,12 +496,36 @@ describe('geonames bundle: waiting for another loader', function() {
         const db = leaseDb(null);
         await importer.waitForLoadTurn(db, async() => true, timing);
         db.state.lease.until = new Date(Date.now() + 10);
-        const stop = importer.renewLoadLease(db, 20);
+        db.state.lease.until = new Date(Date.now() + 1000);
+        const lease = importer.renewLoadLease(db, 20);
         await new Promise(resolve => setTimeout(resolve, 60));
         assert.ok(db.state.lease.until - Date.now() > 60 * 1000, 'renewed to a full lease');
-        stop();
-        db.state.lease.until = new Date(0);
+        await lease.ensureHeld();
+        lease.stop();
+        const stoppedAt = new Date(Date.now() + 1000);
+        db.state.lease.until = stoppedAt;
         await new Promise(resolve => setTimeout(resolve, 60));
-        assert.strictEqual(db.state.lease.until.getTime(), 0, 'no renewal after stop');
+        assert.strictEqual(db.state.lease.until, stoppedAt, 'no renewal after stop');
+    });
+
+    it('stops the load once another process has taken its expired lease', async function() {
+        const db = leaseDb(null);
+        await importer.waitForLoadTurn(db, async() => true, timing);
+        const lease = importer.renewLoadLease(db, 20);
+        // This process lost MongoDB past LOCK_MS; another one took the expired lease.
+        db.state.lease = {_id: importer.LOCK_ID, owner: 'other:2', until: new Date(Date.now() + 60000)};
+        await assert.rejects(lease.ensureHeld(), /Lost the GeoNames load lease/);
+        await new Promise(resolve => setTimeout(resolve, 60));
+        assert.strictEqual(db.state.lease.owner, 'other:2', 'the new holder keeps its lease');
+        lease.stop();
+    });
+
+    it('does not revive its own lease once it has expired', async function() {
+        const db = leaseDb(null);
+        await importer.waitForLoadTurn(db, async() => true, timing);
+        const lease = importer.renewLoadLease(db, 60000);
+        db.state.lease.until = new Date(Date.now() - 1);
+        await assert.rejects(lease.ensureHeld(), /Lost the GeoNames load lease/);
+        lease.stop();
     });
 });
