@@ -63,7 +63,7 @@
     "csvtojson": "2.0.14",
     "ejs": "5.0.2",
     "errorhandler": "1.5.2",
-    "express": "4.22.2",
+    "express": "4.22.3",
     "express-rate-limit": "8.7.1",
     "express-session": "1.19.0",
     "form-data": "^4.0.0",
@@ -77,7 +77,6 @@
     "grunt-contrib-cssmin": "5.0.0",
     "grunt-contrib-sass": "2.0.0",
     "grunt-contrib-uglify": "5.2.2",
-    "hpagent": "^1.2.0",
     "ipaddr.js": "^2.3.0",
     "jimp": "1.6.1",
     "json2csv": "5.0.7",
@@ -107,7 +106,7 @@
       "diff": "^8.0.4"
     },
     "zod": "^4.6.7",
-    "qs": "^6.16.0",
+    "qs": "^6.17.0",
     "csurf": {
       "cookie": "^0.7.1"
     },
