@@ -7,7 +7,7 @@
  */
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var request = require('request');
+var request = require('countly-request')(pluginManager.getConfig("security"));
 var Promise = require("../../../api/utils/promise.js");
 
 var SERVER_URL = "https://yourpage.count.ly"; //Your server url. Has to be accessable from the machine where this script is run
@@ -105,10 +105,13 @@ function sendRequest(params, callback) {
         const options = {
             uri: url.href,
             method: params.requestType,
-            json: true,
-            body: body,
             strictSSL: false
         };
+        //fetch refuses a body on GET and HEAD, so only other methods carry one
+        if (params.requestType !== 'GET' && params.requestType !== 'HEAD') {
+            options.json = true;
+            options.body = body;
+        }
 
         request(options, function(error, response) {
             if (error || !response) {

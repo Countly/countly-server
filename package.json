@@ -75,7 +75,6 @@
     "grunt-contrib-cssmin": "5.0.0",
     "grunt-contrib-sass": "2.0.0",
     "grunt-contrib-uglify": "5.2.2",
-    "hpagent": "^1.2.0",
     "ipaddr.js": "^2.3.0",
     "jimp": "1.6.1",
     "json2csv": "5.0.7",

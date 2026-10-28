@@ -1,29 +1,17 @@
 {
   "name": "countly-request",
   "version": "1.0.0",
-  "description": "Creates a wrapper for got with same signature with deprecated request in order to replace request package",
+  "description": "Wraps undici's fetch with the deprecated request package's callback signature",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/Countly/countly-server.git"
   },
-  "scripts": {
-    "test": "mocha test/countly-request.test.js"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "got": "^11.8.5",
-    "hpagent": "^1.2.0"
-  },
-  "devDependencies": {
-    "mocha": "^12.0.0",
-    "should": "^13.2.3"
-  },
-  "overrides": {
-    "serialize-javascript": "^7.1.4",
-    "js-yaml": "^4.3.0",
-    "brace-expansion": "^2.1.2"
+    "form-data": "^4.0.0",
+    "undici": "^8.11.0"
   }
 }
