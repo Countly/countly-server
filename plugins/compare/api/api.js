@@ -44,7 +44,7 @@ const FEATURE_NAME = 'compare';
             try {
                 params.qstring.events = JSON.parse(params.qstring.events);
             }
-            catch (SyntaxError) {
+            catch {
                 log.w('Parse /o/compare/events JSON failed');
             }
         }
@@ -83,7 +83,7 @@ const FEATURE_NAME = 'compare';
         /**
         * Get events by collection name
         * @param {string} collectionName - collection name value
-        * @param {function} callback - callback method
+        * @param {Function} callback - callback method
         **/
         function getEventData(collectionName, callback) {
             if (collectionName.startsWith('[CLY]_group_')) {
@@ -129,7 +129,7 @@ const FEATURE_NAME = 'compare';
             try {
                 params.qstring.apps = JSON.parse(params.qstring.apps);
             }
-            catch (SyntaxError) {
+            catch {
                 log.w('Parse /o/compare/apps JSON failed');
             }
         }

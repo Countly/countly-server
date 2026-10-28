@@ -24,7 +24,7 @@ class ClearJob extends job.Job {
 
     /** function runs clearing job
      * @param {object} db - db connection
-     * @param {function} done - callback function, having error as first returned parameter
+     * @param {Function} done - callback function, having error as first returned parameter
      */
     run(db, done) {
         log.d('Clearing %j', this.data);

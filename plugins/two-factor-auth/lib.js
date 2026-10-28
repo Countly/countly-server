@@ -9,7 +9,7 @@ const plugins = require('../pluginManager.js');
  * Generates a QR code SVG string for given username and secret.
  * @param {string} username - user identifier
  * @param {string} secret - base32 encoded 2FA secret
- * @param {function} warningLogger - function to log warnings
+ * @param {Function} warningLogger - function to log warnings
  * @returns {Promise<string>} - Promise resolving to SVG string of the QR code
  */
 function generateQRCode(username, secret, warningLogger) {

@@ -346,7 +346,7 @@ function killAllSessionForUser(userId) {
             try {
                 parsed_data = JSON.parse(sessions[i].session);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse ' + sessions[i].session + ' JSON failed');
             }
             if (parsed_data && (parsed_data.uid + "") === userIdString) {
@@ -381,7 +381,7 @@ usersApi.updateHomeSettings = function(params) {
         try {
             params.qstring.homeSettings = JSON.parse(params.qstring.homeSettings);
         }
-        catch (SyntaxError) {
+        catch {
             params.qstring.homeSettings = {};
         }
         var updateObj = {};
@@ -1181,9 +1181,9 @@ usersApi.fetchNotes = async function(params) {
         // for any caller with notes:read.
         var rawSearch = (params.qstring.sSearch + "").slice(0, 256);
         var escapedSearch = rawSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        /*eslint-disable */
+
         query.note = {$regex: new RegExp(escapedSearch, "i")};
-        /*eslint-enable */
+
     }
     if (params.qstring.iSortCol_0 && params.qstring.iSortCol_0 !== '0') {
         Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]: orderDirection[params.qstring.sSortDir_0]});

@@ -60,7 +60,7 @@ var TwoFAUser = countlyVue.views.create({
                                     var response = JSON.parse(xhr.responseText);
                                     errMessage = response.result || xhr.statusText;
                                 }
-                                catch (err) {
+                                catch {
                                     errMessage = xhr.statusText;
                                 }
 
@@ -110,7 +110,7 @@ var TwoFAUser = countlyVue.views.create({
                         var response = JSON.parse(xhr.responseText);
                         errMessage = response.result || xhr.statusText;
                     }
-                    catch (err) {
+                    catch {
                         errMessage = xhr.statusText;
                     }
 
@@ -146,7 +146,7 @@ var TwoFAUser = countlyVue.views.create({
                         var response = JSON.parse(xhr.responseText);
                         errMessage = response.result || xhr.statusText;
                     }
-                    catch (err) {
+                    catch {
                         errMessage = xhr.statusText;
                     }
 

@@ -13,7 +13,7 @@ var ip = {},
 const log = require('../../utils/log.js')('core:api');
 /**
  * Function to get the hostname/ip address/url to access dashboard
- * @param  {function} callback - callback function that returns the hostname
+ * @param  {Function} callback - callback function that returns the hostname
  */
 ip.getHost = function(callback) {
     // If host is set in config.js use that, otherwise get the external IP from ifconfig.me
@@ -60,7 +60,7 @@ function stripTrailingSlash(str) {
 
 /**
  * Try to get ip address through network, by connecting to external resource
- * @param  {function} callback - callback function that returns the ip address
+ * @param  {Function} callback - callback function that returns the ip address
  */
 function getNetworkIP(callback) {
     var socket = net.createConnection(80, 'www.google.com');

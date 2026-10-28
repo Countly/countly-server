@@ -748,9 +748,9 @@ function shouldRetry(err, method, attempt, retryLimit) {
  * returned rather than thrown. The jobserver exits(1) on unhandledRejection, so
  * any of them takes the process down.
  *
- * @param {function} callback - consumer callback, may be absent
+ * @param {Function} callback - consumer callback, may be absent
  * @param {string} context - label used when reporting a failing callback
- * @returns {function} callback that settles at most once and never throws
+ * @returns {Function} callback that settles at most once and never throws
  */
 function safeCallback(callback, context) {
     const fn = typeof callback === 'function' ? callback : null;
@@ -791,7 +791,7 @@ function safeCallback(callback, context) {
  * @param {string} url - target URL (from uri/url), may be null if in options
  * @param {object} options - request-style options
  * @param {object} config - security config (proxy)
- * @param {function} callback - `(error, response, body)` callback
+ * @param {Function} callback - `(error, response, body)` callback
  * @param {string} forcedMethod - method to force (`.post` -> POST), or null
  * @returns {Promise<void>} settles once the callback has been delivered
  */
@@ -884,8 +884,8 @@ function execute(url, options, config, callback, forcedMethod) {
  * Normalise the (uri, options, callback) argument shapes the request package
  * accepted into a single `{uri, options, callback}` object.
  * @param {string|object} uri - URL string, or options object
- * @param {object|function} options - options object, or callback
- * @param {function} callback - callback
+ * @param {object|Function} options - options object, or callback
+ * @param {Function} callback - callback
  * @returns {object} `{uri, options, callback}`
  */
 function initParams(uri, options, callback) {
@@ -910,8 +910,8 @@ module.exports = function(countlyConfig) {
     /**
      * Issue an HTTP request. Method comes from `options.method` (default GET).
      * @param {string|object} uri - URL string or options object
-     * @param {object|function} options - options object or callback
-     * @param {function} callback - `(error, response, body)`
+     * @param {object|Function} options - options object or callback
+     * @param {Function} callback - `(error, response, body)`
      * @param {object} config - optional per-call config override
      * @returns {Promise<void>} settles once the callback has been delivered
      */
@@ -926,8 +926,8 @@ module.exports = function(countlyConfig) {
     /**
      * Issue a GET request (method still honours options.method if set).
      * @param {string|object} uri - URL string or options object
-     * @param {object|function} options - options object or callback
-     * @param {function} callback - `(error, response, body)`
+     * @param {object|Function} options - options object or callback
+     * @param {Function} callback - `(error, response, body)`
      * @param {object} config - optional per-call config override
      * @returns {Promise<void>} settles once the callback has been delivered
      */
@@ -938,8 +938,8 @@ module.exports = function(countlyConfig) {
     /**
      * Issue a POST request (method forced to POST, like got.post).
      * @param {string|object} uri - URL string or options object
-     * @param {object|function} options - options object or callback
-     * @param {function} callback - `(error, response, body)`
+     * @param {object|Function} options - options object or callback
+     * @param {Function} callback - `(error, response, body)`
      * @param {object} config - optional per-call config override
      * @returns {Promise<void>} settles once the callback has been delivered
      */
@@ -985,7 +985,7 @@ function convertOptionsToGot(options) {
         "uri": "url"
     };
 
-    /***
+    /**
      * Assigns a value to a nested object property
      * @param {object} obj - The object to assign the value to
      * @param {string} keyPath - The path to the property to assign the value to

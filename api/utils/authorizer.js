@@ -24,7 +24,7 @@ const log = require('./log.js')('core:authorizer');
 * @param {boolean} [options.can_login=false] - if true, the token may be redeemed for a dashboard session at /login/token. SERVER-ASSIGNED ONLY - see the note below.
 * @param {string} options.tryReuse - if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.
 * @param {boolean} [options.temporary=false] - If logged in with temporary token. Doesn't kill other sessions on logout.
-* @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
+* @param {Function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
 */
 authorizer.save = function(options) {
     options.db = options.db || common.db;
@@ -168,7 +168,7 @@ authorizer.save = function(options) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to read
-* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
+* @param {Function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
 */
 authorizer.read = function(options) {
     options.db = options.db || common.db;
@@ -192,7 +192,7 @@ authorizer.clearExpiredTokens = function(options) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to rvalidate
-* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
+* @param {Function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
 */
 authorizer.check_if_expired = function(options) {
     options.db = options.db || common.db;
@@ -221,7 +221,7 @@ authorizer.check_if_expired = function(options) {
 * @param {string} options.token - token to extend
 * @param {string} options.extendBy - extend token by given time(in ms)(optional) You have to provide extedBy or extendTill. extendBy==0 makes it never die
 * @param {string} options.extendTill - extend till given timestamp. (optional) You have to provide extedBy or extendTill
-* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
+* @param {Function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
 */
 authorizer.extend_token = function(options) {
     if (!options.token || options.token === "") {
@@ -337,7 +337,7 @@ function parseEndpointRestriction(endpointParam, endpointQueryParam) {
     try {
         entries = typeof endpointQueryParam === "string" ? JSON.parse(endpointQueryParam) : endpointQueryParam;
     }
-    catch (ex) {
+    catch {
         return {error: "Invalid endpointquery"};
     }
     if (!Array.isArray(entries) || entries.length === 0) {
@@ -372,7 +372,7 @@ function parseEndpointRestriction(endpointParam, endpointQueryParam) {
 * @param {object} options.db - database connection
 * @param {string} options.token - token to validate
 * @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
-* @param {function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
+* @param {Function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
 * @param {boolean} return_owner states if in callback owner shold be returned. If return_owner==false, returns true or false.
 * @param {boolean} return_data states if in callback all token data should be returned.
 */
@@ -416,7 +416,7 @@ var verify_token = function(options, return_owner, return_data) {
                                                 missing_param = true;
                                             }
                                         }
-                                        catch (e) {
+                                        catch {
                                             log.e("Invalid regex: '" + res.endpoint[p].params[k] + "'");
                                             missing_param = true;
                                         }
@@ -428,7 +428,7 @@ var verify_token = function(options, return_owner, return_data) {
                                         valid_endpoint = true;
                                     }
                                 }
-                                catch (e) {
+                                catch {
                                     log.e("Invalid regex: '" + res.endpoint[p].endpoint + "'");
                                 }
                             }
@@ -439,7 +439,7 @@ var verify_token = function(options, return_owner, return_data) {
                                         valid_endpoint = true;
                                     }
                                 }
-                                catch (e) {
+                                catch {
                                     log.e("Invalid regex: '" + res.endpoint[p] + "'");
                                 }
                             }
@@ -526,7 +526,7 @@ var verify_token = function(options, return_owner, return_data) {
 * @param {string} options.token - token to verify
 * @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {string} options.req_path - current request path
-* @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
+* @param {Function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
 */
 authorizer.verify = function(options) {
     verify_token(options, false);
@@ -539,7 +539,7 @@ authorizer.verify = function(options) {
 * @param {string} options.token - token to verify
 * @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {string} options.req_path - current request path
-* @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
+* @param {Function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
 */
 authorizer.verify_return = function(options) {
     if (options.return_data) {
@@ -561,7 +561,7 @@ authorizer.getToken = function() {
 * Clean all expired tokens
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
-* @param {function} options.callback - function called when cleaning completed
+* @param {Function} options.callback - function called when cleaning completed
 */
 authorizer.clean = function(options) {
     options.db = options.db || common.db;

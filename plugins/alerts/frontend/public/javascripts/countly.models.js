@@ -41,7 +41,7 @@
     /**
      * Get cohorts for the specified app.
      * @param {string} appId - The ID of the app.
-     * @param {function} callback - The callback function.
+     * @param {Function} callback - The callback function.
      */
     function getCohortsForApp(appId, callback) {
         $.ajax({
@@ -65,7 +65,7 @@
     /**
      * Get surveys for the specified app.
      * @param {string} appId - The ID of the app.
-     * @param {function} callback - The callback function.
+     * @param {Function} callback - The callback function.
      */
     function getSurveysForApp(appId, callback) {
         $.ajax({
@@ -162,7 +162,7 @@
      * extract getEventLongName
      * @param {string} eventKey - event key in db
      * @param {object} eventMap - for caching
-     * @return {string} eventKey - return event parsed key name
+     * @returns {string} eventKey - return event parsed key name
      */
     function getEventLongName(eventKey, eventMap) {
         var mapKey = eventKey
@@ -181,7 +181,7 @@
      * get event definition
      * @param {string} appId - which app to fetch
      * @param {array} results - for store fetch result
-     * @return {object} promise - return request promise object
+     * @returns {object} promise - return request promise object
      */
     function getEventsDfd(appId, results) {
         var dfd = jQuery.Deferred();
@@ -501,7 +501,7 @@
                                     }
                                 );
                             }
-                            /*eslint-disable */
+
                             var rowData0 = Object.assign({}, alertsList[i]);
                             rowData0 = Object.assign(rowData0, {
                                 _id: alertsList[i]._id,
@@ -527,7 +527,7 @@
                                 ),
                             });
                             tableData.push(rowData0);
-                            /*eslint-enable */
+
                         }
 
                         if (
