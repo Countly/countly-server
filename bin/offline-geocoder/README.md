@@ -45,8 +45,11 @@ It runs from:
 - `bin/upgrade/25.03/upgrade_db.sh`, for installs upgraded from the sqlite-based
   geocoder.
 
-Only one process loads at a time: the others see the lease in
-`plugins.{_id: 'geonames_bundle_load'}` and leave it to finish.
+Only one process loads at a time, holding a lease in
+`plugins.{_id: 'geonames_bundle_load'}` that it renews while it loads. The others
+wait up to three minutes for it to finish, then check again. A lease left by a
+killed loader expires within two minutes, so a waiting process takes over the
+load instead of starting the API on missing data.
 
 To load a bundle from somewhere other than `bundled/` (a mounted volume, say),
 point `COUNTLY_GEONAMES_BUNDLE_DIR` at a directory holding the same four files.

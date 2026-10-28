@@ -426,3 +426,80 @@ describe('geocoder lookups', function() {
         assert.strictEqual(await geocoder.location('Nowhere', 'US'), undefined);
     });
 });
+
+describe('geonames bundle: waiting for another loader', function() {
+    /**
+     * plugins collection stand-in that keeps the load lease the way MongoDB does:
+     * the upsert takes an absent or expired lease and fails with E11000 on a live one.
+     * @param {object|null} lease - the lease already in place, or null
+     * @returns {object} a db-like object with collection()
+     */
+    function leaseDb(lease) {
+        const state = {lease: lease};
+        return {
+            state: state,
+            collection() {
+                return {
+                    async findOneAndUpdate(filter, update) {
+                        if (state.lease && state.lease.until >= filter.until.$lt) {
+                            const err = new Error('E11000 duplicate key');
+                            err.code = 11000;
+                            throw err;
+                        }
+                        state.lease = Object.assign({_id: filter._id}, update.$set);
+                    },
+                    async updateOne(filter, update) {
+                        if (state.lease && state.lease.owner === filter.owner) {
+                            Object.assign(state.lease, update.$set);
+                        }
+                    }
+                };
+            }
+        };
+    }
+    const timing = {waitMs: 1500, pollMs: 20};
+
+    it('takes the lease at once when nobody holds it', async function() {
+        const db = leaseDb(null);
+        assert.strictEqual(await importer.waitForLoadTurn(db, async() => true, timing), 'load');
+        assert.ok(db.state.lease.until > new Date());
+    });
+
+    it('takes over the load once a killed loader\'s lease expires', async function() {
+        const db = leaseDb({owner: 'dead:1', until: new Date(Date.now() + 200)});
+        const started = Date.now();
+        assert.strictEqual(await importer.waitForLoadTurn(db, async() => true, timing), 'load');
+        assert.ok(Date.now() - started >= 200, 'waited for the stale lease to expire');
+        assert.notStrictEqual(db.state.lease.owner, 'dead:1');
+    });
+
+    it('stands down when the other loader finishes the load', async function() {
+        const db = leaseDb({owner: 'live:1', until: new Date(Date.now() + 60000)});
+        let checks = 0;
+        const turn = await importer.waitForLoadTurn(db, async() => ++checks < 3, timing);
+        assert.strictEqual(turn, 'done');
+        assert.strictEqual(db.state.lease.owner, 'live:1');
+    });
+
+    it('gives up on a live loader only after the wait, without taking its lease', async function() {
+        const db = leaseDb({owner: 'live:1', until: new Date(Date.now() + 60000)});
+        const started = Date.now();
+        const turn = await importer.waitForLoadTurn(db, async() => true, {waitMs: 150, pollMs: 20});
+        assert.strictEqual(turn, 'busy');
+        assert.ok(Date.now() - started >= 150);
+        assert.strictEqual(db.state.lease.owner, 'live:1');
+    });
+
+    it('keeps its own lease alive while it loads, and stops when told', async function() {
+        const db = leaseDb(null);
+        await importer.waitForLoadTurn(db, async() => true, timing);
+        db.state.lease.until = new Date(Date.now() + 10);
+        const stop = importer.renewLoadLease(db, 20);
+        await new Promise(resolve => setTimeout(resolve, 60));
+        assert.ok(db.state.lease.until - Date.now() > 60 * 1000, 'renewed to a full lease');
+        stop();
+        db.state.lease.until = new Date(0);
+        await new Promise(resolve => setTimeout(resolve, 60));
+        assert.strictEqual(db.state.lease.until.getTime(), 0, 'no renewal after stop');
+    });
+});

@@ -33,9 +33,15 @@ const INSERT_BATCH = 10000;
 const SENTINEL_ID = 'geonames_bundle';
 const LOCK_ID = 'geonames_bundle_load';
 const LOCK_OWNER = require('os').hostname() + ':' + process.pid;
-// Longer than a load takes on a slow disk (about a minute), short enough that a
-// crashed loader does not hold back the next start for long.
-const LOCK_MS = 15 * 60 * 1000;
+// The holder renews its lease every LOCK_RENEW_MS while it loads, so a load may
+// take as long as it needs, and a lease left by a killed loader expires within
+// LOCK_MS. A process that finds the lease taken waits up to LOCK_WAIT_MS — longer
+// than LOCK_MS, so it outlasts a dead holder's lease — for the data to be loaded
+// or for its own turn, instead of starting the API on missing data.
+const LOCK_MS = 2 * 60 * 1000;
+const LOCK_RENEW_MS = 30 * 1000;
+const LOCK_WAIT_MS = 3 * 60 * 1000;
+const LOCK_POLL_MS = 5 * 1000;
 // Suffix for the collections a load is built in before it goes live.
 const STAGING_SUFFIX = '_incoming';
 // Indexes loadBundle() creates, by MongoDB's auto-generated name. Keep in step
@@ -338,10 +344,16 @@ async function importBundle() {
             return;
         }
 
-        if (!await takeLoadLease(db)) {
-            console.log('Another process is loading the GeoNames bundle — leaving it to finish.');
+        const turn = await waitForLoadTurn(db, () => (IF_CHANGED ? shouldLoad(db, manifest, want, () => {}) : true));
+        if (turn === 'done') {
+            console.log('Another process loaded the GeoNames bundle meanwhile — nothing to do.');
             return;
         }
+        if (turn === 'busy') {
+            console.log(`Another process is still loading the GeoNames bundle after ${LOCK_WAIT_MS / 1000}s — leaving it to finish.`);
+            return;
+        }
+        const stopRenewing = renewLoadLease(db);
         try {
             // Decide again while holding the lease. Another process may have
             // loaded a newer bundle between the first check and taking the lease,
@@ -352,6 +364,7 @@ async function importBundle() {
             await loadBundle(db, manifest, want);
         }
         finally {
+            stopRenewing();
             await db.collection('plugins').deleteOne({_id: LOCK_ID, owner: LOCK_OWNER});
         }
     }
@@ -371,15 +384,16 @@ async function importBundle() {
  * @param {object} db - open database connection
  * @param {object} manifest - parsed MANIFEST.json
  * @param {string} want - this bundle's fingerprint
+ * @param {Function} [log] - where to report the decision, console.log by default
  * @returns {Promise<boolean>} true when this bundle should be loaded
  */
-async function shouldLoad(db, manifest, want) {
+async function shouldLoad(db, manifest, want, log = console.log) {
     const loaded = await db.collection('plugins').findOne({_id: SENTINEL_ID});
     if (!loaded) {
-        console.log('No GeoNames bundle recorded in the database — loading.');
+        log('No GeoNames bundle recorded in the database — loading.');
     }
     else if (loaded.swapInProgress) {
-        console.log('A previous GeoNames swap did not finish — reloading.');
+        log('A previous GeoNames swap did not finish — reloading.');
     }
     else if (loaded.fingerprint === want) {
         // Our own generation: the manifest's counts are the real counts
@@ -387,10 +401,10 @@ async function shouldLoad(db, manifest, want) {
         const missing = await missingCollections(db, manifest, true);
         {
             if (!missing.length) {
-                console.log(`GeoNames data already current (fetched ${loaded.fetched}, loaded ${loaded.loadedAt}) — nothing to do.`);
+                log(`GeoNames data already current (fetched ${loaded.fetched}, loaded ${loaded.loadedAt}) — nothing to do.`);
                 return false;
             }
-            console.log(`GeoNames marker is current but ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing or short — reloading.`);
+            log(`GeoNames marker is current but ${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing or short — reloading.`);
         }
     }
     else {
@@ -399,15 +413,15 @@ async function shouldLoad(db, manifest, want) {
         const missing = await missingCollections(db, manifest);
         if (loaded.fetched && manifest.fetched && keepDatabaseBundle(loaded, manifest, want)) {
             if (!missing.length) {
-                console.log(`Database holds a newer GeoNames bundle (fetched ${loaded.fetched}) than this image `
+                log(`Database holds a newer GeoNames bundle (fetched ${loaded.fetched}) than this image `
                     + `(fetched ${manifest.fetched}) — keeping the loaded data.`);
                 return false;
             }
-            console.log(`Database records a newer GeoNames bundle (fetched ${loaded.fetched}) but `
+            log(`Database records a newer GeoNames bundle (fetched ${loaded.fetched}) but `
                 + `${missing.join(', ')} ${missing.length === 1 ? 'is' : 'are'} missing — loading this image's bundle.`);
         }
         else {
-            console.log(`Database holds an older GeoNames bundle (fetched ${loaded.fetched}) — reloading.`);
+            log(`Database holds an older GeoNames bundle (fetched ${loaded.fetched}) — reloading.`);
         }
     }
     return true;
@@ -437,6 +451,54 @@ async function takeLoadLease(db) {
         }
         throw err;
     }
+}
+
+/**
+ * Wait for this process's turn to load. Returns as soon as this process holds
+ * the lease ('load'), the data no longer needs loading because another process
+ * loaded it ('done'), or another live process has held the lease for longer
+ * than waitMs ('busy'). A lease left by a killed loader stops being renewed and
+ * expires within LOCK_MS, which waitMs outlasts, so the waiter then takes it.
+ * @param {object} db - open database connection
+ * @param {Function} stillNeeded - async; false once the data is loaded
+ * @param {object} [timing] - {waitMs, pollMs}, for tests
+ * @returns {Promise<string>} 'load', 'done' or 'busy'
+ */
+async function waitForLoadTurn(db, stillNeeded, {waitMs = LOCK_WAIT_MS, pollMs = LOCK_POLL_MS} = {}) {
+    const deadline = Date.now() + waitMs;
+    let waiting = false;
+    for (;;) {
+        if (await takeLoadLease(db)) {
+            return 'load';
+        }
+        if (!await stillNeeded()) {
+            return 'done';
+        }
+        if (Date.now() >= deadline) {
+            return 'busy';
+        }
+        if (!waiting) {
+            console.log('Another process is loading the GeoNames bundle — waiting for it.');
+            waiting = true;
+        }
+        await new Promise(resolve => setTimeout(resolve, pollMs));
+    }
+}
+
+/**
+ * Keep this process's lease alive while it loads.
+ * @param {object} db - open database connection
+ * @param {number} [everyMs] - renewal interval, for tests
+ * @returns {Function} stops renewing
+ */
+function renewLoadLease(db, everyMs = LOCK_RENEW_MS) {
+    const timer = setInterval(function() {
+        db.collection('plugins').updateOne(
+            {_id: LOCK_ID, owner: LOCK_OWNER},
+            {$set: {until: new Date(Date.now() + LOCK_MS)}}
+        ).catch(err => console.error('Could not renew the GeoNames load lease: ' + (err.message || err)));
+    }, everyMs);
+    return () => clearInterval(timer);
 }
 
 /**
@@ -735,6 +797,9 @@ module.exports = {
     missingCollections,
     keepDatabaseBundle,
     shouldLoad,
+    waitForLoadTurn,
+    renewLoadLease,
+    LOCK_ID,
     REQUIRED_INDEXES,
     SENTINEL_ID,
     BUNDLE_DIR
