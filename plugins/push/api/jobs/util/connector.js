@@ -42,7 +42,7 @@ class Connector extends DoFinish {
      * 
      * @param {object} push push object
      * @param {string} encoding ignored
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     _transform(push, encoding, callback) {
         // this.log.d('in connector transform', FRAME_NAME[push.frame]);
@@ -54,7 +54,7 @@ class Connector extends DoFinish {
      * 
      * @param {object} push push object
      * @param {string} encoding ignored
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     do_transform(push, encoding, callback) {
         // this.log.d('in connector do_transform', push, FRAME_NAME[push.frame]);
@@ -217,7 +217,7 @@ class Connector extends DoFinish {
     /**
      * Actual flush logic (it's not allowed to call _flush() directly)
      * 
-     * @param {function|undefined} callback callback
+     * @param {Function|undefined} callback callback
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
     do_flush(callback, ifNeeded) {
@@ -405,7 +405,7 @@ class Connector extends DoFinish {
     /**
      * Flush & release resources
      * 
-     * @param {function} callback callback function
+     * @param {Function} callback callback function
      */
     do_final(callback) {
         Promise.all(this.connects).then(() => callback(), () => callback());

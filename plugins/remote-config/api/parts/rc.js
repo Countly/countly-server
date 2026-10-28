@@ -85,13 +85,14 @@ function matchesQuery(user, query, ctx) {
         return false;
     }
 
+    //Every property is evaluated, so a rule this evaluator cannot honour is
+    //reported wherever it sits, not only when the properties before it match
+    var matched = true;
     for (let i = 0; i < props.length; i++) {
-        if (!matchesProperty(user, query, props[i], ctx)) {
-            return false;
-        }
+        matched = matchesProperty(user, query, props[i], ctx) && matched;
     }
 
-    return true;
+    return matched;
 }
 
 /**
@@ -111,21 +112,20 @@ function matchesProperty(user, query, prop, ctx) {
             return false;
         }
 
+        //Every sub query is evaluated before they are combined, for the same reason
+        var results = condition.map(function(subQuery) {
+            return matchesQuery(user, subQuery, ctx);
+        });
+
         if (prop === '$or') {
-            return condition.some(function(subQuery) {
-                return matchesQuery(user, subQuery, ctx);
-            });
+            return results.some(Boolean);
         }
 
         if (prop === '$and') {
-            return condition.every(function(subQuery) {
-                return matchesQuery(user, subQuery, ctx);
-            });
+            return results.every(Boolean);
         }
 
-        return !condition.some(function(subQuery) {
-            return matchesQuery(user, subQuery, ctx);
-        });
+        return !results.some(Boolean);
     }
 
     if (isCohortProperty(prop)) {
@@ -201,7 +201,7 @@ function valuesEqual(userValue, queryValue) {
         try {
             return JSON.stringify(userValue) === JSON.stringify(queryValue);
         }
-        catch (e) {
+        catch {
             return false;
         }
     }
@@ -244,7 +244,7 @@ function toRegExp(pattern, options) {
         try {
             return new RegExp(pattern, typeof options === 'string' ? options : '');
         }
-        catch (e) {
+        catch {
             return null;
         }
     }
@@ -332,6 +332,10 @@ function evaluateOperators(prop, userValue, found, condition, ctx) {
         return false;
     }
 
+    //Every operator is evaluated, so an unsupported one is reported even when an
+    //operator before it does not match, and $not cannot turn the gap into a match
+    var allMatched = true;
+
     for (var op in condition) {
         var expected = condition[op];
         var matched;
@@ -404,12 +408,10 @@ function evaluateOperators(prop, userValue, found, condition, ctx) {
             return false;
         }
 
-        if (!matched) {
-            return false;
-        }
+        allMatched = allMatched && matched;
     }
 
-    return true;
+    return allMatched;
 }
 
 /**

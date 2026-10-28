@@ -1,6 +1,6 @@
 const { Jsonable, Validatable, Mongoable } = require('../../../../../api/utils/models');
 
-/* eslint-disable key-spacing, no-multi-spaces */
+/* eslint-disable @stylistic/key-spacing, @stylistic/no-multi-spaces */
 
 const MEDIA_MIME_ANDROID = [
         'image/gif',
@@ -152,7 +152,7 @@ const TriggerKind = {
 };
 
 
-/* eslint-enable key-spacing, no-multi-spaces */
+/* eslint-enable @stylistic/key-spacing, @stylistic/no-multi-spaces */
 
 /**
  * Separator used in property keys

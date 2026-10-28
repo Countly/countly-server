@@ -49,6 +49,156 @@ var testUtils = function testUtils() {
     this.testWaitTimeForDrillEvents = 5300;//in ms, how long should the test wait for drill to finish it's actions
     this.testWaitTimeForResetApp = 1200;//in ms, how long should the test wait for a app reset
     this.weakPassword = "20202020";
+
+    // Budget for reads that race a write the API acknowledged before finishing
+    // it. Scaled by testScalingFactor it stays below the 50s mocha timeout, so a
+    // failing poll reports its last assertion instead of a generic timeout.
+    var eventuallyTimeout = 24000;
+
+    /**
+     * Poll a check until it succeeds or the timeout elapses.
+     * @param {Object} opts - options
+     * @param {Function} opts.check - function(cb) calling cb() on success, cb(err) to retry; a throw also retries
+     * @param {number} [opts.timeout] - max ms to keep polling
+     * @param {number} [opts.interval] - ms between polls
+     * @param {string} [opts.description] - label for the timeout error
+     * @param {Function} done - done() on success, done(err) with the last failure on timeout
+     */
+    this.waitForAssertion = function(opts, done) {
+        var timeout = opts.timeout || eventuallyTimeout * that.testScalingFactor;
+        var interval = opts.interval || 500 * that.testScalingFactor;
+        var deadline = Date.now() + timeout;
+        var settled = false;
+        var lastError;
+
+        /**
+         * Settle once
+         * @param {Error} err - failure, if any
+         */
+        function finish(err) {
+            if (!settled) {
+                settled = true;
+                done(err);
+            }
+        }
+
+        /** Run one check */
+        function attempt() {
+            var answered = false;
+            /**
+             * Handle one check result
+             * @param {Error} err - failure, if any
+             */
+            function respond(err) {
+                if (settled || answered) {
+                    return;
+                }
+                answered = true;
+                if (!err) {
+                    return finish();
+                }
+                lastError = err;
+                if (Date.now() >= deadline) {
+                    var message = lastError instanceof Error ? lastError.message : String(lastError);
+                    return finish(new Error('Timed out after ' + timeout + 'ms waiting for ' + (opts.description || 'condition') + '. Last failure: ' + message));
+                }
+                setTimeout(attempt, interval);
+            }
+            try {
+                opts.check(respond);
+            }
+            catch (err) {
+                respond(err);
+            }
+        }
+
+        attempt();
+    };
+
+    /**
+     * Promise form of waitForAssertion for async tests:
+     *   await testUtils.eventually(async() => { (await request.get(...)).body.should... });
+     * @param {Function} check - sync or async function; throwing or rejecting retries
+     * @param {Object} [opts] - { timeout, interval, description }
+     * @returns {Promise} resolves on success, rejects with the last failure on timeout
+     */
+    this.eventually = function(check, opts) {
+        opts = opts || {};
+        return new Promise(function(resolve, reject) {
+            that.waitForAssertion({
+                check: function(cb) {
+                    Promise.resolve().then(check).then(function() {
+                        cb();
+                    }, cb);
+                },
+                timeout: opts.timeout,
+                interval: opts.interval,
+                description: opts.description
+            }, function(err) {
+                return err ? reject(err) : resolve();
+            });
+        });
+    };
+
+    /**
+     * Assert on a GET response, re-issuing the same GET until the assertion
+     * passes, so a test does not depend on a write the API acknowledged before
+     * finishing it:
+     *   request.get('/o?...').expect(200).end(function(err, res) {
+     *       testUtils.validateEventually(err, res, done, function(currentRes) {
+     *           JSON.parse(currentRes.text).should.have.length(9); // throw -> retry
+     *       });
+     *   });
+     * @param {Error} err - error from the first request
+     * @param {Object} res - response of the first request
+     * @param {Function} done - mocha callback
+     * @param {Function} assertResponse - function(res) that throws while the data is not there yet
+     * @param {Object} [opts] - { timeout }
+     */
+    this.validateEventually = function(err, res, done, assertResponse, opts) {
+        if (err && !res) {
+            return done(err);
+        }
+        var path = res && res.req && res.req.path;
+        if (err && !path) {
+            return done(err);
+        }
+        var current = res;
+        var first = true;
+        that.waitForAssertion({
+            check: function(cb) {
+                if (first) {
+                    first = false;
+                    if (err) {
+                        return cb(err);
+                    }
+                    assertResponse(current);
+                    return cb();
+                }
+                if (!path) {
+                    return cb(new Error('cannot repeat a request without a path'));
+                }
+                require('supertest').agent(that.url).get(path).end(function(retryErr, retryRes) {
+                    if (retryErr && !retryRes) {
+                        return cb(retryErr);
+                    }
+                    if (retryRes.status !== 200) {
+                        return cb(new Error('expected 200, got ' + retryRes.status + ': ' + retryRes.text));
+                    }
+                    try {
+                        assertResponse(retryRes);
+                    }
+                    catch (failure) {
+                        return cb(failure);
+                    }
+                    cb();
+                });
+            },
+            timeout: opts && opts.timeout,
+            description: 'GET ' + path
+        }, done);
+    };
+
     this.setCSRF = function(token) {
         csrf = token;
     };

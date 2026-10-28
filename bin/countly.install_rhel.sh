@@ -89,9 +89,10 @@ sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exi
 
 #isolated-vm has no prebuilt binary for glibc 2.28, so RHEL 8 builds it from source
 #(and RHEL 9 too on Node.js 26, whose isolated-vm 7 binaries need a newer libstdc++).
-#That needs -std=c++20 and python>=3.8, and stock RHEL 8 has neither.
+#That needs -std=c++20 and python>=3.8, and stock RHEL 8 has neither; the AppStream
+#Node.js links brotli dynamically, so the addon also needs brotli's headers to link.
 if [[ "$CENTOS_MAJOR" = "8" ]]; then
-    sudo dnf install -y gcc-toolset-11 python38
+    sudo dnf install -y gcc-toolset-11 python38 brotli-devel
     export npm_config_python=/usr/bin/python3.8
     # shellcheck disable=SC1091
     source /opt/rh/gcc-toolset-11/enable

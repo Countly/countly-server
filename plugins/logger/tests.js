@@ -44,6 +44,7 @@ describe("Request Logger Plugin", function() {
     });
 
     afterEach(function(done) {
+        this.timeout(20000 * testUtils.testScalingFactor);
         var params = {app_id: APP_ID, "period": "reset"};
         request
             .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
@@ -55,7 +56,19 @@ describe("Request Logger Plugin", function() {
                 }
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('result', 'Success');
-                setTimeout(done, 100 * testUtils.testScalingFactor);
+                // The logger's reset hook drops logs<APP_ID> after the response;
+                // a drop landing late would wipe the logs the next test writes.
+                // Wait until it has landed instead of sleeping a fixed 150ms.
+                testUtils.waitForAssertion({
+                    description: 'logs' + APP_ID + ' to be dropped after reset',
+                    timeout: 15000 * testUtils.testScalingFactor,
+                    interval: 100,
+                    check: function(cb) {
+                        testUtils.db.collection('logs' + APP_ID).countDocuments({}).then(function(count) {
+                            cb(count === 0 ? null : new Error('logs' + APP_ID + ' still has ' + count + ' documents'));
+                        }, cb);
+                    }
+                }, done);
             });
     });
 

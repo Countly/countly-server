@@ -295,7 +295,7 @@
                                 callback(true, textStatus);
                             }
                         }
-                        catch (ex) {
+                        catch {
                             callback(true, textStatus);
                         }
                     }

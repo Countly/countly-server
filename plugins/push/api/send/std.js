@@ -92,7 +92,7 @@ class Base extends Duplex {
      * Forward incoming data to a corresponding platform stream logic (this.send)
      *
      * @param {array} chunks Array of chunks
-     * @param {function} callback called when all chunks are fully processed
+     * @param {Function} callback called when all chunks are fully processed
      */
     _writev(chunks, callback) {
         this.log.d('Sending %d chunks', chunks.length);
@@ -131,7 +131,7 @@ class Base extends Duplex {
                 this.log.d('do_writev done %s (%d out of %d)', FRAME_NAME[frame], i, chunks.length);
             }
         }
-        catch (err) {
+        catch {
             if (i < chunks.length - 1) {
                 for (let x = i + 1; x < chunks.length; x++) {
                     if (chunks[x].frame & FRAME.CMD) {
@@ -234,7 +234,7 @@ class Base extends Duplex {
      *
      * @param {Object} data data to send ([{_id, pr, ov, n, ...}, ...])
      * @param {integer} bytes number of bytes in data
-     * @param {function} fun function with single arguments (data, bytes, attempt 1..max)
+     * @param {Function} fun function with single arguments (data, bytes, attempt 1..max)
      * @param {integer} max max number of attempts, 3 by default
      */
     async with_retries(data, bytes, fun, max = this._options.connection.retries || 3) {
@@ -292,7 +292,7 @@ class Base extends Duplex {
     /**
      * Wait for requests to finish and invoke the callback
      *
-     * @param {function} callback callback to call
+     * @param {Function} callback callback to call
      */
     drainAndCall(callback) {
         if (this.sending || this.readableLength) {
@@ -307,7 +307,7 @@ class Base extends Duplex {
     /**
      * Tear down the stream
      *
-     * @param {function} callback callback to call when done
+     * @param {Function} callback callback to call when done
      */
     _final(callback) {
         this.drainAndCall(callback);

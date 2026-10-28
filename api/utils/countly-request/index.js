@@ -1,4 +1,4 @@
-/* eslint-disable require-jsdoc */
+/* eslint-disable jsdoc/require-jsdoc */
 /***
  * @module api/utils/countly-request
  */
@@ -153,7 +153,7 @@ var convertOptionsToGot = function(options) {
 // Factory function to initialize with config
 module.exports = function(countlyConfig) {
     // Return the request function
-    // eslint-disable-next-line require-jsdoc
+
     function requestFunction(uri, options, callback, config = countlyConfig) {
         if (typeof uri === 'undefined') {
             throw new Error('undefined is not a valid uri or options object.');
@@ -183,7 +183,7 @@ module.exports = function(countlyConfig) {
         }
     }
 
-    // eslint-disable-next-line require-jsdoc
+
     function post(uri, options, callback, config = countlyConfig) {
         var params = initParams(uri, options, callback, config);
         if (params.options && (params.options.url || params.options.uri)) {
@@ -237,7 +237,7 @@ module.exports = function(countlyConfig) {
  * @param {object} fileData - file data object
  * @param {string} fileData.fileField - name of the field to upload file as
  * @param {string} fileData.fileStream - file stream to upload
- * @param {function} callback - callback function
+ * @param {Function} callback - callback function
  */
 async function uploadFormFile(url, fileData, callback) {
     const { fileField, fileStream } = fileData;

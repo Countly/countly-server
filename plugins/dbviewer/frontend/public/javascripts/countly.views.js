@@ -569,7 +569,7 @@
                             self.queryLoading = false;
                         });
                     }
-                    catch (err) {
+                    catch {
                         CountlyHelpers.notify({
                             message: CV.i18n('dbviewer.invalid-pipeline'),
                             type: "error"

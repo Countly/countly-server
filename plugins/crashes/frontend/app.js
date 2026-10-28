@@ -5,7 +5,7 @@ var config;
 try {
     config = require("../config.js");
 }
-catch (err) {
+catch {
     // Error
 }
 var trace = require('../api/parts/stacktrace.js');

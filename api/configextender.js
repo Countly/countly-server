@@ -15,7 +15,7 @@ var parser = function(val) {
             val = parsedVal;
         }
     }
-    catch (error) {
+    catch {
         //ignored error
     }
     return val;
@@ -86,7 +86,7 @@ const OVERRIDES = {
  * @param  {object} over   - override object
  * @param  {string} name   - name of config to override
  * @param  {varies} value  - value to set to config
- * @return {object} recursive config modification
+ * @returns {object} recursive config modification
  */
 function dig(config, over, name, value) {
     let comps = name.split('_');

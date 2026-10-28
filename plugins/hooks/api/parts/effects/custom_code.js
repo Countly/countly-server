@@ -16,7 +16,7 @@ class CustomCodeEffect {
     /**
      * main function to run effect
      * @param {object} options - options for required variable
-     * @return {object} - return processed options object.
+     * @returns {object} - return processed options object.
      */
     async run(options) {
         const {effect, params, rule, effectStep, _originalInput} = options;

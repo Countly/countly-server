@@ -168,7 +168,7 @@ appsApi.getAppsDetails = function(params) {
 /**
 *  upload app icon function
 *  @param {params} params - params object with args to create app
-*  @return {object} return promise object;
+*  @returns {object} return promise object;
 **/
 const iconUpload = async function(params) {
     const appId = params.app_id || common.sanitizeFilename(params.qstring.args.app_id);
@@ -444,7 +444,7 @@ appsApi.updateApp = function(params) {
         try {
             removeKeys = JSON.parse(removeKeys);
         }
-        catch (e) {
+        catch {
             removeKeys = [removeKeys];
         }
     }
@@ -629,7 +629,7 @@ appsApi.updateAppPlugins = function(params) {
                                     data: {
                                         config: k,
                                         app_id: app._id + "",
-                                        before: common.dot(app, `plugins.${k}` || {}),
+                                        before: common.dot(app, `plugins.${k}`),
                                         after: params.qstring.args[k]
                                     }
                                 });
@@ -650,7 +650,7 @@ appsApi.updateAppPlugins = function(params) {
                             data: {
                                 config: k,
                                 app_id: app._id + "",
-                                before: common.dot(app, `plugins.${k}` || {}),
+                                before: common.dot(app, `plugins.${k}`),
                                 after: params.qstring.args[k]
                             }
                         });
@@ -1274,7 +1274,7 @@ async function writeAppUpdate(appId, appBefore, updatedApp, keysToRemove, curren
 /**
 * Check if APP KEY is unique before updating app
 * @param {params} params - params object 
-* @param {function} callback - callback to update app
+* @param {Function} callback - callback to update app
 * @param {boolean} update - true when updating app, false when creating new app
 **/
 function checkUniqueKey(params, callback, update) {

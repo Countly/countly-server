@@ -35,21 +35,27 @@ function compareObjects(ob, correct) {
 function validateRecords() {
 
     it('check current log', function(done) {
+        // systemlogs are written via a fire-and-forget async insert
+        // (recordAction -> db.collection('systemlogs').insert(log, function(){}))
+        // and the /i/systemlogs response returns before that insert lands, so
+        // a single read after a fixed wait races the write and intermittently
+        // sees fewer records than expected on loaded CI. Poll until the read is
+        // consistent (throw to retry) instead of asserting once.
         request
             .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=systemlogs&query={"a":"change_fake_plugin"}')
             .expect(200)
             .end(function(err, res) {
-                var resDecoded = JSON.parse(res.text);
-                var data = resDecoded['aaData'];
-                for (var i = data.length - 1; i >= 0; i--) {
-                    if (data[i] && data[i]["i"]["app_id"] != APP_ID) {
-                        data.splice(i, 1);
+                testUtils.validateEventually(err, res, done, function(currentRes) {
+                    var resDecoded = JSON.parse(currentRes.text);
+                    var data = resDecoded['aaData'];
+                    for (var i = data.length - 1; i >= 0; i--) {
+                        if (data[i] && data[i]["i"]["app_id"] != APP_ID) {
+                            data.splice(i, 1);
+                        }
                     }
-                }
-                if (data.length != records.length) {
-                    return done("Have " + data.length + records + " need " + records.length);
-                }
-                else {
+                    if (data.length != records.length) {
+                        throw new Error("Have " + data.length + " need " + records.length);
+                    }
                     for (var k = 0; k < records.length; k++) {
                         var found = false;
                         for (var z = 0; z < data.length && found == false; z++) {
@@ -60,12 +66,10 @@ function validateRecords() {
                             }
                         }
                         if (found == false) {
-                            return done(JSON.stringify(records[k]) + " not found" + "listed:" + JSON.stringify(data));
+                            throw new Error(JSON.stringify(records[k]) + " not found, listed: " + JSON.stringify(data));
                         }
                     }
-
-                }
-                done();
+                });
             });
     });
 }

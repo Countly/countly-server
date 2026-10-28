@@ -44,7 +44,13 @@ describe('Create app', function() {
     describe('creating app', function() {
         it('should create app', function(done) {
             var appName = "Test App";
-            var params = {name: appName};
+            // UTC+0 with no DST, like the runners: without it the app takes the
+            // `apps` config default (Europe/Istanbul, UTC+3), and any suite that
+            // derives "today" from the runner clock reads an empty bucket between
+            // 21:00 and 24:00 UTC, when the two are on different dates. Not
+            // "UTC": that is not in api/utils/timezones.js, and an invalid value
+            // silently falls back to the default (asserted below).
+            var params = {name: appName, timezone: "Africa/Abidjan"};
             request
                 .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
                 .expect(200)
@@ -54,6 +60,7 @@ describe('Create app', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('name', appName);
+                    ob.should.have.property('timezone', 'Africa/Abidjan');
                     APP_ID = ob._id;
                     APP_KEY = ob.key;
                     testUtils.set("APP_ID", APP_ID);

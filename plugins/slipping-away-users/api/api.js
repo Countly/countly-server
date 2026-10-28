@@ -13,7 +13,7 @@ var cohorts;
 try {
     cohorts = require("../../cohorts/api/parts/cohorts.js");
 }
-catch (ex) {
+catch {
     cohorts = null;
 }
 

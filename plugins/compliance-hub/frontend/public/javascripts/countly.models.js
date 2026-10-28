@@ -162,7 +162,7 @@
     var exportHistoryDataResource = countlyVue.vuex.ServerDataTable("exportHistoryDataResource", {
         columns: ['u', 'ip', 'actions', 'ts'],
         loadedData: {},
-        //eslint-disable-next-line
+
         onRequest: function(context) {
             var action = context.getters.exportHistoryFilter;
 
@@ -223,7 +223,7 @@
     var consentHistoryResource = countlyVue.vuex.ServerDataTable("consentHistoryResource", {
         columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
         loadedData: {},
-        // eslint-disable-next-line
+
         onRequest: function(context) {
             context.rootState.countlyConsentManager.consentHistoryLoading = true;
             var data = {
@@ -290,7 +290,7 @@
 
     var consentHistoryUserResource = countlyVue.vuex.ServerDataTable("consentHistoryUserResource", {
         columns: ['_id', 'type', 'optin', 'optout', 'av', 'ts' ],
-        // eslint-disable-next-line
+
         onRequest: function(context) {
             context.rootState.countlyConsentManager.isLoading = true;
             var data = {

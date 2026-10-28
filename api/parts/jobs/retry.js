@@ -43,7 +43,7 @@ class DefaultRetryPolicy {
 
     /**
     * Run
-    * @param {function} runFun - function to run
+    * @param {Function} runFun - function to run
     * @returns {Promise} promise
     **/
     run(runFun) {
