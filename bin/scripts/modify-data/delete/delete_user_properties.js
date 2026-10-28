@@ -33,7 +33,7 @@ function buildUnset(properties, drillPrefix) {
     return unset;
 }
 
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).then(async function([db, dbDrill]) {
     console.log("Deleting properties from app users:", PROPERTIES);
     db.collection('app_users' + APP_ID).updateMany({}, {$unset: buildUnset(PROPERTIES, false)}, function(err,) {

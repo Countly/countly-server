@@ -1,5 +1,5 @@
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 
 console.log("Started: Clearing internal user properties from meta");
 
