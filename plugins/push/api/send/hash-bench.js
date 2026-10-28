@@ -394,7 +394,7 @@ function bufset(buf, offset, data) {
 /**
  * Measure 
  * 
- * @param {function} f function to measure
+ * @param {Function} f function to measure
  * @param {string} message name of measurement
  * @param {number} n number of iterations in one run (10 runs)
  */

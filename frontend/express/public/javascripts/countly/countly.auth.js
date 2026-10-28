@@ -8,7 +8,7 @@
 
     /**
     * initialize feature list from back-end and set it as countlyAuth.features
-    * @returns {function} - ajax func to request data and store in countlyAuth.features
+    * @returns {Function} - ajax func to request data and store in countlyAuth.features
     */
     countlyAuth.initFeatures = function() {
         return $.ajax({
@@ -29,7 +29,7 @@
      * @param {string} feature - feature name that required access right
      * @param {object} member - countly member object
      * @param {string} app_id - countly application id
-     * @return {boolean} result of permission check
+     * @returns {boolean} result of permission check
      */
     function validateWrite(accessType, feature, member, app_id) {
         member = member || countlyGlobal.member;
@@ -76,7 +76,7 @@
      * @param {string} feature - feature name that required access right
      * @param {object} member - countly member object
      * @param {string} app_id - countly application id
-     * @return {boolean} result of permission check
+     * @returns {boolean} result of permission check
      */
     countlyAuth.validateCreate = function(feature, member, app_id) {
         return validateWrite('c', feature, member, app_id);
@@ -87,7 +87,7 @@
      * @param {string} feature - feature name that required access right
      * @param {object} member - countly member object
      * @param {string} app_id - countly application id
-     * @return {boolean} result of permission check
+     * @returns {boolean} result of permission check
      */
     countlyAuth.validateRead = function(feature, member, app_id) {
         member = member || countlyGlobal.member;
@@ -134,7 +134,7 @@
      * @param {string} feature - feature name that required access right
      * @param {object} member - countly member object
      * @param {string} app_id - countly application id
-     * @return {boolean} result of permission check
+     * @returns {boolean} result of permission check
      */
     countlyAuth.validateUpdate = function(feature, member, app_id) {
         return validateWrite('u', feature, member, app_id);
@@ -145,7 +145,7 @@
      * @param {string} feature - feature name that required access right
      * @param {object} member - countly member object
      * @param {string} app_id - countly application id
-     * @return {boolean} result of permission check
+     * @returns {boolean} result of permission check
      */
     countlyAuth.validateDelete = function(feature, member, app_id) {
         return validateWrite('d', feature, member, app_id);
@@ -157,7 +157,7 @@
      * @param {string} feature - feature name that required access right
      * @param {object} member - countly member object
      * @param {string} app_id - countly application id
-     * @return {boolean} result of permission check
+     * @returns {boolean} result of permission check
      */
     countlyAuth.validate = function(accessType, feature, member, app_id) {
         if (accessType === "r") {

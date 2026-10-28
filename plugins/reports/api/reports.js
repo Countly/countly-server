@@ -133,7 +133,7 @@ var metricProps = {
      *
      * @param {object} db - database connection
      * @param {object} report - the stored report
-     * @param {function} cb - cb(maySend), called with false when it must not be sent
+     * @param {Function} cb - cb(maySend), called with false when it must not be sent
      * @returns {void}
      */
     reports.ownerMayStillSend = function(db, report, cb) {
@@ -189,7 +189,7 @@ var metricProps = {
      * Render and send a report that has already been loaded and authorized.
      * @param {object} db - database connection
      * @param {object} report - the stored report
-     * @param {function} callback - callback
+     * @param {Function} callback - callback
      * @returns {void}
      */
     reports.sendLoadedReport = function(db, report, callback) {
@@ -258,7 +258,7 @@ var metricProps = {
 
         /**
          *  Load event group information
-         *  @param {function} cb - callback function
+         *  @param {Function} cb - callback function
          */
         function loadEventGroups(cb) {
             db.collection('event_groups').find({}, {projection: {name: 1, status: 1}}).toArray(function(err1, event_groups) {
@@ -324,7 +324,7 @@ var metricProps = {
                     /**
                      * metricIterator curry function
                      * @param {obj} params - params injected in inner func
-                     * @return {func} metricIterator - function for iterartion
+                     * @returns {func} metricIterator - function for iterartion
                      */
                     function metricIteratorCurryFunc(params) {
                         /**
@@ -887,7 +887,7 @@ var metricProps = {
     * set metrics  in collection
     * @param {object} metricsObj - metrics data
     * @param {object} events - event data
-    * @return {object} collections - collections names
+    * @returns {object} collections - collections names
     */
     function metricsToCollections(metricsObj, events) {
         var collections = {users: true};
@@ -926,7 +926,7 @@ var metricProps = {
     * @param {object} _sessionDb - session original data
     * @param {object} totalUserOverrideObj - user data
     * @param {object} previousTotalUserOverrideObj - user data for previous period
-    * @return {object} dataArr - session statstics contains serveral metrics.
+    * @returns {object} dataArr - session statstics contains serveral metrics.
     */
     function getSessionData(_sessionDb, totalUserOverrideObj, previousTotalUserOverrideObj) {
         //Update the current period object in case selected date is changed
@@ -1107,64 +1107,64 @@ var metricProps = {
         //var timeSpentString = countlyCommon.timeString(sessionDuration);
 
         dataArr =
-        {
-            "total_sessions": {
-                "total": currentTotal,
-                "change": changeTotal.percent,
-                "trend": changeTotal.trend
-            },
-            "paying_users": {
-                "total": currentPayingTotal,
-                "prev-total": previousPayingTotal,
-                "change": changePaying.percent,
-                "trend": changePaying.trend,
-                "isEstimate": isEstimate
-            },
-            "total_users": {
-                "total": currentUnique,
-                "prev-total": previousUnique,
-                "change": changeUnique.percent,
-                "trend": changeUnique.trend,
-                "isEstimate": isEstimate
-            },
-            "messaging_users": {
-                "total": currentMsgEnabledTotal,
-                "prev-total": previousMsgEnabledTotal,
-                "change": changeMsgEnabled.percent,
-                "trend": changeMsgEnabled.trend,
-                "isEstimate": isEstimate
-            },
-            "new_users": {
-                "total": currentNew,
-                "change": changeNew.percent,
-                "trend": changeNew.trend
-            },
-            "returning_users": {
-                "total": (currentUnique - currentNew),
-                "change": changeReturning.percent,
-                "trend": changeReturning.trend
-            },
-            "total_time": {
-                "total": timeSpentString,
-                "change": changeDuration.percent,
-                "trend": changeDuration.trend
-            },
-            "avg_time": {
-                "total": countlyCommon.timeString(durationPerUser),
-                "change": changeDurationPerUser.percent,
-                "trend": changeDurationPerUser.trend
-            },
-            "total_requests": {
-                "total": currentEvents,
-                "change": changeEvents.percent,
-                "trend": changeEvents.trend
-            },
-            "avg_requests": {
-                "total": eventsPerUser.toFixed(1),
-                "change": changeEventsPerUser.percent,
-                "trend": changeEventsPerUser.trend
-            }
-        };
+            {
+                "total_sessions": {
+                    "total": currentTotal,
+                    "change": changeTotal.percent,
+                    "trend": changeTotal.trend
+                },
+                "paying_users": {
+                    "total": currentPayingTotal,
+                    "prev-total": previousPayingTotal,
+                    "change": changePaying.percent,
+                    "trend": changePaying.trend,
+                    "isEstimate": isEstimate
+                },
+                "total_users": {
+                    "total": currentUnique,
+                    "prev-total": previousUnique,
+                    "change": changeUnique.percent,
+                    "trend": changeUnique.trend,
+                    "isEstimate": isEstimate
+                },
+                "messaging_users": {
+                    "total": currentMsgEnabledTotal,
+                    "prev-total": previousMsgEnabledTotal,
+                    "change": changeMsgEnabled.percent,
+                    "trend": changeMsgEnabled.trend,
+                    "isEstimate": isEstimate
+                },
+                "new_users": {
+                    "total": currentNew,
+                    "change": changeNew.percent,
+                    "trend": changeNew.trend
+                },
+                "returning_users": {
+                    "total": (currentUnique - currentNew),
+                    "change": changeReturning.percent,
+                    "trend": changeReturning.trend
+                },
+                "total_time": {
+                    "total": timeSpentString,
+                    "change": changeDuration.percent,
+                    "trend": changeDuration.trend
+                },
+                "avg_time": {
+                    "total": countlyCommon.timeString(durationPerUser),
+                    "change": changeDurationPerUser.percent,
+                    "trend": changeDurationPerUser.trend
+                },
+                "total_requests": {
+                    "total": currentEvents,
+                    "change": changeEvents.percent,
+                    "trend": changeEvents.trend
+                },
+                "avg_requests": {
+                    "total": eventsPerUser.toFixed(1),
+                    "change": changeEventsPerUser.percent,
+                    "trend": changeEventsPerUser.trend
+                }
+            };
 
         return dataArr;
     }
@@ -1172,7 +1172,7 @@ var metricProps = {
     /**
     * get crash data
     * @param {object} _crashTimeline - timeline object
-    * @return {object} dataArr - crash data with several dimension statistics
+    * @returns {object} dataArr - crash data with several dimension statistics
     */
     function getCrashData(_crashTimeline) {
 
@@ -1244,40 +1244,40 @@ var metricProps = {
             changeResolved = countlyCommon.getPercentChange(previousResolved, currentResolved);
 
         dataArr =
-        {
-            "total_crashes": {
-                "total": currentTotal,
-                "change": changeTotal.percent,
-                "trend": changeTotal.trend,
-                "isEstimate": false
-            },
-            "unique_crashes": {
-                "total": currentUnique,
-                "prev-total": previousUnique,
-                "change": changeUnique.percent,
-                "trend": changeUnique.trend,
-                "isEstimate": false
-            },
-            "non_fatal_crashes": {
-                "total": currentNonfatal,
-                "prev-total": previousNonfatal,
-                "change": changeNonfatal.percent,
-                "trend": changeNonfatal.trend,
-                "isEstimate": false
-            },
-            "fatal_crashes": {
-                "total": currentFatal,
-                "change": changeFatal.percent,
-                "trend": changeFatal.trend,
-                "isEstimate": false
-            },
-            "resolved_upgrades": {
-                "total": currentResolved,
-                "change": changeResolved.percent,
-                "trend": changeResolved.trend,
-                "isEstimate": false
-            }
-        };
+            {
+                "total_crashes": {
+                    "total": currentTotal,
+                    "change": changeTotal.percent,
+                    "trend": changeTotal.trend,
+                    "isEstimate": false
+                },
+                "unique_crashes": {
+                    "total": currentUnique,
+                    "prev-total": previousUnique,
+                    "change": changeUnique.percent,
+                    "trend": changeUnique.trend,
+                    "isEstimate": false
+                },
+                "non_fatal_crashes": {
+                    "total": currentNonfatal,
+                    "prev-total": previousNonfatal,
+                    "change": changeNonfatal.percent,
+                    "trend": changeNonfatal.trend,
+                    "isEstimate": false
+                },
+                "fatal_crashes": {
+                    "total": currentFatal,
+                    "change": changeFatal.percent,
+                    "trend": changeFatal.trend,
+                    "isEstimate": false
+                },
+                "resolved_upgrades": {
+                    "total": currentResolved,
+                    "change": changeResolved.percent,
+                    "trend": changeResolved.trend,
+                    "isEstimate": false
+                }
+            };
 
         return dataArr;
     }
@@ -1286,7 +1286,7 @@ var metricProps = {
     /**
     * get event data
     * @param {object} eventDb -  original event data
-    * @return {number}  - return event calc data
+    * @returns {number}  - return event calc data
     */
     function getEventData(eventDb) {
         _periodObj = countlyCommon.periodObj;
@@ -1326,7 +1326,7 @@ var metricProps = {
     /**
     * get revenue chart data
     * @param {object} eventDb -  event data
-    * @return {object}  - return revenu data chart object
+    * @returns {object}  - return revenu data chart object
     */
     function getRevenueData(eventDb) {
         _periodObj = countlyCommon.periodObj;
@@ -1395,7 +1395,7 @@ var metricProps = {
     * get event count
     * @param {object} eventDb -  event data
     * @param {string/array}  period -  period defined by countly
-    * @return {number}  - return event count
+    * @returns {number}  - return event count
     */
     function eventCount(eventDb, period) {
         var tmpObj = countlyCommon.getDescendantProp(eventDb, period);
@@ -1405,7 +1405,7 @@ var metricProps = {
     /**
     * clear session object data format, will set properties to 0 if not exisit
     * @param {object} obj - db object
-    * @return {object} obj - cleared object
+    * @returns {object} obj - cleared object
     */
     function clearCrashObject(obj) {
         if (obj) {
@@ -1435,7 +1435,7 @@ var metricProps = {
     /**
     * clear session object data format, will set properties to 0 if not exisit
     * @param {object} obj - db object
-    * @return {object} obj - cleared object
+    * @returns {object} obj - cleared object
     */
     function clearSessionObject(obj) {
         if (obj) {
@@ -1472,7 +1472,7 @@ var metricProps = {
     * sort first array base on second array, and render the rest of elements by original relative sequence.
     * @param {object} arrayToSort - array need to sort
     * @param {object} sortList - array for reference.
-    * @return {object} retArr - return sorted array
+    * @returns {object} retArr - return sorted array
     */
     function sortBy(arrayToSort, sortList) {
         if (!sortList.length) {

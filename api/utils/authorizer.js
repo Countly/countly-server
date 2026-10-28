@@ -24,7 +24,7 @@ const log = require('./log.js')('core:authorizer');
 * @param {boolean} [options.can_login=false] - if true, the token may be redeemed for a dashboard session at /login/token. SERVER-ASSIGNED ONLY - see the note below.
 * @param {string} options.tryReuse - if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.
 * @param {boolean} [options.temporary=false] - If logged in with temporary token. Doesn't kill other sessions on logout.
-* @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
+* @param {Function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
 */
 authorizer.save = function(options) {
     options.db = options.db || common.db;
@@ -168,7 +168,7 @@ authorizer.save = function(options) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to read
-* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
+* @param {Function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
 */
 authorizer.read = function(options) {
     options.db = options.db || common.db;
@@ -192,7 +192,7 @@ authorizer.clearExpiredTokens = function(options) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to rvalidate
-* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
+* @param {Function} options.callback - function called when reading was completed or errored, providing error object as first param, true or false if expired as second, seconds till expiration as third.(-1 if never expires, 0 - if expired) 
 */
 authorizer.check_if_expired = function(options) {
     options.db = options.db || common.db;
@@ -221,7 +221,7 @@ authorizer.check_if_expired = function(options) {
 * @param {string} options.token - token to extend
 * @param {string} options.extendBy - extend token by given time(in ms)(optional) You have to provide extedBy or extendTill. extendBy==0 makes it never die
 * @param {string} options.extendTill - extend till given timestamp. (optional) You have to provide extedBy or extendTill
-* @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
+* @param {Function} options.callback - function called when reading was completed or errored, providing error object as first param and true as second if extending successful
 */
 authorizer.extend_token = function(options) {
     if (!options.token || options.token === "") {
@@ -274,13 +274,105 @@ authorizer.extend_token = function(options) {
         });
     });
 };
+var ENDPOINT_SEGMENT = /^[A-Za-z0-9_-]+$/;
+/**
+* Whether a value is a literal API path a new token may be restricted to: a leading slash and at
+* least two non-empty segments of letters, digits, "_" and "-". Nothing else, so no regex syntax,
+* no wildcard and no path that covers a whole tree ("/", "/o").
+* @param {string} path - requested endpoint
+* @returns {boolean} true if it is a literal API path
+*/
+function isLiteralEndpointPath(path) {
+    if (typeof path !== "string" || path.charAt(0) !== "/") {
+        return false;
+    }
+    var segments = path.slice(1).split("/");
+    return segments.length >= 2 && segments.every(function(segment) {
+        return ENDPOINT_SEGMENT.test(segment);
+    });
+}
+/**
+* A literal query string key and value an endpointquery entry may require.
+*/
+var ENDPOINT_PARAM_KEY = /^[A-Za-z0-9_]+$/;
+var ENDPOINT_PARAM_VALUE = /^[A-Za-z0-9_-]+$/;
+
+/**
+* Parse the endpoint restriction a request asks a new token to carry.
+*
+* Stored endpoints are regexes matched from the start of the request path, so a value such as
+* "", "/o" or ".*" would cover every path or a whole tree. A new token therefore names concrete
+* paths only, and each is stored anchored at both ends, so "/o/actions" matches /o/actions and
+* nothing else. An endpointquery entry is validated the same way, and the query string values
+* it requires are matched exactly. Tokens stored before keep their own matching.
+* @param {string|undefined} endpointParam - comma separated paths (the endpoint parameter)
+* @param {string|undefined} endpointQueryParam - JSON array of {endpoint, params} (the endpointquery parameter)
+* @returns {{endpoint: (Array|string), error: (string|undefined)}} the endpoint field to store ("" for none), or an error
+*/
+function parseEndpointRestriction(endpointParam, endpointQueryParam) {
+    var hasEndpoint = typeof endpointParam !== "undefined" && endpointParam !== null;
+    var hasQuery = typeof endpointQueryParam !== "undefined" && endpointQueryParam !== null;
+    if (!hasEndpoint && !hasQuery) {
+        return {endpoint: ""};
+    }
+    if (hasEndpoint && hasQuery) {
+        return {error: "Use either endpoint or endpointquery, not both"};
+    }
+    if (hasEndpoint) {
+        if (typeof endpointParam !== "string") {
+            return {error: "Invalid endpoint"};
+        }
+        var paths = endpointParam.split(",");
+        for (var i = 0; i < paths.length; i++) {
+            if (!isLiteralEndpointPath(paths[i])) {
+                return {error: "Invalid endpoint"};
+            }
+        }
+        var anchored = paths.map(function(path) {
+            return "^" + path + "$";
+        });
+        return {endpoint: anchored};
+    }
+    var entries;
+    try {
+        entries = typeof endpointQueryParam === "string" ? JSON.parse(endpointQueryParam) : endpointQueryParam;
+    }
+    catch {
+        return {error: "Invalid endpointquery"};
+    }
+    if (!Array.isArray(entries) || entries.length === 0) {
+        return {error: "Invalid endpointquery"};
+    }
+    var stored = [];
+    for (var e = 0; e < entries.length; e++) {
+        var entry = entries[e];
+        if (!entry || typeof entry !== "object" || Array.isArray(entry) || !isLiteralEndpointPath(entry.endpoint)) {
+            return {error: "Invalid endpointquery"};
+        }
+        var requiredParams = {};
+        if (typeof entry.params !== "undefined") {
+            if (!entry.params || typeof entry.params !== "object" || Array.isArray(entry.params)) {
+                return {error: "Invalid endpointquery"};
+            }
+            for (var key in entry.params) {
+                if (!ENDPOINT_PARAM_KEY.test(key) || typeof entry.params[key] !== "string" || !ENDPOINT_PARAM_VALUE.test(entry.params[key])) {
+                    return {error: "Invalid endpointquery"};
+                }
+                requiredParams[key] = "^" + entry.params[key] + "$";
+            }
+        }
+        stored.push({endpoint: "^" + entry.endpoint + "$", params: requiredParams});
+    }
+    return {endpoint: stored};
+}
+
 /**
 * Token validation function called from verify and verify return
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.token - token to validate
 * @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
-* @param {function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
+* @param {Function} options.callback - function called when verifying was completed or errored, providing error object as first param and true as second if extending successful
 * @param {boolean} return_owner states if in callback owner shold be returned. If return_owner==false, returns true or false.
 * @param {boolean} return_data states if in callback all token data should be returned.
 */
@@ -302,13 +394,10 @@ var verify_token = function(options, return_owner, return_data) {
                 if (Array.isArray(res.endpoint) && res.endpoint.length === 0) {
                     res.endpoint = "";
                 }
-                // The endpoint regex is the pre-permission-model scoping mechanism. It only ever
-                // constrained which paths a token could call, never what the resolved member was
-                // allowed to do, so it is not an authorization boundary. Tokens issued under the
-                // permission model carry token_permission instead, which rights.js intersects with
-                // the owner's own permissions on every request. Legacy tokens (no token_permission)
-                // keep being matched exactly as before, so existing integrations are unaffected.
-                if (!res.token_permission && res.endpoint && res.endpoint !== "") {
+                // The endpoint restriction limits which paths a token can call. A token that also
+                // carries token_permission is held to both: the paths here, and the permissions
+                // rights.js intersects with its owner's on every request.
+                if (res.endpoint && res.endpoint !== "") {
                     //keep backwards compability
                     if (!Array.isArray(res.endpoint)) {
                         res.endpoint = [res.endpoint];
@@ -327,7 +416,7 @@ var verify_token = function(options, return_owner, return_data) {
                                                 missing_param = true;
                                             }
                                         }
-                                        catch (e) {
+                                        catch {
                                             log.e("Invalid regex: '" + res.endpoint[p].params[k] + "'");
                                             missing_param = true;
                                         }
@@ -339,7 +428,7 @@ var verify_token = function(options, return_owner, return_data) {
                                         valid_endpoint = true;
                                     }
                                 }
-                                catch (e) {
+                                catch {
                                     log.e("Invalid regex: '" + res.endpoint[p].endpoint + "'");
                                 }
                             }
@@ -350,7 +439,7 @@ var verify_token = function(options, return_owner, return_data) {
                                         valid_endpoint = true;
                                     }
                                 }
-                                catch (e) {
+                                catch {
                                     log.e("Invalid regex: '" + res.endpoint[p] + "'");
                                 }
                             }
@@ -437,7 +526,7 @@ var verify_token = function(options, return_owner, return_data) {
 * @param {string} options.token - token to verify
 * @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {string} options.req_path - current request path
-* @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
+* @param {Function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
 */
 authorizer.verify = function(options) {
     verify_token(options, false);
@@ -450,7 +539,7 @@ authorizer.verify = function(options) {
 * @param {string} options.token - token to verify
 * @param {string} options.qstring - params.qstring. If not passed and there is limitation for this token on params - token will not be valid
 * @param {string} options.req_path - current request path
-* @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
+* @param {Function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
 */
 authorizer.verify_return = function(options) {
     if (options.return_data) {
@@ -472,7 +561,7 @@ authorizer.getToken = function() {
 * Clean all expired tokens
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
-* @param {function} options.callback - function called when cleaning completed
+* @param {Function} options.callback - function called when cleaning completed
 */
 authorizer.clean = function(options) {
     options.db = options.db || common.db;
@@ -505,4 +594,5 @@ authorizer.revokeMemberTokens = async function(options) {
     await db.collection('auth_tokens').deleteMany(query);
 };
 
+authorizer.parseEndpointRestriction = parseEndpointRestriction;
 module.exports = authorizer;

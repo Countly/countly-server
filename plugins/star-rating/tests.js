@@ -231,6 +231,69 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Widget details read', function() {
+        var targeting = {steps: [], user_segmentation: {query: {"up.cc": {"$in": ["LV"]}}, queryText: ""}};
+
+        before(async function() {
+            WIDGET_ID = testUtils.get("WIDGET_ID");
+            //create stores targeting only when cohorts are enabled, so set it directly
+            await testUtils.db.collection("feedback_widgets").updateOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {$set: {targeting: targeting, cohortID: "test-cohort"}});
+        });
+
+        it('returns targeting and cohortID from the authenticated list filtered by widget_id', function(done) {
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widget_id=' + WIDGET_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.length.should.eql(1);
+                    ob[0]._id.should.eql(WIDGET_ID);
+                    ob[0].should.have.property('targeting', targeting);
+                    ob[0].should.have.property('cohortID', 'test-cohort');
+                    done();
+                });
+        });
+
+        it('does not return targeting or cohortID from the anonymous single widget read', function(done) {
+            request.get('/o/feedback/widget?widget_id=' + WIDGET_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob._id.should.eql(WIDGET_ID);
+                    ob.should.not.have.property('targeting');
+                    ob.should.not.have.property('cohortID');
+                    done();
+                });
+        });
+
+        it('returns an empty list for an unknown widget_id', function(done) {
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widget_id=1')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.eql([]);
+                    done();
+                });
+        });
+
+        it('requires authentication', function(done) {
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&widget_id=' + WIDGET_ID)
+                .expect(400)
+                .end(done);
+        });
+
+        after(async function() {
+            await testUtils.db.collection("feedback_widgets").updateOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {$unset: {targeting: "", cohortID: ""}});
+        });
+    });
+
     describe('Widget show counter', function() {
         //the popup page fetches the widget with nfd=1 and no credential; only the
         //owning app's key may count the show, and the widget is returned either way.
@@ -762,6 +825,19 @@ describe('Testing Rating plugin', function() {
                     scopedApiKey = res.body.api_key;
                     scopedUserId = res.body._id;
                     should.exist(scopedApiKey);
+                    done();
+                });
+        });
+
+        it('does not return another app\'s widget from the list filtered by widget_id', function(done) {
+            APP_ID = testUtils.get("APP_ID");
+            request.get('/o/feedback/widgets?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&widget_id=' + victimWidgetId)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.eql([]);
                     done();
                 });
         });

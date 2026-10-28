@@ -90,7 +90,7 @@
     * @param {string} type - type of alert red for errors and green for success
     * @param {boolean} hasCheckbox - popup has checkbox? or not.
     * @param {string} checkboxTitle - title of checkbox element
-    * @param {function} callback - to determine result of the input
+    * @param {Function} callback - to determine result of the input
     * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
     * @example
     * CountlyHelpers.confirmWithCheckbox("Are you sure?", "red", true, "Chechbox label text", function (result) {
@@ -137,9 +137,9 @@
     * @param {boolean} options.saveButtonText - (optional) If there is only single button and there is not set any button using form or template - then passing this string sets text for save button.
     * @param {boolean} options.preventBaseReset - (optional) If true then when reseting form base reset function,which empties text fields won't be called.
     * @param {object} options.applyChangeTriggers  -(optional)  If true - Ads event listeners on textaria and input[text],  cly-multi-select, cly-single select in form to trigger "cly-drawer-form-updated" on drawer. * This event callls options.onUpdate function. 
-    * @param {function} options.onUpdate - (optional) function called when "cly-drawer-form-updated" is triggered on drawer.
-    * @param {function} options.onClose(callback) - (optional) function called when calling drawer.close() or hitting [X] button. Has one parameter - callback function. Only if callback function returns true as first param - drawer is closed. 
-    * @param {function} options.onClosed(callback) - (optional) function called after drawer is successfully closed.
+    * @param {Function} options.onUpdate - (optional) function called when "cly-drawer-form-updated" is triggered on drawer.
+    * @param {Function} options.onClose(callback) - (optional) function called when calling drawer.close() or hitting [X] button. Has one parameter - callback function. Only if callback function returns true as first param - drawer is closed. 
+    * @param {Function} options.onClosed(callback) - (optional) function called after drawer is successfully closed.
     * @returns {object} Drawer object
     * @example
     * var drawer = CountlyHelpers.createDrawer({
@@ -323,7 +323,7 @@
     * @deprecated 
     * @param {string=} [msg.closeOnClick=false] - should notification be automatically closed when clicked on
     * @deprecated 
-    * @param {function=} msg.onClick - on click listener
+    * @param {Function=} msg.onClick - on click listener
     * @deprecated 
     * @param {boolean=} msg.persistent - flag to determine if notification should be displayed persistently or as a toast
     * @example
@@ -522,7 +522,7 @@
     * Create new model
     * @param {object} json - json object
     * @param {string=} type - classname
-    * @param {function=} callback - callback function
+    * @param {Function=} callback - callback function
     */
     CountlyHelpers.newJSONEditor = function(json, type, callback) {
         var self = this;
@@ -722,7 +722,7 @@
     * Display modal popup that requires confirmation input from user
     * @param {string} msg - message to display in alert popup
     * @param {string} type - type of alert red for errors and green for success
-    * @param {function} callback - to determine result of the input
+    * @param {Function} callback - to determine result of the input
     * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
     * @param {object} moreData - more data to display
     * @param {string} moreData.image - image id
@@ -869,7 +869,7 @@
             JSON.parse(val);
             return true;
         }
-        catch (notJSONError) {
+        catch {
             return false;
         }
     };
@@ -983,7 +983,7 @@
         try {
             formatData = JSON.parse(formatData);
         }
-        catch (e) {
+        catch {
             formatData = {};
         }
         dialog.removeAttr("id");
@@ -1314,7 +1314,7 @@
                                 ob[tableCols[colIndex].sTitle] = tableData[i][colIndex];
                             }
                         }
-                        catch (e) {
+                        catch {
                             //not important
                         }
                     }
@@ -2452,7 +2452,7 @@
     /**
     * In some cases you may want to allow expanding rows of your datatable. To do that you must add unique id to each row via datatables fnRowCallback property
     * @param {object} dTable - jQuery object datatable reference
-    * @param {function} getData - callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell
+    * @param {Function} getData - callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell
     * @param {object} context - this context if needed, which will be passed to getData function as second parameter
     * @example
     * function formatData(data){
@@ -2528,7 +2528,7 @@
     /**
     * If you allow to open/expand rows, then when refreshing table they will close again. To avoid that you must call this function on each refresh after calling {@link CountlyHelpers.refreshTable}
     * @param {object} dTable - jQuery object datatable reference
-    * @param {function} getData - callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell
+    * @param {Function} getData - callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell
     * @param {object} context - this context if needed, which will be passed to getData function as second parameter
     * @example
     * CountlyHelpers.refreshTable(self.dtable, data);
@@ -2665,9 +2665,9 @@
     };
     /**
     * Creates function to be used as mRender for datatables to clip long values
-    * @param {function=} f - optional function to change passed data to render and return changed object
+    * @param {Function=} f - optional function to change passed data to render and return changed object
     * @param {string=} nothing - text to display in cellS
-    * @returns {function} to be used as mRender for datatables to clip long values
+    * @returns {Function} to be used as mRender for datatables to clip long values
     */
     CountlyHelpers.clip = function(f, nothing) {
         return function(opt) {
@@ -2681,7 +2681,7 @@
     * @param {object} countlyMetric - initial metric object if you want to pre provide some methods, etc
     * @param {string} metric - metric name to retrieve from server
     * @param {jquery} $ - local jquery reference
-    * @param {function=} fetchValue - default function to fetch and transform if needed value from standard metric model
+    * @param {Function=} fetchValue - default function to fetch and transform if needed value from standard metric model
     * @example
     *   window.countlyDensity = {};
     *   countlyDensity.checkOS = function(os, density){
@@ -2910,7 +2910,7 @@
         /**
         * Get current data, if some view or model requires access to raw data
         * @memberof countlyMetric
-        * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
+        * @returns {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
         */
         countlyMetric.getDb = function() {
             return _Db;
@@ -3579,7 +3579,7 @@
     * @param {object} el - dom element
     * @param {string} url - upload url
     * @param {object} data - data object that will send with upload request
-    * @param {function} callback - callback for upload result
+    * @param {Function} callback - callback for upload result
     */
     CountlyHelpers.upload = function(el, url, data, callback) {
         $(el).simpleUpload(url, {
@@ -3686,7 +3686,7 @@
     /**
      * Function that clean duplicates from passed array.
      * @param {Array} array - array
-     * @return {Array} - array without duplicates
+     * @returns {Array} - array without duplicates
      */
     CountlyHelpers.arrayUnique = function(array) {
         var a = array.concat();
@@ -3703,7 +3703,7 @@
     /**
      * Function that remove empty values from array.
      * @param {array} array - array that contain empty values
-     * @return {array} - array without empty values
+     * @returns {array} - array without empty values
      */
     CountlyHelpers.removeEmptyValues = function(array) {
         for (var i = array.length - 1; i >= 0; i--) {
@@ -3948,7 +3948,7 @@ $.extend(Template.prototype, {
      *  Process and return fetched template
      *  @memberof T
      *  @param {string} name - Template path
-     *  @param {function} callback - when done
+     *  @param {Function} callback - when done
      *  @returns {Promise} ajax promise
      */
     render: function(name, callback) {
@@ -3969,7 +3969,7 @@ $.extend(Template.prototype, {
      *  Fetch and return raw template
      *  @memberof T
      *  @param {string} name - Template path
-     *  @param {function} callback - when done
+     *  @param {Function} callback - when done
      *  @returns {Promise} ajax promise
      */
     get: function(name, callback) {
@@ -3990,7 +3990,7 @@ $.extend(Template.prototype, {
      *  Fetch and return raw template in sync
      *  @memberof T
      *  @param {string} name - Template path
-     *  @param {function} callback - when done
+     *  @param {Function} callback - when done
      */
     renderSync: function(name, callback) {
         if (!T.isCached(name)) {
@@ -4040,7 +4040,7 @@ $.extend(Template.prototype, {
         try {
             T.cached[name] = Handlebars.compile(raw);
         }
-        catch (ex) {
+        catch {
             T.cached[name] = raw;
         }
     },

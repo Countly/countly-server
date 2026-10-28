@@ -253,7 +253,7 @@
                     var urlObj = new URL(domain);
                     domain = urlObj.hostname;
                 }
-                catch (_) {
+                catch {
                     // do nothing, domain from config will be used as is
                 }
                 let COUNTLY_STATS = Countly.init({

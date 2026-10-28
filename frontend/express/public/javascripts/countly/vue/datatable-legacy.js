@@ -266,7 +266,7 @@
                         }
                         ob[col.label] = row[col.field];
                     }
-                    catch (e) {
+                    catch {
                         //not important
                     }
                 });
@@ -455,7 +455,7 @@
                     }
                     return defaultState;
                 }
-                catch (ex) {
+                catch {
                     return defaultState;
                 }
             },

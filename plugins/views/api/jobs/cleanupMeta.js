@@ -12,9 +12,9 @@ class CleanupMetaJob extends job.Job {
     /**
      * Get's called to run the job
      * @param {mongoDatabase} countlyDb ref to countlyDb
-     * @param {function} doneJob callback
-     * @param {function} progressJob progress callback
-     * @return {void} just for exit
+     * @param {Function} doneJob callback
+     * @param {Function} progressJob progress callback
+     * @returns {void} just for exit
      */
     run(countlyDb, doneJob, progressJob) {
         log.i("Starting Views meta recheck job");

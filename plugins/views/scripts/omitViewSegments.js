@@ -129,7 +129,7 @@ function getOmitList(omit, options, callback) {
                         try {
                             cnn = Object.keys(result.segments[seg]).length;
                         }
-                        catch (e) {
+                        catch {
                             console.log("Error getting segment count for " + seg + " in app " + options.app_id);
                             cnn = 0;
                         }

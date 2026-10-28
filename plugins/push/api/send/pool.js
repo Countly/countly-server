@@ -64,7 +64,7 @@ class Pool extends Duplex {
      * This method is one shot, the pool is not supposed to be used after the promise resolves.
      * 
      * @param {integer} timeout timeout in ms
-     * @return {Promise} promise which resolves to a boolean indicating validness of the credentials 
+     * @returns {Promise} promise which resolves to a boolean indicating validness of the credentials 
      */
     validate(timeout = 10000) {
         let m = Message.test();
@@ -87,7 +87,7 @@ class Pool extends Duplex {
      * 
      * @param {Object[]} pushes array of push objects to send
      * @param {integer} timeout timeout in ms
-     * @return {Promise} promise which resolves to array of results 
+     * @returns {Promise} promise which resolves to array of results 
      */
     processOnce(pushes, timeout = 60000) {
         return this.grow().then(conn => {
@@ -345,7 +345,7 @@ class Pool extends Duplex {
      * Just a placeholder since we don't want to call `_writev` from setTimeout (disallowed by spec)
      * 
      * @param {array} chunks Array of chunks
-     * @param {function} callback called when the frame is fully processed
+     * @param {Function} callback called when the frame is fully processed
      */
     _writev(chunks, callback) {
         this.do_writev_when_ready(chunks, callback);
@@ -355,7 +355,7 @@ class Pool extends Duplex {
      * Spreads incoming data across connections, growing if needed
      * 
      * @param {array} chunks Array of chunks
-     * @param {function} callback called when the frame is fully processed
+     * @param {Function} callback called when the frame is fully processed
      */
     do_writev_when_ready(chunks, callback) {
         if (this.booting) {
@@ -460,7 +460,7 @@ class Pool extends Duplex {
      * Destructive closure of all underlying workers
      * 
      * @param {Error} error optional error
-     * @param {function} callback callback to call once done destroying
+     * @param {Function} callback callback to call once done destroying
      */
     _destroy(error, callback) {
         if (error) {
@@ -648,8 +648,8 @@ class Pool extends Duplex {
  * Make a function which would call callback only after times calls
  * 
  * @param {int} times how many times the function should be called before calling callback
- * @param {function} callback callback to be called after times calls
- * @returns {function} the function
+ * @param {Function} callback callback to be called after times calls
+ * @returns {Function} the function
  */
 function timesCallback(times, callback) {
     return function() {

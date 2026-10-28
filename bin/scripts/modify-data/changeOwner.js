@@ -129,7 +129,7 @@ pluginManager.dbConnection("countly").then((db) => {
                                         item.request = JSON.stringify(reqData);
                                     }
                                 }
-                                catch (ex) {
+                                catch {
                                     reqData = {};
                                 }
                             }

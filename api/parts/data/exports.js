@@ -538,7 +538,7 @@ function isObjectId(id) {
 * @param {number} [options.skip=0] - amount of items to skip from start
 * @param {string} [options.type=json] - type of data to output
 * @param {string} [options.filename] - name of the file to output, by default auto generated
-* @param {function} options.output - callback function where to pass data, by default outputs as file based on type
+* @param {Function} options.output - callback function where to pass data, by default outputs as file based on type
 */
 
 /**
@@ -705,7 +705,7 @@ exports.fromDatabase = function(options) {
 * @param {object} [options.method=POST] - request method type
 * @param {string} [options.type=json] - type of data to output
 * @param {string} [options.filename] - name of the file to output, by default auto generated
-* @param {function} options.output - callback function where to pass data, by default outputs as file based on type
+* @param {Function} options.output - callback function where to pass data, by default outputs as file based on type
 */
 exports.fromRequest = function(options) {
     options.path = options.path || "/";
@@ -768,7 +768,7 @@ exports.fromRequest = function(options) {
                 }
                 data = body;
             }
-            catch (ex) {
+            catch {
                 data = [];
             }
             //"stream all data"
@@ -937,7 +937,7 @@ exports.fromRequestQuery = function(options) {
 * @param {params} options.params - params object
 * @param {string} [options.type=json] - type of data to output
 * @param {string} [options.filename] - name of the file to output, by default auto generated
-* @param {function} options.output - callback function where to pass data, by default outputs as file based on type
+* @param {Function} options.output - callback function where to pass data, by default outputs as file based on type
 */
 exports.fromData = function(data, options) {
     options.type = options.type || "json";

@@ -721,7 +721,7 @@ describe('Testing Reports after access is revoked', function() {
     /**
      * Set the member's reports permissions to exactly the given apps
      * @param {Array} apps - app ids to grant
-     * @param {function} cb - callback
+     * @param {Function} cb - callback
      * @returns {void}
      */
     function grantReportsOn(apps, cb) {
@@ -741,7 +741,7 @@ describe('Testing Reports after access is revoked', function() {
     /**
      * Find one of the member's reports by title
      * @param {string} title - report title
-     * @param {function} cb - cb(id)
+     * @param {Function} cb - cb(id)
      * @returns {void}
      */
     function findReportIdByTitle(title, cb) {

@@ -382,7 +382,7 @@ async function legacyPrepare(params) {
         try {
             params.qstring.args = JSON.parse(params.qstring.args);
         }
-        catch (SyntaxError) {
+        catch {
             log.e('Parse /i/pushes JSON failed');
         }
     }
@@ -415,7 +415,7 @@ async function legacyCreate(params) {
         try {
             params.qstring.args = JSON.parse(params.qstring.args);
         }
-        catch (SyntaxError) {
+        catch {
             log.e('Parse /i/pushes JSON failed');
         }
     }

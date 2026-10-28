@@ -38,65 +38,71 @@ const verifyDataPointsProperty = (obj) => {
     });
 };
 
+// Returns the request, so the caller waits for /i to be answered before
+// reading the data points it produces.
 function sendEventRequest(events) {
     console.log(JSON.stringify(events));
-    request
+    return request
         .get('/i?app_key=' + APP_KEY + '&begin_session=1&device_id=1&events=' + JSON.stringify(events) + '&app_id=' + APP_ID)
         .expect(200)
-        .end(function(err, res) {
-            if (err) {
-                return {error: err};
-            }
+        .then(function(res) {
             const ob = JSON.parse(res.text);
             ob.should.have.property('result', "Success");
         });
 }
 
-function verifyAddedEvents(addedEvents, initialRequest) {
+function readDataPoints() {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const query = {"_id": APP_ID + "_" + year + ":" + month};
+    return testUtils.db.collection("server_stats_data_points").find(query).toArray();
+}
 
-    return testUtils.db.collection("server_stats_data_points").find(query).toArray()
-        .then((res, err) => {
-            if (err) {
-                throw ({err: err});
-            }
-            if (!res || (!res.length && !initialRequest)) {
-                throw ({err: "Invalid length"});
-            }
-            if (initialRequest) {
-                lastEventCounts.e = res && res[0] && res[0].e ? res[0].e : 0;
-                lastEventCounts.ce = res && res[0] && res[0].ce ? res[0].ce : 0;
-                for (let key in statInternalEvents) {
-                    let internalEventKey = statInternalEvents[key] || 'ce';
-                    lastEventCounts[internalEventKey] = res && res[0] && res[0][internalEventKey] ? res[0][internalEventKey] : 0;
-                }
-                return;
-            }
-            addedEvents.forEach(event => {
-                const key = event.key;
-                const internalEventKey = statInternalEvents[key] || 'ce';
-
-                lastEventCounts[internalEventKey] = lastEventCounts[internalEventKey] || 0;
-                lastEventCounts[internalEventKey] += Math.min(event.count, 1);
-                lastEventCounts.e += Math.min(event.count, 1);
-
-            });
-            if (!addedEvents.filter(item => item.key === '[CLY]_session').length) { // then session included with begin_session=1 and count it also.
-                lastEventCounts.s++;
-            }
-
-            for (const key in lastEventCounts) {
-                if (Object.hasOwnProperty.call(lastEventCounts, key)) {
-                    if (res[0][key] && res[0][key] !== lastEventCounts[key]) {
-                        console.log(JSON.stringify(res[0]));
-                        console.log(JSON.stringify(lastEventCounts));
-                        throw (`${key}: Expected Count=${lastEventCounts[key]}, Actual Count=${res[0][key]}`);
-                    }
-                }
+function verifyAddedEvents(addedEvents, initialRequest) {
+    if (initialRequest) {
+        return readDataPoints().then(res => {
+            lastEventCounts.e = res && res[0] && res[0].e ? res[0].e : 0;
+            lastEventCounts.ce = res && res[0] && res[0].ce ? res[0].ce : 0;
+            for (let key in statInternalEvents) {
+                let internalEventKey = statInternalEvents[key] || 'ce';
+                lastEventCounts[internalEventKey] = res && res[0] && res[0][internalEventKey] ? res[0][internalEventKey] : 0;
             }
         });
+    }
+
+    // Expected counts are computed once and only committed after they match:
+    // the data points go through the write batcher, so poll the record until
+    // the request's counts have landed instead of reading it once.
+    const expectedEventCounts = Object.assign({}, lastEventCounts);
+    addedEvents.forEach(event => {
+        const key = event.key;
+        const internalEventKey = statInternalEvents[key] || 'ce';
+
+        expectedEventCounts[internalEventKey] = expectedEventCounts[internalEventKey] || 0;
+        expectedEventCounts[internalEventKey] += Math.min(event.count, 1);
+        expectedEventCounts.e += Math.min(event.count, 1);
+
+    });
+    if (!addedEvents.filter(item => item.key === '[CLY]_session').length) { // then session included with begin_session=1 and count it also.
+        expectedEventCounts.s++;
+    }
+
+    return testUtils.eventually(() => readDataPoints().then(res => {
+        if (!res || !res.length) {
+            throw new Error("Invalid length");
+        }
+        for (const key in expectedEventCounts) {
+            if (Object.hasOwnProperty.call(expectedEventCounts, key)) {
+                if (res[0][key] && res[0][key] !== expectedEventCounts[key]) {
+                    console.log(JSON.stringify(res[0]));
+                    console.log(JSON.stringify(expectedEventCounts));
+                    throw new Error(`${key}: Expected Count=${expectedEventCounts[key]}, Actual Count=${res[0][key]}`);
+                }
+            }
+        }
+    }), {description: 'server_stats_data_points to match the sent events'}).then(() => {
+        lastEventCounts = expectedEventCounts;
+    });
 }
 
 function generateRandomEvents(key) {
@@ -125,25 +131,21 @@ function generateRandomEvents(key) {
 }
 
 function verifyDPCount() {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const query = {"_id": APP_ID + "_" + year + ":" + month};
-    return testUtils.db.collection("server_stats_data_points").find(query).toArray()
-        .then((res, err) => {
-            res = res[0];
-            if (err) {
-                throw ({err: err});
-            }
-            else {
-                var d = res.d[Object.keys(res.d)[0]][Object.keys(res.d[Object.keys(res.d)[0]])[0]];
-                if (!d.e) {
-                    d.e = 0;
-                }
-                if (d.s + d.e !== d.dp) {
-                    throw ({err: 'Session and event count is not equal to data point count'});
-                }
-            }
-        });
+    // The record is written through the write batcher, so it may not exist yet
+    // right after the request; poll it.
+    return testUtils.eventually(() => readDataPoints().then(res => {
+        res = res[0];
+        if (!res || !res.d || !Object.keys(res.d).length) {
+            throw new Error('No data point record yet');
+        }
+        var d = res.d[Object.keys(res.d)[0]][Object.keys(res.d[Object.keys(res.d)[0]])[0]];
+        if (!d.e) {
+            d.e = 0;
+        }
+        if (d.s + d.e !== d.dp) {
+            throw new Error('Session and event count is not equal to data point count');
+        }
+    }), {description: 'server_stats_data_points session + event count to equal data points'});
 }
 
 describe('Testing data points plugin', function() {
@@ -390,13 +392,11 @@ describe('Testing data points plugin', function() {
             });
         });
         it('should add all sytem events correctly', function(done) {
-            const result = sendEventRequest(internalEvents.filter(item => item.count > 0));
-            if (result && result.error) {
-                done(result.error);
-            }
-            else {
-                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
-            }
+            sendEventRequest(internalEvents.filter(item => item.count > 0))
+                .then(() => {
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                })
+                .catch(done);
         });
         it('should verify session request included to data points', function(done) {
             verifyDPCount().then(() => {
@@ -413,13 +413,11 @@ describe('Testing data points plugin', function() {
             });
         });
         it('should add single custom event correctly', function(done) {
-            const result = sendEventRequest(customEvents.single);
-            if (result && result.error) {
-                done(result.error);
-            }
-            else {
-                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
-            }
+            sendEventRequest(customEvents.single)
+                .then(() => {
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                })
+                .catch(done);
         });
         it('should confirm that single custom event are added to data points correctly', function(done) {
             verifyAddedEvents(customEvents.single).then(() => {
@@ -429,13 +427,11 @@ describe('Testing data points plugin', function() {
             });
         });
         it('should add multiple custom event correctly', function(done) {
-            const result = sendEventRequest(customEvents.multi);
-            if (result && result.error) {
-                done(result.error);
-            }
-            else {
-                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
-            }
+            sendEventRequest(customEvents.multi)
+                .then(() => {
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                })
+                .catch(done);
         });
         it('verify total data points', function(done) {
             verifyDPCount().then(() => {
@@ -460,13 +456,11 @@ describe('Testing data points plugin', function() {
         });
         it('should add random events correctly [1.0]', function(done) {
             generateRandomEvents('e1');
-            const result = sendEventRequest(randomInternalEvents.e1);
-            if (result && result.error) {
-                done(result.error);
-            }
-            else {
-                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
-            }
+            sendEventRequest(randomInternalEvents.e1)
+                .then(() => {
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                })
+                .catch(done);
         });
         it('should confirm that random events are added to data points correctly [1.0]', function(done) {
             verifyAddedEvents(randomInternalEvents.e1).then(() => {
@@ -484,13 +478,11 @@ describe('Testing data points plugin', function() {
         });
         it('should add random events correctly [2.0]', function(done) {
             generateRandomEvents('e2');
-            const result = sendEventRequest(randomInternalEvents.e2);
-            if (result && result.error) {
-                done(result.error);
-            }
-            else {
-                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
-            }
+            sendEventRequest(randomInternalEvents.e2)
+                .then(() => {
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                })
+                .catch(done);
         });
         it('should confirm that random events are added to data points correctly [2.0]', function(done) {
             verifyAddedEvents(randomInternalEvents.e2).then(() => {
@@ -508,13 +500,11 @@ describe('Testing data points plugin', function() {
         });
         it('should add random events correctly [3.0]', function(done) {
             generateRandomEvents('e3');
-            const result = sendEventRequest(randomInternalEvents.e3);
-            if (result && result.error) {
-                done(result.error);
-            }
-            else {
-                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
-            }
+            sendEventRequest(randomInternalEvents.e3)
+                .then(() => {
+                    setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+                })
+                .catch(done);
         });
         it('should confirm that random events are added to data points correctly [3.0]', function(done) {
             verifyAddedEvents(randomInternalEvents.e3).then(() => {

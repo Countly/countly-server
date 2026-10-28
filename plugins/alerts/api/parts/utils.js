@@ -231,7 +231,7 @@ utils.checkAppLocalTimeHour = function(appId, targetHour) {
  */
 utils.getUserEmailsBasedOnGroups = function(groupIds) {
     const memberEmails = [];
-    // eslint-disable-next-line require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc
     const fetchMembers = (groupId) => {
         const model = { "_id": groupId };
         const query = model.inverse ? { group_id: { $ne: model._id } } : { group_id: model._id };

@@ -57,7 +57,7 @@ function renderOrigins(extra) {
         try {
             origins.add(new URL(value).origin);
         }
-        catch (error) {
+        catch {
             log.d('ignoring an unparseable render origin', value);
         }
     });
@@ -87,7 +87,7 @@ function isAllowedRenderUrl(url, origins) {
     try {
         origin = new URL(url).origin;
     }
-    catch (error) {
+    catch {
         return false;
     }
     //a url with no meaningful origin parses to the string "null"; it is not a
@@ -98,7 +98,7 @@ exports.isAllowedRenderUrl = isAllowedRenderUrl;
 /**
   * Function to generate pdf from html
   * @param {string} html - html text to be converted to html
-  * @param {function} callback - callback function after pdf is generated
+  * @param {Function} callback - callback function after pdf is generated
   * @param {object} options - pdf options, default null
   * @param {object} puppeteerArgs - pupeteer arguments, default null
   * @param {boolean} remoteContent - if it is set base64 string of html content buffer is set as pdf content, default true

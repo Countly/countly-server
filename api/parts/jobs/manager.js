@@ -102,7 +102,7 @@ class Manager {
                         /**
                         * Apply transformation to each array elementFromPoint
                         * @param {array} arr - array to transform
-                        * @param {function} transform - transformation function
+                        * @param {Function} transform - transformation function
                         * @returns {Promise} promise
                         **/
                         let sequence = (arr, transform) => {

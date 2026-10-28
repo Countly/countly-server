@@ -398,11 +398,11 @@
             },
             queryChange: function(changedQueryWrapper, isQueryValid) {
                 if (isQueryValid) {
-                    /* eslint-disable */
+
                     var queryObj = Object.assign({}, this.$props.value);
                     queryObj.filter = JSON.stringify({dbFilter: changedQueryWrapper.query});
                     this.$emit("input", Object.assign({}, queryObj));
-                    /* eslint-enable */
+
                 }
             },
             getEventOptions: function() {
