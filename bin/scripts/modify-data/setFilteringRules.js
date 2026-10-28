@@ -8,7 +8,7 @@
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
 var request = require('countly-request')(pluginManager.getConfig("security"));
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 var SERVER_URL = "https://yourpage.count.ly"; //Your server url. Has to be accessable from the machine where this script is run
 var API_KEY = "7e320fb5dd4af5bf123456e776474ef1"; //Any global admin API key

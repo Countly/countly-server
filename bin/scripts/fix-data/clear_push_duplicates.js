@@ -1,7 +1,7 @@
 //Fix push 
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 var app_list = [];//add app ids, if none added will run on all apps
 

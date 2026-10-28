@@ -60,7 +60,7 @@ Output example(if there are errors)
 
 */
 var plugins = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 var crypto = require('crypto');
 
 

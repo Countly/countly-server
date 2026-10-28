@@ -5,7 +5,7 @@
  *  Command: node delete_empty_collections.js
  */
 var plugins = require("../../../plugins/pluginManager");
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 var DRY_RUN = true; // Set this to false to perform actual drop
 Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_drill")]).spread(function(db, drill) {
     function dropCollections(database, collections, dryRun) {
