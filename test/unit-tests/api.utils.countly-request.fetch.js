@@ -373,6 +373,113 @@ describe('countly-request (native fetch)', function() {
         });
     });
 
+    describe('redirects of a request with a body (as got 11)', function() {
+        let srv;
+        let other;
+        const seen = [];
+        before(async function() {
+            const handler = function(base) {
+                return async function(req, res) {
+                    const body = (await collectBody(req)).toString();
+                    seen.push({ method: req.method, url: req.url, body: body, auth: req.headers.authorization || null, type: req.headers['content-type'] || null, base: base });
+                    const m = /^\/r(\d{3})$/.exec(req.url);
+                    if (m) {
+                        res.writeHead(Number(m[1]), { Location: '/target' });
+                        return res.end();
+                    }
+                    if (req.url === '/cross') {
+                        res.writeHead(302, { Location: other.url + '/target' });
+                        return res.end();
+                    }
+                    if (req.url === '/loop') {
+                        res.writeHead(302, { Location: '/loop' });
+                        return res.end();
+                    }
+                    if (req.url === '/no-reason') {
+                        // a status line with no reason phrase
+                        res.socket.end('HTTP/1.1 404 \r\nContent-Length: 0\r\nConnection: close\r\n\r\n');
+                        return;
+                    }
+                    res.writeHead(200);
+                    res.end('arrived');
+                };
+            };
+            srv = await startServer(handler('srv'));
+            other = await startServer(handler('other'));
+        });
+        after(function() {
+            srv.server.close();
+            other.server.close();
+        });
+        beforeEach(function() {
+            seen.length = 0;
+        });
+
+        [301, 302, 307, 308].forEach(function(status) {
+            it('resends the POST and its body after a ' + status, function(done) {
+                request({ uri: srv.url + '/r' + status, method: 'POST', json: { a: 1 } }, function(err, response, body) {
+                    assert.ifError(err);
+                    assert.strictEqual(body, 'arrived');
+                    assert.deepStrictEqual(seen.map(s => s.method + ' ' + s.url + ' ' + s.body), [
+                        'POST /r' + status + ' {"a":1}',
+                        'POST /target {"a":1}'
+                    ]);
+                    assert.strictEqual(seen[1].type, 'application/json');
+                    done();
+                });
+            });
+        });
+
+        it('turns a 303 into a GET without the body', function(done) {
+            request({ uri: srv.url + '/r303', method: 'POST', form: { a: '1' } }, function(err, response, body) {
+                assert.ifError(err);
+                assert.strictEqual(body, 'arrived');
+                assert.strictEqual(seen[1].method, 'GET');
+                assert.strictEqual(seen[1].body, '');
+                assert.strictEqual(seen[1].type, null);
+                done();
+            });
+        });
+
+        it('does not carry credentials to another origin', function(done) {
+            request({ uri: srv.url + '/cross', method: 'POST', json: { a: 1 }, headers: { Authorization: 'Bearer secret' } }, function(err, response, body) {
+                assert.ifError(err);
+                assert.strictEqual(body, 'arrived');
+                assert.strictEqual(seen[0].auth, 'Bearer secret');
+                assert.strictEqual(seen[1].base, 'other');
+                assert.strictEqual(seen[1].auth, null);
+                assert.strictEqual(seen[1].body, '{"a":1}');
+                done();
+            });
+        });
+
+        it('gives up after maxRedirects, as got did', function(done) {
+            request({ uri: srv.url + '/loop', method: 'POST', json: { a: 1 }, maxRedirects: 3 }, function(err) {
+                assert.ok(err);
+                assert.strictEqual(err.code, 'ERR_TOO_MANY_REDIRECTS');
+                assert.strictEqual(seen.length, 4);
+                done();
+            });
+        });
+
+        it('still hands the 3xx back when followRedirect is false', function(done) {
+            request({ uri: srv.url + '/r302', method: 'POST', json: { a: 1 }, followRedirect: false }, function(err, response) {
+                assert.ifError(err);
+                assert.strictEqual(response.statusCode, 302);
+                assert.strictEqual(seen.length, 1);
+                done();
+            });
+        });
+
+        it('names the status in the error when the server sends no reason phrase', function(done) {
+            request.get(srv.url + '/no-reason', function(err) {
+                assert.ok(err);
+                assert.strictEqual(err.message, 'Response code 404 (Not Found)');
+                done();
+            });
+        });
+    });
+
     describe('timeout', function() {
         let srv;
         before(async function() {

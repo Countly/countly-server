@@ -59,6 +59,7 @@
 
 const FormData = require('form-data');
 const { Readable, PassThrough } = require('stream');
+const { STATUS_CODES } = require('http');
 // fetch comes from the same undici package as the dispatchers below. Node's global
 // fetch is the undici bundled with that Node release (6.x on Node 22, 7.x on 24,
 // 8.x on 26), and handing it dispatchers from a different undici major ties this
@@ -68,6 +69,10 @@ const { fetch, Agent, ProxyAgent, EnvHttpProxyAgent } = require('undici');
 // Methods got retries by default (idempotent). Non-idempotent methods (POST,
 // PATCH) are never retried so we don't accidentally re-send a mutation.
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'PUT', 'DELETE', 'OPTIONS', 'TRACE']);
+
+// Redirect statuses, and got's default cap on how many it follows.
+const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308]);
+const DEFAULT_MAX_REDIRECTS = 10;
 
 // Status codes and network error codes got retries by default.
 const RETRYABLE_STATUS = new Set([408, 413, 429, 500, 502, 503, 504, 521, 522, 524]);
@@ -149,7 +154,9 @@ function headersToObject(headers) {
 function makeResponse(res, body) {
     return {
         statusCode: res.status,
-        statusMessage: res.statusText,
+        // undici leaves statusText empty when the server sends no reason
+        // phrase; got filled it in from Node's table, and error messages show it
+        statusMessage: res.statusText || STATUS_CODES[res.status] || '',
         status: res.status,
         headers: headersToObject(res.headers),
         body: body,
@@ -531,7 +538,18 @@ function buildFetchRequest(url, options, config, forcedMethod) {
     // ---- Redirects ----------------------------------------------------------
     // got's default follows redirects. When a caller disables them (SSRF
     // protection), surface the raw 3xx so it can inspect status/location.
-    init.redirect = (options.followRedirect === false) ? 'manual' : 'follow';
+    const followsRedirects = options.followRedirect !== false;
+    init.redirect = followsRedirects ? 'follow' : 'manual';
+
+    // fetch turns a redirected POST (301/302) into a GET and drops its body,
+    // as the Fetch standard says; got 11 sent the same method and body to the
+    // new location. Follow those redirects here when the body can be sent
+    // again, so a POST that is redirected (http to https, say) still delivers
+    // its data. A streamed body cannot be replayed and keeps fetch's handling.
+    const followsBodyRedirects = followsRedirects && typeof init.body !== 'undefined' && !duplexNeeded;
+    if (followsBodyRedirects) {
+        init.redirect = 'manual';
+    }
 
     init.headers = headers;
 
@@ -671,6 +689,9 @@ function buildFetchRequest(url, options, config, forcedMethod) {
         timeout: resolveTimeout(options.timeout),
         retryLimit: resolveRetryLimit(options.retry),
         throwHttpErrors: options.throwHttpErrors !== false,
+        followsRedirects: followsRedirects,
+        followsBodyRedirects: followsBodyRedirects,
+        maxRedirects: (typeof options.maxRedirects === 'number') ? options.maxRedirects : DEFAULT_MAX_REDIRECTS,
         dispatcher: dispatcher,
         ephemeralDispatcher: ephemeralDispatcher,
     };
@@ -785,6 +806,61 @@ function safeCallback(callback, context) {
 }
 
 /**
+ * fetch(), following redirects of a request with a body the way got 11 did:
+ * 301, 302, 307 and 308 keep the method and body, 303 becomes a GET without a
+ * body. Each hop is a fetch on the same dispatcher, so the forbidden-port
+ * check, the SSRF lookup pinning and the proxy apply to every hop. Credentials
+ * are not carried to another origin.
+ * @param {object} req - prepared request from buildFetchRequest
+ * @param {object} init - fetch init for this attempt
+ * @returns {Promise<Response>} the final response
+ */
+async function fetchFollowingBodyRedirects(req, init) {
+    let target = req.url;
+    let hopInit = init;
+    for (let hops = 0; ; hops++) {
+        const res = await fetch(target, hopInit);
+        const location = res.headers.get('location');
+        if (!req.followsBodyRedirects || !REDIRECT_STATUS.has(res.status) || !location) {
+            return res;
+        }
+        await res.arrayBuffer();
+        if (hops >= req.maxRedirects) {
+            const err = new Error('Redirected ' + req.maxRedirects + ' times. Aborting.');
+            err.code = 'ERR_TOO_MANY_REDIRECTS';
+            throw err;
+        }
+        const from = new URL(target);
+        const next = new URL(location, from);
+        const headers = Object.assign({}, hopInit.headers);
+        hopInit = Object.assign({}, hopInit);
+        if (res.status === 303 && hopInit.method !== 'HEAD') {
+            hopInit.method = 'GET';
+            delete hopInit.body;
+            stripHeaders(headers, ['content-type', 'content-length']);
+        }
+        if (next.origin !== from.origin) {
+            stripHeaders(headers, ['authorization', 'cookie']);
+        }
+        hopInit.headers = headers;
+        target = next.href;
+    }
+}
+
+/**
+ * Remove headers by name, whatever their case.
+ * @param {object} headers - plain headers object, changed in place
+ * @param {Array<string>} names - lower-case header names
+ */
+function stripHeaders(headers, names) {
+    Object.keys(headers).forEach(function(key) {
+        if (names.indexOf(key.toLowerCase()) !== -1) {
+            delete headers[key];
+        }
+    });
+}
+
+/**
  * Execute a request-style call on native fetch, invoking the node-style
  * callback with `(error, response, body)`.
  *
@@ -824,10 +900,10 @@ function execute(url, options, config, callback, forcedMethod) {
 
                 let outcome;
                 try {
-                    const res = await fetch(req.url, init);
+                    const res = await fetchFollowingBodyRedirects(req, init);
                     const bodyText = await res.text();
                     const response = makeResponse(res, bodyText);
-                    if (!isResponseOk(res.status, req.init.redirect !== 'manual')) {
+                    if (!isResponseOk(res.status, req.followsRedirects)) {
                         const httpError = makeHTTPError(response);
                         // got retried a retryable status whether or not
                         // throwHttpErrors was set: that option decides how the
