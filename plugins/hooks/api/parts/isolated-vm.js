@@ -24,7 +24,7 @@ let loaded = null;
 
 /**
  * Load isolated-vm for this Node.js, once
- * @param {function} [requireFn] - require to use, for tests
+ * @param {Function} [requireFn] - require to use, for tests
  * @param {string} [nodeVersion] - Node.js version, for tests
  * @returns {object} the isolated-vm module
  */
