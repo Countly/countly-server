@@ -64,6 +64,8 @@ const { STATUS_CODES } = require('http');
 // fetch is the undici bundled with that Node release (6.x on Node 22, 7.x on 24,
 // 8.x on 26), and handing it dispatchers from a different undici major ties this
 // wrapper's behaviour to whichever Node it runs on.
+// Pinned to undici 7: undici 8 needs Node >= 22.19 and throws on require on Node 20
+// and early 22.x, which 25.03 installs still run; undici 7 supports Node >= 20.18.1.
 const { fetch, Agent, ProxyAgent, EnvHttpProxyAgent } = require('undici');
 
 // Methods got retries by default (idempotent). Non-idempotent methods (POST,
@@ -404,9 +406,9 @@ function proxyEnv(name) {
  */
 function envProxyOptions() {
     const all = proxyEnv('all_proxy');
-    // undici 8 stopped tunnelling (CONNECT) plain-http targets by default and
-    // sends them to the proxy as absolute-URL requests instead; keep tunnelling,
-    // as undici 7 did, for CONNECT-only proxies. Same for the ProxyAgents below.
+    // Tunnel (CONNECT) plain-http targets too, for CONNECT-only proxies. undici 7
+    // does this by default; undici 8 stopped, so keep it explicit for a later
+    // upgrade. Same for the ProxyAgents below.
     const opts = { proxyTunnel: true };
     const forHttp = proxyEnv('http_proxy') || all;
     const forHttps = proxyEnv('https_proxy') || all;
