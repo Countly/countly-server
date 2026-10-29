@@ -7,10 +7,29 @@
 
 var ip = {},
     net = require('net'),
-    plugins = require('../../../plugins/pluginManager.js'),
-    icanhazip = require("icanhazip");
+    plugins = require('../../../plugins/pluginManager.js');
 
 const log = require('../../utils/log.js')('core:api');
+
+// Replaces the `icanhazip` package, which fetched http://icanhazip.com/ over cleartext,
+// passed on whatever body came back regardless of status, and asked the dual-stack host
+// from a function named IPv4(). The 6s ceiling and the newline strip match what it did.
+const EXTERNAL_IP_URL = 'https://ipv4.icanhazip.com/';
+const EXTERNAL_IP_TIMEOUT_MS = 6000;
+
+/**
+ * Look up this host's external IPv4 address
+ * @returns {Promise<string>} the address, with the trailing newline stripped
+ */
+async function fetchExternalIPv4() {
+    // AbortSignal.timeout is native, not the Bluebird .timeout()
+    // eslint-disable-next-line no-restricted-syntax
+    const res = await fetch(EXTERNAL_IP_URL, { signal: AbortSignal.timeout(EXTERNAL_IP_TIMEOUT_MS) });
+    if (!res.ok) {
+        throw new Error(EXTERNAL_IP_URL + ' responded ' + res.status + ' ' + res.statusText);
+    }
+    return (await res.text()).trim();
+}
 /**
  * Function to get the hostname/ip address/url to access dashboard
  * @param  {Function} callback - callback function that returns the hostname
@@ -27,15 +46,13 @@ ip.getHost = function(callback) {
     }
     else {
         if (!offlineMode) {
-            icanhazip.IPv4().then(function(externalIp) {
+            fetchExternalIPv4().then(function(externalIp) {
                 callback(null, "http://" + externalIp);
             }).catch(function(err) {
-                if (err) {
-                    log.e(err);
-                    getNetworkIP(function(err2, ipaddress) {
-                        callback(err2, "http://" + ipaddress);
-                    });
-                }
+                log.e(err);
+                getNetworkIP(function(err2, ipaddress) {
+                    callback(err2, "http://" + ipaddress);
+                });
             });
         }
         else {

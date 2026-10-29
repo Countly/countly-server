@@ -16,7 +16,7 @@ var pluginDependencies = require('./pluginDependencies.js'),
     async = require("async"),
     _ = require('underscore'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../api/utils/promise.js"),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
@@ -934,19 +934,6 @@ var pluginManager = function pluginManager() {
         events[event][unshift ? 'unshift' : 'push']({"cb": callback, "name": featureName});
     };
 
-    // TODO: Remove this function and all it calls when moving to Node 12.
-    var promiseAllSettledBluebirdToStandard = function(bluebirdResults) {
-        return bluebirdResults.map((bluebirdResult) => {
-            const isFulfilled = bluebirdResult.isFulfilled();
-
-            const status = isFulfilled ? 'fulfilled' : 'rejected';
-            const value = isFulfilled ? bluebirdResult.value() : undefined;
-            const reason = isFulfilled ? undefined : bluebirdResult.reason();
-
-            return { status, value, reason };
-        });
-    };
-
     /**
     * Dispatch specific event on api side
     * @param {string} event - event to dispatch
@@ -991,14 +978,14 @@ var pluginManager = function pluginManager() {
                     Promise.allSettled(promises).then(function(results) {
                         resolve();
                         if (callback) {
-                            callback(null, promiseAllSettledBluebirdToStandard(results));
+                            callback(null, results);
                         }
                     });
                 }));
             }
             else if (callback) {
                 Promise.allSettled(promises).then(function(results) {
-                    callback(null, promiseAllSettledBluebirdToStandard(results));
+                    callback(null, results);
                 });
             }
         }

@@ -348,7 +348,10 @@ jobs:
           cd ui-tests
           npm install
           if [ "${{ matrix.test_type }}" = "dashboard" ]; then
-            xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
+            # The dashboard picks "today" from the browser clock, while the API buckets data by the
+            # app's timezone. Run the browser in the test app's timezone (bin/backup/apps.json) so
+            # both agree on the date between 21:00 and 24:00 UTC.
+            TZ=Europe/Istanbul xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
           else
             xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:onboarding
           fi

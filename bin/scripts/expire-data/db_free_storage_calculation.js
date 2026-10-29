@@ -13,7 +13,7 @@ var SCALE = 1024 * 1024; //megabytes
 
 var asyncjs = require("async");
 var crypto = require('crypto');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 var plugins = require("../../../plugins/pluginManager");
 var app_map = {};
 var result = {available_for_reuse: 0, total_will_be_free: 0, count: 0, apps: {}};

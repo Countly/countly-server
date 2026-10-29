@@ -60,6 +60,7 @@ var versionInfo = require('./version.info'),
     countlyFs = require('../../api/utils/countlyFs.js'),
     common = require('../../api/utils/common.js'),
     preventBruteforce = require('./libs/preventBruteforce.js'),
+    { createStaticFileMatcher } = require('./libs/static-files.js'),
     plugins = require('../../plugins/pluginManager.js'),
     request = require('countly-request')(plugins.getConfig("security")),
     countlyConfig = require('./config', 'dont-enclose'),
@@ -381,18 +382,28 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app = expose(app);
     app.enable('trust proxy');
     app.set('x-powered-by', false);
+    const isStaticFile = createStaticFileMatcher({
+        basePath: countlyConfig.path,
+        coreRoot: __dirname + '/public',
+        pluginsRoot: path.resolve(__dirname, '../../plugins')
+    });
     const limiter = rateLimit({
         keyGenerator: common.getIpAddress,
         windowMs: parseInt(plugins.getConfig("security").dashboard_rate_limit_window) * 1000,
         max: parseInt(plugins.getConfig("security").dashboard_rate_limit_requests),
         headers: false,
-        //limit only in production mode
-        skip: function() {
-            return !plugins.getConfig("frontend").production || plugins.getConfig("security").dashboard_rate_limit_requests <= 0;
+        skip: function(req) {
+            //limit only in production mode
+            if (!plugins.getConfig("frontend").production || plugins.getConfig("security").dashboard_rate_limit_requests <= 0) {
+                return true;
+            }
+            //static files do not count: one page load fetches dozens of them, and the
+            //feedback popups load theirs for every end user behind the same address
+            return isStaticFile(req);
         }
     });
 
-    //  apply to all requests
+    //  apply to all requests except static files
     app.use(limiter);
 
     var loadedThemes = {};

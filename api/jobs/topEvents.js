@@ -1,6 +1,6 @@
 const job = require("../parts/jobs/job.js");
 const crypto = require("crypto");
-const Promise = require("bluebird");
+const Promise = require("../utils/promise.js");
 const countlyApi = {
     data: {
         fetch: require("../parts/data/fetch.js"),
