@@ -12,6 +12,6 @@
   "license": "ISC",
   "dependencies": {
     "form-data": "^4.0.0",
-    "undici": "^8.11.0"
+    "undici": "^7.30.1"
   }
 }
