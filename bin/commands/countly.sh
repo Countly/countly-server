@@ -123,6 +123,8 @@ countly_upgrade (){
         (cd "$DIR/../.." ;
         echo "Installing plugins...";
         node "$DIR/../scripts/install_plugins.js" --skip-production;
+        echo "Loading GeoNames data...";
+        node "$DIR/../offline-geocoder/scripts/import_geonames_mongodb.js" --if-changed;
         echo "Preparing production files...";
         countly task dist-all;
         echo "Restarting Countly...";
