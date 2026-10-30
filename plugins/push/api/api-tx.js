@@ -70,10 +70,11 @@ async function check(params, push) {
     if (!trigger) {
         throw new PushError('Message is not api', ERROR.DATA_COUNTLY);
     }
-    else if (trigger.start.getTime() > data.start.getTime()) {
+    // only /push takes a start date; /pop removes queued notifications whatever their date
+    else if (push && trigger.start.getTime() > data.start.getTime()) {
         throw new PushError('Message start date is later than push date', ERROR.DATA_COUNTLY);
     }
-    else if (trigger.end && trigger.end.getTime() < data.start.getTime()) {
+    else if (push && trigger.end && trigger.end.getTime() < data.start.getTime()) {
         throw new PushError('Message end date is earlier than push date', ERROR.DATA_COUNTLY);
     }
 
