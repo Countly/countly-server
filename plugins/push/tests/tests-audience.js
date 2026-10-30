@@ -28,17 +28,21 @@ describe('PUSH AUDIENCE TESTS', () => {
             .expect('Content-Type', /json/)
             .expect(200);
 
-        let db = await plugins.dbConnection();
-        await db.collection('apps').updateOne({_id: db.ObjectID(aid)}, {
-            $set: {
+        let db = await plugins.dbConnection(),
+            creds = {
                 'plugins.push.t': {
                     _id: db.ObjectID(),
                     type: 'apn_universal',
                     key: 'key',
                     secret: 'secret'
                 },
-            }
+            };
+        // estimating requires credentials for every platform estimated, and these tests
+        // estimate all of them; push never contacts a provider here
+        platforms.filter(p => p !== 't').forEach(p => {
+            creds['plugins.push.' + p] = {_id: db.ObjectID(), type: 'test'};
         });
+        await db.collection('apps').updateOne({_id: db.ObjectID(aid)}, {$set: creds});
 
         db.close();
 

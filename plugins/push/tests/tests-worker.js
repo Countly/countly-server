@@ -24,6 +24,18 @@ const cfg = {
     }
 };
 
+/**
+ * Set a value at a dotted path, creating objects on the way
+ * @param {object} obj - target
+ * @param {string} path - dotted path, as in a MongoDB $set
+ * @param {any} value - value
+ */
+function setPath(obj, path, value) {
+    const keys = path.split('.'),
+        last = keys.pop();
+    keys.reduce((o, k) => o[k] = o[k] || {}, obj)[last] = value;
+}
+
 function db_fixture(ret, total = 1000) {
     ret.messageUpdates = [];
     ret.messageSaves = [];
@@ -61,9 +73,18 @@ function db_fixture(ret, total = 1000) {
                         ret.messageUpdates.push(update);
                         if (update.$set.status === 'sending') {
                             let m = JSON.parse(JSON.stringify(Object.values(data.messages).filter(m => m._id.toString() === q._id.toString())[0]));
+                            // apply the update as MongoDB would: dotted $set keys and the $push of the
+                            // new sending run (resultor counts into result.lastRun)
+                            Object.keys(update.$set).forEach(k => setPath(m, k, update.$set[k]));
+                            Object.keys(update.$push || {}).forEach(k => {
+                                const path = k.split('.'),
+                                    parent = path.slice(0, -1).reduce((o, p) => o[p] = o[p] || {}, m),
+                                    last = path[path.length - 1];
+                                parent[last] = (parent[last] || []).concat([update.$push[k]]);
+                            });
                             return {
                                 ok: true,
-                                value: Object.assign(m, update.$set, {
+                                value: Object.assign(m, {
                                     state: MessageState.Created | MessageState.Scheduled | MessageState.Streaming
                                 })
                             };
@@ -224,7 +245,7 @@ describe('PUSH WORKER', () => {
 
             // wait for last stream close
             resultor.once('close', () => {
-                this.log.i('close');
+                log.i('close');
                 pools.exit();
                 should.equal(dbdata.pushDeletes.length, total);
                 should.equal(Object.keys(dbdata.bulks).length, 1);
