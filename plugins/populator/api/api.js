@@ -49,6 +49,13 @@ const templateProperties = {
 
 const FEATURE_NAME = 'populator';
 
+//populator_environment_users ids are "<appId>_<templateId>_<environmentId>_<deviceId>" and are
+//looked up by prefix, so both ids must be in their generated format before they go into a regex.
+//A template id is a custom template's ObjectID or the id of a built-in template (defaultSaas, ...).
+const TEMPLATE_ID_FORMAT = /^(?:[a-f0-9]{24}|default[A-Za-z]+)$/;
+//An environment id is the sha1 hex digest made in saveEnvironment.
+const ENVIRONMENT_ID_FORMAT = /^[a-f0-9]{40}$/;
+
 (function() {
 
     plugins.register("/permissions/features", function(ob) {
@@ -119,6 +126,11 @@ const FEATURE_NAME = 'populator';
         validateDelete(obParams, FEATURE_NAME, function(params) {
             let templateId;
 
+            //only custom templates are stored, so only an ObjectID can be removed
+            if (!/^[a-f0-9]{24}$/.test(params.qstring.template_id + "")) {
+                common.returnMessage(obParams, 400, 'Invalid template id.');
+                return false;
+            }
             try {
                 templateId = common.db.ObjectID(params.qstring.template_id);
             }
@@ -172,7 +184,7 @@ const FEATURE_NAME = 'populator';
                     common.db.collection('populator_templates').remove({"_id": templateId }, function(removeTemplateErr) {
                         if (!removeTemplateErr) {
                             plugins.dispatch("/systemlogs", {params: params, action: "populator_template_removed", data: {templateId: templateId}});
-                            common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + params.qstring.app_id + "_" + ob.params.qstring.template_id) }}, function(errEnvUsers) {
+                            common.db.collection('populator_environment_users').deleteMany({"_id": { $regex: new RegExp("^" + params.app_id + "_" + params.qstring.template_id + "_") }}, function(errEnvUsers) {
                                 if (errEnvUsers) {
                                     log.e("Error deleting populator environment users while deleting template", errEnvUsers);
                                     common.returnMessage(ob.params, 500, errEnvUsers.message);
@@ -770,12 +782,20 @@ const FEATURE_NAME = 'populator';
             common.returnMessage(obParams, 401, "Missing parameter app_id");
             return false;
         }
+        if (!TEMPLATE_ID_FORMAT.test(obParams.qstring.template_id + "")) {
+            common.returnMessage(obParams, 400, "Invalid parameter template_id");
+            return false;
+        }
+        if (!ENVIRONMENT_ID_FORMAT.test(obParams.qstring.environment_id + "")) {
+            common.returnMessage(obParams, 400, "Invalid parameter environment_id");
+            return false;
+        }
         validateRead(obParams, FEATURE_NAME, function() {
             let startPos = 0;
             let dataLength = 0;
             let pipeline = [{
                 $match: {
-                    "_id": { $regex: new RegExp("^" + obParams.qstring.app_id + "_" + obParams.qstring.template_id + "_" + obParams.qstring.environment_id) }
+                    "_id": { $regex: new RegExp("^" + obParams.app_id + "_" + obParams.qstring.template_id + "_" + obParams.qstring.environment_id + "_") }
                 }
             }];
             if (obParams.qstring.iDisplayStart && parseInt(obParams.qstring.iDisplayStart, 10) !== 0) {
@@ -848,10 +868,18 @@ const FEATURE_NAME = 'populator';
             common.returnMessage(obParams, 401, "Missing parameter app_id");
             return false;
         }
+        if (!TEMPLATE_ID_FORMAT.test(obParams.qstring.template_id + "")) {
+            common.returnMessage(obParams, 400, "Invalid parameter template_id");
+            return false;
+        }
+        if (!ENVIRONMENT_ID_FORMAT.test(obParams.qstring.environment_id + "")) {
+            common.returnMessage(obParams, 400, "Invalid parameter environment_id");
+            return false;
+        }
         validateDelete(obParams, FEATURE_NAME, function() {
             common.db.collection('populator_environment_users').deleteMany({
                 "_id": {
-                    $regex: new RegExp("^" + obParams.qstring.app_id + "_" + obParams.qstring.template_id + "_" + obParams.qstring.environment_id)
+                    $regex: new RegExp("^" + obParams.app_id + "_" + obParams.qstring.template_id + "_" + obParams.qstring.environment_id + "_")
                 }
             }, function(err) {
                 if (err) {

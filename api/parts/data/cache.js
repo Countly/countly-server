@@ -4,7 +4,7 @@ const log = require('../../utils/log.js')('cache:' + process.pid),
     // common = require('../../utils/common.js'),
     { CentralWorker, CentralMaster } = require('../jobs/ipc.js'),
     { Jsonable } = require('../../utils/models'),
-    LRU = require('lru-cache'),
+    { LRUCache: LRU } = require('lru-cache'),
     config = require('../../config.js');
 
 const CENTRAL = 'cache', OP = {INIT: 'i', PURGE: 'p', READ: 'r', WRITE: 'w', UPDATE: 'u'};
@@ -586,7 +586,8 @@ class CacheMaster {
             age = config.api && config.api.cache && config.api.cache[group] && config.api.cache[group].age !== undefined ? config.api.cache[group].age : Number.MAX_SAFE_INTEGER;
         }
 
-        this.data.write(group, new DataStore(size, age, k => {
+        // lru-cache calls dispose(value, key, reason); workers purge by key
+        this.data.write(group, new DataStore(size, age, (value, k) => {
             this.ipc.send(0, {o: OP.PURGE, g: group, k});
         }, Cls));
 

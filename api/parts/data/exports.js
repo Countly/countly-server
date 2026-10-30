@@ -8,7 +8,7 @@ var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
-    json2csv = require('json2csv');
+    { Parser: CsvParser } = require('@json2csv/plainjs');
 
 const log = require('./../../utils/log.js')('core:export');
 const { scopeQueryToApps } = require('./../../utils/rights.js');
@@ -195,13 +195,13 @@ exports.convertData = function(data, type) {
         //the text qualifier rather than protection: the client strips it while parsing.
         //Field names are attacker controlled too when they come from event segmentation,
         //and json2csv writes them as the header row.
-        return json2csv.parse(obj.data.map(function(row) {
+        return new CsvParser({fields: obj.fields.map(preventCSVInjection)}).parse(obj.data.map(function(row) {
             var neutralized = {};
             for (var key in row) {
                 neutralized[key] = preventCSVInjection(row[key]);
             }
             return neutralized;
-        }), {fields: obj.fields.map(preventCSVInjection), excelStrings: false});
+        }));
     case "xls":
     case "xlsx":
         obj = flattenArray(data);
