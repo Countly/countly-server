@@ -15,7 +15,7 @@ const { Transform } = require('stream');
  *
  * @param {object} cursor - a MongoDB cursor, or anything with a `stream()` returning a Readable
  * @param {object} [options] - stream options
- * @param {function} [options.transform] - called with each document, returns what to emit
+ * @param {Function} [options.transform] - called with each document, returns what to emit
  * @returns {stream.Readable} the document stream
  */
 function cursorStream(cursor, options) {
