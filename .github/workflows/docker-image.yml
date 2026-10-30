@@ -5,18 +5,36 @@ on:
     tags: '**'
    # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  
+    inputs:
+      version:
+        description: 'Existing tag to build (empty: the ref the workflow runs on)'
+        required: false
+        default: ''
+      images:
+        description: 'Images to build'
+        type: choice
+        options: [all, server, api, frontend, core]
+        default: all
+
 jobs:
   push_server:
     name: Push Countly Server Image
-    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.images == 'all' || inputs.images == 'server' }}
+    # ubuntu-24.04, not ubuntu-latest: this image installs and starts MongoDB 8 during the
+    # build, and MongoDB 8 refuses to start on the Linux 6.19+ kernel of ubuntu-26.04
+    # runners (SERVER-121912), so the build waited for it until the job timed out
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repo
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.version || github.ref }}
         
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        env:
+          VERSION: ${{ inputs.version }}
+        run: echo "tag=${VERSION:-${GITHUB_REF#refs/*/}}" >> "$GITHUB_OUTPUT"
       
       - name: Check output
         env:
@@ -40,14 +58,19 @@ jobs:
           
   push_api:
     name: Push Countly API Image
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.images == 'all' || inputs.images == 'api' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.version || github.ref }}
         
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        env:
+          VERSION: ${{ inputs.version }}
+        run: echo "tag=${VERSION:-${GITHUB_REF#refs/*/}}" >> "$GITHUB_OUTPUT"
       
       - name: Check output
         env:
@@ -65,20 +88,26 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
         with:
+          context: .
           push: true
           file: ./Dockerfile-api
           tags: countly/api:latest,countly/api:${{ steps.vars.outputs.tag }}
 
   push_frontend:
     name: Push Countly Frontend Image
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.images == 'all' || inputs.images == 'frontend' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.version || github.ref }}
         
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        env:
+          VERSION: ${{ inputs.version }}
+        run: echo "tag=${VERSION:-${GITHUB_REF#refs/*/}}" >> "$GITHUB_OUTPUT"
       
       - name: Check output
         env:
@@ -96,20 +125,26 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
         with:
+          context: .
           push: true
           file: ./Dockerfile-frontend
           tags: countly/frontend:latest,countly/frontend:${{ steps.vars.outputs.tag }}
           
   push_all:
     name: Push Countly Single-All Image
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.images == 'all' || inputs.images == 'core' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.version || github.ref }}
         
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        env:
+          VERSION: ${{ inputs.version }}
+        run: echo "tag=${VERSION:-${GITHUB_REF#refs/*/}}" >> "$GITHUB_OUTPUT"
       
       - name: Check output
         env:
@@ -127,6 +162,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
         with:
+          context: .
           push: true
           file: ./Dockerfile-core
-          tags: countly/countly-core:latest,countly/countly-core:${{ steps.vars.outputs.tag }},countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+          tags: countly/countly-core:latest,countly/countly-core:${{ steps.vars.outputs.tag }},countly/countly-core:pipelines-${{ inputs.version || github.base_ref || github.ref_name }}
