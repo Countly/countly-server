@@ -12,8 +12,9 @@ describe('PUSH MIGRATE', () => {
         note._id.should.equal(msg._id);
         note.apps[0].should.equal(msg.app);
         note.platforms.should.deepEqual(msg.platforms);
-        msg.state.should.equal(State.Done);
-        msg.status.should.equal(Status.Stopped);
+        // a created (not yet scheduled) message stays created; see 3383c463302
+        msg.state.should.equal(State.Created);
+        msg.status.should.equal(Status.Created);
         should.ok(msg.filter instanceof Filter);
         should.ok(msg.result instanceof Result);
         should.ok(Array.isArray(msg.triggers));
@@ -90,7 +91,7 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(en.specific);
 
         should.not.exist(msg.result.error);
-        should.not.exist(msg.result.errors);
+        should.deepEqual(msg.result.errors, {});
         should.not.exist(msg.result.responses);
         should.not.exist(msg.result.batches);
         should.not.exist(msg.result.next);
@@ -165,7 +166,7 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(a.specific);
 
         should.not.exist(msg.result.error);
-        should.not.exist(msg.result.errors);
+        should.deepEqual(msg.result.errors, {});
         should.not.exist(msg.result.responses);
         should.not.exist(msg.result.batches);
         should.not.exist(msg.result.next);
