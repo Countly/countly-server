@@ -1028,3 +1028,102 @@ describe('Testing Reports after access is revoked', function() {
             });
     });
 });
+
+describe('Testing report subscription links', function() {
+    const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+    const APP_ID = testUtils.get("APP_ID");
+    const uniq = Date.now();
+    const email = "subscription-" + uniq + "@abc.com";
+    let secretKey = "";
+    let reportId = "";
+    let deletedReportId = "";
+
+    /**
+     * build the data parameter of a subscription link, the same way the report sender does
+     * @param {string} id - report id
+     * @param {string} mail - subscriber email
+     * @returns {string} encoded data parameter
+     */
+    function linkData(id, mail) {
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv('aes-256-gcm', secretKey, iv);
+        const encrypted = Buffer.concat([cipher.update(JSON.stringify({reportID: id, email: mail})), cipher.final()]);
+        return encodeURIComponent(JSON.stringify({iv: iv.toString('hex'), content: encrypted.toString('hex'), authTag: cipher.getAuthTag().toString('hex')}));
+    }
+
+    /**
+     * create a core report on the test app and return its id
+     * @param {string} title - report title
+     * @returns {Promise<string>} report id
+     */
+    async function createReport(title) {
+        const reportConfig = Object.assign({}, newReport, {title: title, apps: [APP_ID], emails: [email]});
+        await request.get('/i/reports/create?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&args=' + encodeURIComponent(JSON.stringify(reportConfig))).expect(200);
+        const report = await testUtils.db.collection('reports').findOne({title: title});
+        should.exist(report);
+        return report._id + "";
+    }
+
+    /**
+     * read the emails of the report
+     * @returns {Promise<Array>} report emails
+     */
+    async function reportEmails() {
+        const report = await testUtils.db.collection('reports').findOne({_id: testUtils.db.ObjectID(reportId)});
+        return report.emails;
+    }
+
+    before(async function() {
+        const config = await testUtils.db.collection('plugins').findOne({_id: "plugins"});
+        secretKey = config.reports.secretKey;
+        should.exist(secretKey);
+        reportId = await createReport("subscription-" + uniq);
+        deletedReportId = await createReport("subscription-deleted-" + uniq);
+        await request.get('/i/reports/delete?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&args=' + encodeURIComponent(JSON.stringify({_id: deletedReportId}))).expect(200);
+    });
+
+    ['unsubscribe_report', 'subscribe_report'].forEach(function(endpoint) {
+        describe('/' + endpoint, function() {
+            it('should answer a link without data with 400', async function() {
+                await request.get('/' + endpoint).expect('Content-Type', /text\/html/).expect(400);
+            });
+
+            it('should answer a malformed data parameter with 400', async function() {
+                await request.get('/' + endpoint + '?data=' + encodeURIComponent('{"iv":')).expect('Content-Type', /text\/html/).expect(400);
+                await request.get('/' + endpoint + '?data=null').expect(400);
+            });
+
+            it('should answer a token that does not decrypt with 400', async function() {
+                const data = {iv: crypto.randomBytes(16).toString('hex'), content: crypto.randomBytes(40).toString('hex'), authTag: crypto.randomBytes(16).toString('hex')};
+                await request.get('/' + endpoint + '?data=' + encodeURIComponent(JSON.stringify(data))).expect('Content-Type', /text\/html/).expect(400);
+            });
+
+            it('should answer a valid token for a deleted report with 404', async function() {
+                await request.get('/' + endpoint + '?data=' + linkData(deletedReportId, email)).expect('Content-Type', /text\/html/).expect(404);
+                should.not.exist(await testUtils.db.collection('reports').findOne({_id: testUtils.db.ObjectID(deletedReportId)}));
+            });
+
+            it('should keep serving the dashboard', async function() {
+                await request.get('/login').expect(200);
+            });
+        });
+    });
+
+    it('should unsubscribe with a valid link', async function() {
+        const res = await request.get('/unsubscribe_report?data=' + linkData(reportId, email)).expect('Content-Type', /text\/html/).expect(200);
+        res.text.should.containEql('_changeSubscriptions()');
+        (await reportEmails()).should.not.containEql(email);
+    });
+
+    it('should subscribe again with the same link', async function() {
+        const res = await request.get('/subscribe_report?data=' + linkData(reportId, email)).expect('Content-Type', /text\/html/).expect(200);
+        res.text.should.containEql('_changeSubscriptions()');
+        (await reportEmails()).should.containEql(email);
+    });
+
+    after(async function() {
+        if (reportId) {
+            await request.get('/i/reports/delete?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&args=' + encodeURIComponent(JSON.stringify({_id: reportId})));
+        }
+    });
+});
