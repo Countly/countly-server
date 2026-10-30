@@ -30,7 +30,7 @@
 
 var prefs = require('../config.js', 'dont-enclose').logging || {};
 prefs.default = prefs.default || "warn";
-var colors = require('colors');
+const { styleText } = require('util');
 var deflt = (prefs && prefs.default) ? prefs.default : 'error';
 
 for (let level in prefs) {
@@ -49,14 +49,14 @@ var styles = {
         warn: function(args) {
             for (var i = 0; i < args.length; i++) {
                 if (typeof args[i] === 'string') {
-                    args[i] = colors.bgYellow.black(args[i].black);
+                    args[i] = styleText(['bgYellow', 'black'], args[i]);
                 }
             }
         },
         error: function(args) {
             for (var i = 0; i < args.length; i++) {
                 if (typeof args[i] === 'string') {
-                    args[i] = colors.bgRed.white(args[i].white);
+                    args[i] = styleText(['bgRed', 'white'], args[i]);
                 }
             }
         }
@@ -103,7 +103,7 @@ var log = function(level, prefix, enabled, outer, out, styler) {
                 styler(args);
             }
             else {
-                args[0] = (new Date().toISOString() + ': ' + level + '\t').gray + colors[color]('[' + (prefix || '') + ']\t') + args[0];
+                args[0] = styleText('gray', new Date().toISOString() + ': ' + level + '\t') + styleText(color, '[' + (prefix || '') + ']\t') + args[0];
             }
             // args[0] = (new Date().toISOString() + ': ' + (prefix || '')).gray + args[0];
             // console.log('Logging %j', args);
