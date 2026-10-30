@@ -1,4 +1,4 @@
-const { ObjectID } = require('bson');
+const { ObjectID } = require('../api/send/data/db');
 
 const d = Date.now(),
     {hash} = require('../api/send').util;

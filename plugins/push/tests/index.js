@@ -1,9 +1,9 @@
-// require('./tests-unit.js');
-// require('./tests-process.js');
-// require('./tests-api-data.js');
-// require('./tests-api-message.js');
-// require('./tests-api-message-abort.js');
-// require('./tests-api-message-resume.js');
-// require('./tests-api-auto.js');
-// require('./tests-api-personalization.js');
-// require('./tests-api-tx.js');
+// The plugin test runner (test/4.plugins/1.plugin.tests.js) requires plugins/push/tests,
+// which resolves to this file.
+require('./tests-compile.js');
+require('./tests-platforms.js');
+require('./tests-migrate.js');
+require('./tests-api-credentials.js');
+require('./tests-worker.js');
+require('./tests-audience.js');
+require('./tests-integration.js');

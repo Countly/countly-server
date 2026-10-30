@@ -2,7 +2,7 @@ const should = require('should'),
     data = require('./data'),
     { ValidationError } = require('../api/send'),
     { onAppPluginsUpdate } = require('../api/api-push'),
-    { ObjectID } = require('mongodb'),
+    { ObjectID, ObjectId } = require('../api/send/data/db'),
     FORGE = require('node-forge'),
     FS = require('fs');
 
@@ -65,8 +65,8 @@ function db_fixture(ret) {
                 };
             }
         },
-        isoid: id => id && id instanceof ObjectID,
-        oid: id => !id ? id : id instanceof ObjectID ? id : ObjectID(id)
+        isoid: id => id && id instanceof ObjectId,
+        oid: id => !id ? id : id instanceof ObjectId ? id : ObjectID(id)
     };
 }
 
