@@ -261,6 +261,19 @@ jobs:
           npm install
           /sbin/my_init &
           node bin/scripts/test.connection.js
+          # On a fresh database the first start installs every plugin while its workers are
+          # already loading, so a worker can miss later plugins' jobs (push:schedule) until
+          # it restarts. Wait for the first start to record every plugin, then restart the
+          # API once, as an install does after setup.
+          PLUGIN_DIRS=$(find plugins -mindepth 1 -maxdepth 1 -type d | wc -l)
+          for i in $(seq 1 180); do
+            RECORDED=$(mongosh mongodb/countly --quiet --eval 'Object.keys((db.plugins.findOne({_id: "plugins"}) || {}).plugins || {}).length')
+            [ "$RECORDED" -ge "$PLUGIN_DIRS" ] && break
+            sleep 1
+          done
+          echo "plugins recorded: $RECORDED of $PLUGIN_DIRS"
+          sv restart countly-api
+          node bin/scripts/test.connection.js
           npx grunt mochaTest       
 
   ui-tests:

@@ -1,18 +1,15 @@
 const testUtils = require('../../../test/testUtils'),
     { PLATFORMS_TITLES, FIELDS_TITLES } = require('../api/send'),
     plugins = require('../../pluginManager'),
-    // supertest = require('supertest').agent(testUtils.url),
-    supertest = require('supertest').agent('http://localhost:3001'),
+    supertest = require('supertest').agent(testUtils.url),
     should = require('should'),
     { onAppPluginsUpdate } = require('../api/api-push'),
     platforms = ['i', 'a'];
 
-// let aid,
-//     app_key,
-//     api_key,
-let aid = '617e6cf3cd001aac73834e18',
-    app_key = '78fb16cbaa61399d0f13f9e96961bd9983a0a416',
-    api_key = '4e170a5da90fdf5afd94f85eefdb015b',
+// the test app the plugin test run sets up (test/testUtils.js), read in the first test
+let aid = '',
+    app_key = '',
+    api_key = '',
     users = {
         did0: {device_id: 'did0', tokens: [{ios_token: 'token_id0', test_mode: 1}], events: [{key: 'push_cart'}, {key: 'push_buy', count: 1, sum: 200, segmentation: {product: 'carrot'}}]},
         did1: {device_id: 'did1', tokens: [{ios_token: 'token_ip1', test_mode: 0}], locale: 'en_US'},
