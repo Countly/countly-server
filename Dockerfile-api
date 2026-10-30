@@ -8,7 +8,7 @@ ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN apt-get update && \
 	apt-get install -y curl wget git make gcc g++ unzip xz-utils build-essential sudo \
 		python3 python3-setuptools zlib1g-dev libssl-dev libncurses-dev libgdbm-dev libnss3-dev libsqlite3-dev \
-		libreadline-dev libffi-dev libbz2-dev sqlite3 ca-certificates
+		libreadline-dev libffi-dev libbz2-dev ca-certificates
 
 # Python 3.12 from source for the ab-testing cmdstanpy models.
 # pip>=26.2.2 and certifi>=2026.10.19 drop the distrusted emSign roots.

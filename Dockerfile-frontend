@@ -16,7 +16,7 @@ ENV COUNTLY_CONTAINER="frontend" \
 # Build dependencies live only in this stage and are never shipped
 RUN apt-get update && \
 	apt-get install -y curl wget git make gcc g++ unzip xz-utils build-essential sudo \
-		python3 python3-setuptools sqlite3 ca-certificates
+		python3 python3-setuptools ca-certificates
 
 WORKDIR /opt/countly
 COPY . .
