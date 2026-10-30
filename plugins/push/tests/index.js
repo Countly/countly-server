@@ -1,9 +1,0 @@
-// require('./tests-unit.js');
-// require('./tests-process.js');
-// require('./tests-api-data.js');
-// require('./tests-api-message.js');
-// require('./tests-api-message-abort.js');
-// require('./tests-api-message-resume.js');
-// require('./tests-api-auto.js');
-// require('./tests-api-personalization.js');
-// require('./tests-api-tx.js');

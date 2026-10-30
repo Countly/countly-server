@@ -12,8 +12,9 @@ describe('PUSH MIGRATE', () => {
         note._id.should.equal(msg._id);
         note.apps[0].should.equal(msg.app);
         note.platforms.should.deepEqual(msg.platforms);
-        msg.state.should.equal(State.Done);
-        msg.status.should.equal(Status.Stopped);
+        // a created (not yet scheduled) message stays created; see 3383c463302
+        msg.state.should.equal(State.Created);
+        msg.status.should.equal(Status.Created);
         should.ok(msg.filter instanceof Filter);
         should.ok(msg.result instanceof Result);
         should.ok(Array.isArray(msg.triggers));
@@ -62,7 +63,7 @@ describe('PUSH MIGRATE', () => {
         should.equal(def.button(1).url, note.messagePerLocale['default|1|l']);
         should.equal(def.button(1).title, note.messagePerLocale['default|1|t']);
         should.not.exist(def.button(1).titlePers);
-        should.not.exist(def.specific());
+        should.not.exist(def.specific);
 
         should.equal(a.sound, note.sound);
         should.equal(a.badge, note.badge);
@@ -87,10 +88,10 @@ describe('PUSH MIGRATE', () => {
         should.equal(en.button(1).url, note.messagePerLocale['en|1|l']);
         should.equal(en.button(1).title, note.messagePerLocale['en|1|t']);
         should.not.exist(en.button(1).titlePers);
-        should.not.exist(en.specific());
+        should.not.exist(en.specific);
 
         should.not.exist(msg.result.error);
-        should.not.exist(msg.result.errors);
+        should.deepEqual(msg.result.errors, {});
         should.not.exist(msg.result.responses);
         should.not.exist(msg.result.batches);
         should.not.exist(msg.result.next);
@@ -147,7 +148,7 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.buttons);
         should.not.exist(def.button(0));
         should.not.exist(def.button(1));
-        should.not.exist(def.specific());
+        should.not.exist(def.specific);
 
         should.not.exist(a.title);
         should.not.exist(a.titlePers);
@@ -162,10 +163,10 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(a.buttons);
         should.not.exist(a.button(0));
         should.not.exist(a.button(1));
-        should.not.exist(a.specific());
+        should.not.exist(a.specific);
 
         should.not.exist(msg.result.error);
-        should.not.exist(msg.result.errors);
+        should.deepEqual(msg.result.errors, {});
         should.not.exist(msg.result.responses);
         should.not.exist(msg.result.batches);
         should.not.exist(msg.result.next);
@@ -222,7 +223,7 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.buttons);
         should.not.exist(def.button(0));
         should.not.exist(def.button(1));
-        should.not.exist(def.specific());
+        should.not.exist(def.specific);
         should.equal(a.sound, 'default');
         should.deepEqual(a.json, {p: 'a', sound: 'default'});
 
@@ -291,7 +292,7 @@ describe('PUSH MIGRATE', () => {
         should.not.exist(def.buttons);
         should.not.exist(def.button(0));
         should.not.exist(def.button(1));
-        should.not.exist(def.specific());
+        should.not.exist(def.specific);
 
         should.ok(msg.result.error);
         should.ok(msg.result.error instanceof PushError);
