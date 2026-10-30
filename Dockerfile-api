@@ -1,6 +1,6 @@
-# node:24-trixie-slim -- Node.js 24 (Krypton LTS) on Debian trixie-slim.
-# Multi-arch manifest list digest, resolved 2026-10-23.
-FROM node:24-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea AS builder-base
+# node:26-trixie-slim -- Node.js 26 (LTS) on Debian trixie-slim.
+# Multi-arch manifest list digest, resolved 2026-10-27.
+FROM node:26-trixie-slim@sha256:36793bcbb160a6a16cede1e62b93f84e26b78a972a8a4c0b879c1c12f22761ec AS builder-base
 
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
@@ -8,7 +8,7 @@ ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN apt-get update && \
 	apt-get install -y curl wget git make gcc g++ unzip xz-utils build-essential sudo \
 		python3 python3-setuptools zlib1g-dev libssl-dev libncurses-dev libgdbm-dev libnss3-dev libsqlite3-dev \
-		libreadline-dev libffi-dev libbz2-dev sqlite3 ca-certificates
+		libreadline-dev libffi-dev libbz2-dev ca-certificates
 
 # Python 3.12 from source for the ab-testing cmdstanpy models.
 # pip>=26.2.2 and certifi>=2026.10.19 drop the distrusted emSign roots.
@@ -91,7 +91,7 @@ RUN ./bin/docker/modify.sh && \
 	HOME=/tmp npm_config_build_from_source=true npm install argon2 && \
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
-	npm remove -y --no-save mocha nyc should supertest && \
+	npm remove -y --no-save mocha should supertest && \
 	# CE builds carry only a stub ab-testing dir from the ab-models COPY; drop it
 	{ [ -f plugins/ab-testing/package.json ] || rm -rf plugins/ab-testing; } && \
 	rm -rf test /tmp/* /var/tmp/* /root/.npm && \
@@ -99,7 +99,7 @@ RUN ./bin/docker/modify.sh && \
 	chmod -R g=u /opt/countly
 
 
-FROM node:24-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea AS runtime
+FROM node:26-trixie-slim@sha256:36793bcbb160a6a16cede1e62b93f84e26b78a972a8a4c0b879c1c12f22761ec AS runtime
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 ARG CMDSTAN_VERSION=2.36.0

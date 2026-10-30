@@ -22,6 +22,52 @@ const demoPageElements = {
     THANK_YOU_MESSAGE: '#thanks-area',
 };
 
+const POPUP_STYLESHEET = 'ratings-iframe.css';
+const POPUP_LOAD_ATTEMPTS = 3;
+
+// The popup page renders only once its stylesheet is applied and jQuery has
+// run: until then #close-btn is a page-wide block 0px high.
+const isPopupPageLoaded = (win) => {
+    const stylesheetApplied = Array.prototype.some.call(win.document.styleSheets, (sheet) => {
+        if (!sheet.href || sheet.href.indexOf(POPUP_STYLESHEET) === -1) {
+            return false;
+        }
+        try {
+            return sheet.cssRules.length > 0;
+        }
+        catch (e) {
+            return false;
+        }
+    });
+    return stylesheetApplied && typeof win.jQuery === 'function';
+};
+
+const describePopupAssets = (win) => {
+    return win.performance.getEntriesByType('resource')
+        .filter((entry) => /\.(css|js)(\?|$)/.test(entry.name))
+        .map((entry) => `${entry.name.replace(win.location.origin, '')} status=${entry.responseStatus} ${Math.round(entry.duration)}ms`)
+        .join(', ') || 'no stylesheet or script requests recorded';
+};
+
+// cy.visit returns after the load event, so by then every stylesheet and script
+// of the popup has either loaded or failed, and waiting longer does not bring a
+// failed one back. CI has shown the spec's first, cold-cache load of the popup
+// arriving without them; load the page again in that case.
+const visitPopupPage = (url, attemptsLeft) => {
+    cy.visit(url);
+    cy.window().then((win) => {
+        if (isPopupPageLoaded(win)) {
+            return;
+        }
+        const assets = describePopupAssets(win);
+        if (attemptsLeft <= 1) {
+            throw new Error(`The rating popup loaded without its stylesheet or scripts after ${POPUP_LOAD_ATTEMPTS} attempts: ${assets}`);
+        }
+        cy.log(`Rating popup loaded without its stylesheet or scripts, loading it again: ${assets}`);
+        visitPopupPage(url, attemptsLeft - 1);
+    });
+};
+
 const goToDemoWidgetPage = (username, password, appName, widgetID) => {
     // Cypress commands all the way: getApiKey and getApps answer through a
     // Cypress.Promise, so a cy.visit inside their .then ran outside the command
@@ -49,7 +95,7 @@ const goToDemoWidgetPage = (username, password, appName, widgetID) => {
         if (typeof appKey !== 'string') {
             throw new Error('No app key found for the app named ' + appName);
         }
-        cy.visit(`/feedback/rating?widget_id=${widgetID.trim()}&device_id=test&app_key=${appKey}&custom={"tc":1,"rw":1,"xb":1}`);
+        visitPopupPage(`/feedback/rating?widget_id=${widgetID.trim()}&device_id=test&app_key=${appKey}&custom={"tc":1,"rw":1,"xb":1}`, POPUP_LOAD_ATTEMPTS);
     });
 };
 
@@ -153,7 +199,12 @@ const verifyDemoPageElementsAndRate = ({
             .click();
     }
 
+    // The rating is sent by an XHR after the click; a reload or navigation right
+    // after it (test 4 rates five times in a row) can cancel it, and the widget
+    // then counts fewer ratings than were given.
+    cy.intercept('GET', '**/i/feedback/input*').as('submitRating');
     cy.clickElement(demoPageElements.SUBMIT_BUTTON);
+    cy.wait('@submitRating').its('response.statusCode').should('eq', 200);
 
     // cy.window().then((win) => {
     //   win.sessionStorage.setItem('createdDate', helper.getCurrentDate());

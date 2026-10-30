@@ -1,16 +1,6 @@
 module.exports = function(grunt) {
 
     grunt.initConfig({
-        eslint: {
-            options: {
-                configFile: './.eslintrc.json',
-                //grunt-eslint forwards options to new ESLint(), and rulePaths is a valid
-                //eslint 8 option, so the local rules in bin/eslint-rules resolve by bare
-                //name without publishing a plugin. Keep in step with --rulesdir below.
-                rulePaths: ['./bin/eslint-rules']
-            },
-            target: ['./']
-        },
         concat: {
             options: {
                 separator: ';'
@@ -261,30 +251,6 @@ module.exports = function(grunt) {
                 src: ['test/*/*.js']
             }
         },
-        mocha_nyc: {
-            coverage: {
-                src: ['test/*/*.js'], // a folder works nicely
-                options: {
-                    coverage: true, // this will make the grunt.event.on('coverage') event listener to be triggered
-                    mask: '*.js',
-                    excludes: ['bin/*', 'frontend/*', 'extend/*', 'Gruntfile.js', 'test/*'],
-                    mochaOptions: ['--harmony', '--async-only', '--reporter', 'spec', '--timeout', '50000', '--exit'],
-                    nycOptions: ['--harmony', '--clean', 'false'], //,'--include-all-sources' '--all'
-                    reportFormats: ['none']
-                }
-            }
-        },
-        istanbul_check_coverage: {
-            default: {
-                options: {
-                    coverageFolder: 'coverage*', // will check both coverage folders and merge the coverage results
-                    check: {
-                        lines: 80,
-                        statements: 80
-                    }
-                }
-            }
-        },
         sass: { // Task
             dist: { // Target
                 options: { // Target options
@@ -309,14 +275,6 @@ module.exports = function(grunt) {
         }
     });
 
-    //code coverage
-    grunt.event.on('coverage', function(lcovFileContents, done) {
-        // Check below on the section "The coverage event"
-        done();
-    });
-    grunt.loadNpmTasks('grunt-mocha-nyc');
-    grunt.registerTask('coverage', ['mocha_nyc:coverage']);
-    //-----------code coverage-----------
 
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -324,7 +282,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-mocha-test');
 
     grunt.registerTask('default', ['mochaTest']);

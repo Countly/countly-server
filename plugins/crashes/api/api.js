@@ -6,7 +6,7 @@ var plugin = {},
     fs = require("fs"),
     path = require("path"),
     Duplex = require('stream').Duplex,
-    Promise = require("bluebird"),
+    Promise = require("../../../api/utils/promise.js"),
     trace = require("./parts/stacktrace.js"),
     { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js'),
@@ -324,7 +324,7 @@ plugins.setConfigs("crashes", {
             try {
                 params.qstring.crash = JSON.parse(params.qstring.crash);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse crash JSON failed', params.qstring.crash, params.req.url, params.req.body);
                 //resolve();
                 return false;
@@ -862,7 +862,7 @@ plugins.setConfigs("crashes", {
                     try {
                         report_ids = JSON.parse(params.qstring.report_ids);
                     }
-                    catch (ex) {
+                    catch {
                         console.log("Cannot parse report ids", params.qstring.report_ids);
                     }
                 }
@@ -1036,7 +1036,7 @@ plugins.setConfigs("crashes", {
                         try {
                             reg = new RegExp(".*" + params.qstring.sSearch + ".*", 'i');
                         }
-                        catch (ex) {
+                        catch {
                             console.log("Incorrect regex: " + params.qstring.sSearch);
                         }
                         if (reg) {
@@ -1326,7 +1326,7 @@ plugins.setConfigs("crashes", {
                 obParams.qstring.args = JSON.parse(obParams.qstring.args);
             }
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse %s JSON failed %s', obParams.apiPath, obParams.req && obParams.req.url, obParams.req && obParams.req.body);
             common.returnMessage(obParams, 400, 'Error: could not parse args');
             return true;

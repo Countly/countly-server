@@ -76,7 +76,10 @@ jobs:
         if: ${{ always() }}
         run: sudo cat /var/log/nginx/error.log
   lint:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -115,16 +118,13 @@ jobs:
 
       - name: ESLint
         shell: bash
-        # This step installs its own eslint rather than using the repo devDependencies, so
-        # every plugin named in .eslintrc.json has to be listed here too or the run fails
-        # with "Failed to load plugin".
-        #
-        # --rulesdir loads the in-repo rules in bin/eslint-rules. Grunt and lint-staged pass
-        # it too; without it here, eslint 8 fails every file matched by the
-        # no-prototype-pollution-sink override with "Definition for rule ... was not found".
+        # ESLint and its plugins come from the repo's devDependencies, at the versions
+        # package-lock.json pins; eslint.config.mjs loads the in-repo rules in bin/eslint-rules.
+        # eslint-suppressions.json is the baseline of findings that predate ESLint 10; a new
+        # finding fails, and fixing a baselined one needs `npx eslint . --prune-suppressions`.
         run: |
-         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0 eslint-plugin-security@3.0.1 eslint-plugin-no-unsanitized@4.0.2
-         npx eslint . --rulesdir bin/eslint-rules
+         npm ci --ignore-scripts
+         npm run lint
 
       - name: Check for any external web resources
         shell: bash
@@ -144,7 +144,10 @@ jobs:
         working-directory: /opt/countly
         run: sudo countly task dist-all
   test-api-core:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -196,7 +199,10 @@ jobs:
           node bin/scripts/test.connection.js
           npx grunt mochaTest
   test-api-plugins:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -255,7 +261,10 @@ jobs:
           npx grunt mochaTest       
 
   ui-tests:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -339,7 +348,10 @@ jobs:
           cd ui-tests
           npm install
           if [ "${{ matrix.test_type }}" = "dashboard" ]; then
-            xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
+            # The dashboard picks "today" from the browser clock, while the API buckets data by the
+            # app's timezone. Run the browser in the test app's timezone (bin/backup/apps.json) so
+            # both agree on the date between 21:00 and 24:00 UTC.
+            TZ=Europe/Istanbul xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
           else
             xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:onboarding
           fi

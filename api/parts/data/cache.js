@@ -19,7 +19,7 @@ const CENTRAL = 'cache', OP = {INIT: 'i', PURGE: 'p', READ: 'r', WRITE: 'w', UPD
  * @param  {object} obj         - object to checl
  * @param  {string|array} is    - keys for nested value
  * @param  {any} value          - if provided acts as setter setting this value in nested object
- * @return {varies} returns value in provided key in nested object
+ * @returns {varies} returns value in provided key in nested object
  */
 const dot = function(obj, is, value) {
     if (typeof is === 'string') {
@@ -63,7 +63,7 @@ class DataStore {
 
     /**
      * Length getter
-     * @return {int} current store size
+     * @returns {int} current store size
      */
     get length() {
         return this.lru.size;
@@ -73,7 +73,7 @@ class DataStore {
      * Read value by key
      *
      * @param  {String} id key
-     * @return {Any}    value or undefined if no value under such key is stored
+     * @returns {Any}    value or undefined if no value under such key is stored
      */
     read(id) {
         if (id && id.toString) {
@@ -86,7 +86,7 @@ class DataStore {
      *
      * @param  {String} id              key
      * @param  {Object} data            value (pass null to delete data record)
-     * @return {Object}                 returns the data supplied if it was stored, undefined otherwise
+     * @returns {Object}                 returns the data supplied if it was stored, undefined otherwise
      */
     write(id, data) {
         if (data) {
@@ -109,7 +109,7 @@ class DataStore {
      *
      * @param  {String} id  key
      * @param  {Object} set flattened object of {attr1: 2, 'obj.attr2': 3} kind
-     * @return {Boolean}    true if updated, false in case no object is stored under key
+     * @returns {Boolean}    true if updated, false in case no object is stored under key
      */
     update(id, set) {
         let existing = this.read(id);
@@ -261,7 +261,7 @@ class CacheWorker {
      * @param  {String} group group key
      * @param  {String} id    data key
      * @param  {Object} data  data to store
-     * @return {Object}       data if succeeded, null otherwise, throws in case of an error
+     * @returns {Object}       data if succeeded, null otherwise, throws in case of an error
      */
     async write(group, id, data) {
         await this.start();
@@ -290,7 +290,7 @@ class CacheWorker {
      * @param  {String} group  group key
      * @param  {String} id     data key
      * @param  {Object} update data to store
-     * @return {Object}        data if succeeded, null otherwise, throws in case of an error
+     * @returns {Object}        data if succeeded, null otherwise, throws in case of an error
      */
     async update(group, id, update) {
         await this.start();
@@ -319,7 +319,7 @@ class CacheWorker {
      *
      * @param  {String} group  group key
      * @param  {String} id     data key
-     * @return {Boolean}       true if removed
+     * @returns {Boolean}       true if removed
      */
     async remove(group, id) {
         await this.start();
@@ -344,7 +344,7 @@ class CacheWorker {
      *
      * @param  {String} group  group key
      * @param  {String} id     data key
-     * @return {Boolean}       true if removed
+     * @returns {Boolean}       true if removed
      */
     async purge(group, id) {
         await this.start();
@@ -391,7 +391,7 @@ class CacheWorker {
      *
      * @param  {String} group  group key
      * @param  {String} id     data key
-     * @return {Object}        data if any, null otherwise
+     * @returns {Object}        data if any, null otherwise
      */
     async read(group, id) {
         await this.start();
@@ -422,7 +422,7 @@ class CacheWorker {
      *
      * @param  {String} group  group key
      * @param  {String} id     data key
-     * @return {Object}        data if any, null otherwise
+     * @returns {Object}        data if any, null otherwise
      */
     has(group, id) {
         if (!group) {
@@ -441,7 +441,7 @@ class CacheWorker {
      * Just a handy method which returns an object with partials with given group.
      *
      * @param  {String} group group name
-     * @return {Object}       object with all the {@code CacheWorker} methods without group
+     * @returns {Object}       object with all the {@code CacheWorker} methods without group
      */
     cls(group) {
         return {
@@ -548,7 +548,7 @@ class CacheMaster {
     /**
      * Attach to IPC
      *
-     * @return {Promise<undefined>} void
+     * @returns {Promise<undefined>} void
      */
     async start() {
         this.ipc.attach();
@@ -615,7 +615,7 @@ class CacheMaster {
      * @param  {String} id     data key
      * @param  {Object} data   data to store
      * @param  {int} from      originating pid if any
-     * @return {Object}        data if succeeded, null otherwise, throws in case of an error
+     * @returns {Object}        data if succeeded, null otherwise, throws in case of an error
      */
     async write(group, id, data, from = 0) {
         if (!group || !id || (data === undefined) || typeof id !== 'string') {
@@ -656,7 +656,7 @@ class CacheMaster {
      * @param  {String} id     data key
      * @param  {Object} update data to store
      * @param  {int} from      originating pid if any
-     * @return {Object}        data if succeeded, null otherwise, throws in case of an error
+     * @returns {Object}        data if succeeded, null otherwise, throws in case of an error
      */
     async update(group, id, update, from = 0) {
         if (!group || !id || !update || typeof id !== 'string') {
@@ -685,7 +685,7 @@ class CacheMaster {
      * @param  {String} group  group key
      * @param  {String} id     data key
      * @param  {int} from      originating pid if any
-     * @return {Boolean}       true if removed
+     * @returns {Boolean}       true if removed
      */
     async remove(group, id, from) {
         if (!group || !id || typeof id !== 'string') {
@@ -719,7 +719,7 @@ class CacheMaster {
      * @param  {String} group  group key
      * @param  {String} id     data key
      * @param  {int} from      originating pid if any
-     * @return {Boolean}       true if removed
+     * @returns {Boolean}       true if removed
      */
     async purge(group, id, from = 0) {
         if (!group || !id || typeof id !== 'string') {
@@ -740,7 +740,7 @@ class CacheMaster {
      *
      * @param  {String} group  group key
      * @param  {int} from      originating pid if any
-     * @return {Boolean}       true if removed
+     * @returns {Boolean}       true if removed
      */
     async purgeAll(group, from = 0) {
         if (!group) {
@@ -762,7 +762,7 @@ class CacheMaster {
      * @param  {String} group  group key
      * @param  {String} id     data key
      * @param  {int} from      originating pid if any
-     * @return {Object}        data if any, null otherwise
+     * @returns {Object}        data if any, null otherwise
      */
     async read(group, id, from = 0) {
         if (!group || !id || typeof id !== 'string') {
@@ -799,7 +799,7 @@ class CacheMaster {
      *
      * @param  {String} group  group key
      * @param  {String} id     data key
-     * @return {Object}        data if any, undefined otherwise
+     * @returns {Object}        data if any, undefined otherwise
      */
     has(group, id) {
         if (!group) {
@@ -818,7 +818,7 @@ class CacheMaster {
      * Just a handy method which returns an object with partials with given group.
      *
      * @param  {String} group group name
-     * @return {Object}       object with all the {@code CacheWorker} methods without group
+     * @returns {Object}       object with all the {@code CacheWorker} methods without group
      */
     cls(group) {
         return {

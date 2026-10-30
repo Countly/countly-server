@@ -91,7 +91,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         break;
                                     }
                                 }
-                                catch (error) {
+                                catch {
                                     console.log("Closing and reestablishing database connection");
                                     await drillDb.close();
                                     drillDb = await pluginManager.dbConnection("countly_drill");

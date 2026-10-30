@@ -14,7 +14,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bash "$DIR/scripts/logo.sh";
 
 # prerequisite per release
-sudo dnf install -y wget openssl-devel make git sqlite unzip bzip2
+sudo dnf install -y wget openssl-devel make git unzip bzip2
 
 sudo dnf install -y python3-pip
 sudo pip3 install pip --upgrade
@@ -60,8 +60,9 @@ sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 #Install nss after installing above dependencies
 sudo dnf update -y nss
 
-#install nodejs
-sudo dnf module install -y nodejs:22/common
+#install nodejs 26 from NodeSource; the AppStream module streams do not carry it
+curl -fsSL https://rpm.nodesource.com/setup_26.x | sudo bash -
+sudo dnf install -y nodejs
 
 set +e
 NODE_JS_CMD=$(which nodejs)
@@ -86,10 +87,12 @@ sudo chown -R www-data:www-data /var/lib/nginx
 sudo dnf install -y sendmail
 sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exist"
 
-#isolated-vm has no prebuilt binary for glibc 2.28, so RHEL 8 builds it from source.
-#That needs -std=c++20 and python>=3.8, and stock RHEL 8 has neither.
+#isolated-vm has no prebuilt binary for glibc 2.28, so RHEL 8 builds it from source
+#(and RHEL 9 too on Node.js 26, whose isolated-vm 7 binaries need a newer libstdc++).
+#That needs -std=c++20 and python>=3.8, and stock RHEL 8 has neither; the AppStream
+#Node.js links brotli dynamically, so the addon also needs brotli's headers to link.
 if [[ "$CENTOS_MAJOR" = "8" ]]; then
-    sudo dnf install -y gcc-toolset-11 python38
+    sudo dnf install -y gcc-toolset-11 python38 brotli-devel
     export npm_config_python=/usr/bin/python3.8
     # shellcheck disable=SC1091
     source /opt/rh/gcc-toolset-11/enable
@@ -97,7 +100,7 @@ fi
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install argon2; npm install sqlite3 --build-from-source; npm install; )
+( cd "$DIR/.."; npm install argon2; npm install; )
 
 #install numactl
 sudo dnf install -y numactl
@@ -166,6 +169,9 @@ node "$DIR/scripts/install_plugins"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
+
+#load GeoNames reverse-geocoding data into database
+nodejs "$DIR/offline-geocoder/scripts/import_geonames_mongodb.js" --if-changed
 
 #get web sdk
 sudo countly update sdk-web

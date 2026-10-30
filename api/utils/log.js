@@ -83,9 +83,9 @@ const NAMES = {
  * @param {string} prefix - add prefix to message
  * @param {boolean} enabled - whether function should log anything
  * @param {object} outer - this for @out
- * @param {function} out - output function (console or debug)
- * @param {function} styler - function to apply styles
- * @returns {function} logger function
+ * @param {Function} out - output function (console or debug)
+ * @param {Function} styler - function to apply styles
+ * @returns {Function} logger function
  */
 var log = function(level, prefix, enabled, outer, out, styler) {
     return function() {
@@ -297,21 +297,21 @@ var ipcHandler = function(msg) {
  * @example
  * logger.e('Error occurred: %o', errorObject);
  *
- * @property {function(string, function, string, ...*): boolean} f - Log variable level messages
+ * @property {function(string, Function, string, ...*): boolean} f - Log variable level messages
  * @example
  * logger.f('d', (log) => {
  *   const expensiveOperation = performExpensiveCalculation();
  *   log('Debug: Expensive operation result: %j', expensiveOperation);
  * }, 'i', 'Skipped expensive debug logging');
  *
- * @property {function(function=): function} callback - Create a callback function for logging
+ * @property {function(Function=): Function} callback - Create a callback function for logging
  * @example
  * const logCallback = logger.callback((result) => {
  *   console.log('Operation completed with result:', result);
  * });
  * someAsyncOperation(logCallback);
  *
- * @property {function(string, function=, function=): function} logdb - Create a callback function for logging database operations
+ * @property {function(string, Function=, Function=): Function} logdb - Create a callback function for logging database operations
  * @example
  * const dbCallback = logger.logdb('insert user',
  *   (result) => { console.log('User inserted:', result); },
@@ -384,7 +384,7 @@ module.exports = function(name) {
         /**
          * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
          * @param {string} l - log level (d, i, w, e)
-         * @param {function} fn - function to call with single argument - logging function
+         * @param {Function} fn - function to call with single argument - logging function
          * @param {string} fl - fallback level if l is disabled
          * @param {...*} fargs - fallback level arguments
          * @returns {boolean} true if f() has been called
@@ -406,8 +406,8 @@ module.exports = function(name) {
 
         /**
          * Logging inside callbacks
-         * @param {function=} next - next function to call, after callback executed
-         * @returns {function} function to pass as callback
+         * @param {Function=} next - next function to call, after callback executed
+         * @returns {Function} function to pass as callback
          * @example
          * const logCallback = logger.callback((result) => {
          *   console.log('Operation completed with result:', result);
@@ -429,9 +429,9 @@ module.exports = function(name) {
         /**
          * Logging database callbacks
          * @param {string} opname - name of the performed operation
-         * @param {function=} next - next function to call, after callback executed
-         * @param {function=} nextError - function to pass error to
-         * @returns {function} function to pass as callback
+         * @param {Function=} next - next function to call, after callback executed
+         * @param {Function=} nextError - function to pass error to
+         * @returns {Function} function to pass as callback
          * @example
          * const dbCallback = logger.logdb('insert user',
          *   (result) => { console.log('User inserted:', result); },
@@ -508,7 +508,7 @@ module.exports = function(name) {
                 /**
                  * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
                  * @param {String} l log level (d, i, w, e)
-                 * @param {function} fn function to call with single argument - logging function
+                 * @param {Function} fn function to call with single argument - logging function
                  * @param {String} fl fallback level if l is disabled
                  * @param {any[]} fargs fallback level arguments
                  * @returns {boolean} true if f() has been called

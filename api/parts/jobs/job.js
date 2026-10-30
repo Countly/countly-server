@@ -43,10 +43,10 @@ const STATUS = {
 
 /**
  * Debounce function which decreases number of calls to func to be once in minWait ... maxWait.
- * @param {function} func - function to debounce
+ * @param {Function} func - function to debounce
  * @param {number} minWait - minimal waiting time
  * @param {number} maxWait - maximal waiting time
- * @returns {function} debounced function
+ * @returns {Function} debounced function
  */
 const debounce = function(func, minWait, maxWait) {
     var timeout, first, args, context,
@@ -457,7 +457,7 @@ class Job extends EventEmitter {
     /**
     * Replace jobs that will run after provided timestamp
     * @param {number} next - timestamp
-    * @param {function} queror - function which modifies query request
+    * @param {Function} queror - function which modifies query request
     * @returns {Promise} promise
     **/
     replaceAfter(next, queror) {
@@ -997,7 +997,7 @@ class IPCFaçadeJob extends ResourcefulJob {
     /**
     * Constructor
     * @param {Job} job - job
-    * @param {function} getResourceFaçade - function to get resource
+    * @param {Function} getResourceFaçade - function to get resource
     **/
     constructor(job, getResourceFaçade) {
         super(job._json, null, null);

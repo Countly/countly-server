@@ -10,7 +10,7 @@ The script deletes data for specific segments in aggregated data. It also can se
 
 var crypto = require('crypto');
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 var app_list = []; //leave empty to process all apps or add specific app ids to the array.
 var DRY_RUN = false; //set to true to see what will be deleted without actually deleting anything
@@ -129,7 +129,7 @@ function getOmitList(omit, options, callback) {
                         try {
                             cnn = Object.keys(result.segments[seg]).length;
                         }
-                        catch (e) {
+                        catch {
                             console.log("Error getting segment count for " + seg + " in app " + options.app_id);
                             cnn = 0;
                         }

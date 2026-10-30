@@ -17,7 +17,7 @@
     /**
          * hook mock data generator
          * @param {object} hookConfig - hookConfig record
-         * @return {object} mockData - trigger related mock data
+         * @returns {object} mockData - trigger related mock data
          */
     hooksPlugin.mockDataGenerator = function mockDataGenerator(hookConfig) {
         var triggerType = hookConfig && hookConfig.trigger && hookConfig.trigger.type;
@@ -105,7 +105,7 @@
                 triggerDesc = '<div class="is-trigger-effect-desc">' + eventType + '</div>';
             }
         }
-        catch (e) {
+        catch {
             //silent catch
         }
 
@@ -163,7 +163,7 @@
                 triggerDesc = ' ' + eventType + ' ';
             }
         }
-        catch (e) {
+        catch {
             //silent catch
         }
 

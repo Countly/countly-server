@@ -28,7 +28,7 @@ describe("key escaping parity between the api and the dashboard", function() {
      *
      * @param {string} src - file contents
      * @param {string} marker - text that immediately precedes the function's brace
-     * @returns {function} the extracted function
+     * @returns {Function} the extracted function
      */
     function liftFunction(src, marker) {
         var at = src.indexOf(marker);

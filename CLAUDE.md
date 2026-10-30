@@ -4,7 +4,7 @@ This file provides guidance for Claude (Anthropic) when working with this codeba
 
 ## Project Overview
 
-Countly is a product analytics platform. Backend: Node.js 22+, MongoDB. Frontend: Vue 2, Element UI, Backbone (legacy). Architecture is plugin-based.
+Countly is a product analytics platform. Backend: Node.js 22+ (26 by default), MongoDB. Frontend: Vue 2, Element UI, Backbone (legacy). Architecture is plugin-based.
 
 ## Quick Commands
 

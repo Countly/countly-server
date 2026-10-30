@@ -125,7 +125,7 @@ function getDependencies(plugins, options) {
             dpcs[pName] = {parents: currentDpcs, children: {}};
             return true;
         }
-        catch (ex) {
+        catch {
             errors[pName] = {"reason": "not_found"};
             return false;
         }

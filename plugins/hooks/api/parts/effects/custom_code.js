@@ -1,7 +1,7 @@
 const utils = require("../../utils");
 const common = require('../../../../../api/utils/common.js');
 const log = common.log("hooks:api:api_custom_code_effect");
-const ivm = require("isolated-vm");
+const isolatedVm = require("../isolated-vm.js");
 
 /**
  * custom code effect
@@ -16,7 +16,7 @@ class CustomCodeEffect {
     /**
      * main function to run effect
      * @param {object} options - options for required variable
-     * @return {object} - return processed options object.
+     * @returns {object} - return processed options object.
      */
     async run(options) {
         const {effect, params, rule, effectStep, _originalInput} = options;
@@ -26,6 +26,7 @@ class CustomCodeEffect {
         let isolate;
 
         try {
+            const ivm = isolatedVm.load();
             const code = effect.configuration.code;
 
             // Create isolated VM instance

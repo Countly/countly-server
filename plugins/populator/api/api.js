@@ -68,7 +68,7 @@ const FEATURE_NAME = 'populator';
             try {
                 template.behavior = {};
             }
-            catch (e) {
+            catch {
                 common.returnMessage(obParams, 400, "Invalid type for behavior!");
                 return false;
             }
@@ -122,7 +122,7 @@ const FEATURE_NAME = 'populator';
             try {
                 templateId = common.db.ObjectID(params.qstring.template_id);
             }
-            catch (e) {
+            catch {
                 common.returnMessage(obParams, 500, 'Invalid template id.');
                 return false;
             }
@@ -137,7 +137,7 @@ const FEATURE_NAME = 'populator';
             ///o/populator/environment/remove.
             /**
              * Clear the deletion mark taken below, whatever the outcome.
-             * @param {function} done - called once the mark is cleared
+             * @param {Function} done - called once the mark is cleared
              * @returns {void}
              */
             function unlockTemplate(done) {
@@ -243,7 +243,7 @@ const FEATURE_NAME = 'populator';
             try {
                 templateId = common.db.ObjectID(params.qstring.template_id);
             }
-            catch (e) {
+            catch {
                 common.returnMessage(params, 500, 'Invalid template id.');
             }
 
@@ -584,7 +584,7 @@ const FEATURE_NAME = 'populator';
                 try {
                     query._id = common.db.ObjectID(obParams.qstring.template_id);
                 }
-                catch (e) {
+                catch {
                     common.returnMessage(obParams, 500, 'Invalid template id.');
                     return false;
                 }
@@ -593,7 +593,7 @@ const FEATURE_NAME = 'populator';
                 try {
                     query.platformType = {$in: [obParams.qstring.platform_type]};
                 }
-                catch (e) {
+                catch {
                     common.returnMessage(obParams, 500, 'Invalid platform_type.');
                     return false;
                 }

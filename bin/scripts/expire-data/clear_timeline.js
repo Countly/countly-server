@@ -38,7 +38,7 @@ Ecpected output form dry_run=false
     Finished
 */
 var pluginManager = require('../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 var moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
 

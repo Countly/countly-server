@@ -37,15 +37,6 @@ updates:
       - dependencies
     versioning-strategy: increase-if-necessary
 
-  - package-ecosystem: npm
-    directory: "/api/utils/countly-root"
-    schedule:
-      interval: daily
-    open-pull-requests-limit: 10
-    labels:
-      - dependencies
-    versioning-strategy: increase-if-necessary
-
   # Scripts
   - package-ecosystem: npm
     directory: "/bin/scripts/device_list"

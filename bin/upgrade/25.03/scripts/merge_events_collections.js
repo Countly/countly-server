@@ -1,6 +1,6 @@
 /*Script to merge all drill meta */
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 var crypto = require('crypto');
 
 console.log("Merging all events collections into single collection");

@@ -86,7 +86,7 @@ const decode = function(buffer) {
             try {
                 return key === 'h' && typeof value === 'string' ? BigInt(value) : value;
             }
-            catch (_ignored) {
+            catch {
                 return value;
             }
         }) : undefined;

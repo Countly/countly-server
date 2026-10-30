@@ -6,7 +6,7 @@
 /**
  *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
  *  @param {string} inpVersion - an app version string
- *  @return {array} [regex.exec result, version scheme name]
+ *  @returns {array} [regex.exec result, version scheme name]
  */
 function checkAppVersion(inpVersion) {
     // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
@@ -36,7 +36,7 @@ module.exports = {
      *  For example '1.10.2' will be transformed to '100001.100010.100002'
      *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
      *  @param {string} inpVersion - an app version string
-     *  @return {string} the transformed app version
+     *  @returns {string} the transformed app version
      *  @note These method are now moved to @module api/utils/common
      */
     transformAppVersion: function(inpVersion) {

@@ -1,3 +1,34 @@
+## Version 25.03.58
+Security Fixes:
+- [core] A token restricted to apps must state the permissions it grants; existing app-restricted tokens without permissions are limited to their owner's rights on those apps, and endpoint restrictions match exact API paths
+- [core] Changing or resetting a password, locking a member and deleting a member revoke that member's tokens, and a password reset link works once
+- [core] A single use token is accepted once, also under concurrent requests
+- [core] Login failures are counted per account, whatever the case or surrounding whitespace of the username or email
+- [core] App keys are removed in place, so a concurrent app update cannot bring a removed key back, and a rerun task uses its creator's key
+- [core] `/o/app_users/loyalty` requires the core read right on the app, as `/o/analytics/loyalty` does
+- [core] Table export forms send every field exactly as given, and notification text is rendered as text
+- [dashboards] A token created with a permission needs an explicit dashboards grant to read or change custom dashboards
+- [dbviewer] `events_data` and `drill_events` follow the dbviewer read right, for the collection list and for their rows
+- [export] DB exports of `events_data` and `drill_events` apply the member's app filter after query preprocessing
+- [deps] zod 4.6.7, node-forge 1.4.1 and http-cache-semantics 4.3.0 for published advisories
+
+Fixes:
+- [cli] `countly fs migrate` uploads files two at a time, skips files already stored and resumes after an interrupted run
+- [dashboard] "Last N minutes" date ranges behave like hour ranges in the date picker
+- [remote-config] Every targeting rule is evaluated before the results are combined
+- [star-rating] The widget details view shows the widget's targeting again
+- [star-rating] A widget show is counted only for the app that owns the widget
+
+Enterprise Fixes:
+- [cognito] A user with no groups is told that they have no groups
+- [drill] A breakdown by a date property is listed in date order
+- [geo] A location filter is added to the rest of a drill query instead of replacing its `$or`
+
+Dependencies:
+- Bump body-parser from 1.20.6 to 1.20.9
+- Bump follow-redirects from 1.16.0 to 1.16.1 in /plugins/hooks
+- Bump @liquicode/jsongin from 0.0.23 to 0.2.0 in /plugins/journey_engine
+
 ## Version 25.03.57-LTS
 Security Fixes:
 - [core] `upgrade.python.certifi.sh` also distrusts the emSign roots certifi dropped in the OS certificate store (G1 is kept)
