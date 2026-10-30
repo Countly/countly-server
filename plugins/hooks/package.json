@@ -20,8 +20,11 @@
     "template"
   ],
   "dependencies": {
-    "ipaddr.js": "^2.3.0",
-    "isolated-vm": "^6.0.2"
+    "ipaddr.js": "^2.3.0"
+  },
+  "optionalDependencies": {
+    "isolated-vm-6": "npm:isolated-vm@^6.2.0",
+    "isolated-vm-7": "npm:isolated-vm@^7.0.1"
   },
   "overrides": {
     "tar": "^7.5.22",
