@@ -1,16 +1,13 @@
 const testUtils = require('../../../test/testUtils'),
     { PLATFORMS_TITLES, FIELDS_TITLES, platforms } = require('../api/send'),
     plugins = require('../../pluginManager'),
-    // supertest = require('supertest').agent(testUtils.url),
-    supertest = require('supertest').agent('http://localhost:3001'),
+    supertest = require('supertest').agent(testUtils.url),
     should = require('should');
 
-// let aid = testUtils.get('APP_ID'),
-//     app_key = testUtils.get('APP_ID'),
-//     api_key = testUtils.get('APP_ID');
-let aid = '617e6cf3cd001aac73834e18',
-    app_key = '78fb16cbaa61399d0f13f9e96961bd9983a0a416',
-    api_key = '4e170a5da90fdf5afd94f85eefdb015b',
+// the test app the plugin test run sets up (test/testUtils.js), read in the first test
+let aid = '',
+    app_key = '',
+    api_key = '',
     users = {
         did0: {device_id: 'did0', tokens: [{ios_token: 'token0', test_mode: 1}], events: [{key: 'cart'}, {key: 'buy'}]},
         did1: {device_id: 'did1', tokens: [{ios_token: 'token1', test_mode: 0}], locale: 'en_US'},
