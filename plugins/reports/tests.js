@@ -1030,8 +1030,8 @@ describe('Testing Reports after access is revoked', function() {
 });
 
 describe('Testing report subscription links', function() {
-    const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-    const APP_ID = testUtils.get("APP_ID");
+    let API_KEY_ADMIN = "";
+    let APP_ID = "";
     const uniq = Date.now();
     const email = "subscription-" + uniq + "@abc.com";
     let secretKey = "";
@@ -1074,6 +1074,8 @@ describe('Testing report subscription links', function() {
     }
 
     before(async function() {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
         const config = await testUtils.db.collection('plugins').findOne({_id: "plugins"});
         secretKey = config.reports.secretKey;
         should.exist(secretKey);
