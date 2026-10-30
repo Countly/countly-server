@@ -289,7 +289,7 @@ describe("authorizer token record", function() {
         * Verify a token through the public entry point, handing back the document or false.
         * @param {object} db - stub
         * @param {string} id - token id
-        * @param {function} cb - called with the verify result
+        * @param {Function} cb - called with the verify result
         * @returns {void}
         */
         function verify(db, id, cb) {
@@ -382,8 +382,8 @@ describe("authorizer token record", function() {
             });
         });
 
-        it("ignores the endpoint regex once a token carries permissions", function(done) {
-            //the regex was never an authorization boundary; permissions are enforced in rights.js
+        it("applies the endpoint restriction to a token that carries permissions too", function(done) {
+            //a token holds both its permissions and the paths it is limited to
             var db = dbStub([{
                 _id: "scoped",
                 ttl: 300,
@@ -401,9 +401,18 @@ describe("authorizer token record", function() {
                 req_path: "/o/apps/all",
                 return_data: true,
                 callback: function(valid) {
-                    valid.should.have.property("_id", "scoped");
-                    valid.should.have.property("token_permission");
-                    done();
+                    valid.should.equal(false);
+                    authorizer.verify_return({
+                        db: db,
+                        token: "scoped",
+                        req_path: "/o/users/me",
+                        return_data: true,
+                        callback: function(allowed) {
+                            allowed.should.have.property("_id", "scoped");
+                            allowed.should.have.property("token_permission");
+                            done();
+                        }
+                    });
                 }
             });
         });

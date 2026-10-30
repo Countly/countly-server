@@ -16,7 +16,7 @@ geoData.loadCityCoordiantes = function(options, callback) {
         try {
             options.query = JSON.parse(options.query);
         }
-        catch (SyntaxError) {
+        catch {
             log.e("Can't parse city query");
             options.query = {};
         }

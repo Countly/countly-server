@@ -1,6 +1,6 @@
 
 const pluginManager = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 console.log("Deleting old meta documents");
 

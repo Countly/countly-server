@@ -25,7 +25,7 @@
 	 * @param {string} code source code
      * @param {string} data not use yet
      * @param {boolean} separate include sperator or not, default to false
-	 * @return {string} - source name
+	 * @returns {string} - source name
 	 */
     function getSourceName(code, data, separate) {
         code = countlyCommon.decode(code + "");
@@ -60,10 +60,10 @@
                 return code;
             }
             code = code.replace("://www.", "://");
-            /*eslint-disable */
+
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
             var subDomains = code.split('.');
-            /*eslint-enable */
+
             var domain = matches && matches[1] || subDomains.length >= 4 ? subDomains.slice(-3).join('.') : code;
             return domain.split("/")[0];
         }

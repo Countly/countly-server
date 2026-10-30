@@ -459,7 +459,7 @@
                         currEvent = eventKey[appId];
                     }
                 }
-                catch (err) {
+                catch {
                     currEvent = undefined;
                 }
             }

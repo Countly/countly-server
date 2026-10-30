@@ -3,7 +3,7 @@
 const job = require('../parts/jobs/job.js'),
     plugins = require('../../plugins/pluginManager.js'),
     log = require('../utils/log.js')('job:userMerge');
-var Promise = require("bluebird");
+var Promise = require("../utils/promise.js");
 var usersApi = require('../parts/mgmt/app_users.js');
 
 
@@ -39,7 +39,7 @@ var handleMerges = function(db, callback) {
     /**
      * process merging
      * @param {object} dataObj - data object
-     * @param {function} resolve - callback
+     * @param {Function} resolve - callback
      **/
     function processMerging(dataObj, resolve) {
         var user = getMergeDoc(dataObj);
@@ -56,7 +56,7 @@ var handleMerges = function(db, callback) {
     /** 
      *  merge user data
      * @param {object} user - user object
-     * @param {function} resolve - callback
+     * @param {Function} resolve - callback
      * **/
     function mergeUserData(user, resolve) {
         var dd = user._id.split("_");
@@ -228,7 +228,7 @@ class UserMergeJob extends job.Job {
      * Run the job
      * @param {Db} db connection
      * @param {done} done callback
-     * @param {function} progressJob - callback when progress made
+     * @param {Function} progressJob - callback when progress made
      */
     run(db, done, progressJob) {
         var total = 0;

@@ -2,7 +2,7 @@
 
 # Countly Server – AI Agent Hub
 
-**Project:** Countly is a product analytics platform (Node.js 22+, MongoDB, Vue 2, plugin-based).
+**Project:** Countly is a product analytics platform (Node.js 22+, 26 by default; MongoDB, Vue 2, plugin-based).
 
 ## Agent Guides
 

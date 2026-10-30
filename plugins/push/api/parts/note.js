@@ -131,7 +131,7 @@ class Note {
 
     /**
      * Whether the notification doesn't need a build phase at creation
-     * @return {Boolean} true if doesn't
+     * @returns {Boolean} true if doesn't
      */
     get doesntPrepare() {
         return this.auto || this.tx || (this.date && this.delayed && this.date.getTime() > Date.now() + 5 * 60000);
@@ -416,7 +416,7 @@ class Note {
      * apn-push-type check
      * @param  {String}  platform platform
      * @param  {Object}  msg      message object
-     * @return {Boolean}          true if the note is an alert for corresponding message
+     * @returns {Boolean}          true if the note is an alert for corresponding message
      */
     isAlert(platform, msg) {
         if (platform === Platform.IOS) {
@@ -766,7 +766,7 @@ class Note {
      * @param  {Mongo} db           db instance
      * @param  {int} count          number of notifications to cancel
      * @param  {String} errorCode   error code
-     * @return {Promise}            db update result
+     * @returns {Promise}            db update result
      */
     cancelNotes(db, count, errorCode) {
         let update = {$inc: {'result.processed': count, 'result.errors': count, ['result.errorCodes.' + errorCode]: count}};

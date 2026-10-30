@@ -4,7 +4,6 @@ var crypto = require('crypto');
 var moment = require('moment-timezone');
 var testUtils = require("../../test/testUtils");
 var pluginManager = require("../../plugins/pluginManager.js");
-var Promise = require("bluebird");
 request = request(testUtils.url);
 
 
@@ -173,7 +172,7 @@ describe('Testing Alert app authorization', function() {
     /**
      * Set the member's alerts permissions to exactly the given apps
      * @param {Array} apps - app ids to grant
-     * @param {function} cb - callback
+     * @param {Function} cb - callback
      * @returns {void}
      */
     function grantAlertsOn(apps, cb) {

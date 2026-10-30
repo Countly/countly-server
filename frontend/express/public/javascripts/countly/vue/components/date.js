@@ -1105,7 +1105,7 @@
                                 this.doCommit(val, true);
                             }
                         }
-                        catch (error) {
+                        catch {
                             val = "30days";
                             this.doCommit(val, true);
                         }
@@ -1299,7 +1299,7 @@
                 return state;
             },
             handleDropdownHide: function(aborted) {
-                if (this.tableType !== ("hour" || "minute") && !this.retentionConfiguration) {
+                if (this.tableType !== "hour" && this.tableType !== "minute" && !this.retentionConfiguration) {
                     this.tableType = "day";
                 }
                 this.abortPicking();
@@ -1357,7 +1357,7 @@
                             this.tableType = "day"; //in case of chosen inBetween-montly in retention
                         }
                     }
-                    catch (error) {
+                    catch {
                         this.rangeMode = "inBetween";
                     }
                 }
@@ -1379,7 +1379,7 @@
                         self.scrollTo(self.inTheLastInput.parsed[0]);
                     }, 0);
                 }
-                else if (this.tableType === ("hour" || "minute")) {
+                else if (this.tableType === "hour" || this.tableType === "minute") {
                     this.formatter = "YYYY-MM-DD";
                     this.globalRange = null;
                 }

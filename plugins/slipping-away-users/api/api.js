@@ -3,7 +3,7 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common.js'),
     log = common.log('slipping-away-users:api'),
-    BPromise = require('bluebird'),
+    BPromise = require('../../../api/utils/promise.js'),
     moment = require('moment-timezone'),
     { validateRead } = require('../../../api/utils/rights.js');
 
@@ -13,7 +13,7 @@ var cohorts;
 try {
     cohorts = require("../../cohorts/api/parts/cohorts.js");
 }
-catch (ex) {
+catch {
     cohorts = null;
 }
 

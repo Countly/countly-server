@@ -21,7 +21,7 @@ try {
     var plugins = require('../../plugins/pluginManager.js');
     plugins.extendModule("locale.conf", localeConf);
 }
-catch (_) {
+catch {
     //silent try
 }
 module.exports = localeConf;

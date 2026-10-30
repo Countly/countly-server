@@ -19,7 +19,7 @@ describe("localized messages shown as text", function() {
     /**
      * List files under a directory matching a test.
      * @param {string} dir - directory
-     * @param {function} test - file path predicate
+     * @param {Function} test - file path predicate
      * @returns {string[]} matching files
      */
     function walk(dir, test) {

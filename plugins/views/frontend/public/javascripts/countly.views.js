@@ -420,7 +420,7 @@
                     url = domain + url;
                 }
                 var newWindow = window.open("");
-                countlyTokenManager.createToken("View heatmap", "/o/actions", true, countlyCommon.ACTIVE_APP_ID, 1800, function(err, token) {
+                countlyTokenManager.createTokenWithPermissions({purpose: "View heatmap", multi: true, ttl: 1800, permission: countlyTokenManager.readPermission(countlyCommon.ACTIVE_APP_ID, "views"), endpoint: "/o/actions"}, function(err, token) {
                     self.token = token && token.result;
                     if (self.token) {
                         newWindow.name = "cly:" + JSON.stringify({"token": self.token, "purpose": "heatmap", period: countlyCommon.getPeriodForAjax(), showHeatMap: true, app_key: countlyCommon.ACTIVE_APP_KEY, url: window.location.protocol + "//" + window.location.host});

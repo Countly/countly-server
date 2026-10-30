@@ -5,7 +5,7 @@
  *  Command: node fix_null_uids.js
  */
 const pluginManager = require('../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 console.log('looking for byval reports');
 

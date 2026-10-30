@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight, getBaseAppFilter } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
@@ -137,7 +137,7 @@ var spawn = require('child_process').spawn,
                     // outside the caller's app scope by supplying its _id.
                     var docFilter = { _id: params.qstring.document };
                     if (!params.member.global_admin) {
-                        var docBaseFilter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                        var docBaseFilter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection, FEATURE_NAME);
                         if (docBaseFilter && Object.keys(docBaseFilter).length > 0) {
                             docFilter = { $and: [docBaseFilter, docFilter] };
                         }
@@ -190,7 +190,7 @@ var spawn = require('child_process').spawn,
             try {
                 sort = EJSON.parse(sort);
             }
-            catch (SyntaxError) {
+            catch {
                 sort = {};
             }
             //EJSON.parse("null") yields null (typeof null === "object"), so
@@ -219,7 +219,7 @@ var spawn = require('child_process').spawn,
             try {
                 projection = EJSON.parse(projection);
             }
-            catch (SyntaxError) {
+            catch {
                 projection = {};
             }
             //EJSON.parse("null") yields null and an array is also typeof
@@ -253,7 +253,7 @@ var spawn = require('child_process').spawn,
 
             var base_filter = {};
             if (!params.member.global_admin) {
-                base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection, FEATURE_NAME);
             }
 
             if (base_filter && Object.keys(base_filter).length > 0) {
@@ -304,7 +304,7 @@ var spawn = require('child_process').spawn,
                             try {
                                 return EJSON.stringify(objectIdCheck(doc));
                             }
-                            catch (SyntaxError) {
+                            catch {
                                 return JSON.stringify(objectIdCheck(doc));
                             }
                         }
@@ -374,7 +374,7 @@ var spawn = require('child_process').spawn,
                 /**
                 * Get collections of database
                 * @param {string} name - database name
-                * @param {function} callback - callback method
+                * @param {Function} callback - callback method
                 **/
                 function getCollections(name, callback) {
                     if (dbs[name]) {
@@ -383,7 +383,7 @@ var spawn = require('child_process').spawn,
                             async.each(results, function(col, done) {
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
                                     userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
-                                        if (hasAccess || col.collectionName === "events_data" || col.collectionName === "drill_events") {
+                                        if (hasAccess) {
                                             ob = parseCollectionName(col.collectionName, lookup);
                                             db.collections[ob.pretty] = ob.name;
                                         }
@@ -437,7 +437,7 @@ var spawn = require('child_process').spawn,
                     aggregation.splice(0, 0, {"$addFields": {"_id": "***redacted***"}});
                 }
                 else if ((collection === "events_data" || collection === "drill_events") && !params.member.global_admin) {
-                    var base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                    var base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection, FEATURE_NAME);
                     aggregation.splice(0, 0, {"$match": base_filter});
                 }
                 // check task is already running?
@@ -496,8 +496,8 @@ var spawn = require('child_process').spawn,
         * @param {object} parameters - {@link parameters} object
         * @param {string} collection - collection will be checked for access
         * @param {string} appId - appId to which to restrict access
-        * @param {function} callback - callback method includes boolean variable as argument  
-        * @returns {function} returns callback
+        * @param {Function} callback - callback method includes boolean variable as argument  
+        * @returns {Function} returns callback
          */
         async function userHasAccess(parameters, collection, appId, callback) {
             if (typeof appId === "function") {
@@ -520,7 +520,14 @@ var spawn = require('child_process').spawn,
                 }
             }
             else {
-                var userApps = getUserApps(parameters.member);
+                //the apps the member (or token) holds the dbviewer read on, member or not
+                var userApps = getUserAppsWithReadRight(parameters.member, FEATURE_NAME);
+                if (collection === "events_data" || collection === "drill_events") {
+                    //the shared collections hold every app's rows: readable when the
+                    //member holds the dbviewer read right on at least one app, and the
+                    //rows are then scoped to those apps by getBaseAppFilter
+                    return callback(userApps.length > 0);
+                }
                 //go through all apps of user and check if any of them has access to collection
                 var result = await Promise.all(userApps.map(function(id) {
                     if (hasReadRight(FEATURE_NAME, id, parameters.member)) {
@@ -610,7 +617,7 @@ var spawn = require('child_process').spawn,
                         //contract does not change
                         aggregate(params.qstring.collection, aggregation, guard.changes);
                     }
-                    catch (e) {
+                    catch {
                         common.returnMessage(params, 500, 'Aggregation object is not valid.');
                     }
                 };
@@ -619,7 +626,7 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
-                        if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
+                        if (hasAccess) {
                             runAggregation(ALLOWED_OPERATORS_USER);
                         }
                         else {
@@ -635,7 +642,7 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
-                        if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
+                        if (hasAccess) {
                             dbGetCollection();
                         }
                         else {
@@ -656,7 +663,8 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     var apps = [];
-                    var userApps = getUserApps(params.member);
+                    //the apps the member (or token) holds the dbviewer read on, member or not
+                    var userApps = getUserAppsWithReadRight(params.member, FEATURE_NAME);
                     if (params.qstring.app_id) {
                         //if we have app_id, check permissions
                         if (userApps.length > 0 && userApps.indexOf(params.qstring.app_id) !== -1) {

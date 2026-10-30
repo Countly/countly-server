@@ -1065,7 +1065,7 @@
                     jsonValue = JSON.parse(this.jsonstr);
                     this.jsonstr = JSON.stringify(jsonValue, null, 2);
                 }
-                catch (e) {
+                catch {
                     // Do nothing
                 }
             },

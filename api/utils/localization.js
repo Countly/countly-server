@@ -23,7 +23,7 @@ try {
     var data = fs.readFileSync(dir + '/' + file + '.properties', "utf8");
     orig = parser.parse(data);
 }
-catch (ex) {
+catch {
     orig = {};
 }
 

@@ -22,7 +22,6 @@ const plugins = require('../../plugins/pluginManager.js');
 const countlyConfig = require('./../config', 'dont-enclose');
 const argon2 = require('argon2');
 const mongodb = require('mongodb');
-const getRandomValues = require('get-random-values');
 const semver = require('semver');
 const _ = require('lodash');
 const path = require('path');
@@ -118,7 +117,7 @@ function getJSON(val) {
             ret.valid = true;
         }
     }
-    catch (ex) {
+    catch {
         //silent error
     }
     return ret;
@@ -504,7 +503,7 @@ common.recordAppKeyUsage = function(app, usedKey) {
 * apps that predate the array — or that have not been backfilled yet — fully
 * resolvable, so correctness never depends on the backfill having run.
 * @param {string} appKey - incoming SDK app key
-* @param {function} callback - callback(err, app) with the resolved app or null
+* @param {Function} callback - callback(err, app) with the resolved app or null
 * @returns {void}
 */
 common.resolveAppByKey = function(appKey, callback) {
@@ -693,7 +692,7 @@ function parseDeclaredStructure(value, type) {
     try {
         parsed = JSON.parse(value);
     }
-    catch (ex) {
+    catch {
         return value;
     }
     if (type === "Array" && Array.isArray(parsed)) {
@@ -819,7 +818,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         try {
                             new URL(args[arg]);
                         }
-                        catch (ignored) {
+                        catch {
                             if (returnErrors) {
                                 returnObj.errors.push('Invalid url string ' + arg);
                                 returnObj.result = false;
@@ -847,7 +846,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         try {
                             parsed = new URL(args[arg]);
                         }
-                        catch (ignored) {
+                        catch {
                             if (returnErrors) {
                                 returnObj.errors.push('Invalid URL string ' + arg);
                                 returnObj.result = false;
@@ -962,7 +961,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         try {
                             args[arg] = JSON.parse(args[arg]);
                         }
-                        catch (error) {
+                        catch {
                             return false;
                         }
                     }
@@ -1044,7 +1043,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         try {
                             parsed = new RegExp(_.escapeRegExp(args[arg]), argProperties[arg].mods || undefined);
                         }
-                        catch (ex) {
+                        catch {
                             if (returnErrors) {
                                 returnObj.errors.push('Incorrect regex: ' + args[arg]);
                                 returnObj.result = false;
@@ -1077,7 +1076,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         try {
                             parsed = JSON.stringify(JSON.parse(args[arg])); // to remove all whitespaces
                         }
-                        catch (e) {
+                        catch {
                             if (returnErrors) {
                                 returnObj.errors.push("Invalid JSON for " + arg);
                                 returnObj.result = false;
@@ -1400,7 +1399,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                         }
                     }
                 }
-                catch (ex) {
+                catch {
                     if (returnErrors) {
                         returnObj.errors.push('Incorrect regex: ' + args[arg]);
                         returnObj.result = false;
@@ -2312,7 +2311,7 @@ common.parseAppVersion = function(version) {
             }
         }
     }
-    catch (error) {
+    catch {
         // Silently catch any errors from semver library
         // console.error('Error parsing app version:', error);
     }
@@ -2327,7 +2326,7 @@ common.parseAppVersion = function(version) {
 /**
  *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
  *  @param {string} inpVersion - an app version string
- *  @return {array} [regex.exec result, version scheme name]
+ *  @returns {array} [regex.exec result, version scheme name]
  */
 common.checkAppVersion = function(inpVersion) {
     // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
@@ -2355,7 +2354,7 @@ common.checkAppVersion = function(inpVersion) {
  *  For example '1.10.2' will be transformed to '100001.100010.100002'
  *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
  *  @param {string} inpVersion - an app version string
- *  @return {string} the transformed app version
+ *  @returns {string} the transformed app version
  *  @note Imported and moved from @module plugins/crashes/api/parts/version (which has now been deprecated)
  */
 common.transformAppVersion = function(inpVersion) {
@@ -2650,7 +2649,7 @@ common.parseUserQuery = function(raw) {
         try {
             query = JSON.parse(raw);
         }
-        catch (ex) {
+        catch {
             return { error: "Invalid query JSON" };
         }
     }
@@ -2694,7 +2693,7 @@ common.asRequestScalar = function(value) {
     try {
         return JSON.stringify(value);
     }
-    catch (ex) {
+    catch {
         //a parsed body cannot be circular, but never hand a handler an object
         //just because stringifying failed
         return "";
@@ -3080,7 +3079,7 @@ common.shuffleString = function(text) {
 };
 
 common.getRandomValue = function(charSet, length = 1) {
-    const randomValues = getRandomValues(new Uint8Array(charSet.length));
+    const randomValues = crypto.webcrypto.getRandomValues(new Uint8Array(charSet.length));
     let randomValue = "";
 
     if (length > charSet.length) {
@@ -3153,7 +3152,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
                             return false;
                         }
                     }
-                    catch (splitErrorBasicString) {
+                    catch {
                         return false;
                     }
                 }
@@ -3188,7 +3187,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
                             return false;
                         }
                     }
-                    catch (splitErrorComplexString) {
+                    catch {
                         return false;
                     }
                 }
@@ -3609,7 +3608,7 @@ common.dbext = {
         try {
             return new mongodb.ObjectId(id);
         }
-        catch (ex) {
+        catch {
             return id;
         }
     },
@@ -3991,7 +3990,7 @@ common.trimWhitespaceStartEnd = function(value) {
         try {
             value = JSON.parse(value);
         }
-        catch (error) {
+        catch {
             value = value.trim();
         }
     }

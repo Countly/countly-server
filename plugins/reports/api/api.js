@@ -136,7 +136,7 @@ function publicReportFields(args) {
             try {
                 paramsInstance.qstring.args = JSON.parse(paramsInstance.qstring.args);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
                 common.returnMessage(paramsInstance, 400, 'Invalid JSON in args');
                 return true;
@@ -262,7 +262,7 @@ function publicReportFields(args) {
             try {
                 paramsInstance.qstring.args = JSON.parse(paramsInstance.qstring.args);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse ' + paramsInstance.qstring.args + ' JSON failed');
                 common.returnMessage(paramsInstance, 400, 'Invalid JSON in args');
                 return true;
@@ -880,7 +880,7 @@ function publicReportFields(args) {
      *
      * @param {object} params - request params object
      * @param {object} props - report related props
-     * @param {function} cb - callback receiving (err, authorized)
+     * @param {Function} cb - callback receiving (err, authorized)
      */
     function validateNonCoreUser(params, props, cb) {
         //the flag is only how the dispatch reports its result back, and props is built

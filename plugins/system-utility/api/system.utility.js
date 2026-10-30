@@ -179,7 +179,7 @@ exports.memory = memoryUsage;
  * Set disk recursive function
  * @param {Array} disks - Disk list
  * @param {number} index - Current iterator
- * @param {function} callback - Callback
+ * @param {Function} callback - Callback
  */
 function setDiskIds(disks, index, callback) {
     if (disks.length === index) {
@@ -328,7 +328,7 @@ exports.overall = getOverallInfo;
  * @param {string} condition - Condition
  * @param {string} sourceValue - Source
  * @param {string} targetValue - Target
- * @return {boolean} - Result
+ * @returns {boolean} - Result
  */
 function checkCondition(condition, sourceValue, targetValue) {
     switch (condition) {

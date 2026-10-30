@@ -16,7 +16,7 @@ bash "$DIR/scripts/logo.sh";
 #update package index
 sudo apt-get update
 
-sudo apt-get install -y wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck curl gnupg2 ca-certificates lsb-release
+sudo apt-get install -y wget build-essential libkrb5-dev git unzip bzip2 shellcheck curl gnupg2 ca-certificates lsb-release
 
 if [[ "$UBUNTU_YEAR" = "22" ]]; then
     sudo apt-get install -y python2 python2-dev
@@ -60,7 +60,13 @@ sudo mkdir -p /etc/apt/keyrings
 if [ ! -f /etc/apt/keyrings/nodesource.gpg ]; then
     curl -fsSL "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key" | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg
 fi
-NODE_MAJOR=22
+#Node.js 26 by default. Ubuntu 20.04 stays on 22: hooks custom code needs isolated-vm 7
+#on Node.js 26, which has no binary for focal's glibc and cannot be built with its gcc 10.
+if [[ "$UBUNTU_YEAR" = "20" ]]; then
+    NODE_MAJOR=22
+else
+    NODE_MAJOR=26
+fi
 echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
 sudo apt-get update
 sudo apt-get install nodejs -y
@@ -93,7 +99,7 @@ sudo apt-get install -y sendmail
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install argon2; npm install sqlite3 --build-from-source; npm install; )
+( cd "$DIR/.."; npm install argon2; npm install; )
 
 #install mongodb
 if ! command -v mongod &> /dev/null; then
@@ -158,6 +164,9 @@ bash "$DIR/scripts/countly.install.plugins.sh"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
+
+#load GeoNames reverse-geocoding data into database
+nodejs "$DIR/offline-geocoder/scripts/import_geonames_mongodb.js" --if-changed
 
 #get web sdk
 sudo countly update sdk-web

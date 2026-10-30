@@ -4,7 +4,7 @@
 */
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
-    Promise = require("bluebird"),
+    Promise = require("./promise.js"),
     crypto = require('crypto'),
     log = require('./log.js')('core:rights');
 
@@ -69,8 +69,9 @@ function validate_token_if_exists(params) {
 * this model exists to prevent. Applied as soon as the member is loaded, so that the validators'
 * own permission checks already see the bounded member.
 *
-* A token with no token_permission (an api_key request, a dashboard session token, or a token
-* created before this model) is returned unchanged, so existing integrations are unaffected.
+* A token created before this model with an app restriction is bounded to its owner's authority
+* on those apps. A token with no restriction at all (an api_key request, a dashboard session
+* token) is returned unchanged, so existing integrations are unaffected.
 * @param {params} params - {@link params} object, carrying token_data when a token was used
 * @param {object} member - member document loaded for the token owner
 * @returns {object} the member, bounded by the token's permissions when the token is scoped
@@ -79,16 +80,89 @@ function applyTokenScope(params, member) {
     if (params.token_data && params.token_data.token_permission) {
         member = exports.intersectPermission(member, params.token_data.token_permission);
     }
-    //custom dashboards are not app scoped: a dashboard is opened by ownership and sharing, and
-    //everyone who opens it reads every widget on it, whatever app the widget reads. So a scoped
-    //token reaches the owner's dashboards only through a grant of its own, kept here because
-    //intersectPermission rebuilds the per-app permission and drops it
+    else if (member && params.token_data && isScopeRestricted(params.token_data.app)) {
+        //a legacy token restricted to apps carries its owner's authority on those apps and none
+        //elsewhere. authorizer.js only enforces the restriction against a request's app_id, so a
+        //route that takes no app_id - an app listing, user management - saw the owner at full
+        //strength, global_admin included. Bounding the member to those apps holds everywhere.
+        //A malformed stored list can contain only empty entries. It is still a
+        //restriction, and intersecting with no apps must remove global authority.
+        member = exports.intersectPermission(member, appOnlyPermission(legacyTokenApps(params.token_data)));
+    }
+    //the owner's api_key is the owner's full authority, and the member left on params is what
+    //every handler acts with: anything that later reached for params.member.api_key would run with
+    //more than the token holds, and keep running after the token is revoked. A scoped credential
+    //carries no key, so such code finds nothing rather than an escalation. A legacy app/endpoint
+    //restricted token is scoped as well, so it loses the key even without token_permission.
+    //It is also marked with a reference to the token (credentialRef - never the token itself,
+    //which is a bearer secret; true when it has no id), so that code which authorizes on who the
+    //member is can tell the token apart from its owner.
     if (member && exports.isScopedCredential(params)) {
         member = Object.assign({}, member);
+        delete member.api_key;
+        member.scoped_credential = exports.credentialRef(params.token_data._id) || true;
+        //custom dashboards are not app scoped: a dashboard is opened by ownership and sharing, and
+        //everyone who opens it reads every widget on it, whatever app the widget reads. So a scoped
+        //token reaches the owner's dashboards only through a grant of its own, kept here because
+        //intersectPermission rebuilds the per-app permission and drops it
         member.dashboard_grant = dashboardGrant(params.token_data.token_permission);
     }
     return member;
 }
+
+/**
+* Apps a legacy (pre-permission-model) token is restricted to.
+* @param {object} token - auth_tokens document
+* @returns {string[]} app ids, empty when the token has no app restriction
+*/
+function legacyTokenApps(token) {
+    var apps = token.app;
+    if (typeof apps === "string") {
+        apps = apps === "" ? [] : [apps];
+    }
+    return Array.isArray(apps) ? apps.filter(function(appId) {
+        return typeof appId === "string" && appId !== "";
+    }) : [];
+}
+
+/**
+* Whether a legacy token scope field asks for a restriction, including a
+* malformed non-empty list whose entries normalize to no valid apps.
+* @param {string|Array} scope - token app or endpoint field
+* @returns {boolean} true if the field represents a restriction
+*/
+function isScopeRestricted(scope) {
+    return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+}
+
+/**
+* A permission granting everything on the given apps, to intersect an owner with: the result is
+* exactly the owner's own authority on those apps.
+* @param {string[]} apps - app ids
+* @returns {object} permission object
+*/
+function appOnlyPermission(apps) {
+    var permission = {_: {a: apps.slice(), u: [apps.slice()]}, c: {}, r: {}, u: {}, d: {}};
+    apps.forEach(function(appId) {
+        ["c", "r", "u", "d"].forEach(function(type) {
+            permission[type][appId] = {all: true, allowed: {}};
+        });
+    });
+    return permission;
+}
+
+/**
+* A non-secret reference to a token: what may be stored or compared where the token itself, a
+* bearer credential, must not appear - on params.member.
+* @param {string} tokenId - auth_tokens _id (the token string)
+* @returns {string|null} the reference, or null for a missing id
+*/
+exports.credentialRef = function(tokenId) {
+    if (typeof tokenId !== "string" || tokenId === "") {
+        return null;
+    }
+    return crypto.createHash("sha256").update("countly-credential-ref:" + tokenId).digest("hex");
+};
 
 /**
 * The dashboard operations a token_permission grants under its dashboards key.
@@ -132,7 +206,7 @@ exports.applyTokenScope = applyTokenScope;
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
 * @param {params} params - {@link params} object
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
@@ -231,7 +305,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information and app information.
 * @param {params} params - {@link params} object
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
@@ -323,7 +397,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information.
 * @param {params} params - {@link params} object
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
@@ -397,7 +471,7 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information.
 * @param {params} params - {@link params} object
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
@@ -480,7 +554,7 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
 * If user does not pass validation, it outputs error to request. In case validation passes, provided callback is called.
 * Additionally populates params with member information.
 * @param {params} params - {@link params} object
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
@@ -552,9 +626,9 @@ exports.validateUser = function(params, callback, callbackParam) {
 /**
 * Wrap callback using promise
 * @param {params} params - {@link params} object
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function
-* @param {function} func - promise function
+* @param {Function} func - promise function
 * @returns {Promise} promise
 */
 function wrapCallback(params, callback, callbackParam, func) {
@@ -588,7 +662,7 @@ function wrapCallback(params, callback, callbackParam, func) {
 /**
  * Function to load and cache data
  * @param {object} apps - apps 
- * @param {function} callback - callback function 
+ * @param {Function} callback - callback function 
  */
 function loadAndCacheEventsData(apps, callback) {
     const appIds = [];
@@ -608,7 +682,7 @@ function loadAndCacheEventsData(apps, callback) {
     * Get events collections with replaced app names
     * A helper function for db access check
     * @param {object} appColl - application ids and names
-    * @param {function} cb - callback method
+    * @param {Function} cb - callback method
     **/
     function getEvents(appColl, cb) {
         common.db.collection('events').find({'_id': { $in: appColl.appIds }}).toArray(function(err, events) {
@@ -643,7 +717,7 @@ function loadAndCacheEventsData(apps, callback) {
     * Get views collections with replaced app names
     * A helper function for db access check
     * @param {object} appColl - application ids and names
-    * @param {function} cb - callback method
+    * @param {Function} cb - callback method
     **/
     function getViews(appColl, cb) {
         common.db.collection('views').find({'_id': { $in: appColl.appIds }}).toArray(function(err, viewDocs) {
@@ -714,7 +788,7 @@ function loadAndCacheEventsData(apps, callback) {
 * A helper function for db access check
 * @param {object} params - {@link params} object
 * @param {array} apps - array with each element being app document
-* @param {function} callback - callback method
+* @param {Function} callback - callback method
 **/
 function dbLoadEventsData(params, apps, callback) {
     var events = {};
@@ -790,8 +864,8 @@ exports.getCollectionName = function(hashValue) {
 * @param {object} params - {@link params} object
 * @param {string} collection - collection will be checked for access
 * @param {string} app_id - app_id to which to restrict access
-* @param {function} callback - callback method includes boolean variable as argument  
-* @returns {function} returns callback
+* @param {Function} callback - callback method includes boolean variable as argument  
+* @returns {Function} returns callback
 **/
 exports.dbUserHasAccessToCollection = function(params, collection, app_id, callback) {
     if (typeof app_id === "function") {
@@ -888,7 +962,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
 * Additionally populates params with member information and app information.
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
@@ -1044,7 +1118,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {string} accessType - required access type for related request (c: create, u: update and d: delete)
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
@@ -1185,15 +1259,72 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
     });
 }
 /**
+ * Apps of a member on which they hold the read right of at least one of the features
+ * @param {object} member - members object from params
+ * @param {string|Array<string>} feature - feature name, or a list of names any of which grants the read
+ * @returns {Array<string>} app ids
+ */
+exports.getUserAppsWithReadRight = function(member, feature) {
+    var features = Array.isArray(feature) ? feature : [feature];
+    //a token can hold a feature's read on an app without being its member, so the
+    //apps carrying read grants are candidates too; hasReadRight decides each one
+    var candidates = (exports.getUserApps(member) || []).map(String);
+    Object.keys((member.permission && member.permission.r) || {}).forEach(function(id) {
+        if (candidates.indexOf(id) === -1) {
+            candidates.push(id);
+        }
+    });
+    var readGrants = (member.permission && member.permission.r) || {};
+    return candidates.filter(function(id) {
+        //a blanket read on the app grants every feature, as validateRead counts it
+        if (readGrants[id] && readGrants[id].all === true) {
+            return true;
+        }
+        return features.some(function(f) {
+            return exports.hasReadRight(f, id, member);
+        });
+    });
+};
+
+/**
+ * Features whose read right lets a member export a collection shared by all apps
+ * (/o/export/db). These collections are not per-app collections, so
+ * dbUserHasAccessToCollection never grants them: the export needs the read right of one
+ * of these features on at least one app, and its rows are scoped to those apps.
+ * drill_events is also exported by the drill API and the user profile timeline.
+ * @param {string} dbName - database name
+ * @param {string} collectionName - collection name
+ * @returns {Array<string>|null} feature names, or null when the collection is not a shared one
+ */
+exports.getSharedCollectionExportFeatures = function(dbName, collectionName) {
+    if (dbName === "countly_drill" && collectionName === "drill_events") {
+        return ["dbviewer", "drill", "users"];
+    }
+    if (dbName === "countly" && collectionName === "events_data") {
+        return ["dbviewer"];
+    }
+    return null;
+};
+
+/**
  * Creates filter object  to filter by member allowed collections
  * @param {object} member - members object from params
  * @param {string} dbName  - database name as string
  * @param {string} collectionName  - collection Name
+ * @param {(string|Array<string>)=} feature - when given, only apps the member holds this
+ *   feature's read right on (any of them, for a list) are in scope, instead of every app
+ *   they belong to
  * @returns {object} filter object
  */
-exports.getBaseAppFilter = function(member, dbName, collectionName) {
+exports.getBaseAppFilter = function(member, dbName, collectionName, feature) {
     var base_filter = {};
     var apps = exports.getUserApps(member);
+    // The shared collections hold every app's rows, so the row scope is the set
+    // of apps the member may read with the calling feature, not every app the
+    // member belongs to. Without a feature the scope stays membership-wide.
+    if (feature && !member.global_admin) {
+        apps = exports.getUserAppsWithReadRight(member, feature);
+    }
     // getUserApps() returns [] both for a global admin (meaning "all apps") and
     // for a non-global member that has no app access at all. Those two cases
     // must NOT be treated the same: a global admin should see everything, but a
@@ -1238,7 +1369,8 @@ exports.getExportAppFilter = function(member, dbName, collectionName) {
     if (member.global_admin || (collectionName !== "drill_events" && collectionName !== "events_data")) {
         return null;
     }
-    var base_filter = exports.getBaseAppFilter(member, dbName, collectionName);
+    //the rows of the apps the member holds the read right of an exporting feature on
+    var base_filter = exports.getBaseAppFilter(member, dbName, collectionName, exports.getSharedCollectionExportFeatures(dbName, collectionName));
     return base_filter && Object.keys(base_filter).length > 0 ? base_filter : null;
 };
 
@@ -1260,7 +1392,7 @@ exports.scopeQueryToApps = function(appFilter, query) {
 * Validate user for create access by api_key for provided app_id (both required parameters for the request).
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 */
 exports.validateCreate = function(params, feature, callback, callbackParam) {
@@ -1271,7 +1403,7 @@ exports.validateCreate = function(params, feature, callback, callbackParam) {
 * Validate user for update access by api_key for provided app_id (both required parameters for the request).
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 */
 exports.validateUpdate = function(params, feature, callback, callbackParam) {
@@ -1282,7 +1414,7 @@ exports.validateUpdate = function(params, feature, callback, callbackParam) {
 * Validate user for delete access by api_key for provided app_id (both required parameters for the request).
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
-* @param {function} callback - function to call only if validation passes
+* @param {Function} callback - function to call only if validation passes
 * @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 */
 exports.validateDelete = function(params, feature, callback, callbackParam) {
@@ -1685,14 +1817,6 @@ exports.isScopedCredential = function(params) {
     if (token.token_permission) {
         return true;
     }
-    /**
-    * Whether a legacy scope value restricts anything.
-    * @param {string|Array} scope - the app or endpoint field of a token
-    * @returns {boolean} true if restricted
-    */
-    var isScopeRestricted = function(scope) {
-        return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
-    };
     return isScopeRestricted(token.app) || isScopeRestricted(token.endpoint);
 };
 

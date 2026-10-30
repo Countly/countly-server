@@ -152,7 +152,7 @@
                                             queryObject[key] = sanitizeQueryData(queryObject[key]);
                                         }
                                     }
-                                    catch (e) {
+                                    catch {
                                         // If parsing fails, keep decoded string
                                     }
                                 }
@@ -169,7 +169,7 @@
                         });
                         return JSON.stringify(queryObject);
                     }
-                    catch (err) {
+                    catch {
                         return data; // Return original data if processing fails
                     }
                 };
@@ -198,7 +198,7 @@
                         try {
                             item[CV.i18n('logger.request-query').toUpperCase()] = sanitizeQueryData(tableData[i].q);
                         }
-                        catch (err) {
+                        catch {
                             item[CV.i18n('logger.request-header').toUpperCase()] = "-";
                         }
                     }
@@ -206,7 +206,7 @@
                         try {
                             item["REQUEST HEADER"] = sanitizeQueryData(tableData[i].h);
                         }
-                        catch (err) {
+                        catch {
                             item["REQUEST HEADER"] = "-";
                         }
                     }
@@ -253,7 +253,7 @@
                 try {
                     return JSON.parse(jsonObject);
                 }
-                catch (error) {
+                catch {
                     //
                 }
             }

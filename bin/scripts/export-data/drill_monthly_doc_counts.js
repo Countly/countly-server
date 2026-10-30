@@ -7,7 +7,7 @@
 
 const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
-const { Parser } = require('json2csv');
+const { Parser } = require('@json2csv/plainjs');
 const fs = require('fs');
 
 const pluginManager = require('../../../plugins/pluginManager.js');
@@ -91,7 +91,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         break;
                                     }
                                 }
-                                catch (error) {
+                                catch {
                                     console.log("Closing and reestablishing database connection");
                                     await drillDb.close();
                                     drillDb = await pluginManager.dbConnection("countly_drill");

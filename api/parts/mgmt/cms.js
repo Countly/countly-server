@@ -20,7 +20,7 @@ const AVAILABLE_API_IDS = ["server-guides", "server-consents", "server-intro-vid
 /**
 * Get entries for a given API ID from Countly CMS
 * @param {params} params - params object
-* @param {function} callback - callback function
+* @param {Function} callback - callback function
 **/
 function fetchFromCMS(params, callback) {
     const url = BASE_URL + params.qstring._id;
@@ -76,7 +76,7 @@ function fetchFromCMS(params, callback) {
 * @param {params} params - params object
 * @param {object} err - error object
 * @param {array} data - data array
-* @param {function} callback - callback function
+* @param {Function} callback - callback function
 **/
 function transformAndStoreData(params, err, data, callback) {
     const lu = Date.now();
@@ -162,7 +162,7 @@ cmsApi.saveEntries = function(params) {
     try {
         entries = JSON.parse(params.qstring.entries);
     }
-    catch (ex) {
+    catch {
         log.e(params.qstring.entries);
         common.returnMessage(params, 400, 'Invalid entries parameter');
         return;

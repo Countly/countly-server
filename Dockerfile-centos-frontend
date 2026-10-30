@@ -55,7 +55,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
         curl -L -O -J "https://box.tools.count.ly/public.php/dav/files/Wj8opzNdyE5DyDX/?accept=zip" && \
         yum install -y raven-release.el8.noarch.rpm && \
         yum install -y ipa-gothic-fonts && \
-        yum install -y wget openssl-devel make git sqlite libsqlite* unzip bzip2 && \
+        yum install -y wget openssl-devel make git libsqlite* unzip bzip2 && \
         # modify standard distribution
         # isolated-vm needs -std=c++20 and node-gyp needs python>=3.8; stock CentOS 8 has neither
         . /opt/rh/gcc-toolset-11/enable && \
@@ -76,7 +76,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	countly update sdk-web && \
 	\
 	# cleanup & chown
-	npm remove -y --no-save mocha nyc should supertest puppeteer && \
+	npm remove -y --no-save mocha should supertest puppeteer && \
 	rm -rf /opt/app-root/src/.npm && \
 	yum remove -y git wget unzip make && \
 	yum --setopt=groupremove_leaf_only=1 groupremove -y 'Development Tools' && \

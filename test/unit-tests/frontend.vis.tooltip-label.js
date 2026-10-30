@@ -22,7 +22,7 @@ describe("chart tooltip label rendering", function() {
      * @param {string} src - file contents
      * @param {string} marker - text immediately preceding the function's brace
      * @param {string} arg - the function's parameter name
-     * @returns {function} the extracted function
+     * @returns {Function} the extracted function
      */
     function lift(src, marker, arg) {
         var at = src.indexOf(marker);

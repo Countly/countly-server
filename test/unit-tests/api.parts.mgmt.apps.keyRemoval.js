@@ -70,7 +70,7 @@ describe("apps update: retiring accepted keys", function() {
 
     /**
      * Run on a later tick, so concurrent requests interleave.
-     * @param {function} fn - work
+     * @param {Function} fn - work
      * @returns {Promise} result of fn
      */
     function later(fn) {
