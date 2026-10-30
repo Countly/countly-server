@@ -341,12 +341,12 @@ if [ $# -eq 0 ]; then
             exit 1
         fi
 
-        echo "[mongodb-org-8.0]
+        echo "[mongodb-org-9.0]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_MAJOR}/mongodb-org/8.0/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_MAJOR}/mongodb-org/9.0/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://pgp.mongodb.com/server-8.0.asc" > /etc/yum.repos.d/mongodb-org-8.0.repo
+gpgkey=https://pgp.mongodb.com/server-9.asc" > /etc/yum.repos.d/mongodb-org-9.0.repo
 
         yum install -y mongodb-org
     elif [ -f /etc/lsb-release ]; then
@@ -359,8 +359,14 @@ gpgkey=https://pgp.mongodb.com/server-8.0.asc" > /etc/yum.repos.d/mongodb-org-8.
             exit 1
         fi
 
-        curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
-        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+        #MongoDB 9.0 by default; it publishes no 9.0 packages for Ubuntu 20.04, which stays on 8.0
+        if [[ "$UBUNTU_YEAR" = "20" ]]; then
+            curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+            echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+        else
+            curl -fsSL https://pgp.mongodb.com/server-9.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-9.gpg --dearmor
+            echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-9.gpg ] https://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/9.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-9.0.list
+        fi
         apt-get update
         DEBIAN_FRONTEND="noninteractive" apt-get install -y mongodb-org || (echo "Failed to install mongodb." ; exit)
     else
