@@ -105,16 +105,20 @@
             <div class="logo">
             </div>
             <div class="title">
+                <% if (!error) { %>
                 <div class="check-icon" style="width:20px; height:20px;"> </div>
+                <% } %>
                 <div><%= i18n["title"] %></div>
             </div>
             <div class="subtitile">
                 <%= i18n["subtitle"] %>
             </div>
+            <% if (!error) { %>
             <div class="action">
                 <div class="hint"><%= i18n["hint"] %></div>
                 <div class="button" onclick="_changeSubscriptions()"><%= i18n["button"] %> </div>
             </div>
+            <% } %>
         </div>
     </body>
 </html>
