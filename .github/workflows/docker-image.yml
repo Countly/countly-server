@@ -10,10 +10,10 @@ on:
 jobs:
   push_server:
     name: Push Countly Server Image
-    # ubuntu-24.04, not ubuntu-latest: this image installs and starts MongoDB 8 during the
-    # build, and MongoDB 8 refuses to start on the Linux 6.19+ kernel of ubuntu-26.04
-    # runners (SERVER-121912), so the build waited for it until the job timed out
-    runs-on: ubuntu-24.04
+    # ubuntu-22.04, not ubuntu-latest or ubuntu-24.04: this image installs and starts
+    # MongoDB 8 during the build, and MongoDB 8 refuses to start on the newer kernels of
+    # those runners (SERVER-121912), so the build waited for it until the job timed out
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
