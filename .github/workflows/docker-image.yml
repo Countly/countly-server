@@ -6,10 +6,14 @@ on:
    # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
+# 24.05 images are pushed under their version only: latest belongs to the newest line
 jobs:
   push_server:
     name: Push Countly Server Image
-    runs-on: ubuntu-latest
+    # ubuntu-24.04, not ubuntu-latest: this image installs and starts MongoDB 8 during the
+    # build, and MongoDB 8 refuses to start on the Linux 6.19+ kernel of ubuntu-26.04
+    # runners (SERVER-121912), so the build waited for it until the job timed out
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -36,7 +40,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: countly/countly-server:latest,countly/countly-server:${{ steps.vars.outputs.tag }}
+          tags: countly/countly-server:${{ steps.vars.outputs.tag }}
           
   push_api:
     name: Push Countly API Image
@@ -67,7 +71,7 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-api
-          tags: countly/api:latest,countly/api:${{ steps.vars.outputs.tag }}
+          tags: countly/api:${{ steps.vars.outputs.tag }}
 
   push_frontend:
     name: Push Countly Frontend Image
@@ -98,7 +102,7 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-frontend
-          tags: countly/frontend:latest,countly/frontend:${{ steps.vars.outputs.tag }}
+          tags: countly/frontend:${{ steps.vars.outputs.tag }}
           
   push_all:
     name: Push Countly Single-All Image
@@ -129,4 +133,4 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-core
-          tags: countly/countly-core:latest,countly/countly-core:${{ steps.vars.outputs.tag }},countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+          tags: countly/countly-core:${{ steps.vars.outputs.tag }},countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
