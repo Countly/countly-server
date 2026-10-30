@@ -20,8 +20,8 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   install:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    # GitHub no longer provides ubuntu-20.04 runners, so a job asking for one never starts
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
