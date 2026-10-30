@@ -79,11 +79,12 @@ jobs:
     # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
     # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
     # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    # The jobs now run mongo:9.0; kept on ubuntu-22.04 until it is shown to start there too.
     runs-on: ubuntu-22.04
 
     services:
       mongodb:
-        image: mongo:8.0
+        image: mongo:9.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -147,11 +148,12 @@ jobs:
     # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
     # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
     # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    # The jobs now run mongo:9.0; kept on ubuntu-22.04 until it is shown to start there too.
     runs-on: ubuntu-22.04
 
     services:
       mongodb:
-        image: mongo:8.0
+        image: mongo:9.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -202,11 +204,12 @@ jobs:
     # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
     # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
     # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    # The jobs now run mongo:9.0; kept on ubuntu-22.04 until it is shown to start there too.
     runs-on: ubuntu-22.04
 
     services:
       mongodb:
-        image: mongo:8.0
+        image: mongo:9.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -264,6 +267,7 @@ jobs:
     # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
     # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
     # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    # The jobs now run mongo:9.0; kept on ubuntu-22.04 until it is shown to start there too.
     runs-on: ubuntu-22.04
 
     strategy:
@@ -273,7 +277,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:8.0
+        image: mongo:9.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
