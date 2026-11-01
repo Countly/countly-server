@@ -2513,6 +2513,19 @@ var pluginManager = function pluginManager() {
         overwriteDbPromise(countlyDb, "renameCollection");
         overwriteDbPromise(countlyDb, "setProfilingLevel");
         overwriteDbPromise(countlyDb, "stats");
+        //collection wrappers are cached per name for the life of the process (see countlyDb.collection
+        //below); a dropped or renamed collection releases its wrapper, or every per-app collection of
+        //every deleted app stays on the heap
+        var dropCollection = countlyDb.dropCollection;
+        countlyDb.dropCollection = function(name, ...rest) {
+            delete countlyDb._collection_cache[name];
+            return dropCollection.call(countlyDb, name, ...rest);
+        };
+        var renameCollection = countlyDb.renameCollection;
+        countlyDb.renameCollection = function(from, ...rest) {
+            delete countlyDb._collection_cache[from];
+            return renameCollection.call(countlyDb, from, ...rest);
+        };
 
 
         var findOptions = [
@@ -3127,6 +3140,16 @@ var pluginManager = function pluginManager() {
             overwritePromise(ob, "isCapped");
             overwritePromise(ob, "options");
             overwritePromise(ob, "rename");
+            var drop = ob.drop;
+            ob.drop = function(...args) {
+                delete countlyDb._collection_cache[collection];
+                return drop.apply(ob, args);
+            };
+            var rename = ob.rename;
+            ob.rename = function(...args) {
+                delete countlyDb._collection_cache[collection];
+                return rename.apply(ob, args);
+            };
 
             var overwriteBulkPromise = function(obj, name) {
                 obj["_" + name] = obj[name];
