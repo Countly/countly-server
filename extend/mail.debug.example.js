@@ -2,15 +2,14 @@
 //edit this script and put it in countly/extend/mail.js to overwrite existing email templates and settings
 var nodemailer = require('nodemailer');
 
-//debug logging
-var bunyan = require('bunyan');
-var log = bunyan.createLogger({name: "Countly Email"});
-
 //rename company
 var company = "Company";
 var email = "email@company.com";
 
 module.exports = function(mail) {
+    //debug logging goes through Countly's "mail" logger; set its level to debug to see it
+    var log = mail.smtpLogger;
+
     //define this if you need to send email from some third party service
     mail.smtpTransport = nodemailer.createTransport({
         host: "myhost",

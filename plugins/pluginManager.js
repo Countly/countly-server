@@ -859,6 +859,19 @@ var pluginManager = function pluginManager() {
     * @param {string} name - filename to extend
     * @param {object} object - object to extend
     **/
+    /**
+     * Whether an error from requiring an extend file means only that the file isn't there
+     * @param {Error} ex - error thrown by require
+     * @returns {boolean} true when the extend file itself is missing
+     */
+    var isMissingExtendFile = function(ex) {
+        if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+            return false;
+        }
+        //when the extend file exists but a module it requires is missing, the extend file is
+        //the first entry of the require stack; that would drop the extension, so it is logged
+        return !(ex.requireStack && ex.requireStack[0] && ex.requireStack[0].indexOf(path.sep + "extend" + path.sep) !== -1);
+    };
     this.extendModule = function(name, object) {
         //plugin specific extend
         for (let i = 0, l = plugins.length; i < l; i++) {
@@ -867,7 +880,7 @@ var pluginManager = function pluginManager() {
             }
             catch (ex) {
                 //silent error, not extending or no module
-                if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+                if (!isMissingExtendFile(ex)) {
                     console.log(ex);
                 }
             }
@@ -879,7 +892,7 @@ var pluginManager = function pluginManager() {
         }
         catch (ex) {
             //silent error, not extending or no module
-            if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+            if (!isMissingExtendFile(ex)) {
                 console.log(ex);
             }
         }

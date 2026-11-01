@@ -12,7 +12,6 @@ const fs = require('fs');
 var countlyFs = require('./../../utils/countlyFs.js');
 //var cp = require('child_process'); //call process
 //var spawn = cp.spawn; //for calling comannd line
-const fse = require('fs-extra');
 var crypto = require('crypto');
 var log = common.log('core:app_users');
 
@@ -798,7 +797,7 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
                 errors.push(error.message);
             }
             if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID))) {
-                fse.remove(path.resolve(__dirname, './../../../export/AppUser/' + exportID),
+                fs.rm(path.resolve(__dirname, './../../../export/AppUser/' + exportID), {recursive: true, force: true},
                     err => {
                         if (err) {
                             errors.push(err.message || err);

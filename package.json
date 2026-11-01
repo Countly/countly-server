@@ -52,9 +52,8 @@
     "all-the-cities": "3.1.0",
     "argon2": "0.41.1",
     "async": "3.2.6",
-    "basic-auth": "2.0.1",
     "body-parser": "2.4.0",
-    "bunyan": "1.8.15",
+    "bunyan": "file:api/utils/bunyan-compat",
     "connect-flash": "0.1.1",
     "cookie-parser": "1.4.7",
     "countly-request": "file:api/utils/countly-request",
@@ -69,7 +68,6 @@
     "express-session": "1.19.0",
     "form-data": "^4.0.0",
     "formidable": "2.1.5",
-    "fs-extra": "11.4.1",
     "geoip-lite": "2.0.3",
     "grunt": "1.6.3",
     "grunt-cli": "1.5.0",
@@ -130,7 +128,6 @@
   "allowScripts": {
     "@parcel/watcher": true,
     "argon2": true,
-    "dtrace-provider": true,
     "puppeteer": true
   },
   "jshintConfig": {
