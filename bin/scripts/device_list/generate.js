@@ -1,14 +1,21 @@
 // run as 
 // node generate.js > ../../../frontend/express/public/javascripts/countly/countly.device.list.js
 
-//https://www.theiphonewiki.com/wiki/Models 
-//https://gist.github.com/adamawolf/3048717
-//scrape_mac_devices.txt
+// Sources for apple.json. Add a new identifier only when two sources agree on it
+// (for Macs, Apple's own page is enough):
+// - The Apple Wiki "Models" page (formerly theiphonewiki.com). The page is built from one
+//   subpage per family (Models/iPhone, Models/iPad, Models/Apple Watch, ...); the site
+//   blocks plain HTTP clients, so read the wikitext through the API:
+//   https://theapplewiki.com/api.php?action=parse&page=Models/iPhone&prop=wikitext&format=json
+// - AppleDB, device list with identifiers: https://api.appledb.dev/device/main.json
+// - https://gist.github.com/adamawolf/3048717 (iPhone, iPad, Watch only)
+// - Macs: Apple's "Identify your Mac" pages, see scrape_mac_devices.txt
 var devices = require("./apple.json");
 
-//https://m.media-amazon.com/images/G/01/mobile-apps/dex/firetablets/tablet-device-specs-data._TTH_.json
-//https://developer.amazon.com/docs/fire-tv/device-specifications.html?v=ftveditioninsigniahd
-//https://developer.amazon.com/docs/fire-tablets/ft-specs-custom.html
+// Sources for amazon.json (model code -> name tables):
+// - Fire TV: https://developer.amazon.com/docs/device-specs/identify-fire-tv-devices.html
+// - Fire tablets: https://developer.amazon.com/docs/device-specs/ft-identify-tablet-devices.html
+// - Older tablets: https://m.media-amazon.com/images/G/01/mobile-apps/dex/firetablets/tablet-device-specs-data._TTH_.json
 var amazon = require("./amazon.json");
 
 
@@ -24,16 +31,19 @@ var csv = require('csvtojson');
 csv()
 //Shift + Cmd + P -> Convert Encoding -> Save with encoding -> UTF-8
 //from https://support.google.com/googleplay/answer/1727131?hl=en-GB
+//direct download: https://storage.googleapis.com/play_public/supported_devices.csv
     .fromFile("./supported_devices.csv")
-    .on('json', (jsonObj)=>{
+    // csvtojson v2 removed the 'json' event; subscribe() yields each parsed row instead.
+    .subscribe((jsonObj)=>{
         //process.stderr.write("Parsed data/json line: " + jsonObj);
         var d = jsonObj["Marketing Name"] + "";
         var i = jsonObj["Model"] + "";
         if (i != d && d.trim().length) {
             try {
+                //the CSV also escapes some apostrophes as \'
                 devices[i] = decodeURIComponent(escape(d.replace(/\\x([0-9a-f]{2})/g, function(_, pair) {
                     return String.fromCharCode(parseInt(pair, 16));
-                })));
+                }).replace(/\\'/g, "'")));
             }
             catch {
                 devices[i] = d;
