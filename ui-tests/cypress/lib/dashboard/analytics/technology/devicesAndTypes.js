@@ -226,7 +226,8 @@ const verifyDevicesEGraph = ({
     platformVersion = null,
     platformVersionPercentage = null,
     platformResolution = null,
-    platformResolutionPercentage = null
+    platformResolutionPercentage = null,
+    platformCount = 2,
 }) => {
 
     clickDevicesTab();
@@ -280,24 +281,29 @@ const verifyDevicesEGraph = ({
         element: devicesEGraphElements().DEVICES_ICONS,
     });
 
-    for (var i = 0; i < 3; i++) {
+    // a mobile demo app has Android and iOS only
+    for (var p = 0; p < platformCount; p++) {
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesEGraphElements(i).TOP_PLATFORMS_NAME,
+            element: devicesEGraphElements(p).TOP_PLATFORMS_NAME,
             elementText: platformName,
         });
 
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesEGraphElements(i).TOP_PLATFORMS_PERCENT,
+            element: devicesEGraphElements(p).TOP_PLATFORMS_PERCENT,
             elementText: platformPercentage,
         });
 
         cy.verifyElement({
             isElementVisible: false,
-            element: devicesEGraphElements(i).TOP_PLATFORMS_PROGRESS_BAR,
+            element: devicesEGraphElements(p).TOP_PLATFORMS_PROGRESS_BAR,
         });
+    }
 
+    cy.shouldNotExist(devicesEGraphElements(platformCount).TOP_PLATFORMS_NAME);
+
+    for (var i = 0; i < 3; i++) {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: devicesEGraphElements(i).TOP_PLATFORMS_VERSIONS_NAME,
