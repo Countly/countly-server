@@ -86,6 +86,40 @@ describe('Testing Store metrics', function() {
                 });
         });
     });
+    describe('keywords with a malformed source URL', function() {
+        it('should store a search referrer and one whose port is not a number', function(done) {
+            var requests = [
+                {"device_id": DEVICE_ID + "kw1", "app_key": APP_KEY, "begin_session": 1, "metrics": {"_store": "https://www.google.com/search?q=countly"}},
+                {"device_id": DEVICE_ID + "kw2", "app_key": APP_KEY, "begin_session": 1, "metrics": {"_store": "http://example.com:port/x?q=other"}}
+            ];
+            request
+                .get('/i/bulk?requests=' + encodeURIComponent(JSON.stringify(requests)))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    setTimeout(done, 300 * testUtils.testScalingFactor);
+                });
+        });
+        it('should still list the keyword of the valid referrer', function(done) {
+            //url.parse throws on the second URL on newer Node.js; the endpoint skips it
+            request
+                .get('/o/keywords?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.be.an.Array();
+                    ob.map(function(item) {
+                        return item._id;
+                    }).should.containEql('countly');
+                    done();
+                });
+        });
+    });
     describe('reset app', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, "period": "reset"};

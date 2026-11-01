@@ -184,7 +184,14 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
             fetch.getMetric(params, "sources", null, function(data) {
                 var result = [];
                 for (var i = 0; i < data.length; i++) {
-                    var parts = urlParse.parse(common.db.decode(data[i]._id), true);
+                    var parts;
+                    try {
+                        parts = urlParse.parse(common.db.decode(data[i]._id), true);
+                    }
+                    catch {
+                        //newer Node.js throws on some malformed URLs (an invalid port), skip that source
+                        continue;
+                    }
                     if ((parts.href || parts.hostname) && parts.query) {
                         parts.hostname = parts.hostname || parts.href.split("/")[0];
                         for (var c in searchEngineKeyWord) {

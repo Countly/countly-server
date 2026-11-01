@@ -9,7 +9,8 @@ utils.updateRuleTriggerTime = function updateRuleTriggerTime(hookID) {
 
     const updateOperation = {$set: {lastTriggerTimestamp: new Date().getTime()}, $inc: { triggerCount: 1}};
 
-    common.writeBatcher.add("hooks", hookID, updateOperation);
+    //no upsert: a flush after the hook was deleted must not recreate it
+    common.writeBatcher.add("hooks", hookID, updateOperation, "countly", {upsert: false});
 };
 
 utils.addErrorRecord = function addErrorRecord(hookId, error, params, effectStep, _originalInput) {
@@ -28,7 +29,7 @@ utils.addErrorRecord = function addErrorRecord(hookId, error, params, effectStep
             }
         }
     };
-    common.writeBatcher.add("hooks", hookId, updateOperation);
+    common.writeBatcher.add("hooks", hookId, updateOperation, "countly", {upsert: false});
 };
 
 
