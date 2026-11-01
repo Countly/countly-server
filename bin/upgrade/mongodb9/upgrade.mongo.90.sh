@@ -75,6 +75,10 @@ if [ -x "$(command -v mongosh)" ]; then
             echo "run this command before upgrading to 9.0 and rerunning this script";
             echo "mongosh admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"8.0\\\", confirm: true } )\"";
             exit 0;
+        elif [ "$isAuth" -eq "0" ] && ! echo "$FEATVER" | grep -q "8.0" ; then
+            #nothing is removed unless MongoDB answered and reported featureCompatibilityVersion 8.0
+            echo "Could not read featureCompatibilityVersion (got: '$FEATVER'). Make sure MongoDB is running and rerun this script.";
+            exit 1;
         else
             echo "Upgrading to MongoDB 9.0";
         fi
@@ -108,7 +112,7 @@ gpgcheck=1
 enabled=1
 gpgkey=https://pgp.mongodb.com/server-9.asc" > /etc/yum.repos.d/mongodb-org-9.0.repo
 
-    yum install -y mongodb-org
+    yum install -y mongodb-org || { echo "Failed to install MongoDB 9.0."; exit 1; }
     \cp -f /etc/mongod.conf.bak /etc/mongod.conf
 fi
 
@@ -119,7 +123,7 @@ if [ -f /etc/lsb-release ]; then
     echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-9.gpg ] https://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/9.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-9.0.list
     apt-get update
     #install mongodb
-    apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mongodb-org --force-yes || (echo "Failed to install mongodb." ; exit)
+    apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y mongodb-org --force-yes || { echo "Failed to install MongoDB 9.0."; exit 1; }
 fi
 
 if [ -f /etc/redhat-release ]; then
