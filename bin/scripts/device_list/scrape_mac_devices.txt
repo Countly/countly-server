@@ -1,37 +1,34 @@
 Scraping for:
-iMac (https://support.apple.com/en-us/HT201634)
-Mac Pro (https://support.apple.com/en-us/HT202888)
-Mac Book Pro (https://support.apple.com/en-us/HT201300)
-Mac Book (https://support.apple.com/en-us/HT201608)
-Mac Book Air (https://support.apple.com/en-us/HT201862)
-Mac mini (https://support.apple.com/en-us/HT201894)
+iMac (https://support.apple.com/en-us/108054, was HT201634)
+Mac Pro (https://support.apple.com/en-us/102887, was HT202888)
+MacBook Pro (https://support.apple.com/en-us/108052, was HT201300)
+MacBook (https://support.apple.com/en-us/103257, was HT201608)
+MacBook Air (https://support.apple.com/en-us/102869, was HT201862)
+Mac mini (https://support.apple.com/en-us/102852, was HT201894)
 Mac Studio (https://support.apple.com/en-us/102231)
-Apple TV (https://support.apple.com/en-us/101605)
+Apple TV (https://support.apple.com/en-us/101605) - lists no identifiers any more; take Apple TV
+identifiers from the Apple Wiki and AppleDB (see generate.js)
 
-Load script:
+Not every new Mac is on these pages straight away; for missing ones use the Apple Wiki and AppleDB
+(see generate.js) and add an identifier only when both agree.
 
-var script = document.createElement('script');
-script.type = 'text/javascript';
-script.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
-document.head.appendChild(script);
-
-Scrape info:
+Scrape info (paste into the browser console on each page). Each model is an <h2> heading followed by
+paragraphs such as "<b>Model Identifier: </b>Mac17,4"; one paragraph can list several identifiers:
 var res = {};
-$("#sections > div > div > div > p:has(strong)").each(function(){
-    var el = $(this).find("strong");
-    var val = el.text().trim();
-    if (el[0].nextSibling) {
-        var limit = 10;
-        var count = 0;
-        var e = el[0];
-        var key = (e.nextSibling.nodeValue + "");
-        while (e.nextSibling && count !== limit && !key.trim().startsWith("Model Identifier:")) {
-            count++;
-            e = e.nextSibling;
-            key = (e.nodeValue + "");
-        }
-        key = key.replace("Model Identifier:", "").trim();
-        res[key] = val;
+var name = null;
+document.querySelectorAll("h2, p").forEach(function(el) {
+    if (el.tagName === "H2") {
+        name = el.textContent.trim();
+        return;
+    }
+    var text = el.textContent.trim();
+    if (name && text.indexOf("Model Identifier:") === 0) {
+        text.replace("Model Identifier:", "").split(/[;,]\s*(?=[A-Za-z])|\s+and\s+/).forEach(function(id) {
+            id = id.trim().replace(/\.$/, "");
+            if (/^[A-Za-z]+\d+,\d+$/.test(id)) {
+                res[id] = name;
+            }
+        });
     }
 });
 console.log(JSON.stringify(res, null, 4));

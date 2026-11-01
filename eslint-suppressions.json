@@ -394,11 +394,6 @@
       "count": 1
     }
   },
-  "plugins/crashes/api/parts/stacktrace.js": {
-    "no-useless-assignment": {
-      "count": 1
-    }
-  },
   "plugins/crashes/frontend/public/javascripts/countly.models.js": {
     "no-useless-assignment": {
       "count": 1
