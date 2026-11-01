@@ -354,8 +354,8 @@ gpgkey=https://pgp.mongodb.com/server-9.asc" > /etc/yum.repos.d/mongodb-org-9.0.
         UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
         UBUNTU_RELEASE="$(lsb_release -cs)"
 
-        if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24"  ]]; then
-            echo "Unsupported OS version, only support Ubuntu 20, 22 and 24"
+        if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24" && "$UBUNTU_YEAR" != "26" ]]; then
+            echo "Unsupported OS version, only support Ubuntu 20, 22, 24 and 26"
             exit 1
         fi
 
@@ -370,7 +370,7 @@ gpgkey=https://pgp.mongodb.com/server-9.asc" > /etc/yum.repos.d/mongodb-org-9.0.
         apt-get update
         DEBIAN_FRONTEND="noninteractive" apt-get install -y mongodb-org || (echo "Failed to install mongodb." ; exit)
     else
-        echo "Unsupported OS or version, only CentOS/RHEL 8 or 9 and Ubuntu 20 or 22 or 24."
+        echo "Unsupported OS or version, only CentOS/RHEL 8 or 9 and Ubuntu 20, 22, 24 or 26."
         exit 1
     fi
 

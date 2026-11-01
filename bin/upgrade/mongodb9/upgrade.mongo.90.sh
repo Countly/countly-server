@@ -25,8 +25,8 @@ if [ -f /etc/lsb-release ]; then
         exit 1
     fi
 
-    if [[ "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24" ]]; then
-        echo "Unsupported OS version, only support Ubuntu 22 and 24."
+    if [[ "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24" && "$UBUNTU_YEAR" != "26" ]]; then
+        echo "Unsupported OS version, only support Ubuntu 22, 24 and 26."
         exit 1
     fi
 fi
