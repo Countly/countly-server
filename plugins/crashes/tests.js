@@ -3335,6 +3335,14 @@ describe('Testing Crashes', function() {
             should(seed).equal(error + error);
         });
 
+        it('method names that look like hex are kept', async() => {
+            var settings = {grouping_strategy: 'stacktrace', smart_preprocessing: true, smart_regexes: ''};
+            var seedA = await getCrashSeed({_os: 'Android', _error: 'java.lang.NullPointerException\n    at com.example.Worker.add1(Worker.java:42)'}, settings);
+            var seedB = await getCrashSeed({_os: 'Android', _error: 'java.lang.NullPointerException\n    at com.example.Worker.add2(Worker.java:42)'}, settings);
+            should(seedA).not.equal(seedB);
+            seedA.should.containEql('add1');
+        });
+
         it('two partially symbolicated iOS crashes land in one crash group', async() => {
             // _os "tvOS" bypasses the ios-only masking branch in preprocessCrash,
             // so raw addresses reach groupStrategy like in the customer case;

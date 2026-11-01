@@ -129,8 +129,9 @@ var trace = {
         //remove uuids
         seed = seed.replace(/[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}/gi, "");
 
-        //remove bare hex sequences without 0x prefix (load addresses like 104a30000, <0000000104a3c5d8>)
-        seed = seed.replace(/\b(?=[0-9a-fA-F]*\d)[0-9a-fA-F]{4,}\b/g, "");
+        //remove bare hex addresses without 0x prefix (load addresses like 104a30000, <0000000104a3c5d8>);
+        //only whole tokens of 8+ hex chars, so identifiers like Worker.add1 or a "face" in a message stay
+        seed = seed.replace(/(?<![^\s<])(?=[0-9a-fA-F]*\d)[0-9a-fA-F]{8,}(?![^\s>])/g, "");
 
         //remove additional custom provided regexes
         var regexes = (plugins.getConfig("crashes", overrideSettings || {}, true).smart_regexes || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
