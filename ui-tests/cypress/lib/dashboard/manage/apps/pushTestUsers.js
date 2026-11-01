@@ -1,6 +1,6 @@
 import pushTestUsersElements from '../../../../support/elements/dashboard/manage/apps/pushTestUsers';
 
-const LIST_DIALOG_TITLE = 'push-test-users-list-dialog-cly-dialog-title-label';
+const LIST_DIALOG_TITLE = 'push-test-users-list-title';
 
 const openPushSettings = () => {
     cy.contains('.el-collapse-item__header', 'Push Notifications')
@@ -51,10 +51,14 @@ const openUserList = () => {
 
 const listDialog = () => cy.getElement(LIST_DIALOG_TITLE).closest('.el-dialog');
 
+// the table also renders a copy of its body for the fixed options column, so rows are
+// read from the main body only
+const LIST_BODY = '.el-table__body-wrapper .el-table__body';
+
 const verifyListedUsers = (dids) => {
-    listDialog().find('.el-table__body tr.el-table__row').should('have.length', dids.length);
+    listDialog().find(LIST_BODY + ' tr.el-table__row').should('have.length', dids.length);
     dids.forEach((did) => {
-        listDialog().find('.el-table__body').should('contain.text', did);
+        listDialog().find(LIST_BODY).should('contain.text', did);
     });
 };
 
@@ -68,7 +72,7 @@ const verifyListTypeOptions = (labels) => {
 };
 
 const removeListedUser = (did) => {
-    listDialog().contains('.el-table__body td', did).trigger('mouseenter');
+    listDialog().contains(LIST_BODY + ' td', did).trigger('mouseenter');
     cy.clickElement(pushTestUsersElements.ROW_MORE_BUTTON);
     cy.clickElement(pushTestUsersElements.ROW_DELETE_BUTTON, true);
     cy.contains('Test users have been successfully removed').should('be.visible');

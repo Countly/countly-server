@@ -184,11 +184,10 @@
         <cly-dialog
             width="720px"
             autoCentered
-            test-id="push-test-users-list-dialog"
             :visible.sync="isDialogVisible">
             <template slot="title">
                 <div class="bu-is-flex bu-is-align-items-center bu-ml-2">
-                    <h3>{{i18n('push-notification.user-list')}}</h3>
+                    <h3 data-test-id="push-test-users-list-title">{{i18n('push-notification.user-list')}}</h3>
                     <cly-tooltip-icon :tooltip="i18n('push-notification.test-users-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
                 </div>
             </template>
