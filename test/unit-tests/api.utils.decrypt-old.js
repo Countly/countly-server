@@ -16,7 +16,7 @@ describe("decrypt_old without crypto.createDecipher", function() {
 
     it("explains that the value has to be encrypted again", function() {
         assert.throws(function() {
-            utils.decrypt_old("00ff", "key", null, "aes-256-cbc", "utf-8", "hex");
+            utils.decrypt_old("00ff[CLY]_true", "key", null, "aes-256-cbc", "utf-8", "hex");
         }, /encrypted without an IV.*encrypt it again/);
     });
 });
