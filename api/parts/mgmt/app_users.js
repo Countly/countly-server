@@ -801,7 +801,7 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
                 fse.remove(path.resolve(__dirname, './../../../export/AppUser/' + exportID),
                     err => {
                         if (err) {
-                            errors.push(error);
+                            errors.push(err.message || err);
                         }
                         if (errors.length === 0) {
                             resolve();
