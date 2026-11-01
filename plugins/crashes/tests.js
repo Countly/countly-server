@@ -3295,6 +3295,67 @@ describe('Testing Crashes', function() {
             seedA.should.containEql('cursor id');
         });
 
+        /**
+         *  Compute the grouping seed for a crash through preprocessCrash
+         *  @param {Object} crash - crash object as sent by the SDK
+         *  @param {Object} settings - crashes config override
+         *  @returns {Promise<string>} resolves with the seed
+         */
+        function getCrashSeed(crash, settings) {
+            return new Promise(function(resolve) {
+                stacktrace.preprocessCrash(Object.assign({}, crash), resolve, {crashes: settings});
+            });
+        }
+
+        it('an expression with a plus sign is not taken for a frame offset', async() => {
+            var settings = {grouping_strategy: 'stacktrace', smart_preprocessing: true, smart_regexes: ''};
+            var seedA = await getSeed(['Error: invalid expression a + b', 'at parse(file.js)'], {}, settings);
+            var seedB = await getSeed(['Error: invalid expression a + c', 'at parse(file.js)'], {}, settings);
+            should(seedA).not.equal(seedB);
+        });
+
+        it('iOS frames give the same seed whether preprocessing masked the offset or not', async() => {
+            var crashName = 'App terminated by SIGTRAP';
+            var masked = await getCrashSeed({_os: 'iOS', _name: crashName, _error: 'MyApp 0x0000000104a3c5d8 main + 50648'}, SMART_SETTINGS);
+            var unmasked = await getCrashSeed({_os: 'iOS', _name: crashName, _error: 'MyApp 0x000000010472f8a0 main +0x1a4'}, SMART_SETTINGS);
+            should(masked).equal(unmasked);
+            masked.should.not.containEql('+');
+        });
+
+        it('a crash without a name still groups frames that differ only by offsets', async() => {
+            var seedA = await getCrashSeed({_os: 'tvOS', _error: 'MyApp    0x0000000104a3c5d8 0x104a30000 + 50648'}, SMART_SETTINGS);
+            var seedB = await getCrashSeed({_os: 'tvOS', _error: 'MyApp  0x000000010472f8a0   0x104728000 + 51360'}, SMART_SETTINGS);
+            should(seedA).equal(seedB);
+        });
+
+        it('a crash without a name keeps the old seed when smart preprocessing is off', async() => {
+            var settings = {grouping_strategy: 'error_and_file', smart_preprocessing: false, smart_regexes: ''};
+            var error = 'MyApp 0x0000000104a3c5d8 0x104a30000 + 50648';
+            var seed = await getCrashSeed({_os: 'tvOS', _error: error}, settings);
+            should(seed).equal(error + error);
+        });
+
+        it('method names that look like hex are kept', async() => {
+            var settings = {grouping_strategy: 'stacktrace', smart_preprocessing: true, smart_regexes: ''};
+            var seedA = await getCrashSeed({_os: 'Android', _error: 'java.lang.NullPointerException\n    at com.example.Worker.add1(Worker.java:42)'}, settings);
+            var seedB = await getCrashSeed({_os: 'Android', _error: 'java.lang.NullPointerException\n    at com.example.Worker.add2(Worker.java:42)'}, settings);
+            should(seedA).not.equal(seedB);
+            seedA.should.containEql('add1');
+        });
+
+        it('a trailing plus sign in an error name is kept', async() => {
+            var frame = 'at parse(parser.js)';
+            var seedA = await getSeed([frame], {_name: 'SyntaxError: Unexpected token +'}, SMART_SETTINGS);
+            var seedB = await getSeed([frame], {_name: 'SyntaxError: Unexpected token'}, SMART_SETTINGS);
+            should(seedA).not.equal(seedB);
+        });
+
+        it('iOS keeps the masked offset when smart preprocessing is off', async() => {
+            var settings = {grouping_strategy: 'error_and_file', smart_preprocessing: false, smart_regexes: ''};
+            var seed = await getCrashSeed({_os: 'iOS', _name: 'App terminated by SIGTRAP', _error: 'MyApp 0x0000000104a3c5d8 main + 50648'}, settings);
+            should(seed).equal('App terminated by SIGTRAPMyApp 0x%%%%%% main + ');
+        });
+
         it('two partially symbolicated iOS crashes land in one crash group', async() => {
             // _os "tvOS" bypasses the ios-only masking branch in preprocessCrash,
             // so raw addresses reach groupStrategy like in the customer case;
