@@ -99,7 +99,6 @@ if [[ "$CENTOS_MAJOR" = "8" ]]; then
 fi
 
 #install npm modules
-npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install; )
 
 #install numactl

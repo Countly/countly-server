@@ -18,15 +18,8 @@ sudo apt-get update
 
 sudo apt-get install -y wget build-essential libkrb5-dev git unzip bzip2 shellcheck curl gnupg2 ca-certificates lsb-release
 
-if [[ "$UBUNTU_YEAR" = "22" ]]; then
-    sudo apt-get install -y python2 python2-dev
-
-    if [[ ! -h /usr/bin/python ]]; then
-        sudo ln -s /usr/bin/python2.7 /usr/bin/python
-        sudo ln -s /usr/bin/python2-config /usr/bin/python-config
-    fi
-elif [[ "$UBUNTU_YEAR" = "24" || "$UBUNTU_YEAR" = "26" ]]; then
-    #Ubuntu 24.04 and later have no python 2; python-is-python3 provides /usr/bin/python
+if [[ "$UBUNTU_YEAR" = "22" || "$UBUNTU_YEAR" = "24" || "$UBUNTU_YEAR" = "26" ]]; then
+    #node-gyp needs python 3; python-is-python3 provides /usr/bin/python
     sudo apt-get install -y python3 python3-dev python-is-python3
 else
     sudo apt-get install -y python
@@ -108,7 +101,6 @@ sudo apt-get install -y numactl
 sudo apt-get install -y sendmail
 
 #install npm modules
-npm config set prefix "$DIR/../.local/"
 ( cd "$DIR/.."; npm install; )
 
 #install mongodb
