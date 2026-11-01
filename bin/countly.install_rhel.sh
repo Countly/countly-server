@@ -142,6 +142,11 @@ fi
 sudo countly save /etc/nginx/nginx.conf "$DIR/config/nginx"
 sudo cp "$DIR/config/nginx.server.conf" /etc/nginx/conf.d/default.conf
 sudo cp "$DIR/config/nginx.conf" /etc/nginx/nginx.conf
+#with SELinux enforcing (the RHEL default), nginx may not connect to the Countly processes
+#it proxies to unless this boolean is on; without it every request answers 502
+if command -v getenforce > /dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; then
+    sudo setsebool -P httpd_can_network_connect 1 || echo "Could not enable httpd_can_network_connect; nginx may answer 502 under SELinux"
+fi
 sudo systemctl restart nginx > /dev/null || echo "nginx service does not exist"
 sudo systemctl enable nginx > /dev/null || echo "nginx service does not exist"
 set -e
