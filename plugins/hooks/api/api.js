@@ -1008,7 +1008,9 @@ plugins.register("/i/hook/test", function(ob) {
                 }
                 catch (e) {
                     log.e("[hook effect[i] teste error]", e);
-                    effectResult.error = e;
+                    if (effectResult) {
+                        effectResult.error = e && e.message ? e.message : String(e);
+                    }
                 }
             }
             log.d("[hook test results]", results);

@@ -3197,8 +3197,12 @@ const processRequest = (params) => {
                             //load mongodb version
                             common.db.command({ buildInfo: 1 }, function(errorV, info) {
                                 var response = {};
+                                //errors are reported by code only: the error objects carry server paths and details
+                                var errorCode = function(err) {
+                                    return {error: err.code || err.codeName || "error"};
+                                };
                                 if (errorV) {
-                                    response.mongo = errorV;
+                                    response.mongo = errorCode(errorV);
                                 }
                                 else {
                                     if (info && info.version) {
@@ -3207,13 +3211,13 @@ const processRequest = (params) => {
                                 }
 
                                 if (errFs) {
-                                    response.fs = errFs;
+                                    response.fs = errorCode(errFs);
                                 }
                                 else {
                                     response.fs = fsValues;
                                 }
                                 if (errDb) {
-                                    response.db = errDb;
+                                    response.db = errorCode(errDb);
                                 }
                                 else {
                                     response.db = dbValues;
