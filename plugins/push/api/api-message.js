@@ -917,10 +917,10 @@ module.exports.testUsers = async params => {
 
     let query, limit;
     if (data.uids) {
-        query = {uid: {$in: data.uids.split(',').filter(uid => uid)}};
+        query = {uid: {$in: data.uids.split(',').filter(uid => uid).slice(0, DEFAULTS.test_users_max)}};
         limit = DEFAULTS.test_users_max;
     }
-    else if (data.search) {
+    else if (data.search && params.qstring.search.trim()) {
         query = {did: data.search};
         limit = DEFAULTS.test_users_search_limit;
     }

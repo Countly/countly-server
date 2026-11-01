@@ -113,6 +113,10 @@ describe('PUSH TEST USERS', () => {
     it('should require search or uids', async() => {
         let res = await lookup({}).expect(400);
         res.body.errors.should.eql(['One of search & uids parameters is required']);
+
+        // an empty search would match every user
+        res = await lookup({search: '  '}).expect(400);
+        res.body.errors.should.eql(['One of search & uids parameters is required']);
     });
 
     it('should allow a member with push read rights on the app', async() => {
