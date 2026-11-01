@@ -1,12 +1,13 @@
 /**
  * Loads the isolated-vm build that matches the running Node.js.
  *
- * isolated-vm is a native addon tied to one V8 version. 6.x builds for Node.js 22 (and 24)
- * but not for 26, whose V8 removed APIs it uses; 7.x supports Node.js 24 and later only.
- * The hooks plugin declares both as optional dependencies (isolated-vm-6, isolated-vm-7),
- * so npm installs whichever builds here and skips the other, and this picks the one meant
- * for this Node.js, falling back to the other if that is the one that installed. Last comes
- * plain isolated-vm, the name node_modules installed before this change still carry.
+ * isolated-vm is a native addon tied to one V8 version. 5.x builds for Node.js 20 (and 22),
+ * which 25.03 installs before 25.03.58 still run; 6.x builds for Node.js 22 (and 24) but not
+ * for 26, whose V8 removed APIs it uses; 7.x supports Node.js 24 and later only. The hooks
+ * plugin declares all three as optional dependencies (isolated-vm-5, -6, -7), so npm installs
+ * whichever build here and skips the rest, and this picks the one meant for this Node.js,
+ * falling back to the others if one of those is what installed. Last comes plain
+ * isolated-vm, the name node_modules installed before the versioned names still carry.
  */
 const log = require('../../../../api/utils/log.js')('hooks:isolated-vm');
 
@@ -16,7 +17,17 @@ const log = require('../../../../api/utils/log.js')('hooks:isolated-vm');
  * @returns {string[]} package names
  */
 function candidates(nodeVersion) {
-    const versioned = parseInt(nodeVersion, 10) >= 24 ? ['isolated-vm-7', 'isolated-vm-6'] : ['isolated-vm-6', 'isolated-vm-7'];
+    const major = parseInt(nodeVersion, 10);
+    let versioned;
+    if (major >= 24) {
+        versioned = ['isolated-vm-7', 'isolated-vm-6', 'isolated-vm-5'];
+    }
+    else if (major >= 22) {
+        versioned = ['isolated-vm-6', 'isolated-vm-7', 'isolated-vm-5'];
+    }
+    else {
+        versioned = ['isolated-vm-5', 'isolated-vm-6', 'isolated-vm-7'];
+    }
     return versioned.concat('isolated-vm');
 }
 
