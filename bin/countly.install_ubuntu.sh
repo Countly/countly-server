@@ -56,9 +56,10 @@ if ! (command -v apt-add-repository >/dev/null) then
 fi
 
 #install nginx
-echo "deb http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
+#signed-by keyring: apt-key is deprecated, and Ubuntu 26.04 no longer has it
+curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/nginx-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx.list
-curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install -y nginx
 
