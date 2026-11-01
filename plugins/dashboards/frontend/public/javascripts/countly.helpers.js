@@ -295,7 +295,8 @@
 
                         var allSegments = this.$store.getters["countlyDashboards/allSegments"]([appId]);
 
-                        var eventSegments = allSegments[eventKey] || [];
+                        //segment lists are stored with "." in the event key replaced by ":"
+                        var eventSegments = allSegments[eventKey.replace(/\./g, ":")] || allSegments[eventKey] || [];
 
                         if (eventSegments && eventSegments.length) {
                             for (var i = 0; i < eventSegments.length; i++) {
