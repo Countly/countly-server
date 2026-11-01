@@ -1100,7 +1100,7 @@
                                         sg.name = countlyCommon.unescapeHtml(segment);
                                         segments.push(sg);
                                     }
-                                    catch (e) {
+                                    catch {
                                         // supress create mode
                                     }
                                 }

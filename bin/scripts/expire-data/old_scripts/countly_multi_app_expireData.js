@@ -9,7 +9,7 @@ var EXPIRE_AFTER = 60 * 60 * 24 * 365; //1 year in seconds
 var INDEX_NAME = "cd_1";
 
 var async = require('async'),
-    Promise = require("bluebird"),
+    Promise = require("../../../../api/utils/promise.js"),
     plugins = require('../../../plugins/pluginManager.js');
 
 //var db = plugins.dbConnection("countly");

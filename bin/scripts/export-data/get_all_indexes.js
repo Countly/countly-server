@@ -9,7 +9,7 @@ var crypto = require('crypto');
 
 const plugins = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
-const Promise = require("bluebird");
+const Promise = require("../../../api/utils/promise.js");
 const _ = require('underscore');
 const async = require('async');
 
@@ -151,7 +151,7 @@ function dbLoadEventsData(db, callback) {
     * Get events collections with replaced app names
     * A helper function for db access check
     * @param {object} app - application object
-    * @param {function} cb - callback method
+    * @param {Function} cb - callback method
     **/
     function getEvents(app, cb) {
         var result = {};
@@ -179,7 +179,7 @@ function dbLoadEventsData(db, callback) {
     * Get views collections with replaced app names
     * A helper function for db access check
     * @param {object} app - application object
-    * @param {function} cb - callback method
+    * @param {Function} cb - callback method
     **/
     function getViews(app, cb) {
         var result = {};

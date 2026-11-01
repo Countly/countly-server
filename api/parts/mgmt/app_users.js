@@ -20,7 +20,7 @@ var cohorts;
 try {
     cohorts = require("../../../plugins/cohorts/api/parts/cohorts.js");
 }
-catch (ex) {
+catch {
     cohorts = null;
 }
 
@@ -29,7 +29,7 @@ catch (ex) {
 * @param {string} app_id - _id of the app
 * @param {object} doc - document to insert
 * @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
-* @param {function} callback - called when finished providing error (if any) as first param and insert result as second
+* @param {Function} callback - called when finished providing error (if any) as first param and insert result as second
 */
 usersApi.create = function(app_id, doc, params, callback) {
     if (typeof params === "function") {
@@ -114,7 +114,7 @@ usersApi.create = function(app_id, doc, params, callback) {
 * @param {object} query - mongodb query to select which app users to update
 * @param {object} update - mongodb update object
 * @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
-* @param {function} callback - called when finished providing error (if any) as first param and updated user document as second
+* @param {Function} callback - called when finished providing error (if any) as first param and updated user document as second
 */
 usersApi.update = function(app_id, query, update, params, callback) {
     if (typeof params === "function") {
@@ -161,7 +161,7 @@ usersApi.update = function(app_id, query, update, params, callback) {
 * @param {string} app_id - _id of the app
 * @param {object} query - mongodb query to select which app users to delete
 * @param {params} params - to determine who makes modification, should have member property with user who makes modification, and req for request object to determine ip address
-* @param {function} callback - called when finished providing error (if any) as first param and array with uids of removed users as second
+* @param {Function} callback - called when finished providing error (if any) as first param and array with uids of removed users as second
 */
 usersApi.delete = function(app_id, query, params, callback) {
     if (typeof params === "function") {
@@ -173,7 +173,7 @@ usersApi.delete = function(app_id, query, params, callback) {
         try {
             query = JSON.parse(query);
         }
-        catch (ex) {
+        catch {
             query = {};
         }
     }
@@ -289,7 +289,7 @@ usersApi.delete = function(app_id, query, params, callback) {
 * @param {object|json_string} sort - mongodb sort object
 * @param {number} limit - upper limit, how many users to return
 * @param {number} skip - how many users to skip from beginning
-* @param {function} callback - called when finished providing error (if any) as first param and result user list array as second
+* @param {Function} callback - called when finished providing error (if any) as first param and result user list array as second
 */
 usersApi.search = function(app_id, query, project, sort, limit, skip, callback) {
     query = query || {};
@@ -297,7 +297,7 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
         try {
             query = JSON.parse(query);
         }
-        catch (ex) {
+        catch {
             query = {};
         }
     }
@@ -311,7 +311,7 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
         try {
             project = JSON.parse(project);
         }
-        catch (ex) {
+        catch {
             project = {};
         }
     }
@@ -321,7 +321,7 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
         try {
             sort = JSON.parse(sort);
         }
-        catch (ex) {
+        catch {
             sort = {};
         }
     }
@@ -349,7 +349,7 @@ usersApi.search = function(app_id, query, project, sort, limit, skip, callback) 
 * Count users by query. 
 * @param {string} app_id - _id of the app
 * @param {object|json_string} query - mongodb query to select which app users to update
-* @param {function} callback - called when finished providing error (if any) as first param and resultcount of users as second
+* @param {Function} callback - called when finished providing error (if any) as first param and resultcount of users as second
 */
 usersApi.count = function(app_id, query, callback) {
     query = query || {};
@@ -357,7 +357,7 @@ usersApi.count = function(app_id, query, callback) {
         try {
             query = JSON.parse(query);
         }
-        catch (ex) {
+        catch {
             query = {};
         }
     }
@@ -372,7 +372,7 @@ usersApi.count = function(app_id, query, callback) {
 /**
 * Returns uid for new users
 * @param {string} app_id - _id of the app
-* @param {function} callback - called when finished providing error (if any) as first param and new uid as second
+* @param {Function} callback - called when finished providing error (if any) as first param and new uid as second
 */
 usersApi.getUid = function(app_id, callback) {
     common.db.collection('apps').findAndModify({_id: common.db.ObjectID(app_id)}, {}, {$inc: {seq: 1}}, {
@@ -632,7 +632,7 @@ async function updateStatesInTransaction(common, app_id, newAppUserP, oldAppUser
 * @param {string} old_id - old user's _id
 * @param {string} new_device_id - new user's device_id
 * @param {string} old_device_id - old user's device_id
-* @param {function} callback - called when finished providing error (if any) as first param and resulting merged document as second
+* @param {Function} callback - called when finished providing error (if any) as first param and resulting merged document as second
 */
 usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback) {
     /**
@@ -1014,7 +1014,7 @@ var export_safely = function(options) {
 * @param {string} app_id - _id of the app
 * @param {object} query - mongodb query to select which app users data to export
 * @param {object} params  - params
-* @param {function} callback - called when finished providing error (if any) as first param and array with uids of exported users as second
+* @param {Function} callback - called when finished providing error (if any) as first param and array with uids of exported users as second
 */
 usersApi.export = function(app_id, query, params, callback) {
     /**
@@ -1025,7 +1025,7 @@ usersApi.export = function(app_id, query, params, callback) {
     * @param {string} my_eid  - export id
     * @param {string} message1 - message on successful cleanup
     * @param {string} message2 -  message on failed cleaning up
-    * @param {function} my_callback - callback function(passed)
+    * @param {Function} my_callback - callback function(passed)
     */
     function callDeleteExport(my_export_filename, my_params, my_app_id, my_eid, message1, message2, my_callback) {
         usersApi.deleteExport(my_export_filename, my_params, function(err) {
@@ -1272,7 +1272,7 @@ usersApi.export = function(app_id, query, params, callback) {
  * Fetch aggregated data from DB.
  * @param {string} collectionName | Name of collection
  * @param {object} aggregation | Aggregation object
- * @return {object} | new promise
+ * @returns {object} | new promise
  */
 const getAggregatedAppUsers = (collectionName, aggregation) => {
     return new Promise((resolve, reject) => {

@@ -166,7 +166,7 @@ plugins.setConfigs("logger", {
                 try {
                     JSON.parse(types.metrics);
                 }
-                catch (ex) {
+                catch {
                     problems.push("Could not parse metrics");
                 }
             }
@@ -178,7 +178,7 @@ plugins.setConfigs("logger", {
                 try {
                     JSON.parse(types.consent);
                 }
-                catch (ex) {
+                catch {
                     problems.push("Could not parse consent");
                 }
                 if (!plugins.isPluginEnabled("compliance-hub")) {
@@ -193,7 +193,7 @@ plugins.setConfigs("logger", {
                 try {
                     JSON.parse(types.events);
                 }
-                catch (ex) {
+                catch {
                     problems.push("Could not parse events");
                 }
             }
@@ -205,7 +205,7 @@ plugins.setConfigs("logger", {
                 try {
                     JSON.parse(types.user_details);
                 }
-                catch (ex) {
+                catch {
                     problems.push("Could not parse user_details");
                 }
                 if (!plugins.isPluginEnabled("users")) {
@@ -221,7 +221,7 @@ plugins.setConfigs("logger", {
                 try {
                     res = JSON.parse(types.crash);
                 }
-                catch (ex) {
+                catch {
                     problems.push("Could not parse crash");
                 }
                 if (res) {
@@ -254,7 +254,7 @@ plugins.setConfigs("logger", {
                     try {
                         response.body = JSON.parse(response.body);
                     }
-                    catch (ex) {
+                    catch {
                         console.log("Response data parse failure", params.response);
                     }
                 }

@@ -1,6 +1,6 @@
 var pluginOb = {},
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../../../api/utils/promise.js"),
     common = require('../../../api/utils/common.js'),
     moment = require('moment-timezone'),
     authorize = require('../../../api/utils/authorizer.js'),
@@ -82,7 +82,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         try {
                             data = JSON.parse(ob.params.qstring.data);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             log.e('Parsing data failed: ', ob.params.qstring.data);
                             common.returnMessage(params, 400, 'Invalid request parameter: data');
                             resolve();
@@ -202,7 +202,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         try {
                             omit = JSON.parse(ob.params.qstring.omit_list);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             log.e('Parsing data failed: ', ob.params.qstring.omit_list);
                             common.returnMessage(params, 400, 'Cannot parse  parameter: omit_list');
                             resolve();
@@ -436,7 +436,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             try {
                 parsedPeriod = JSON.parse(period);
             }
-            catch (error) {
+            catch {
                 parsedPeriod = period;
             }
         }
@@ -444,7 +444,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             try {
                 period = JSON.stringify([periodObj.start, periodObj.end]);
             }
-            catch (error) {
+            catch {
                 //
             }
         }
@@ -728,7 +728,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param {string} params.qstring.period - period
      * @param {object} settings - settings for select
      * @param {string} settings.segmentVal - segment value. (Segment key is set by collection name)
-     * @param {@function} callback - callback function
+     * @param {@Function} callback - callback function
     */
     function getAggregatedData(collectionName, params, settings, callback) {
         settings = settings || {};
@@ -1255,7 +1255,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         try {
                             graphKeys = JSON.parse(params.qstring.selectedViews);
                         }
-                        catch (err) {
+                        catch {
                             graphKeys = [];
                         }
                     }
@@ -1368,7 +1368,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         try {
             device = JSON.parse(params.qstring.device);
         }
-        catch (SyntaxError) {
+        catch {
             log.e('Parse device failed: ', params.qstring.device);
         }
 
@@ -1385,7 +1385,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 try {
                     params.qstring.period = JSON.parse(params.qstring.period);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parsing custom period failed!');
                     common.returnMessage(params, 400, 'Bad request parameter: period');
                     return false;
@@ -1662,7 +1662,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 	 * @param  {object} query - query object
 	 * @param  {object} update - update object(for find and modify)
 	 * @param  {object} options - db options object
-	 * @param  {function} callback - callback function
+	 * @param  {Function} callback - callback function
      */
     function getViewNameObject(params, collection, query, update, options, callback) {
         if (plugins.getConfig("api", params.app && params.app.plugins, true).batch_read_processing === true) {

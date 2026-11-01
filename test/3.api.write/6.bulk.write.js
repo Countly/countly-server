@@ -1,6 +1,7 @@
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../testUtils");
+var {resolveAppTimezone, fitOffsetsInAppDay} = require("../lib/dateKeys.js");
 request = request(testUtils.url);
 
 var API_KEY_ADMIN = "";
@@ -28,26 +29,39 @@ describe('Bulk writing', function() {
         });
     });
     describe('using session tests', function() {
-        it('should success', function(done) {
-            var params = [
-                {"device_id": DEVICE_ID, "app_key": APP_KEY, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 6)},
-                {"device_id": DEVICE_ID, "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 5)},
-                {"device_id": DEVICE_ID, "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 4)},
-                {"device_id": DEVICE_ID, "app_key": APP_KEY, "session_duration": 60, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 60 * 3)},
-                {"device_id": DEVICE_ID, "app_key": APP_KEY, "end_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 60 * 2)},
-                {"device_id": DEVICE_ID + "new", "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(new Date().getTime() / 1000 - 60 * 60 * 1)},
-            ];
-            request
-                .get('/i/bulk?requests=' + JSON.stringify(params))
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, testUtils.testWaitTimeForDrillEvents * 3 * testUtils.testScalingFactor);
+        it('should success', async function() {
+            // Three of these requests are backdated by hours, and the checks below
+            // expect them all in "today". That only holds once the app's day is
+            // older than three hours, so fit the offsets inside the app's current
+            // day. They are unchanged for the rest of the day; the 420s floor keeps
+            // them behind the minute-scale requests, as they were.
+            var timezone = await resolveAppTimezone(testUtils.db, APP_ID);
+            var fit = fitOffsetsInAppDay(Date.now(), timezone, [60 * 60 * 3, 60 * 60 * 2, 60 * 60], 420);
+            if (!fit.offsets) {
+                //the app's day is under ~9 minutes old: even the minute-scale requests would straddle midnight
+                this.timeout(fit.waitMs + 60000);
+                await new Promise(function(resolve) {
+                    setTimeout(resolve, fit.waitMs);
                 });
+                fit = fitOffsetsInAppDay(Date.now(), timezone, [60 * 60 * 3, 60 * 60 * 2, 60 * 60], 420);
+            }
+            var now = Date.now() / 1000;
+            var params = [
+                {"device_id": DEVICE_ID, "app_key": APP_KEY, timestamp: parseInt(now - 60 * 6)},
+                {"device_id": DEVICE_ID, "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(now - 60 * 5)},
+                {"device_id": DEVICE_ID, "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(now - 60 * 4)},
+                {"device_id": DEVICE_ID, "app_key": APP_KEY, "session_duration": 60, timestamp: parseInt(now - fit.offsets[0])},
+                {"device_id": DEVICE_ID, "app_key": APP_KEY, "end_session": 1, timestamp: parseInt(now - fit.offsets[1])},
+                {"device_id": DEVICE_ID + "new", "app_key": APP_KEY, "begin_session": 1, timestamp: parseInt(now - fit.offsets[2])},
+            ];
+            var res = await request
+                .get('/i/bulk?requests=' + JSON.stringify(params))
+                .expect(200);
+            var ob = JSON.parse(res.text);
+            ob.should.have.property('result', 'Success');
+            await new Promise(function(resolve) {
+                setTimeout(resolve, testUtils.testWaitTimeForDrillEvents * 3 * testUtils.testScalingFactor);
+            });
         });
     });
     describe('Verify bulk session write', function() {

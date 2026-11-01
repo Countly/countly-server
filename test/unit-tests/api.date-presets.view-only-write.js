@@ -233,3 +233,34 @@ describe("date presets, view only members and writes", function() {
         });
     });
 });
+
+describe("date presets, sharing lists read by id", function() {
+    /**
+    * Read the stored preset by id as a member
+    * @param {object} member - the acting member
+    * @returns {object} the returned preset
+    **/
+    function getById(member) {
+        var result = run("getById", member, {}, stored);
+        result.status.should.equal(200);
+        return result.output;
+    }
+
+    it("shows the sharing lists to the owner, editors and a global admin", function() {
+        [owner, emailEditor, groupEditor, globalAdmin].forEach(function(member) {
+            var preset = getById(member);
+            preset.shared_email_edit.should.eql(["editor@example.test"]);
+            preset.shared_email_view.should.eql(["viewer@example.test"]);
+            preset.shared_user_groups_edit.should.eql(["g1"]);
+        });
+    });
+
+    it("hides them from a member who may only view the preset", function() {
+        var preset = getById(viewer);
+        preset.name.should.equal("Owner's preset");
+        preset.shared_email_edit.should.equal(false);
+        preset.shared_email_view.should.equal(false);
+        preset.shared_user_groups_edit.should.equal(false);
+        preset.shared_user_groups_view.should.equal(false);
+    });
+});

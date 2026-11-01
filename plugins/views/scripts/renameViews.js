@@ -6,7 +6,7 @@ After this script there is need to run fixViews.js to merge views.(In case renam
 **/
 var pluginManager = require('../../pluginManager.js'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../../../api/utils/promise.js"),
     countlyDb,
     countly_drill,
     drillCommon = require('../../drill/api/common.js');

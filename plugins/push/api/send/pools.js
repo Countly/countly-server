@@ -107,7 +107,7 @@ class Pools {
      * Release resources on process exit
      * 
      * @param {string} id pool id to stop
-     * @param {function} callback callback to call when done
+     * @param {Function} callback callback to call when done
      */
     exit(id) {
         if (id) {

@@ -34,7 +34,7 @@ if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
             IS_FLEX = true;
         }
     }
-    catch (e) {
+    catch {
         IS_FLEX = false;
     }
 }
@@ -605,7 +605,7 @@ tracker.uploadBase64FileFromGridFS = function(base64String) {
                                     data: result
                                 });
                             }
-                            catch (e) {
+                            catch {
                                 resolve({
                                     success: true,
                                     statusCode: res.statusCode,

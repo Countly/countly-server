@@ -552,14 +552,14 @@
             }
             if (!context.state.selectedEventName.startsWith('[CLY]_group')) {
                 if (availableSegments >= limits.event_segmentation_limit) {
-                    eventSegmentationLimit.message = CV.i18n("events.max-segmentation-limit", limits.event_segmentation_limit, context.state.allEventsProcessed.eventName);
+                    eventSegmentationLimit.message = CV.i18n("events.max-segmentation-limit", limits.event_segmentation_limit, countlyCommon.unescapeHtml(context.state.allEventsProcessed.eventName));
                     eventSegmentationLimit.show = true;
                     limitAlert.push(eventSegmentationLimit);
                 }
                 context.state.availableSegments.forEach(function(s) {
                     if (s !== "segment" && meta[s] && meta[s].length >= limits.event_segmentation_value_limit) {
                         eventSegmentationLimitValue = {};
-                        eventSegmentationLimitValue.message = CV.i18n("events.max-unique-value-limit", limits.event_segmentation_value_limit, s);
+                        eventSegmentationLimitValue.message = CV.i18n("events.max-unique-value-limit", limits.event_segmentation_value_limit, countlyCommon.unescapeHtml(s));
                         eventSegmentationLimitValue.show = true;
                         limitAlert.push(eventSegmentationLimitValue);
                     }

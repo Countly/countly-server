@@ -14,7 +14,7 @@ var batchLimit = 1000;
 
 
 var asyncjs = require("async");
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 var common = require('../../../../api/utils/common.js');
 var app_users = require('../../../../api/parts/mgmt/app_users.js');
 var pluginManager = require("../../../../plugins/pluginManager");

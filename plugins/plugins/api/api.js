@@ -132,7 +132,7 @@ var plugin = {},
                                 try {
                                     data = require(fullpath + '/package.json');
                                 }
-                                catch (ex) {
+                                catch {
                                     // Error
                                 }
                                 var resultObj = {};
@@ -243,7 +243,7 @@ var plugin = {},
                 try {
                     data = JSON.parse(params.qstring.configs);
                 }
-                catch (err) {
+                catch {
                     console.log("Error parsing configs", params.qstring.configs);
                 }
             }
@@ -321,7 +321,7 @@ var plugin = {},
                 try {
                     data = JSON.parse(params.qstring.configs);
                 }
-                catch (err) {
+                catch {
                     console.log("Error parsing configs", params.qstring.configs);
                 }
             }

@@ -67,12 +67,13 @@ var LIFTED_INIT = (function() {
  * @returns {object} the grouping the endpoint would return
  */
 function accumulate(values) {
+    // eslint-disable-next-line no-unassigned-vars -- assigned by the lifted source run through eval
     var result;
     var doc = {meta: {platform_version_rate: values}};
-    /* eslint-disable no-eval, security/detect-eval-with-expression */
+    /* eslint-disable security/detect-eval-with-expression */
     eval(LIFTED_INIT);
     eval(LIFTED);
-    /* eslint-enable no-eval, security/detect-eval-with-expression */
+    /* eslint-enable security/detect-eval-with-expression */
     return result;
 }
 

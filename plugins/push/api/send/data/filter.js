@@ -47,7 +47,7 @@ class Filter extends Validatable {
                 return 'Filter user/drill must be a JSON string of an object';
             }
         }
-        catch (ignored) {
+        catch {
             return 'Filter user/drill must be a valid JSON string of an object';
         }
     }

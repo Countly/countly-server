@@ -6,7 +6,7 @@ Query is editable to delete based on different criteria.
 */
 var pluginManager = require('./../../../plugins/pluginManager.js');
 var request = require('countly-request')(pluginManager.getConfig("security"));
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 
 var SERVER_URL = "";

@@ -365,6 +365,8 @@ const generateData = ({
     clickGenerateDemoDataButton();
     clickYesPopulateDataButton();
 
+    // Either popup is the settled state: the generating one may already be gone when it finishes quickly.
+    cy.waitForAnyVisible([popUpElements.GENERATING_POP_UP_PROGRESS_BAR, popUpElements.SUCCESS_POP_UP_GO_TO_HOME_BUTTON]);
     cy
         .elementExists(popUpElements.GENERATING_POP_UP_PROGRESS_BAR)
         .then((isExists) => {

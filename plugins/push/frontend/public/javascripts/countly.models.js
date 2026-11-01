@@ -888,14 +888,14 @@
             },
             decodeHtml: function(str) {
                 var map =
-                {
-                    '&amp;': '&',
-                    '&lt;': '<',
-                    '&gt;': '>',
-                    '&quot;': '"',
-                    '&#039;': "'",
-                    '&#39;': "'"
-                };
+                    {
+                        '&amp;': '&',
+                        '&lt;': '<',
+                        '&gt;': '>',
+                        '&quot;': '"',
+                        '&#039;': "'",
+                        '&#39;': "'"
+                    };
                 return str.replace(/&amp;|&lt;|&gt;|&quot;|&#039;|&#39;/g, function(m) {
                     return map[m];
                 });
@@ -2530,7 +2530,7 @@
                     data.filter = filtersDto;
                 }
             }
-            catch (error) {
+            catch {
                 return Promise.reject(new Error(CV.i18n('push-notification.unknown-error')));
             }
             return new Promise(function(resolve, reject) {

@@ -284,7 +284,7 @@ class Mongoable extends Validatable {
      * Run an update operation modifying this's _data
      * 
      * @param {object|string} update query for an update
-     * @param {function} op op to run to modify state of this in case of success
+     * @param {Function} op op to run to modify state of this in case of success
      */
     async update(update, op) {
         await require('./common').db.collection(this.constructor.collection).updateOne({_id: this._id}, update);

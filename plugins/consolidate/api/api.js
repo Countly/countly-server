@@ -137,6 +137,6 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({params, a
     }
     catch (e) {
         console.error(e);
-        throw new Error('Failed to update config');
+        throw new Error('Failed to update config', { cause: e });
     }
 });

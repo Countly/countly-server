@@ -1,24 +1,24 @@
 const moment = require("moment");
 
 const internalEventsEnum =
-{
-    "[CLY]_session": "s",
-    "[CLY]_view": "v",
-    "[CLY]_nps": "n",
-    "[CLY]_crash": "c",
-    "[CLY]_action": "ac",
-    "[CLY]_survey": "srv",
-    "[CLY]_star_rating": "str",
-    "[CLY]_apm_device": "apm",
-    "[CLY]_apm_network": "apm",
-    "[CLY]_push_action": "p",
-    "[CLY]_push_sent": "ps",
-    "[CLY]_consent": "cs",
-    "[CLY]_llm_interaction": "llm",
-    "[CLY]_llm_interaction_feedback": "llm",
-    "[CLY]_llm_tool_used": "llm",
-    "[CLY]_llm_tool_usage_parameter": "llm",
-};
+    {
+        "[CLY]_session": "s",
+        "[CLY]_view": "v",
+        "[CLY]_nps": "n",
+        "[CLY]_crash": "c",
+        "[CLY]_action": "ac",
+        "[CLY]_survey": "srv",
+        "[CLY]_star_rating": "str",
+        "[CLY]_apm_device": "apm",
+        "[CLY]_apm_network": "apm",
+        "[CLY]_push_action": "p",
+        "[CLY]_push_sent": "ps",
+        "[CLY]_consent": "cs",
+        "[CLY]_llm_interaction": "llm",
+        "[CLY]_llm_interaction_feedback": "llm",
+        "[CLY]_llm_tool_used": "llm",
+        "[CLY]_llm_tool_usage_parameter": "llm",
+    };
 
 /**
 * Saves session and event count information to server_stats_data_points
@@ -147,7 +147,7 @@ function increaseDataPoints(object, data) {
  * @param {db} db - database object
  * @param {Object} filter - MongoDB query
  * @param {Object} options - Date object
- * @return {Promise<Array>} - dataPoints
+ * @returns {Promise<Array>} - dataPoints
  */
 function punchCard(db, filter, options) {
     var dateObj = options.dateObj;
@@ -237,7 +237,7 @@ function punchCard(db, filter, options) {
  *  @param {boolean} options.monthlyBreakdown - if true, will calculate monthly data points breakdown for all apps (used to get license metric)
  *  @param {string} options.license_hosting - client hosting type, could be countly hosted or self hosted. This will determine how consolidated data points should be added to total data points
  *  @param {boolean} options.dailyDates - array of dates in YYYY:M:D format for daily data points (used to get data points for last 30 days)
- *  @param {function} callback - callback
+ *  @param {Function} callback - callback
  */
 function fetchDatapoints(db, filter, options, callback) {
     var TIME_RANGE = 24;
@@ -415,7 +415,7 @@ function fetchDatapoints(db, filter, options, callback) {
  *  Get top apps DP for current hour
  *  @param {db} db - DB object
  *  @param {object} params - params object
- *  @param {function} callback - callback
+ *  @param {Function} callback - callback
  *  @param {Array=} appList - optional list of app ids to restrict results to (used for non global admins)
  */
 function getTop(db, params, callback, appList) {

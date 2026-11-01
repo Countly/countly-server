@@ -1,7 +1,7 @@
 const common = require('../../../api/utils/common.js');
 const plugins = require('../../pluginManager.js');
 const log = require('../../../api/utils/log.js')('alert:api');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 const JOB = require('../../../api/parts/jobs');
 const utils = require('./parts/utils.js');
 const _ = require('lodash');
@@ -59,7 +59,7 @@ function getScheduleTextExpression(period, offset) {
     /**
 	 * delete alert job
 	 * @param {string} alertID  - alert record id from db
-	 * @param {function} callback - callback after deleting
+	 * @param {Function} callback - callback after deleting
 	 */
     function deleteJob(alertID, callback) {
         if (typeof alertID === 'string') {
@@ -590,7 +590,7 @@ function getScheduleTextExpression(period, offset) {
                                 a.createdByUser = member && member.full_name;
                                 a.enabled ? count.r++ : null;
                             });
-                            common.returnOutput(params, { alertsList, count } || []);
+                            common.returnOutput(params, { alertsList, count });
                         });
                     });
                 });

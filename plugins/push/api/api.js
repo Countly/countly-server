@@ -288,8 +288,8 @@ function apiCall(apisObj, ob) {
  * Wrap push endpoint catching any push-specific errors from it
  *
  * @param {string} method endpoint name
- * @param {function} fn actual endpoint returning a promise
- * @returns {function} CRUD callback
+ * @param {Function} fn actual endpoint returning a promise
+ * @returns {Function} CRUD callback
  */
 function endpoint(method, fn) {
     return params => fn(params).catch(e => {

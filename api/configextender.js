@@ -15,7 +15,7 @@ var parser = function(val) {
             val = parsedVal;
         }
     }
-    catch (error) {
+    catch {
         //ignored error
     }
     return val;
@@ -64,6 +64,12 @@ const OVERRIDES = {
             IGNORETLS: "ignoreTLS"
         }
     },
+    DATABASES: {
+        COUNTLY: 'countly',
+        COUNTLY_DRILL: 'countly_drill',
+        COUNTLY_OUT: 'countly_out',
+        COUNTLY_FS: 'countly_fs'
+    },
 
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
@@ -80,7 +86,7 @@ const OVERRIDES = {
  * @param  {object} over   - override object
  * @param  {string} name   - name of config to override
  * @param  {varies} value  - value to set to config
- * @return {object} recursive config modification
+ * @returns {object} recursive config modification
  */
 function dig(config, over, name, value) {
     let comps = name.split('_');
@@ -114,8 +120,9 @@ function dig(config, over, name, value) {
                 return dig(config[sub], over[n], name, value);
             }
             else {
-                config[n] = {};
-                return dig(config[n], over[n], name, value);
+                //config keys of override sections are lower case (mongodb, api, ssl, databases, ...)
+                config[n.toLowerCase()] = {};
+                return dig(config[n.toLowerCase()], over[n], name, value);
             }
         }
         else if (n === over) {

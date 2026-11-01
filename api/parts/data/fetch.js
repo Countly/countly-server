@@ -174,7 +174,7 @@ fetch.fetchMergedEventGroups = function(params) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventGroups = function(params, event, options, callback) {
     const COLLECTION_NAME = "event_groups";
@@ -240,7 +240,7 @@ function isMergeableKey(source, key) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventData = function(params, events, options, callback) {
     var eventKeysArr = [];
@@ -393,7 +393,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
     /**
     * Get event data from database
     * @param {string} eventKey - event keys
-    * @param {function} done - function to call when data fetched
+    * @param {Function} done - function to call when data fetched
     **/
     function getEventData(eventKey, done) {
         var collectionName = crypto.createHash('sha1').update(eventKey.e + eventKey.a).digest('hex');
@@ -690,7 +690,7 @@ fetch.fetchAllApps = function(params) {
 * Calls aggregation query to calculate top three values based on 't' in given collection
 * @param {params} params - params object
 * @param {string} collection - collection name
-* @param {function} callback - callback function
+* @param {Function} callback - callback function
 **/
 function getDataforTops(params, collection, callback) {
     var periodObj = countlyCommon.getPeriodObj(params);
@@ -800,7 +800,7 @@ fetch.fetchTop = function(params) {
             try {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
-            catch (ex) {
+            catch {
                 console.log("Error parsing metrics", params.qstring.metrics);
                 params.qstring.metrics = [];
             }
@@ -985,7 +985,7 @@ fetch.fetchDurations = function(params) {
 * @param {params} params - params object with app_id and date
 * @param {string} metric - name of the collection where to get data from
 * @param {object} totalUsersMetric - data from total users api request to correct unique user values
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 * @example <caption>Retrieved data</caption>
 * [
 *    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
@@ -1020,7 +1020,7 @@ fetch.getMetric = function(params, metric, totalUsersMetric, callback) {
 * @param {object=} fetchTimeOptions.levels - describes which metrics to expect on which levels
 * @param {array=} fetchTimeOptions.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} fetchTimeOptions.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 * @example <caption>Retrieved data</caption>
 * [
 *    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
@@ -1098,7 +1098,7 @@ fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTim
 /**
 * Get collection and metric name from metric string
 * @param {string} metric - metric/segment name
-* @return {Array} array with collection, metric, model object
+* @returns {Array} array with collection, metric, model object
 **/
 fetch.metricToCollection = function(metric) {
     switch (metric) {
@@ -1337,7 +1337,7 @@ fetch.fetchEvents = function(params) {
                     params.qstring.events = [params.qstring.events];
                 }
             }
-            catch (ex) {
+            catch {
                 common.returnMessage(params, 400, 'Must provide valid array with event keys as events param.');
                 return false;
             }
@@ -1407,7 +1407,7 @@ fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObj = function(collection, params, options, callback) {
     fetchTimeObj(collection, params, null, options, callback);
@@ -1424,7 +1424,7 @@ fetch.getTimeObj = function(collection, params, options, callback) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObjForEvents = function(collection, params, options, callback) {
 
@@ -1457,7 +1457,7 @@ fetch.fetchTotalUsersObj = function(metric, params) {
 * Get data for estimating total users count if period contains today
 * @param {string} metric - name of the collection where to get data from
 * @param {params} params - params object with app_id and date
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTotalUsersObj = function(metric, params, callback) {
     fetch.getTotalUsersObjWithOptions(metric, params, {}, callback);
@@ -1469,7 +1469,7 @@ fetch.getTotalUsersObj = function(metric, params, callback) {
 * @param {params} params - params object with app_id and date
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 * @returns {void} void
 */
 fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) {
@@ -1635,18 +1635,11 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
 * @returns {object} total users object with formated values
 **/
 fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
-    var tmpObj = {},
-        processingFunction;
-
-    switch (forMetric) {
-    case "devices":
-        //processingFunction = countlyDevice.getDeviceFullName;
-        break;
-    }
+    var tmpObj = {};
 
     if (obj) {
         for (let i = 0; i < obj.length; i++) {
-            var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
+            var tmpKey = obj[i]._id;
 
             if (prev) {
                 tmpObj[tmpKey] = obj[i].pu || 0;
@@ -1672,7 +1665,7 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - to call when fetch done
+* @param {Function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     if (typeof options === "function") {
@@ -2299,7 +2292,7 @@ fetch.alljobs = async function(metric, params) {
                 $match: { name: { $regex: rr } }
             });
         }
-        catch (e) {
+        catch {
             console.log('Could not use as regex:' + params.qstring.sSearch);
         }
     }

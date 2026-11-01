@@ -3,7 +3,7 @@ const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log("hooks:api:schedule");
 const JOB = require('../../../../../api/parts/jobs');
-const later = require('later');
+const later = require('@breejs/later');
 const moment = require('moment-timezone');
 
 /**

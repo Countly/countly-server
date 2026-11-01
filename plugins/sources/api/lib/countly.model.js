@@ -9,7 +9,7 @@ var countlyModel = require('../../../../api/lib/countly.model.js'),
 
 /**
  * create countlySources instance
- * @return {object} - countlySources instance
+ * @returns {object} - countlySources instance
  */
 function create() {
     var countlySources = countlyModel.create(function(code, data, separate, appType) {
@@ -45,9 +45,9 @@ function create() {
                 return code;
             }
             code = code.replace("://www.", "://");
-            /*eslint-disable */
+
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
-            /*eslint-enable */
+
             var domain = matches && matches[1] || code;
             return domain.split("/")[0];
         }

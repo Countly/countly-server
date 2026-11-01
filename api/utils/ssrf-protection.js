@@ -71,7 +71,7 @@ function isBlockedIP(ip) {
     try {
         parsed = ipaddr.parse(ip);
     }
-    catch (e) {
+    catch {
         // Unparseable IP — block to be safe
         return true;
     }
@@ -233,8 +233,8 @@ function blockedLookupError(hostname, address) {
  * address that passed isBlockedIP here.
  *
  * @param {string} hostname - hostname to resolve
- * @param {object|function} options - dns.lookup options, or the callback
- * @param {function} [callback] - callback(err, address, family); when
+ * @param {object|Function} options - dns.lookup options, or the callback
+ * @param {Function} [callback] - callback(err, address, family); when
  *        options.all is true it is called as callback(err, addresses) where
  *        addresses is an array of {address, family} objects
  * @returns {void}

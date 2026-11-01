@@ -97,7 +97,7 @@ window.countlyView = Backbone.View.extend({
     },
     /**
     * This method is called when app is changed, default behavior is to reset preloaded data as events
-    * @param {function=} callback  - callback function
+    * @param {Function=} callback  - callback function
     * @memberof countlyView
     * @instance
     */

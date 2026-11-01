@@ -371,7 +371,7 @@ plugins.register("/permissions/features", function(ob) {
             try {
                 parameter = JSON.parse(parameter);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Error parsing parameter', parameter);
                 return common.returnMessage(params, 400, 'Error parsing parameter');
             }

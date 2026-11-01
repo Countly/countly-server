@@ -1,7 +1,7 @@
 var pluginManager = require('../../../../plugins/pluginManager.js'),
     async = require('async'),
     crypto = require('crypto'),
-    Promise = require("bluebird");
+    Promise = require("../../../../api/utils/promise.js");
 
 console.log("Updating views");
 

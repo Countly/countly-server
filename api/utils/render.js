@@ -94,7 +94,7 @@ function originOf(url) {
     try {
         origin = new URL(url).origin;
     }
-    catch (error) {
+    catch {
         return null;
     }
     //opaque origins serialise to "null" and would compare equal to each other
@@ -117,7 +117,7 @@ function cdnOrigin() {
     try {
         return originOf(require('../../frontend/express/config.js').cdn || "");
     }
-    catch (error) {
+    catch {
         return null;
     }
 }
@@ -160,15 +160,15 @@ exports.renderAssetOrigins = renderAssetOrigins;
  * @param  {string} options.view - the view to open
  * @param  {string} options.id - the id of the block to capture screenshot of
  * @param  {string} options.savePath - path where to save the screenshot
- * @param  {function} options.cbFn - function called after opening the view
- * @param  {function} options.beforeScrnCbFn - function called just before capturing the screenshot
+ * @param  {Function} options.cbFn - function called after opening the view
+ * @param  {Function} options.beforeScrnCbFn - function called just before capturing the screenshot
  * @param  {object} options.dimensions - the dimensions of the screenshot
  * @param  {number} options.dimensions.width - the width of the screenshot
  * @param  {number} options.dimensions.height - the height of the screenshot
  * @param  {number} options.dimensions.padding - the padding value to subtract from the height of the screenshot
  * @param  {number} options.dimensions.scale - the scale(ppi) value of the screenshot
- * @param  {function} cb - callback function called with the error value or the image data
- * @return {void} void
+ * @param  {Function} cb - callback function called with the error value or the image data
+ * @returns {void} void
  */
 exports.renderView = function(options, cb) {
     if (puppeteer === undefined) {

@@ -27,7 +27,7 @@ countlyFs.gridfs = {};
     * @param {stream} readStream - stream where to get file content
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    * @param {Function} callback - function called when we have result, providing error object as first param and id as second
     **/
     function save(category, filename, readStream, options, callback) {
         log.d("saving file", filename);
@@ -63,8 +63,8 @@ countlyFs.gridfs = {};
     * @param {string} filename - filename
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when we have result, providing error object as first param and id as second
-    * @param {function} done - function called hook is done
+    * @param {Function} callback - function called when we have result, providing error object as first param and id as second
+    * @param {Function} done - function called hook is done
     **/
     function beforeSave(category, filename, options, callback, done) {
         log.d("checking file", filename);
@@ -113,7 +113,7 @@ countlyFs.gridfs = {};
     * Get file's id
     * @param {string} category - collection where to store data
     * @param {string} filename - filename
-    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    * @param {Function} callback - function called when we have result, providing error object as first param and id as second
     * @example
     * countlyFs.getId("test", "./CHANGELOG.md", function(err, exists){
     *   if(exists)
@@ -135,7 +135,7 @@ countlyFs.gridfs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
+    * @param {Function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
     * @example
     * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
     *   if(exists)
@@ -177,7 +177,7 @@ countlyFs.gridfs = {};
     * @param {object} options.metadata - Optional object to store in the file document's metadata field
     * @param {string} options.contentType - Optional string to store in the file document's contentType field
     * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
-    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
     *   console.log("Storing file finished", err);
@@ -210,7 +210,7 @@ countlyFs.gridfs = {};
     * @param {object} options.metadata - Optional object to store in the file document's metadata field
     * @param {string} options.contentType - Optional string to store in the file document's contentType field
     * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
-    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
     *   console.log("Storing data finished", err);
@@ -246,7 +246,7 @@ countlyFs.gridfs = {};
     * @param {object} options.metadata - Optional object to store in the file document's metadata field
     * @param {string} options.contentType - Optional string to store in the file document's contentType field
     * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
-    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
     *   console.log("Storing stream finished", err);
@@ -274,7 +274,7 @@ countlyFs.gridfs = {};
     * @param {string} source - source file
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when renaming was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when renaming was completed or errored, providing error object as first param
     * @example
     * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
     *   console.log("Finished", err);
@@ -340,7 +340,7 @@ countlyFs.gridfs = {};
      * @param {string} category - collection where the file is stored
      * @param {string} id - file id
      * @param {object} updateFields - fields to update
-     * @param {function} callback - function called when updating was completed or errored, providing error object as first param
+     * @param {Function} callback - function called when updating was completed or errored, providing error object as first param
      * @example
      * countlyFs.gridfs.updateFileById("test", "66d6c2d770434130c03b7dae", { filename: "newname.png", "metadata.tags": "newtag" }, function(err){
      *   console.log("Update finished", err);
@@ -395,7 +395,7 @@ countlyFs.gridfs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when deleting was completed or errored, providing error object as first param
     * @example
     * countlyFs.deleteFile("test", "AGPLv3", function(err){
     *   console.log("Finished", err);
@@ -439,7 +439,7 @@ countlyFs.gridfs = {};
     * Delete all files from collection/category
     * @param {string} category - collection of files to delete
     * @param {string} dest - directory destination
-    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when deleting was completed or errored, providing error object as first param
     * @example
     * countlyFs.deleteAll("test", function(err){
     *   console.log("Finished", err);
@@ -466,7 +466,7 @@ countlyFs.gridfs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
+    * @param {Function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
     * @example
     * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
     *   var writeStream = fs.createWriteStream('./CHANGELOG.md');    
@@ -500,7 +500,7 @@ countlyFs.gridfs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @param {Function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
     * @example
     * countlyFs.getData("test", "AGPLv3", function(err, data){
     *   console.log("Retrieved", err, data); 
@@ -547,7 +547,7 @@ countlyFs.gridfs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @param {Function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
     * @example
     * countlyFs.getSize("test", "AGPLv3", function(err, size){
     *   console.log("Retrieved", err, size); 
@@ -582,7 +582,7 @@ countlyFs.gridfs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @param {Function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
     * @example
     * countlyFs.getStats("test", "AGPLv3", function(err, stats){
     *   console.log("Retrieved", err, stats); 
@@ -626,7 +626,7 @@ countlyFs.gridfs = {};
     * Get file data by file id
     * @param {string} category - collection from where to read data
     * @param {string} id - file id provided upon creation
-    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @param {Function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
     * @example
     * countlyFs.getDataById("test", "AGPLv3", function(err, data){
     *   console.log("Retrieved", err, data); 
@@ -658,7 +658,7 @@ countlyFs.gridfs = {};
     * Get file stream by file id
     * @param {string} category - collection from where to read data
     * @param {string} id - file id provided upon creation
-    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @param {Function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
     * @example
     * countlyFs.getStreamById("test", "AGPLv3", function(err, data){
     *   console.log("Retrieved", err, data); 
@@ -676,7 +676,7 @@ countlyFs.gridfs = {};
     * Delete file by id from shared system
     * @param {string} category - collection where to store data
     * @param {string} id - file id provided upon creation
-    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when deleting was completed or errored, providing error object as first param
     * @example
     * countlyFs.deleteFileById("test", "AGPLv3", function(err){
     *   console.log("Finished", err);
@@ -701,7 +701,7 @@ countlyFs.gridfs = {};
     * Force clean file if there were errors inserting or deleting previously
     * @param {string} category - collection where to store data
     * @param {string} filename - filename
-    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when deleting was completed or errored, providing error object as first param
     * @example
     * countlyFs.clearFile("test", "AGPLv3", function(err){
     *   console.log("Finished", err);
@@ -722,7 +722,7 @@ countlyFs.gridfs = {};
     /**
      * List files inside the category (collection/directory)
      * @param {string} category - collection to list files in
-     * @param {function} callback - function called when files found or query errored, providing error object as first param and a list of filename, creation date and size as secondas second
+     * @param {Function} callback - function called when files found or query errored, providing error object as first param and a list of filename, creation date and size as secondas second
      */
     ob.listFiles = function(category, callback) {
         log.d("listFiles", category);
@@ -772,7 +772,7 @@ countlyFs.fs = {};
     * @param {string} category - collection where to store data
     * @param {string} dest - destination of file
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
+    * @param {Function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
     * @example
     * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
     *   if(exists)
@@ -801,7 +801,7 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {string} source - source file
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
     *   console.log("Storing file finished", err);
@@ -831,7 +831,7 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {string} data - data to save
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
     *   console.log("Storing data finished", err);
@@ -859,7 +859,7 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {stream} is - stream where to get file content
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when saving was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
     *   console.log("Storing stream finished", err);
@@ -890,7 +890,7 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {string} source - source file
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when renaming was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when renaming was completed or errored, providing error object as first param
     * @example
     * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
     *   console.log("Finished", err);
@@ -917,7 +917,7 @@ countlyFs.fs = {};
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @param {Function} callback - function called when deleting was completed or errored, providing error object as first param
     * @example
     * countlyFs.deleteFile("test", "AGPLv3", function(err){
     *   console.log("Finished", err);
@@ -945,7 +945,7 @@ countlyFs.fs = {};
     * @param {string} category - collection from where to read data
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
+    * @param {Function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
     * @example
     * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
     *   var writeStream = fs.createWriteStream('./CHANGELOG.md');    
@@ -972,7 +972,7 @@ countlyFs.fs = {};
     * @param {string} category - collection from where to read data
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
-    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @param {Function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
     * @example
     * countlyFs.getData("test", "AGPLv3", function(err, data){
     *   console.log("Retrieved", err, data); 
@@ -1000,7 +1000,7 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @param {Function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
     * @example
     * countlyFs.getSize("test", "AGPLv3", function(err, size){
     *   console.log("Retrieved", err, size); 
@@ -1028,7 +1028,7 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {object=} options - additional options for saving file
     * @param {string} options.id - custom id for the file
-    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @param {Function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
     * @example
     * countlyFs.getStats("test", "AGPLv3", function(err, stats){
     *   console.log("Retrieved", err, stats); 
@@ -1053,7 +1053,7 @@ countlyFs.fs = {};
     /**
      * List files inside the category (directory)
      * @param {string} category - directory to list files in
-     * @param {function} callback - function called when files found, providing error object as first param and a list of filename, creation date and size as second
+     * @param {Function} callback - function called when files found, providing error object as first param and a list of filename, creation date and size as second
      */
     ob.listFiles = function(category, callback) {
         fs.readdir(category, function(err, files) {
@@ -1101,7 +1101,7 @@ countlyFs.fs = {};
 * @param {string} dest - file's destination
 * @param {object=} options - additional options for saving file
 * @param {string} options.id - custom id for the file
-* @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
+* @param {Function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
 * @example
 * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
 *   if(exists)
@@ -1125,7 +1125,7 @@ countlyFs.exists = function() {
 * @param {object} options.metadata - Optional object to store in the file document's metadata field
 * @param {string} options.contentType - Optional string to store in the file document's contentType field
 * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
-* @param {function} callback - function called when saving was completed or errored, providing error object as first param
+* @param {Function} callback - function called when saving was completed or errored, providing error object as first param
 * @example
 * countlyFs.saveFile("test", "./CHANGELOG", "./CHANGELOG.md", function(err){
 *   console.log("Storing file finished", err);
@@ -1148,7 +1148,7 @@ countlyFs.saveFile = function() {
 * @param {object} options.metadata - Optional object to store in the file document's metadata field
 * @param {string} options.contentType - Optional string to store in the file document's contentType field
 * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
-* @param {function} callback - function called when saving was completed or errored, providing error object as first param
+* @param {Function} callback - function called when saving was completed or errored, providing error object as first param
 * @example
 * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
 *   console.log("Storing data finished", err);
@@ -1171,7 +1171,7 @@ countlyFs.saveData = function() {
 * @param {object} options.metadata - Optional object to store in the file document's metadata field
 * @param {string} options.contentType - Optional string to store in the file document's contentType field
 * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
-* @param {function} callback - function called when saving was completed or errored, providing error object as first param
+* @param {Function} callback - function called when saving was completed or errored, providing error object as first param
 * @example
 * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
 *   console.log("Storing stream finished", err);
@@ -1189,7 +1189,7 @@ countlyFs.saveStream = function() {
 * @param {string} source - source file
 * @param {object=} options - additional options for saving file
 * @param {string} options.id - custom id for the file
-* @param {function} callback - function called when renaming was completed or errored, providing error object as first param
+* @param {Function} callback - function called when renaming was completed or errored, providing error object as first param
 * @example
 * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
 *   console.log("Finished", err);
@@ -1206,7 +1206,7 @@ countlyFs.rename = function() {
 * @param {string} dest - file's destination
 * @param {object=} options - additional options for saving file
 * @param {string} options.id - custom id for the file
-* @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+* @param {Function} callback - function called when deleting was completed or errored, providing error object as first param
 * @example
 * countlyFs.deleteFile("test", "AGPLv3", function(err){
 *   console.log("Finished", err);
@@ -1223,7 +1223,7 @@ countlyFs.deleteFile = function() {
 * @param {string} dest - file's destination
 * @param {object=} options - additional options for saving file
 * @param {string} options.id - custom id for the file
-* @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
+* @param {Function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
 * @example
 * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
 *   var writeStream = fs.createWriteStream('./CHANGELOG.md');    
@@ -1241,7 +1241,7 @@ countlyFs.getStream = function() {
 * @param {string} dest - file's destination
 * @param {object=} options - additional options for saving file
 * @param {string} options.id - custom id for the file
-* @param {function} callback - function called when retrieving file was completed or errored, providing error object as first param and filedata as second
+* @param {Function} callback - function called when retrieving file was completed or errored, providing error object as first param and filedata as second
 * @example
 * countlyFs.getData("test", "AGPLv3", function(err, data){
 *   console.log("Retrieved", err, data); 
@@ -1258,7 +1258,7 @@ countlyFs.getData = function() {
 * @param {string} dest - file's destination
 * @param {object=} options - additional options for saving file
 * @param {string} options.id - custom id for the file
-* @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+* @param {Function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
 * @example
 * countlyFs.getSize("test", "AGPLv3", function(err, size){
 *   console.log("Retrieved", err, size); 
@@ -1275,7 +1275,7 @@ countlyFs.getSize = function() {
 * @param {string} dest - file's destination
 * @param {object=} options - additional options for saving file
 * @param {string} options.id - custom id for the file
-* @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+* @param {Function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
 * @example
 * countlyFs.getStats("test", "AGPLv3", function(err, stats){
 *   //similar to fs.stat object

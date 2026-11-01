@@ -60,9 +60,9 @@
                             return !Object.prototype.hasOwnProperty.call(this.options, match[0]);
                         }
                         // name <email@address.com>
-                        /*eslint-disable */
+
                         regex = new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i');
-                        /*eslint-enable */
+
                         match = input.match(regex);
                         if (match) {
                             return !Object.prototype.hasOwnProperty.call(this.options, match[2]);
@@ -73,9 +73,9 @@
                         if ((new RegExp('^' + REGEX_EMAIL + '$', 'i')).test(input)) {
                             return {email: input};
                         }
-                        /*eslint-disable */
+
                         var match = input.match(new RegExp('^([^<]*)\<' + REGEX_EMAIL + '\>$', 'i'));
-                        /*eslint-enable */
+
                         if (match) {
                             return {
                                 email: match[2],
@@ -143,7 +143,7 @@
 
     /**
      * get default hook effects dictionary
-     * @return {objecT} hook effects dictionary
+     * @returns {objecT} hook effects dictionary
      */
     hooksPlugin.getHookEffects = function() {
         return _hookEffects;

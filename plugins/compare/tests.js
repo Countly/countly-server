@@ -1,6 +1,7 @@
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
+var {deriveDateKeys, resolveAppTimezone} = require("../../test/lib/dateKeys.js");
 request = request(testUtils.url);
 
 var APP_KEY = "";
@@ -10,6 +11,13 @@ var compareApps = [];
 var DEVICE_ID = "1234567890";
 
 describe('Testing Compare Plugin', function() {
+    // The compare output is keyed by the APP's calendar date, not the runner's:
+    // on UTC CI the two differ every evening for an app east of UTC (the plugin
+    // test fixture app is Europe/Istanbul), so derive today's keys from the app's timezone.
+    var appTimezone = null;
+    before(async function() {
+        appTimezone = await resolveAppTimezone(testUtils.db, testUtils.get("APP_ID"));
+    });
     describe("Testing Compare Apps", function() {
         before(function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -146,9 +154,10 @@ describe('Testing Compare Plugin', function() {
                         var ob = JSON.parse(res.text);
                         console.log(res.text);
 
-                        var currentYear = new Date().getFullYear();
-                        var currentMonth = new Date().getMonth() + 1;
-                        var currentDay = new Date().getDate();
+                        var todayKeys = deriveDateKeys(Date.now(), appTimezone);
+                        var currentYear = todayKeys.year;
+                        var currentMonth = todayKeys.month;
+                        var currentDay = todayKeys.day;
                         ob.should.have.property('CompareEvent1');
                         ob.CompareEvent1.should.have.property(currentYear);
                         ob.CompareEvent1[currentYear].should.have.property(currentMonth);
@@ -214,9 +223,10 @@ describe('Testing Compare Plugin', function() {
                                     var ob = JSON.parse(res.text);
                                     console.log(res.text);
 
-                                    var currentYear = new Date().getFullYear();
-                                    var currentMonth = new Date().getMonth() + 1;
-                                    var currentDay = new Date().getDate();
+                                    var todayKeys = deriveDateKeys(Date.now(), appTimezone);
+                                    var currentYear = todayKeys.year;
+                                    var currentMonth = todayKeys.month;
+                                    var currentDay = todayKeys.day;
                                     ob.should.have.property(iid);
                                     ob[iid].should.have.property(currentYear);
                                     ob[iid][currentYear].should.have.property(currentMonth);

@@ -50,7 +50,7 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
             try {
                 params.qstring.consent = JSON.parse(params.qstring.consent);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse consent JSON failed', params.qstring.consent, params.req.url, params.req.body);
             }
         }
@@ -233,7 +233,7 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
                             try {
                                 params.qstring.project = JSON.parse(params.qstring.project);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.project = {};
                             }
                         }
@@ -243,7 +243,7 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
                             try {
                                 params.qstring.sort = JSON.parse(params.qstring.sort);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.sort = {};
                             }
                         }

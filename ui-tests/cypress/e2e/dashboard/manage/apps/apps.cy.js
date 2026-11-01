@@ -1,4 +1,6 @@
+/* global expect */
 import user from '../../../../fixtures/user.json';
+import applicationsPageElements from '../../../../support/elements/dashboard/manage/apps/apps';
 const navigationHelpers = require('../../../../support/navigations');
 const loginHelpers = require('../../../../lib/login/login');
 const appHelper = require('../../../../lib/dashboard/manage/apps/apps');
@@ -20,6 +22,9 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.selectAppType(APP_TYPE.MOBILE);
         appHelper.selectCountry("Turkey");
         appHelper.clickCreateButton();
+        cy.getElement(applicationsPageElements.SELECTED_APP_NAME_LABEL).should(($label) => {
+            expect($label.text().trim()).to.equal(app.appName);
+        });
 
         appHelper.searchApp(app.appName);
         appHelper.selectAppFromList();
@@ -43,6 +48,9 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.selectAppType(APP_TYPE.DESKTOP);
         appHelper.selectCountry("Turkey");
         appHelper.clickCreateButton();
+        cy.getElement(applicationsPageElements.SELECTED_APP_NAME_LABEL).should(($label) => {
+            expect($label.text().trim()).to.equal(app.appName);
+        });
 
         appHelper.searchApp(app.appName);
         appHelper.verifyCreatedApp({
@@ -61,6 +69,9 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.selectCountry("United Kingdom");
         appHelper.verifyEditPopupElements();
         appHelper.clickSaveChangesButton();
+        cy.getElement(applicationsPageElements.SELECTED_APP_NAME_LABEL).should(($label) => {
+            expect($label.text().trim()).to.equal(updatedApp.appName);
+        });
 
         appHelper.searchApp(updatedApp.appName);
         appHelper.selectAppFromList();
@@ -83,6 +94,9 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.selectAppType(APP_TYPE.WEB);
         appHelper.selectCountry("Turkey");
         appHelper.clickCreateButton();
+        cy.getElement(applicationsPageElements.SELECTED_APP_NAME_LABEL).should(($label) => {
+            expect($label.text().trim()).to.equal(app.appName);
+        });
 
         appHelper.searchApp(app.appName);
         appHelper.verifyCreatedApp({

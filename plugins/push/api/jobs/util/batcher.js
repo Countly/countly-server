@@ -10,7 +10,7 @@ const { DoFinish } = require('./do_finish'),
  * @param {int} frame frame type to send
  * @param {any} payload frame payload to send
  * @param {string[]} recipients array of recipient ids
- * @param {function} callback callback function
+ * @param {Function} callback callback function
  * @param {int} time_out timeout in ms
  * @returns {object} multicast object with some control functions
  */
@@ -123,7 +123,7 @@ class Batcher extends DoFinish {
      * 
      * @param {object} push push object
      * @param {string} encoding ignored
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     _transform(push, encoding, callback) {
         // this.log.d('in batcher _transform', FRAME_NAME[push.frame], push._id);
@@ -199,7 +199,7 @@ class Batcher extends DoFinish {
     /**
      * Flush the leftover
      * 
-     * @param {function} callback callback
+     * @param {Function} callback callback
      * @returns {boolean|undefined} true in case nothing has been written
      */
     do_flush(callback) {
@@ -244,7 +244,7 @@ class Batcher extends DoFinish {
     /**
      * Unregistering listeners on stream closure
      * 
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     do_final(callback) {
         this.do_flush(flushErr => {

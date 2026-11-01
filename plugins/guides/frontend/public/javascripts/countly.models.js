@@ -4,7 +4,7 @@
 
     const API_key = "server-guides";
 
-    // eslint-disable-next-line require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc
     function transformItems(entry, items = [], type) {
         return items.map(function(item) {
             return Object.assign({}, item, { id: entry._id + "_" + type + "_" + item.id, sectionID: entry.sectionID, sectionTitle: entry.sectionTitle });

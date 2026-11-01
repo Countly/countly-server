@@ -116,7 +116,7 @@
                         try {
                             this.parsedQuery = JSON.parse(parts[1]);
                         }
-                        catch (error) {
+                        catch {
                             this.parsedQuery = {};
                         }
                         this.selectAction = this.parsedQuery.a || "all";

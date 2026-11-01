@@ -295,13 +295,38 @@ export declare function dbUserHasAccessToCollection(
  * @param member - Member object from params
  * @param dbName - Database name as string
  * @param collectionName - Collection name
+ * @param feature - When given, only apps the member holds this feature's read right on
+ *   (any of them, for a list) are in scope
  * @returns Filter object for database queries
  */
 export declare function getBaseAppFilter(
     member: Member,
     dbName: string,
-    collectionName: string
+    collectionName: string,
+    feature?: string | string[]
 ): { [key: string]: any };
+
+/**
+ * Features whose read right lets a member export a collection shared by all apps
+ * @param dbName - Database name
+ * @param collectionName - Collection name
+ * @returns Feature names, or null when the collection is not a shared one
+ */
+export declare function getSharedCollectionExportFeatures(
+    dbName: string,
+    collectionName: string
+): string[] | null;
+
+/**
+ * Apps of a member on which they hold the read right of at least one of the features
+ * @param member - Member object from params
+ * @param feature - Feature name, or a list of names any of which grants the read
+ * @returns App ids
+ */
+export declare function getUserAppsWithReadRight(
+    member: Member,
+    feature: string | string[]
+): string[];
 
 /**
  * Check if user has admin access on selected app
@@ -389,6 +414,8 @@ declare const rights: {
     getCollectionName: typeof getCollectionName;
     dbUserHasAccessToCollection: typeof dbUserHasAccessToCollection;
     getBaseAppFilter: typeof getBaseAppFilter;
+    getUserAppsWithReadRight: typeof getUserAppsWithReadRight;
+    getSharedCollectionExportFeatures: typeof getSharedCollectionExportFeatures;
     hasAdminAccess: typeof hasAdminAccess;
     hasCreateRight: typeof hasCreateRight;
     hasReadRight: typeof hasReadRight;

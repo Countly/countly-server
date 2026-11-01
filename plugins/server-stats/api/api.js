@@ -93,7 +93,7 @@ function getServerStatsApps(member) {
                 params.qstring.events = JSON.parse(params.qstring.events);
             }
         }
-        catch (error) {
+        catch {
             //
         }
 

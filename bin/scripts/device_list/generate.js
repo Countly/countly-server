@@ -35,7 +35,7 @@ csv()
                     return String.fromCharCode(parseInt(pair, 16));
                 })));
             }
-            catch (ex) {
+            catch {
                 devices[i] = d;
             }
         }

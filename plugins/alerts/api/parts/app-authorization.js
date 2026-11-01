@@ -50,7 +50,7 @@ function legacyApps(member) {
  * An empty or missing list returns false: an alert that targets nothing is not something
  * to authorize permissively.
  *
- * @param {function} rightFn - hasCreateRight / hasUpdateRight / hasReadRight
+ * @param {Function} rightFn - hasCreateRight / hasUpdateRight / hasReadRight
  * @param {object} member - member object
  * @param {Array} apps - app ids the alert targets
  * @returns {boolean} true only when the member holds the right for every app
@@ -72,7 +72,7 @@ function memberHasRightForAllApps(rightFn, member, apps) {
  * Whether the member may read one app's alerts. Used by the scheduled job, which deals
  * with a single app rather than an alert's whole target list.
  *
- * @param {function} readRightFn - hasReadRight from rights.js
+ * @param {Function} readRightFn - hasReadRight from rights.js
  * @param {object} member - member object
  * @param {string} appId - app id
  * @returns {boolean} true when the member may read that app's alerts

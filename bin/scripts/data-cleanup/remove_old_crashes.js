@@ -40,7 +40,7 @@ try {
         process.exit(1);
     }
 }
-catch (err) {
+catch {
     console.warn('Please provide LAST_TIMESTAMP in this format \'YYYY-MM-DD\'');
     process.exit(1);
 }
@@ -94,7 +94,7 @@ function urlFromRequestOption(requestOption) {
 
         return urlObj.href;
     }
-    catch (err) {
+    catch {
         return JSON.stringify(requestOption);
     }
 }
@@ -107,7 +107,7 @@ pluginManager.dbConnection().then(async(db) => {
     try {
         urlObj = new URL(SERVER_URL);
     }
-    catch (err) {
+    catch {
         urlObj = new URL((process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost"));
     }
     urlObj.pathname = 'i/crashes/delete';

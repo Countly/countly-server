@@ -16,7 +16,7 @@ var pluginDependencies = require('./pluginDependencies.js'),
     async = require("async"),
     _ = require('underscore'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../api/utils/promise.js"),
     log = require('../api/utils/log.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
@@ -160,7 +160,7 @@ var pluginManager = function pluginManager() {
         try {
             params.qstring.plugin = JSON.parse(params.qstring.plugin);
         }
-        catch (err) {
+        catch {
             console.log('Error parsing plugins');
         }
 
@@ -281,7 +281,7 @@ var pluginManager = function pluginManager() {
     /**
     * Load configurations from database
     * @param {object} db - database connection for countly db
-    * @param {function} callback - function to call when configs loaded
+    * @param {Function} callback - function to call when configs loaded
     * @param {boolean} api - was the call made from api process
     **/
     this.loadConfigs = function(db, callback/*, api*/) {
@@ -364,7 +364,7 @@ var pluginManager = function pluginManager() {
     * @param {string} namespace - namespace of configuration, usually plugin name
     * @param {object} conf - object with key/values default configurations
     * @param {boolean} exclude - should these configurations be excluded from dashboard UI
-    * @param {function} onchange - function to call when configurations change
+    * @param {Function} onchange - function to call when configurations change
     **/
     this.setConfigs = function(namespace, conf, exclude, onchange) {
         if (!defaultConfigs[namespace]) {
@@ -688,7 +688,7 @@ var pluginManager = function pluginManager() {
     * @param {object} db - database connection for countly db
     * @param {object} current - current configs we have
     * @param {object} provided - provided configs
-    * @param {function} callback - function to call when checking finished
+    * @param {Function} callback - function to call when checking finished
     **/
     this.checkConfigs = function(db, current, provided, callback) {
         var diff = getObjectDiff(current, provided);
@@ -716,7 +716,7 @@ var pluginManager = function pluginManager() {
     * @param {object} db - database connection for countly db
     * @param {string} namespace - namespace of configuration, usually plugin name
     * @param {object} conf - provided config
-    * @param {function} callback - function to call when updating finished
+    * @param {Function} callback - function to call when updating finished
     **/
     this.updateConfigs = function(db, namespace, conf, callback) {
         var update = {};
@@ -744,7 +744,7 @@ var pluginManager = function pluginManager() {
     * @param {string} appId - id of application
     * @param {string} namespace - name of plugin
     * @param {object} config  - new configuration object for selected plugin 
-    * @param {function} callback - function that is called when updating has finished
+    * @param {Function} callback - function that is called when updating has finished
     **/
     this.updateApplicationConfigs = function(db, appId, namespace, config, callback) {
         var pluginName = 'plugins.'.concat(namespace);
@@ -777,7 +777,7 @@ var pluginManager = function pluginManager() {
                         changes[k] = parseInt(changes[k], 10);
                         changes[k] = changes[k] || 0;
                     }
-                    catch (e) {
+                    catch {
                         changes[k] = 2147483647;
                     }
                 }
@@ -793,7 +793,7 @@ var pluginManager = function pluginManager() {
     * Update all configs with provided changes
     * @param {object} db - database connection for countly db
     * @param {object} changes - provided changes
-    * @param {function} callback - function to call when updating finished
+    * @param {Function} callback - function to call when updating finished
     **/
     this.updateAllConfigs = function(db, changes, callback) {
         if (changes.api) {
@@ -833,7 +833,7 @@ var pluginManager = function pluginManager() {
     * @param {object} db - database connection for countly db
     * @param {object} changes - provided changes
     * @param {string} user_id - user for which to update settings
-    * @param {function} callback - function to call when updating finished
+    * @param {Function} callback - function to call when updating finished
     **/
     this.updateUserConfigs = function(db, changes, user_id, callback) {
         db.collection("members").findOne({ _id: db.ObjectID(user_id) }, function(err, member) {
@@ -918,7 +918,7 @@ var pluginManager = function pluginManager() {
     /**
     * Register listening to new event on api side
     * @param {string} event - event to listen to
-    * @param {function} callback - function to call, when event happens
+    * @param {Function} callback - function to call, when event happens
     * @param {boolean} unshift - whether to register a high-priority callback (unshift it to the listeners array)
 	* @param {string} featureName -  name of plugin
     **/
@@ -934,24 +934,11 @@ var pluginManager = function pluginManager() {
         events[event][unshift ? 'unshift' : 'push']({"cb": callback, "name": featureName});
     };
 
-    // TODO: Remove this function and all it calls when moving to Node 12.
-    var promiseAllSettledBluebirdToStandard = function(bluebirdResults) {
-        return bluebirdResults.map((bluebirdResult) => {
-            const isFulfilled = bluebirdResult.isFulfilled();
-
-            const status = isFulfilled ? 'fulfilled' : 'rejected';
-            const value = isFulfilled ? bluebirdResult.value() : undefined;
-            const reason = isFulfilled ? undefined : bluebirdResult.reason();
-
-            return { status, value, reason };
-        });
-    };
-
     /**
     * Dispatch specific event on api side
     * @param {string} event - event to dispatch
     * @param {object} params - object with parameters to pass to event
-    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @param {Function} callback - function to call, when all event handlers that return Promise finished processing
     * @returns {boolean} true if any one responded to event
     **/
     this.dispatch = function(event, params, callback) {
@@ -991,14 +978,14 @@ var pluginManager = function pluginManager() {
                     Promise.allSettled(promises).then(function(results) {
                         resolve();
                         if (callback) {
-                            callback(null, promiseAllSettledBluebirdToStandard(results));
+                            callback(null, results);
                         }
                     });
                 }));
             }
             else if (callback) {
                 Promise.allSettled(promises).then(function(results) {
-                    callback(null, promiseAllSettledBluebirdToStandard(results));
+                    callback(null, results);
                 });
             }
         }
@@ -1016,7 +1003,7 @@ var pluginManager = function pluginManager() {
     * Dispatch specific event on api side and wait until all event handlers have processed the event (legacy)
     * @param {string} event - event to dispatch
     * @param {object} params - object with parameters to pass to event
-    * @param {function} callback - function to call, when all event handlers that return Promise finished processing
+    * @param {Function} callback - function to call, when all event handlers that return Promise finished processing
     * @returns {boolean} true if any one responded to event
     **/
     this.dispatchAllSettled = function(event, params, callback) {
@@ -1343,7 +1330,7 @@ var pluginManager = function pluginManager() {
     * Sets/changes method of specific plugin's api module
     * @param {string} plugin - plugin name
     * @param {string} name - method name
-    * @param {function} func - function to set as method
+    * @param {Function} func - function to set as method
     * @returns {void} void
     **/
     this.setPluginApi = function(plugin, name, func) {
@@ -1412,7 +1399,7 @@ var pluginManager = function pluginManager() {
     /**
     * We check plugins and sync between processes/servers
     * @param {object} db - connection to countly database
-    * @param {function} callback - when finished checking and syncing
+    * @param {Function} callback - when finished checking and syncing
     **/
     this.checkPlugins = function(db, callback) {
         var plugConf;
@@ -1464,7 +1451,7 @@ var pluginManager = function pluginManager() {
     /**
     * Sync plugin states between server
     * @param {object} pluginState - object with plugin names as keys and true/false values to indicate if plugin is enabled or disabled
-    * @param {function} callback - when finished checking and syncing
+    * @param {Function} callback - when finished checking and syncing
     * @param {object} db - connection to countly database
     **/
     this.syncPlugins = function(pluginState, callback, db) {
@@ -1583,7 +1570,7 @@ var pluginManager = function pluginManager() {
     /**
     * Procedure to install plugin
     * @param {string} plugin - plugin name
-    * @param {function} callback - when finished installing plugin
+    * @param {Function} callback - when finished installing plugin
     * @returns {void} void
     **/
     this.installPlugin = function(plugin, callback) {
@@ -1664,7 +1651,7 @@ var pluginManager = function pluginManager() {
     /**
     * Procedure to upgrade plugin
     * @param {string} plugin - plugin name
-    * @param {function} callback - when finished upgrading plugin
+    * @param {Function} callback - when finished upgrading plugin
     * @returns {void} void
     **/
     this.upgradePlugin = function(plugin, callback) {
@@ -1737,7 +1724,7 @@ var pluginManager = function pluginManager() {
     /**
     * Procedure to uninstall plugin
     * @param {string} plugin - plugin name
-    * @param {function} callback - when finished uninstalling plugin
+    * @param {Function} callback - when finished uninstalling plugin
     * @returns {void} void
     **/
     this.uninstallPlugin = function(plugin, callback) {
@@ -1770,7 +1757,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Procedure to prepare production file
-    * @param {function} callback - when finished uninstalling plugin
+    * @param {Function} callback - when finished uninstalling plugin
     **/
     this.prepareProduction = function(callback) {
         console.log('Preparing production files');
@@ -1833,6 +1820,63 @@ var pluginManager = function pluginManager() {
     };
 
     /**
+    * Load own config file of a database (e.g. drill/config.js for countly_drill) with env overrides applied
+    * @param {string} name - Countly database: countly_drill, countly_out or countly_fs
+    * @returns {object|null} config or null if database has no own config file or it can't be loaded
+    **/
+    this.loadDbConfigFile = function(name) {
+        if (typeof name !== "string" || !Object.prototype.hasOwnProperty.call(this.dbConfigFiles, name)) {
+            return null;
+        }
+        var conf;
+        try {
+            conf = JSON.parse(JSON.stringify(require(this.dbConfigFiles[name])));
+        }
+        catch {
+            return null;
+        }
+        if (this.dbConfigEnvs[name]) {
+            conf = configextender(this.dbConfigEnvs[name], conf, process.env);
+        }
+        return conf;
+    };
+
+    /**
+    * Get database name explicitly configured for one of Countly databases. In order of precedence:
+    * - "databases" config, which env vars COUNTLY_CONFIG__DATABASES_COUNTLY, COUNTLY_CONFIG__DATABASES_COUNTLY_DRILL,
+    *   COUNTLY_CONFIG__DATABASES_COUNTLY_OUT and COUNTLY_CONFIG__DATABASES_COUNTLY_FS override
+    * - "db" in object form of "mongodb" config: main config for countly database,
+    *   database's own config file (e.g. drill/config.js) for the others
+    * When set, it is used as is instead of the database name derived from the connection string
+    * @param {string} name - Countly database: countly, countly_drill, countly_out or countly_fs
+    * @param {object} config - config to read the setting from
+    * @param {object=} dbConfig - database's own config file, see loadDbConfigFile
+    * @returns {string|null} configured database name or null if not configured
+    **/
+    this.getConfiguredDatabaseName = function(name, config, dbConfig) {
+        /**
+        * Get usable database name from config value, env var values like "2024" are parsed to numbers
+        * @param {*} value - config value
+        * @returns {string|null} database name or null if value is not usable
+        **/
+        var toName = function(value) {
+            if (typeof value === "number" && isFinite(value)) {
+                value = value + "";
+            }
+            return (typeof value === "string" && value.length) ? value : null;
+        };
+        var names = config && config.databases;
+        if (names && typeof names === "object" && Object.prototype.hasOwnProperty.call(names, name) && toName(names[name])) {
+            return toName(names[name]);
+        }
+        var mongo = name === "countly" ? (config && config.mongodb) : (dbConfig && dbConfig.mongodb);
+        if (mongo && typeof mongo === "object" && toName(mongo.db)) {
+            return toName(mongo.db);
+        }
+        return null;
+    };
+
+    /**
     * Get database connection parameters for command line
     * @param {object} config - connection configs
     * @returns {object} db connection params
@@ -1840,6 +1884,7 @@ var pluginManager = function pluginManager() {
     this.getDbConnectionParams = function(config) {
         var ob = {};
         var db;
+        var configuredName = this.getConfiguredDatabaseName(typeof config === "string" ? config : "countly", countlyConfig, this.loadDbConfigFile(config));
         if (typeof config === "string") {
             db = config;
             if (this.dbConfigFiles[config]) {
@@ -1849,7 +1894,7 @@ var pluginManager = function pluginManager() {
                     var conf = require(this.dbConfigFiles[config]);
                     config = JSON.parse(JSON.stringify(conf));
                 }
-                catch (ex) {
+                catch {
                     //user default config
                     config = JSON.parse(JSON.stringify(countlyConfig));
                 }
@@ -1942,6 +1987,10 @@ var pluginManager = function pluginManager() {
             }
         }
 
+        if (configuredName) {
+            ob.db = configuredName;
+        }
+
         return ob;
     };
 
@@ -2016,7 +2065,7 @@ var pluginManager = function pluginManager() {
                     var conf = require(this.dbConfigFiles[config]);
                     config = JSON.parse(JSON.stringify(conf));
                 }
-                catch (ex) {
+                catch {
                     //user default config
                     config = useConfig;
                 }
@@ -2037,6 +2086,10 @@ var pluginManager = function pluginManager() {
             config = config || useConfig;
         }
 
+        //database name set explicitly in config wins over the one in connection string
+        //read before config.mongodb.db is overwritten below, config can be the same object as useConfig
+        var configuredName = this.getConfiguredDatabaseName(db || "countly", useConfig, this.loadDbConfigFile(db));
+
         if (config && typeof config.mongodb === "string") {
             try {
                 const urlObj = new URL(config.mongodb);
@@ -2044,7 +2097,7 @@ var pluginManager = function pluginManager() {
 
                 maxPoolSize = urlObj.searchParams.get('maxPoolSize') !== null ? urlObj.searchParams.get('maxPoolSize') : maxPoolSize;
             }
-            catch (_err) {
+            catch {
                 // we catch the error here and try to process only the query params part
                 const urlParts = config.mongodb.split('?');
 
@@ -2120,14 +2173,18 @@ var pluginManager = function pluginManager() {
         try {
             db_name = dbName.split("/").pop().split("?")[0];
         }
-        catch (ex) {
+        catch {
             db_name = "countly";
         }
 
-        try {
-            dbOptions.appname = process.title + ": " + db_name + "(" + maxPoolSize + ") " + process.pid;
+        if (configuredName) {
+            db_name = configuredName;
         }
-        catch (ex) {
+
+        try {
+            dbOptions.appname = process.title + ": " + (configuredName ? (db || "countly") : db_name) + "(" + maxPoolSize + ") " + process.pid;
+        }
+        catch {
             //silent
         }
 
@@ -2216,7 +2273,7 @@ var pluginManager = function pluginManager() {
         if (dbList.length) {
             var ret = [];
             for (let i = 0; i < dbList.length; i++) {
-                ret.push(client.db(dbList[i]));
+                ret.push(client.db(this.getConfiguredDatabaseName(dbList[i], useConfig, this.loadDbConfigFile(dbList[i])) || dbList[i]));
             }
             return ret;
         }
@@ -2308,7 +2365,7 @@ var pluginManager = function pluginManager() {
                 try {
                     return JSON.parse(JSON.stringify(masking.apps));
                 }
-                catch (ex) {
+                catch {
                     return {};
                 }
             }
@@ -2320,7 +2377,7 @@ var pluginManager = function pluginManager() {
             try {
                 return JSON.parse(JSON.stringify(masking.apps[appID]));
             }
-            catch (ex) {
+            catch {
                 return {};
             }
         }

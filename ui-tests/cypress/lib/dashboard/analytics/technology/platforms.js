@@ -191,8 +191,10 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfPage();
 
+    // a mobile demo app has Android and iOS only
     verifyPlatformsMetricCard({
         isEmpty: false,
+        platformCount: 2,
     });
 
     verifyPlatformsDataFromTable({
@@ -213,6 +215,7 @@ const verifyPlatformsMetricCard = ({
     versionName = null,
     versionNumber = null,
     versionPercentage = null,
+    platformCount = 2,
 }) => {
 
     if (isEmpty) {
@@ -249,7 +252,8 @@ const verifyPlatformsMetricCard = ({
         element: platformsMetricCardElements(index).BOUNCE_RATE_PROGRESS_CIRCLE,
     });
 
-    for (var i = 0; i < 3; i++) {
+    // the version breakdown cards are indexed by platform, one card per platform
+    for (var i = 0; i < platformCount; i++) {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: platformsMetricCardElements(i).VERSION_NAME,
@@ -277,6 +281,9 @@ const verifyPlatformsMetricCard = ({
             element: platformsMetricCardElements(i).VERSION_PROGRESS_BAR,
         });
     }
+
+    cy.shouldNotExist(platformsMetricCardElements(platformCount).PLATFORM_NAME);
+    cy.shouldNotExist(platformsMetricCardElements(platformCount).VERSION_NAME);
 };
 
 const verifyPlatformsDataFromTable = ({

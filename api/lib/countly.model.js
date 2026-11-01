@@ -23,12 +23,12 @@ countlyModel.load = function(segment) {
         //try loading model from core
         model = require("./countly." + _name + ".js")();
     }
-    catch (ex) {
+    catch {
         try {
             //try loading model from plugin
             model = require("../../plugins/" + _name + "/api/lib/countly.model.js")();
         }
-        catch (ex2) {
+        catch {
             //just create standard model
             model = this.create();
         }
@@ -38,7 +38,7 @@ countlyModel.load = function(segment) {
 
 /**
 * Create Countly data model to process data segment from fetched from server
-* @param {function=} fetchValue - default function to fetch and transform if needed value from standard data model
+* @param {Function=} fetchValue - default function to fetch and transform if needed value from standard data model
 * @returns {module:api/lib/countly.model~countlyMetric} new countly metric model
 * @example
 * var countlyModel = require("api/lib/countly.mode.js");
@@ -81,7 +81,7 @@ countlyModel.create = function(fetchValue) {
     /**
     * Get the current period Object for the model
     * @memberof module:api/lib/countly.model~countlyMetric
-    * @return {module:api/lib/countly.common.periodObj} period object
+    * @returns {module:api/lib/countly.common.periodObj} period object
     */
     countlyMetric.getPeriod = function() {
         return _period;
@@ -108,7 +108,7 @@ countlyModel.create = function(fetchValue) {
     /**
     * Get current data, if some view or model requires access to raw data
     * @memberof module:api/lib/countly.model~countlyMetric
-    * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
+    * @returns {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
     */
     countlyMetric.getDb = function() {
         return _Db;

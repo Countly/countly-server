@@ -29,7 +29,7 @@ var ICON_B = path.resolve(__dirname, './../../frontend/express/public/images/def
  * production code having to change.
  * @param {string} appId - the app whose icon to fetch
  * @param {number} attempts - how many times to look before giving up
- * @param {function} callback - called with (err, body)
+ * @param {Function} callback - called with (err, body)
  * @returns {void}
  */
 function fetchStoredIcon(appId, attempts, callback) {

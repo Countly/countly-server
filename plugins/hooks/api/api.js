@@ -19,7 +19,7 @@ const FEATURE_NAME = 'hooks';
  * Hook write endpoints authorize against params.qstring.app_id only, so the
  * apps actually affected by the operation must be re-checked to prevent a
  * user with hooks rights on one app from touching hooks of another app.
- * @param {function} rightFn - rights.hasCreateRight/hasUpdateRight/hasDeleteRight
+ * @param {Function} rightFn - rights.hasCreateRight/hasUpdateRight/hasDeleteRight
  * @param {object} member - request member object
  * @param {Array} apps - app ids the hook targets
  * @returns {boolean} true only if member has the right for every app
@@ -744,7 +744,7 @@ plugins.register("/o/hook/list", function(ob) {
                         const member = _.find(members, {_id: a.createdBy});
                         a.createdByUser = member && member.full_name;
                     });
-                    common.returnOutput(params, { hooksList } || []);
+                    common.returnOutput(params, { hooksList });
                 });
             });
         }
@@ -781,7 +781,7 @@ plugins.register("/i/hook/status", function(ob) {
         try {
             statusList = JSON.parse(params.qstring.status);
         }
-        catch (e) {
+        catch {
             common.returnMessage(params, 400, "Invalid status payload");
             return;
         }
@@ -796,7 +796,7 @@ plugins.register("/i/hook/status", function(ob) {
                 return common.db.ObjectID(id);
             });
         }
-        catch (e) {
+        catch {
             common.returnMessage(params, 400, "Invalid hook id");
             return;
         }
@@ -872,7 +872,7 @@ plugins.register("/i/hook/delete", function(ob) {
         try {
             objId = common.db.ObjectID(hookID);
         }
-        catch (err) {
+        catch {
             common.returnMessage(params, 400, "Invalid hook id");
             return;
         }

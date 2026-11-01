@@ -197,7 +197,7 @@ const widgetPropertyPreprocessors = {
         try {
             return JSON.parse(targetPages);
         }
-        catch (jsonParseError) {
+        catch {
             if (Array.isArray(targetPages)) {
                 return targetPages;
             }
@@ -210,7 +210,7 @@ const widgetPropertyPreprocessors = {
         try {
             return JSON.parse(targeting);
         }
-        catch (jsonParseError) {
+        catch {
             return null;
         }
     },
@@ -219,7 +219,7 @@ const widgetPropertyPreprocessors = {
         try {
             parsed = JSON.parse(links);
         }
-        catch (jsonParseError) {
+        catch {
             parsed = Array.isArray(links) ? links : [];
         }
         //Both create and edit run every preprocessor, so this is the one place that sees
@@ -240,7 +240,7 @@ const widgetPropertyPreprocessors = {
         try {
             return JSON.parse(ratingsTexts);
         }
-        catch (jsonParseError) {
+        catch {
             if (Array.isArray(ratingsTexts)) {
                 return ratingsTexts;
             }
@@ -259,7 +259,7 @@ const widgetPropertyPreprocessors = {
         try {
             return !!JSON.parse(hideSticker);
         }
-        catch (jsonParseError) {
+        catch {
             return !!hideSticker;
         }
     },
@@ -267,7 +267,7 @@ const widgetPropertyPreprocessors = {
         try {
             return !!JSON.parse(status);
         }
-        catch (jsonParseError) {
+        catch {
             return !!status;
         }
     }
@@ -275,7 +275,7 @@ const widgetPropertyPreprocessors = {
 
 /**
 * Function to ensure we hav directory to upload files to
-* @param {function} callback - callback
+* @param {Function} callback - callback
 **/
 function create_upload_dir(callback) {
     var dir = path.resolve(__dirname, './../images');
@@ -309,7 +309,7 @@ var SNIFFED_TYPE_TO_EXT = {
 * @param {object} myfile - file object(if empty - returns)
 * @param {string} id - unique identifier
 * @param {string} appId - id of the app the caller was authorized for
-* @param {function} callback = callback function
+* @param {Function} callback = callback function
 **/
 function uploadFile(myfile, id, appId, callback) {
     if (!myfile) {
@@ -391,7 +391,7 @@ function uploadFile(myfile, id, appId, callback) {
                         }
                     });
                 }
-                catch (SyntaxError) {
+                catch {
                     fs.unlink(tmp_path, function() { });
                     callback("Failed to upload image");
                 }
@@ -426,7 +426,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 steps = JSON.parse(steps);
             }
-            catch (ex) {
+            catch {
                 return "Invalid query JSON";
             }
         }
@@ -446,7 +446,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 seg = JSON.parse(seg);
             }
-            catch (ex) {
+            catch {
                 return "Invalid query JSON";
             }
         }
@@ -554,7 +554,7 @@ function uploadFile(myfile, id, appId, callback) {
                             resolve();
                         });
                     }
-                    catch (SyntaxError) {
+                    catch {
                         fs.unlink(tmp_path, function() {});
                         reject(Error("feedback.imagee-error"));
                     }
@@ -812,7 +812,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
-            catch (e) {
+            catch {
                 common.returnMessage(obParams, 400, 'Invalid widget id.');
                 return false;
             }
@@ -874,7 +874,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 widgetId = common.db.ObjectID(params.qstring.widget_id);
             }
-            catch (e) {
+            catch {
                 common.returnMessage(params, 500, 'Invalid widget id.');
                 return false;
             }
@@ -999,22 +999,30 @@ function uploadFile(myfile, id, appId, callback) {
             }
         });
     };
+    //Counts a show only for the app the widget belongs to. The widget lookup answers
+    //without a session, so the request's app_key is what names the app: with no key, or
+    //a key for another app, nothing is counted and the widget is still returned.
     var increaseWidgetShowCount = function(ob) {
         var obParams = ob.params;
         var widgetId = obParams.qstring.widget_id;
+        var appKey = obParams.qstring.app_key;
+        if (!appKey) {
+            return true;
+        }
 
-        common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId)}, { $inc: { timesShown: 1 } }, function(err, widget) {
-            if (!err && widget) {
-                return true;
+        common.resolveAppByKey(appKey, function(appErr, app) {
+            if (appErr) {
+                log.e('increaseWidgetShowCount: ' + appErr);
+                return;
             }
-            else if (err) {
-                log.e('increaseWidgetShowCount: ' + err);
-                return false;
+            if (!app) {
+                return;
             }
-            else {
-                log.e('increaseWidgetShowCount: widget not found');
-                return false;
-            }
+            common.db.collection("feedback_widgets").update({"_id": common.db.ObjectID(widgetId), "app_id": app._id + ""}, { $inc: { timesShown: 1 } }, function(err) {
+                if (err) {
+                    log.e('increaseWidgetShowCount: ' + err);
+                }
+            });
         });
         return true;
     };
@@ -1053,7 +1061,7 @@ function uploadFile(myfile, id, appId, callback) {
                 return true;
             }
         }
-        catch (jsonParseError) {
+        catch {
             common.returnMessage(ob.params, 400, 'invalid_event_request');
             return false;
         }
@@ -1189,7 +1197,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 data = JSON.parse(params.qstring.data);
             }
-            catch (error) {
+            catch {
                 common.returnMessage(params, 500, "Invalid parameter 'data'");
                 return false;
             }
@@ -1209,7 +1217,7 @@ function uploadFile(myfile, id, appId, callback) {
                 try {
                     widgetObjectId = common.db.ObjectID(key);
                 }
-                catch (e) {
+                catch {
                     common.returnMessage(params, 400, 'Invalid widget id: ' + key);
                     return false;
                 }
@@ -1397,7 +1405,7 @@ function uploadFile(myfile, id, appId, callback) {
                 var sort = {};
                 sort[colName] = sortType;
             }
-            catch (e) {
+            catch {
                 common.returnMessage(params, 400, 'Invalid column index for sorting');
                 return true;
             }
@@ -1458,7 +1466,7 @@ function uploadFile(myfile, id, appId, callback) {
             try {
                 widgets = JSON.parse(params.qstring.widgets);
             }
-            catch (jsonParseError) {
+            catch {
                 widgets = [];
             }
             var widgetIdsArray = widgets.map(function(d) {
@@ -1504,7 +1512,8 @@ function uploadFile(myfile, id, appId, callback) {
      * @apiDescription Get feedback widgets with or without filters
      * @apiQuery {String} app_id app_id of related application
      * @apiQuery {Boolean} is_active is_active option for widgets
-     * 
+     * @apiQuery {String} widget_id optional, return only the widget with this id
+     *
      * @apiSuccessExample {json} Success-Response:
      * HTTP/1.1 200 OK
      * [ 
@@ -1548,6 +1557,12 @@ function uploadFile(myfile, id, appId, callback) {
 
             if (params.qstring.app_id) {
                 query.app_id = params.qstring.app_id;
+            }
+            //the dashboard reads a single widget through here rather than through the
+            //anonymous /o/feedback/widget, which withholds targeting and cohortID
+            if (typeof params.qstring.widget_id !== "undefined") {
+                query._id = common.db.ObjectID(params.qstring.widget_id + "");
+                query.app_id = params.app_id + "";
             }
             common.db.collection(collectionName).find(query).toArray(function(err, docs) {
                 if (!err) {
@@ -1708,7 +1723,7 @@ function uploadFile(myfile, id, appId, callback) {
                         try {
                             params.qstring.period = JSON.parse(params.qstring.period);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             common.returnMessage(params, 400, 'Bad request parameter: period');
                             return true;
                         }
@@ -2028,7 +2043,7 @@ function uploadFile(myfile, id, appId, callback) {
 
             /**
              * fetch event data
-             * @return {object} - promise object
+             * @returns {object} - promise object
              **/
             const fetchData = () => {
                 return new Promise((resolve) => {

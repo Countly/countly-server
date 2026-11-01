@@ -17,7 +17,7 @@ class DoFinish extends DoFlush {
     /**
      * A method to be overridden
      * 
-     * @param {function} callback finish callback
+     * @param {Function} callback finish callback
      */
     do_final(/*callback*/) {
         throw new Error('Must be overridden');
@@ -26,7 +26,7 @@ class DoFinish extends DoFlush {
     /**
      * Finish the stream by flushing it and then delegating the finish job to do_final() method
      * 
-     * @param {function} callback finish callback
+     * @param {Function} callback finish callback
      */
     _final(callback) {
         this.log.d('finishing');

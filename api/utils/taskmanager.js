@@ -66,7 +66,7 @@ taskmanager.isAuthorizedFor = function(member, task) {
  * @param {object} db - database connection
  * @param {string} id - task id
  * @param {object} member - params.member
- * @param {function} cb - cb(err, task)
+ * @param {Function} cb - cb(err, task)
  */
 taskmanager.loadIfAuthorized = function(db, id, member, cb) {
     db = db || common.db;
@@ -111,7 +111,7 @@ taskmanager.isReadableBy = function(member, task) {
  * @param {object} db - database connection
  * @param {string} id - task id
  * @param {object} member - params.member
- * @param {function} cb - cb(err, task)
+ * @param {Function} cb - cb(err, task)
  */
 taskmanager.loadIfReadable = function(db, id, member, cb) {
     db = db || common.db;
@@ -145,15 +145,15 @@ taskmanager.loadIfReadable = function(db, id, member, cb) {
 * @param {string} options.name - provide user friendly task running condition string
 * @param {string} options.view - browser side view hash prepended with job id to display result
 * @param {string} options.app_id - id of the app for which data is meant for
-* @param {function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
-* @param {function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
+* @param {Function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
+* @param {Function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
 * @param {string} options.creator - the task creator
 * @param {boolean} options.global - the task is private or global visit. 
 * @param {boolean} options.autoRefresh - the task is will auto run periodically or not. 
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
 * @param {boolean} options.forceCreateTask - force createTask with id supplied ( for import)
 * @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
-* @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
+* @returns {Function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
 * @example
 * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
 *   db:common.db, 
@@ -314,7 +314,7 @@ taskmanager.getId = function() {
 * @param {number} options.r_hour - the task local hour of time to run, when autoRefresh is true.
 * @param {boolean} options.manually_create - the task is create from form input
 * @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
-*  @param {function=} callback - callback when data is stored
+*  @param {Function=} callback - callback when data is stored
 */
 taskmanager.createTask = function(options, callback) {
     options.db = options.db || common.db;
@@ -454,7 +454,7 @@ taskmanager.markReportsDirtyBasedOnRule = function(options, callback) {
 * @param {string} options.errormsg.message - Optional. if exists check for message here. If not uses options.errormsg. 
 * @param {object} data - result data of the task
 * @param {boolean} options.gridfs - store result in gridfs instead of MongoDB document
-* @param {function=} callback - callback when data is stored
+* @param {Function=} callback - callback when data is stored
 */
 taskmanager.saveResult = function(options, data, callback) {
     options = options || {};
@@ -606,7 +606,7 @@ taskmanager.saveResult = function(options, data, callback) {
 * @param {string} options.id - id to use for this task
 * @param {string} options.name - name of the task result, for later reference
 * @param {object} data - not used at all. pass anything. left for compability
-* @param {function=} callback - callback when data is stored
+* @param {Function=} callback - callback when data is stored
 */
 taskmanager.nameResult = function(options, data, callback) {
     options.db = options.db || common.db;
@@ -1008,7 +1008,7 @@ taskmanager.deleteResult = function(options, callback) {
 * Delete additional results specific to task type
 * @param {object} task - the task object
 * @param {object} options - options for the task
-* @param {function} callback - callback for the result
+* @param {Function} callback - callback for the result
 */
 taskmanager.deleteAdditionalResults = function(task, options, callback) {
     if (task.type === "journey_engine") {
@@ -1176,7 +1176,7 @@ taskmanager.rerunTask = function(options, callback) {
             try {
                 reqData = JSON.parse(res.request);
             }
-            catch (ex) {
+            catch {
                 reqData = {};
             }
             if (reqData.uri) {
@@ -1190,21 +1190,12 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData.json.autoUpdate = ((!options.dirty) && (options.autoUpdate || false)); //If dirty  set autoUpdate to false
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
+                        //a rerun is signed only with its creator's own key: there is no
+                        //fallback to anyone else, so a task whose creator is gone does not
+                        //run again
                         if (member && member.api_key) {
                             reqData.json.api_key = member.api_key;
                             runTask(options, reqData, callback);
-                        }
-                        else if (res.global) {
-                            //AD and other outer login users might not have their user documents
-                            options.db.collection("members").findOne({global_admin: true}, function(err2, admin) {
-                                if (admin && admin.api_key) {
-                                    reqData.json.api_key = admin.api_key;
-                                    runTask(options, reqData, callback);
-                                }
-                                else {
-                                    callback(null, "No permission to run this task");
-                                }
-                            });
                         }
                         else {
                             callback(null, "No permission to run this task");
@@ -1228,9 +1219,9 @@ taskmanager.rerunTask = function(options, callback) {
 
 /**
  *  Create a callback for getting result, including checking gridfs
- *  @param {function} callback - callback for the result
+ *  @param {Function} callback - callback for the result
  *  @param {object} options - options object
- *  @returns {function} callback to use for db query
+ *  @returns {Function} callback to use for db query
  */
 function getResult(callback, options) {
     return function(err, data) {
@@ -1266,4 +1257,36 @@ function getResult(callback, options) {
         }
     };
 }
+
+/**
+ * Stop the auto-refresh of every task a member created.
+ *
+ * A rerun is signed with its creator's own credential, so a deleted member's task cannot run
+ * again; turning off its auto-refresh also keeps the task job from retrying it. The results
+ * stay readable to whoever could read them before.
+ * @param {object} db - countly database
+ * @param {string} memberId - _id of the member
+ * @returns {Promise} resolves when written
+ */
+taskmanager.stopMemberTasks = function(db, memberId) {
+    return (db || common.db).collection("long_tasks").updateMany({creator: memberId + "", autoRefresh: true}, {$set: {autoRefresh: false}});
+};
+
+/**
+ * /i/users/delete listener: every member deletion path dispatches it before the member is
+ * removed, and a failure rejects the deletion, so a deleted member never leaves
+ * self-refreshing tasks behind.
+ * @param {object} ob - dispatch payload, data is the member being deleted
+ * @returns {Promise} resolves when the member's tasks are stopped
+ */
+taskmanager.onMemberDeleted = function(ob) {
+    var memberId = ob && ob.data && ob.data._id;
+    if (!memberId) {
+        return Promise.resolve();
+    }
+    return taskmanager.stopMemberTasks(common.db, memberId);
+};
+
+plugins.register("/i/users/delete", taskmanager.onMemberDeleted);
+
 module.exports = taskmanager;

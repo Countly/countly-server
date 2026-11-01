@@ -69,7 +69,7 @@ class MonitorJob extends Job {
     /**
      * run task
      * @param {object} _db - db object
-     * @param {function} done - callback function
+     * @param {Function} done - callback function
      */
     async run(_db, done) {
         let { alertID, appID } = this._json.data;

@@ -70,7 +70,7 @@ class SynFlushTransform extends Transform {
     /**
      * Send syn frame and start watching for it
      * 
-     * @param {function} cb callback function with boolean argument marking syn time out
+     * @param {Function} cb callback function with boolean argument marking syn time out
      */
     synIt(cb) {
         this.log.d('syn');
@@ -97,7 +97,7 @@ class SynFlushTransform extends Transform {
     /**
      * Do the flushing in this method, it's needed for flushIt method
      * 
-     * @param {function} callback flush callback
+     * @param {Function} callback flush callback
      */
     do_flush(/* callback */) {
         throw new PushError('Must be overridden', ERROR.EXCEPTION);

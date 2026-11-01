@@ -4,7 +4,7 @@ Script will delete documents matching selected event.
 Do not run on real event data, as it will delete it.
 */
 const pluginManager = require('../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../api/utils/promise.js");
 
 //Change these values to correct ones.
 var collectionName = 'fe55f384d642312c76f6164a4f8ea40ffcc80795';

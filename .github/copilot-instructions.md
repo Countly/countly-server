@@ -1,7 +1,7 @@
 # Countly Server - AI Coding Agent Instructions
 
 ## Project Overview
-Countly is a product analytics platform built with **Node.js 22+**, **MongoDB**, and **Vue 2** (with Element UI). The architecture is plugin-based: core functionality lives in `api/` and `frontend/`, while features are implemented as plugins in `plugins/`.
+Countly is a product analytics platform built with **Node.js 22+** (26 by default), **MongoDB**, and **Vue 2** (with Element UI). The architecture is plugin-based: core functionality lives in `api/` and `frontend/`, while features are implemented as plugins in `plugins/`.
 
 ## Architecture
 

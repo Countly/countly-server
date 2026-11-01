@@ -83,11 +83,11 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
         shift;
         $NODE_CMD "$DIR/plugin.js" test "$@" ;
     elif [ "$1" = "lint" ]; then
-        cd "$DIR/../../../";
-        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" --ignore-path "$DIR/../../../.eslintignore" "$DIR/../../../plugins/$2/." ;
+        cd "$DIR/../../../" || exit 1;
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" --pass-on-unpruned-suppressions "plugins/$2/" ;
     elif [ "$1" = "lintfix" ]; then
-        cd "$DIR/../../../";
-        "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" --ignore-path "$DIR/../../../.eslintignore" "$DIR/../../../plugins/$2/." --fix;
+        cd "$DIR/../../../" || exit 1;
+        "$DIR/../../../node_modules/eslint/bin/eslint.js" --pass-on-unpruned-suppressions "plugins/$2/" --fix;
     else
         usage ;
     fi

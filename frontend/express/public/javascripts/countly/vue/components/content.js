@@ -1173,7 +1173,7 @@
                     const str = (value === null || value === undefined) ? '' : String(value);
                     return decodeURIComponent(str.replace(/\+/g, '%20'));
                 }
-                catch (error) {
+                catch {
                     return value;
                 }
             },

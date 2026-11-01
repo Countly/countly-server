@@ -426,6 +426,7 @@ class Result extends Validatable {
             processed: note.result.processed,
             sent: note.result.sent,
             actioned: note.result.actioned,
+            errored: note.result.errors || undefined,
             error: lastErrors ? lastErrors[0] : undefined,
             lastErrors,
             errors,

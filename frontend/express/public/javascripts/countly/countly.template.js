@@ -9,7 +9,7 @@ window.countlyManagementView = countlyView.extend({
     /**
      * Handy function which returns currently saved configuration of this plugin or empty object.
      * @memberof countlyManagementView
-     * @return {Object} app object
+     * @returns {Object} app object
      */
     config: function() {
         return countlyGlobal.apps[this.appId] &&
@@ -41,7 +41,7 @@ window.countlyManagementView = countlyView.extend({
     /**
      * Title of plugin configuration tab, override with your own title.
      * @memberof countlyManagementView
-     * @return {String} tab title
+     * @returns {String} tab title
      */
     titleString: function() {
         return 'Default plugin configuration';
@@ -50,7 +50,7 @@ window.countlyManagementView = countlyView.extend({
     /**
      * Saving string displayed when request takes more than 0.3 seconds, override if needed.
      * @memberof countlyManagementView
-     * @return {String} saving string
+     * @returns {String} saving string
      */
     savingString: function() {
         return 'Saving...';
@@ -71,7 +71,7 @@ window.countlyManagementView = countlyView.extend({
     /**
      * Function used to determine whether save button should be visible. Used whenever UI is redrawn or some value changed. Override if needed.
      * @memberof countlyManagementView
-     * @return {Boolean} true if enabled
+     * @returns {Boolean} true if enabled
      */
     isSaveAvailable: function() {
         return JSON.stringify(this.templateData) !== this.savedTemplateData.toString();
@@ -80,7 +80,7 @@ window.countlyManagementView = countlyView.extend({
     /**
      * Callback function called to apply changes. Override if validation is needed.
      * @memberof countlyManagementView
-     * @return {String} error to display to user if validation didn't pass
+     * @returns {String} error to display to user if validation didn't pass
      */
     validate: function() {
         return null;
@@ -89,7 +89,7 @@ window.countlyManagementView = countlyView.extend({
     /**
      * Function which prepares data to the format required by the server, must return a Promise.
      * @memberof countlyManagementView
-     * @return {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
+     * @returns {Promise} which resolves to object of {plugin-name: {config: true, options: true}} format or rejects with error string otherwise
      */
     prepare: function() {
         var o = {}; o[this.plugin] = this.templateData; return $.when(o);
@@ -195,7 +195,7 @@ window.countlyManagementView = countlyView.extend({
                     try {
                         resp = JSON.parse(resp.responseText);
                     }
-                    catch (ignored) {
+                    catch {
                         //ignored excep
                     }
 
@@ -432,7 +432,7 @@ var AppRouter = Backbone.Router.extend({
     * @param {string} node.classes - string with css classes to add to category element
     * @param {string} node.style - string with css styling to add to category element
     * @param {string} node.html - additional HTML to append after text
-    * @param {function} node.callback - called when and each time category is added passing same parameters as to this method plus added jquery category element as 3th param
+    * @param {Function} node.callback - called when and each time category is added passing same parameters as to this method plus added jquery category element as 3th param
     **/
     addMenuCategory: function(category, node) {
         if (this._internalMenuCategories.indexOf(category) !== -1) {
@@ -507,7 +507,7 @@ var AppRouter = Backbone.Router.extend({
     * @param {string} node.classes - string with css classes to add to menu element
     * @param {string} node.style - string with css styling to add to menu element
     * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    * @param {Function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addMenuForType: function(app_type, category, node) {
         if (this._internalMenuCategories.indexOf(category) === -1) {
@@ -643,7 +643,7 @@ var AppRouter = Backbone.Router.extend({
     * @param {string} node.classes - string with css classes to add to menu element
     * @param {string} node.style - string with css styling to add to menu element
     * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    * @param {Function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addSubMenuForType: function(app_type, parent_code, node) {
         if (!parent_code) {
@@ -765,7 +765,7 @@ var AppRouter = Backbone.Router.extend({
     * @param {string} node.classes - string with css classes to add to menu element
     * @param {string} node.style - string with css styling to add to menu element
     * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    * @param {Function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addMenu: function(category, node) {
         if (node && !node.pluginName && !node.permission) {
@@ -800,7 +800,7 @@ var AppRouter = Backbone.Router.extend({
     * @param {string} node.classes - string with css classes to add to menu element
     * @param {string} node.style - string with css styling to add to menu element
     * @param {string} node.html - additional HTML to append after text (use icon to append HTML before text)
-    * @param {function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
+    * @param {Function} node.callback - called when and each time menu is added passing same parameters as to this method plus added jquery menu element as 4th param
     **/
     addSubMenu: function(parent_code, node) {
         if (node && !node.pluginName && !node.permission) {
@@ -1693,7 +1693,7 @@ var AppRouter = Backbone.Router.extend({
             try {
                 moment.locale(countlyCommon.BROWSER_LANG_SHORT);
             }
-            catch (e) {
+            catch {
                 moment.locale("en");
             }
 
@@ -1829,7 +1829,7 @@ var AppRouter = Backbone.Router.extend({
                 try {
                     moment.locale(countlyCommon.BROWSER_LANG_SHORT);
                 }
-                catch (e) {
+                catch {
                     moment.locale("en");
                 }
 
@@ -2662,8 +2662,8 @@ var AppRouter = Backbone.Router.extend({
             var a = [], b = [];
 
             // Match any character except: digits (0-9), dash (-), period (.), or backslash (/) and replace those characters with empty string.
-            x = x.replace(/[^\d\-\.\/]/g, ''); // eslint-disable-line
-            y = y.replace(/[^\d\-\.\/]/g, ''); // eslint-disable-line
+            x = x.replace(/[^\d\-\.\/]/g, '');
+            y = y.replace(/[^\d\-\.\/]/g, '');
 
             // Handle simple fractions
             if (x.indexOf('/') >= 0) {
@@ -2685,8 +2685,8 @@ var AppRouter = Backbone.Router.extend({
             var a = [], b = [];
 
             // Match any character except: digits (0-9), dash (-), period (.), or backslash (/) and replace those characters with empty string.
-            x = x.replace(/[^\d\-\.\/]/g, ''); // eslint-disable-line
-            y = y.replace(/[^\d\-\.\/]/g, ''); // eslint-disable-line
+            x = x.replace(/[^\d\-\.\/]/g, '');
+            y = y.replace(/[^\d\-\.\/]/g, '');
 
             // Handle simple fractions
             if (x.indexOf('/') >= 0) {
@@ -3197,7 +3197,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view
-    * @param {function} callback - function receives app_id param which is app id of the new app to which user switched
+    * @param {Function} callback - function receives app_id param which is app id of the new app to which user switched
 	* @param {string} name - Plugin name
     * @memberof app
     * @instance
@@ -3212,7 +3212,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add callback to be called when user changes app in Managment -> Applications section, useful when providing custom input additions to app editing for different app types
-    * @param {function} callback - function receives app_id param which is app id and type which is app type
+    * @param {Function} callback - function receives app_id param which is app id and type which is app type
     * @memberof app
     * @instance
     * @example
@@ -3230,7 +3230,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Modify app object on app create/update before submitting it to server
-    * @param {function} callback - function args object with all data that will be submitted to server on app create/update
+    * @param {Function} callback - function args object with all data that will be submitted to server on app create/update
     * @memberof app
     * @instance
     * @example
@@ -3271,10 +3271,10 @@ var AppRouter = Backbone.Router.extend({
     * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
     * @param {string} id - the same value on your input data-id attributes
     * @param {object} options - different callbacks for data modification
-    * @param {function} options.toDisplay - function to be called when data is prepared for displaying, pases reference to html element with app-read-settings css class in which value should be displayed
-    * @param {function} options.toInput - function to be called when data is prepared for input, pases reference to html input element with app-write-settings css class in which value should be placed for editing
-    * @param {function} options.toSave - function to be called when data is prepared for saving, pases reference to object args that will be sent to server ad html input element with app-write-settings css class from which value should be taken and placed in args
-     * @param {function} options.toInject - function to be called when to inject HTML into app management view
+    * @param {Function} options.toDisplay - function to be called when data is prepared for displaying, pases reference to html element with app-read-settings css class in which value should be displayed
+    * @param {Function} options.toInput - function to be called when data is prepared for input, pases reference to html input element with app-write-settings css class in which value should be placed for editing
+    * @param {Function} options.toSave - function to be called when data is prepared for saving, pases reference to object args that will be sent to server ad html input element with app-write-settings css class from which value should be taken and placed in args
+     * @param {Function} options.toInject - function to be called when to inject HTML into app management view
     * @memberof app
     * @instance
     * @example
@@ -3317,7 +3317,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add callback to be called when user changes app type in UI in Managment -> Applications section (even without saving app type, just chaning in UI), useful when providing custom input additions to app editing for different app types
-    * @param {function} callback - function receives type which is app type
+    * @param {Function} callback - function receives type which is app type
     * @memberof app
     * @instance
     * @example
@@ -3334,7 +3334,7 @@ var AppRouter = Backbone.Router.extend({
     },
     /**
     * Add callback to be called when user open user edit UI in Managment -> Users section (even without saving, just opening), useful when providing custom input additions to user editing
-    * @param {function} callback - function receives user object and paramm which can be true if saving data, false if opening data, string to modify data
+    * @param {Function} callback - function receives user object and paramm which can be true if saving data, false if opening data, string to modify data
     * @memberof app
     * @instance
     */
@@ -3348,7 +3348,7 @@ var AppRouter = Backbone.Router.extend({
     * You must perpare array of objects all with the same keys, where keys are columns and value are table data and return it from callback
     * to be processed by exporter.
     * @param {string} name - name of the export to expect in datatables sExport attribute
-    * @param {function} callback - callback to call when getting data
+    * @param {Function} callback - callback to call when getting data
     * @memberof app
     * @instance
     * @example
@@ -3374,7 +3374,7 @@ var AppRouter = Backbone.Router.extend({
     /**
     * Add callback to be called everytime new view/page is loaded, so you can modify view with javascript after it has been loaded
     * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
-    * @param {function} callback - function to be called when view loaded
+    * @param {Function} callback - function to be called when view loaded
 	* @param {string} name - Plugin name
     * @memberof app
     * @instance
@@ -3412,7 +3412,7 @@ var AppRouter = Backbone.Router.extend({
     /**
     * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
     * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
-    * @param {function} callback - function to be called when view refreshed
+    * @param {Function} callback - function to be called when view refreshed
     * @memberof app
     * @instance
     * @example <caption>Adding to single specific view with specific url</caption>

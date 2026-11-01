@@ -10,7 +10,7 @@ var trace = {
     /**
      *  Parse threads from native stack trace
      *  @param {string} data - symbolized native stacktrace
-     *  @return {array} with thread information
+     *  @returns {array} with thread information
      */
     processNativeThreads: function(data) {
         var findCrash = /^Thread\s\d+\s\(crashed\)/gim;
@@ -28,7 +28,7 @@ var trace = {
     /**
      *  Parse threads from PL crash reported
      *  @param {string} data - PL Crash Report
-     *  @return {array} with thread information
+     *  @returns {array} with thread information
      */
     processPLCrashThreads: function(data) {
         var findCrash = /^Thread\s\d+\sCrashed:/gim;
@@ -122,7 +122,7 @@ var trace = {
     /**
     * Process crash
     * @param {object} crash - Crash object
-    * @param {function} callback - to be called when processing is done
+    * @param {Function} callback - to be called when processing is done
     * @param {Object} overrideSettings - app settings to override
     */
     preprocessCrash: function(crash, callback, overrideSettings) {
@@ -211,7 +211,7 @@ var trace = {
                 }
                 crash._binary_images = JSON.stringify(crash._binary_images);
             }
-            catch (ex) {
+            catch {
                 console.log("Problem parsing PLCrashReport", crash);
             }
             if (!crash._name) {

@@ -13,7 +13,7 @@ var countlyDb;
 /**
 * Get overal server data
 * @param {object} db - database connection
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 stats.getOverall = function(db, callback) {
     countlyDb = db;
@@ -40,7 +40,7 @@ stats.getOverall = function(db, callback) {
 /**
 * Get minimal server data
 * @param {object} db - database connection
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 stats.getServer = function(db, callback) {
     countlyDb = db;
@@ -59,7 +59,7 @@ stats.getServer = function(db, callback) {
 * Get overal user data
 * @param {object} db - database connection
 * @param {object} user - members document from db
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 stats.getUser = function(db, user, callback) {
     countlyDb = db;
@@ -90,7 +90,7 @@ stats.getUser = function(db, user, callback) {
 
 /**
 * Get total users for all apps
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 * @param {array=} apps - provide array of apps to fetch data for, else will fetch data for all apps
 **/
 function getTotalUsers(callback, apps) {
@@ -148,7 +148,7 @@ function getTotalUsers(callback, apps) {
 
 /**
 * Get total events for all apps
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 * @param {array=} apps - provide array of apps to fetch data for, else will fetch data for all apps
 **/
 function getTotalEvents(callback, apps) {
@@ -169,7 +169,7 @@ function getTotalEvents(callback, apps) {
 
 /**
 * Get total messaging users for all apps
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 function getTotalMsgUsers(callback) {
     countlyDb.collection("users").find({_id: {"$regex": ".*:0.*"}}, {"d.m": 1}).toArray(function(err, msgUsers) {
@@ -192,7 +192,7 @@ function getTotalMsgUsers(callback) {
 
 /**
 * Get total messages for all apps
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 function getTotalMsgCreated(callback) {
     countlyDb.collection("messages").estimatedDocumentCount(function(err, msgCreated) {
@@ -207,7 +207,7 @@ function getTotalMsgCreated(callback) {
 
 /**
 * Get total messagess sent for all apps
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 * @param {array=} apps - provide array of apps to fetch data for, else will fetch data for all apps
 **/
 function getTotalMsgSent(callback, apps) {
@@ -229,7 +229,7 @@ function getTotalMsgSent(callback, apps) {
 /**
 * Get total user count for app
 * @param {object} app - app document from db
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 function getUserCountForApp(app, callback) {
     countlyDb.collection("app_users" + app._id).estimatedDocumentCount(function(err, count) {
@@ -244,7 +244,7 @@ function getUserCountForApp(app, callback) {
 
 /**
 * Get dashboard user count
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 function getDashboardUsers(callback) {
     countlyDb.collection("members").estimatedDocumentCount(function(err, count) {
@@ -260,7 +260,7 @@ function getDashboardUsers(callback) {
 /**
 * Get total crash count for app
 * @param {object} app - app document from db
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 **/
 function getCrashGroupsForApp(app, callback) {
     countlyDb.collection("app_crashgroups" + app).estimatedDocumentCount(function(err, count) {
@@ -275,7 +275,7 @@ function getCrashGroupsForApp(app, callback) {
 
 /**
 * Get total unique crashes count for app
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 * @param {array=} apps - provide array of apps to fetch data for, else will fetch data for all apps
 **/
 function getCrashGroups(callback, apps) {
@@ -320,7 +320,7 @@ function getCrashGroups(callback, apps) {
 
 /**
 * Get all platforms for apps
-* @param {function} callback - function to call when done
+* @param {Function} callback - function to call when done
 * @param {array=} apps - provide array of apps to fetch data for, else will fetch data for all apps
 **/
 function getAllPlatforms(callback, apps) {

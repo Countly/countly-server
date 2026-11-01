@@ -315,7 +315,7 @@ function parseClientHints(headers) {
             try {
                 params.qstring.crash = JSON.parse(params.qstring.crash);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse crash JSON failed');
                 return false;
             }

@@ -634,7 +634,7 @@ function isSafeConsentLink(value) {
                             targeting.user_segmentation = JSON.parse(userSegmentation);
                         }
                     }
-                    catch (e) {
+                    catch {
                         targeting.user_segmentation = {};
                     }
 
@@ -643,7 +643,7 @@ function isSafeConsentLink(value) {
                             targeting.steps = JSON.parse(steps);
                         }
                     }
-                    catch (e) {
+                    catch {
                         targeting.steps = [];
                     }
                 }
@@ -1444,7 +1444,7 @@ function isSafeConsentLink(value) {
                             widget.targeting.user_segmentation = JSON.parse(widget.targeting.user_segmentation);
                         }
                     }
-                    catch (e) {
+                    catch {
                         widget.targeting.user_segmentation = {};
                     }
 
@@ -1453,7 +1453,7 @@ function isSafeConsentLink(value) {
                             widget.targeting.steps = JSON.parse(widget.targeting.steps);
                         }
                     }
-                    catch (e) {
+                    catch {
                         widget.targeting.steps = [];
                     }
 
@@ -1793,7 +1793,7 @@ app.addPageScript("/drill#", function() {
                         var m = parts.message || parts.error || parts.result;
                         message = jQuery.i18n.map[m] || m;
                     }
-                    catch (ex) {
+                    catch {
                         message = jQuery.i18n.map["feedback.error"];
                     }
                 }
@@ -1857,7 +1857,7 @@ app.addPageScript("/drill#", function() {
                                 var m = parts.message || parts.error || parts.result;
                                 message = jQuery.i18n.map[m] || m;
                             }
-                            catch (ex) {
+                            catch {
                                 message = jQuery.i18n.map["feedback.error"];
                             }
                         }

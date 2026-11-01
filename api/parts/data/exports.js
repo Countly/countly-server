@@ -8,9 +8,10 @@ var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
     plugin = require('./../../../plugins/pluginManager.js'),
-    json2csv = require('json2csv');
+    { Parser: CsvParser } = require('@json2csv/plainjs');
 
 const log = require('./../../utils/log.js')('core:export');
+const { scopeQueryToApps } = require('./../../utils/rights.js');
 
 var XLSXTransformStream = require('xlsx-write-stream');
 const Transform = require('stream').Transform;
@@ -194,13 +195,13 @@ exports.convertData = function(data, type) {
         //the text qualifier rather than protection: the client strips it while parsing.
         //Field names are attacker controlled too when they come from event segmentation,
         //and json2csv writes them as the header row.
-        return json2csv.parse(obj.data.map(function(row) {
+        return new CsvParser({fields: obj.fields.map(preventCSVInjection)}).parse(obj.data.map(function(row) {
             var neutralized = {};
             for (var key in row) {
                 neutralized[key] = preventCSVInjection(row[key]);
             }
             return neutralized;
-        }), {fields: obj.fields.map(preventCSVInjection), excelStrings: false});
+        }));
     case "xls":
     case "xlsx":
         obj = flattenArray(data);
@@ -537,7 +538,7 @@ function isObjectId(id) {
 * @param {number} [options.skip=0] - amount of items to skip from start
 * @param {string} [options.type=json] - type of data to output
 * @param {string} [options.filename] - name of the file to output, by default auto generated
-* @param {function} options.output - callback function where to pass data, by default outputs as file based on type
+* @param {Function} options.output - callback function where to pass data, by default outputs as file based on type
 */
 
 /**
@@ -649,7 +650,10 @@ exports.fromDatabase = function(options) {
             if (options.query._id && isObjectId(options.query._id)) {
                 options.query._id = common.db.ObjectID(options.query._id);
             }
-            var cursor = options.db.collection(options.collection).find(options.query, {"projection": options.projection});
+            // The app scope is added only now, after every listener has rewritten the
+            // query, so no listener can reshape or drop it.
+            var findQuery = scopeQueryToApps(options.appFilter, options.query);
+            var cursor = options.db.collection(options.collection).find(findQuery, {"projection": options.projection});
             // Strip credential material from privileged collections before it
             // can reach an export file, mirroring the DB Viewer read paths. This
             // runs at the cursor level so it applies regardless of output type
@@ -701,7 +705,7 @@ exports.fromDatabase = function(options) {
 * @param {object} [options.method=POST] - request method type
 * @param {string} [options.type=json] - type of data to output
 * @param {string} [options.filename] - name of the file to output, by default auto generated
-* @param {function} options.output - callback function where to pass data, by default outputs as file based on type
+* @param {Function} options.output - callback function where to pass data, by default outputs as file based on type
 */
 exports.fromRequest = function(options) {
     options.path = options.path || "/";
@@ -764,7 +768,7 @@ exports.fromRequest = function(options) {
                 }
                 data = body;
             }
-            catch (ex) {
+            catch {
                 data = [];
             }
             //"stream all data"
@@ -933,7 +937,7 @@ exports.fromRequestQuery = function(options) {
 * @param {params} options.params - params object
 * @param {string} [options.type=json] - type of data to output
 * @param {string} [options.filename] - name of the file to output, by default auto generated
-* @param {function} options.output - callback function where to pass data, by default outputs as file based on type
+* @param {Function} options.output - callback function where to pass data, by default outputs as file based on type
 */
 exports.fromData = function(data, options) {
     options.type = options.type || "json";

@@ -20,7 +20,7 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).spread(function(countlyDb, countlyDrill) {
     common.db = countlyDb;
     common.drillDb = countlyDrill;

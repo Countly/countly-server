@@ -121,7 +121,7 @@ class ResourceInterface extends EventEmitter {
 
     /**
      * Whether manager is allowed to terminate process on master exit
-     * @return {boolean} true if manager can;
+     * @returns {boolean} true if manager can;
      */
     canBeTerminated() {
         return true;
@@ -307,7 +307,7 @@ class ResourceFaçade extends ResourceInterface {
     /**
      * Whether manager is allowed to terminate process on master exit
      * Uses opened event data to know if underlying resource can be terminated
-     * @return {boolean} true if manager can;
+     * @returns {boolean} true if manager can;
      */
     canBeTerminated() {
         return !!this._canBeTerminated;
@@ -467,7 +467,7 @@ class ResourceFaçade extends ResourceInterface {
 class ResourcePool extends EventEmitter {
     /**
     * Constructor
-    * @param {function} construct - resource constructor
+    * @param {Function} construct - resource constructor
     * @param {number} maxResources - maximal amount of resources
     **/
     constructor(construct, maxResources) {
@@ -636,7 +636,7 @@ class Resource extends ResourceInterface {
     * Start channel communication
     * @param {object} channel - channel to use
     * @param {object} db - database connection
-    * @param {function} Constructor - cosntructor for job
+    * @param {Function} Constructor - cosntructor for job
     **/
     start(channel, db, Constructor) {
         this.db = db;

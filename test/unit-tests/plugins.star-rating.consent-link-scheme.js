@@ -31,7 +31,7 @@ describe("star-rating consent link destinations", function() {
      * @param {string} file - path relative to the repo root
      * @param {string} needle - text just before the function's opening brace
      * @param {string} name - identifier to return
-     * @returns {function} the extracted function
+     * @returns {Function} the extracted function
      */
     function lift(file, needle, name) {
         var src = fs.readFileSync(path.join(root, file), "utf8");

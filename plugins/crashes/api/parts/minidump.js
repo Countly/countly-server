@@ -38,7 +38,7 @@ var dump = {
      *  Process the minidump from string by creating temp file, processing and deleting temp file
      *  @param {string} minidump - minidump data
      *  @param {string=} symbolPath - path to directory with symbols
-     *  @param {function} callback - to call when minidump is processed
+     *  @param {Function} callback - to call when minidump is processed
      */
     processMinidump: function(minidump, symbolPath, callback) {
         if (typeof symbolPath === "function") {

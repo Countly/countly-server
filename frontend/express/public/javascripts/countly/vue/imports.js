@@ -40,7 +40,7 @@
                 JSON.parse(value);
                 return true;
             }
-            catch (error) {
+            catch {
                 return false;
             }
         }

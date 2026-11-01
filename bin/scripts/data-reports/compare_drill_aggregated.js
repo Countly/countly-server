@@ -14,7 +14,7 @@ const path = './summary_report.csv'; // Specify a valid path: 'summary_report.cs
 var union_with_old_collection = true; // False if all sessions are stored in drill_events collection
 var verbose = false; // true to show more output
 
-const Promise = require("bluebird");
+const Promise = require("../../../api/utils/promise.js");
 const crypto = require("crypto");
 const fs = require('fs');
 var pluginManager = require("../../../plugins/pluginManager");

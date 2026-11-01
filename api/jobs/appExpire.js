@@ -51,7 +51,7 @@ class AppExpireJob extends job.Job {
                 /**
                 * Iterate event cleaning process
                 * @param {string} collection - target collection name
-                * @param {function} next - iteration callback
+                * @param {Function} next - iteration callback
                 * */
                 function eventIterator(collection, next) {
                     log.d("processing", collection);

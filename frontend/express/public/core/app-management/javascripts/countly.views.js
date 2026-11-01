@@ -965,7 +965,7 @@
                                 try {
                                     resp = JSON.parse(resp.responseText);
                                 }
-                                catch (ignored) {
+                                catch {
                                     //ignored excep
                                 }
                                 CountlyHelpers.notify({
