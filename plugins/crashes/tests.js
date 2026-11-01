@@ -3343,6 +3343,19 @@ describe('Testing Crashes', function() {
             seedA.should.containEql('add1');
         });
 
+        it('a trailing plus sign in an error name is kept', async() => {
+            var frame = 'at parse(parser.js)';
+            var seedA = await getSeed([frame], {_name: 'SyntaxError: Unexpected token +'}, SMART_SETTINGS);
+            var seedB = await getSeed([frame], {_name: 'SyntaxError: Unexpected token'}, SMART_SETTINGS);
+            should(seedA).not.equal(seedB);
+        });
+
+        it('iOS keeps the masked offset when smart preprocessing is off', async() => {
+            var settings = {grouping_strategy: 'error_and_file', smart_preprocessing: false, smart_regexes: ''};
+            var seed = await getCrashSeed({_os: 'iOS', _name: 'App terminated by SIGTRAP', _error: 'MyApp 0x0000000104a3c5d8 main + 50648'}, settings);
+            should(seed).equal('App terminated by SIGTRAPMyApp 0x%%%%%% main + ');
+        });
+
         it('two partially symbolicated iOS crashes land in one crash group', async() => {
             // _os "tvOS" bypasses the ios-only masking branch in preprocessCrash,
             // so raw addresses reach groupStrategy like in the customer case;

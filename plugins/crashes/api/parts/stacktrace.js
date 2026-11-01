@@ -92,9 +92,6 @@ var trace = {
         //remove frame offsets as one unit (MyApp 0x104a3c5d8 0x104a30000 + 50648); hex offsets need the 0x so "a + b" stays
         seed = seed.replace(/\s\+\s*(?:0x[0-9a-fA-F]+|\d+)(?!\S)/g, "");
 
-        //remove the " +" that iOS preprocessing leaves at the end of a frame after masking its offset
-        seed = seed.replace(/\s\+[ \t]*$/gm, "");
-
         //remove stand alone numbers like ids (MongoServerError: cursor id 8983374575113418154 not found)
         seed = seed.replace(/(?<!\S)\d+(?!\S)/gim, "");
 
@@ -289,7 +286,9 @@ var trace = {
 
                 var rHex = /0x([0-9A-F]*)\s/gim;
                 var rPlus = /\s\+\s([0-9]*)$/gim;
-                error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
+                //with smart preprocessing the masked offset goes entirely, as unmasked offsets do in cleanSeed
+                var smartPreprocessing = plugins.getConfig("crashes", overrideSettings || {}, true).smart_preprocessing;
+                error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, smartPreprocessing ? "" : " + ");
             }
             else if (crash._os && crash._os.toLowerCase && crash._os.toLowerCase() === "android") {
                 let lines = error.split("\n");
