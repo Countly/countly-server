@@ -2430,7 +2430,11 @@
             },
             updateTestUsersAppConfig: function(editedObject) {
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(editedObject);
-                countlyGlobal.apps[this.selectedAppId].plugins.push.test = testDto;
+                var app = countlyGlobal.apps[this.selectedAppId];
+                // an app without any push settings yet has no plugins.push
+                app.plugins = app.plugins || {};
+                app.plugins.push = app.plugins.push || {};
+                app.plugins.push.test = testDto;
             },
             onDeleteTestUser: function(row) {
                 var self = this;
