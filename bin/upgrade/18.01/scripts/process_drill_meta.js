@@ -1,7 +1,7 @@
 var pluginManager = require("../../../../plugins/pluginManager");
 var async = require("async");
 var crypto = require("crypto");
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 
 Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).spread(function(countlyDb, db){
     var reg = /^drill_events\.*/;

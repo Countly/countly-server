@@ -1,4 +1,5 @@
 const Triggers = require('./parts/triggers/index.js');
+const InternalEventTrigger = require('./parts/triggers/internal_event.js');
 const Effects = require('./parts/effects/index.js');
 const asyncLib = require('async');
 const EventEmitter = require('events');
@@ -18,7 +19,7 @@ const FEATURE_NAME = 'hooks';
  * Hook write endpoints authorize against params.qstring.app_id only, so the
  * apps actually affected by the operation must be re-checked to prevent a
  * user with hooks rights on one app from touching hooks of another app.
- * @param {function} rightFn - rights.hasCreateRight/hasUpdateRight/hasDeleteRight
+ * @param {Function} rightFn - rights.hasCreateRight/hasUpdateRight/hasDeleteRight
  * @param {object} member - request member object
  * @param {Array} apps - app ids the hook targets
  * @returns {boolean} true only if member has the right for every app
@@ -55,6 +56,7 @@ class Hooks {
         this._effects = {};
         this._queue = [];
 
+        this.ensureEndpointPathIndex();
         this.fetchRules();
         setInterval(() => {
             this.fetchRules();
@@ -95,6 +97,37 @@ class Hooks {
             const t = new Effects[type]();
             this._effects[type] = t;
         }
+    }
+
+    /**
+     * Keep api endpoint paths unique at the database level.
+     *
+     * Saving already refuses a path another hook holds, but that check is a read followed by a
+     * write, so two saves racing can still slip a duplicate through. A unique index closes
+     * that, and costs nothing at dispatch since rules are served from cache.
+     *
+     * Partial, so it constrains only api endpoint hooks: every other trigger type has no path
+     * and would otherwise collide on null. Instances that already hold a duplicate cannot build
+     * it, and that is deliberate rather than handled: the error is logged and everything carries
+     * on working, with the save-time check still preventing new duplicates. Nothing breaks, and
+     * the collision is resolved at dispatch by serving the older hook.
+     *
+     * @returns {void}
+     */
+    ensureEndpointPathIndex() {
+        common.db.collection("hooks").createIndex(
+            {"trigger.configuration.path": 1},
+            {
+                unique: true,
+                name: "hooks_api_endpoint_path_unique",
+                partialFilterExpression: {"trigger.type": "APIEndPointTrigger"}
+            },
+            function(err) {
+                if (err) {
+                    log.w("Could not create the unique index on api endpoint paths, most likely because two hooks already share one. New duplicates are still refused on save. %j", err.message || err);
+                }
+            }
+        );
     }
 
     /**
@@ -302,11 +335,24 @@ plugins.register("/i/hook/save", function(ob) {
 
         try {
             hookConfig = JSON.parse(hookConfig);
+            common.stripRequestCredentials(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
             if (hookConfig) {
                 // Null check for hookConfig
                 if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                     common.returnMessage(params, 400, 'Not enough args');
+                    return true;
+                }
+
+                // Only global admins may create or update hooks that subscribe
+                // to global (non app-scoped) internal events such as
+                // /i/users/* or /systemlogs — these carry instance-wide data.
+                if (!params.member.global_admin
+                    && hookConfig.trigger
+                    && hookConfig.trigger.type === "InternalEventTrigger"
+                    && hookConfig.trigger.configuration
+                    && InternalEventTrigger.GLOBAL_EVENT_TYPES[hookConfig.trigger.configuration.eventType]) {
+                    common.returnMessage(params, 403, "User does not have right to subscribe to this event");
                     return true;
                 }
 
@@ -334,10 +380,23 @@ plugins.register("/i/hook/save", function(ob) {
                         common.returnMessage(params, 403, "User does not have right");
                         return true;
                     }
+                    //validate against the effective hook, since an update may
+                    //change only the trigger or only the apps
+                    const updatedTriggerValidation = await validateTriggerConfiguration(
+                        hookConfig.trigger || existingHook.trigger,
+                        hookConfig.apps || existingHook.apps,
+                        existingHook._id
+                    );
+                    if (!updatedTriggerValidation.valid) {
+                        common.returnMessage(params, 400, updatedTriggerValidation.error);
+                        return true;
+                    }
                     return common.db.collection("hooks").findAndModify(
                         { _id: common.db.ObjectID(id) },
                         {},
-                        {$set: hookConfig},
+                        //also clears a credential stored before this was fixed: $set
+                        //leaves a field it does not name exactly as it was
+                        common.unsetRequestCredentials({$set: hookConfig}),
                         {new: true},
                         function(err, result) {
                             if (!err) {
@@ -375,6 +434,12 @@ plugins.register("/i/hook/save", function(ob) {
                 common.returnMessage(params, 403, "User does not have right");
                 return true;
             }
+
+            const newTriggerValidation = await validateTriggerConfiguration(hookConfig.trigger, hookConfig.apps);
+            if (!newTriggerValidation.valid) {
+                common.returnMessage(params, 400, newTriggerValidation.error);
+                return true;
+            }
             return common.db.collection("hooks").insert(
                 hookConfig,
                 function(err, result) {
@@ -399,12 +464,139 @@ plugins.register("/i/hook/save", function(ob) {
             );
         }
         catch (err) {
-            log.e('Parse hook failed', hookConfig);
+            //the error itself was dropped here, so every failure in this block looked alike
+            //from the logs - which is how the sanitizeConfig throw above went unnoticed
+            log.e('Parse hook failed', hookConfig, err);
             common.returnMessage(params, 500, "Failed to create an hook");
         }
     }, paramsInstance);
     return true;
 });
+
+/**
+ * Validate a trigger's configuration: an APIEndPointTrigger's path must be unused, and an
+ * InternalEventTrigger's event type must be known and scoped to the hook's own apps.
+ *
+ * The event type itself was never checked, so any string was accepted and stored.
+ * More importantly, the events that name a target object matched on that id alone
+ * at delivery time, with nothing tying the target to the hook's apps: a hook
+ * scoped to one app could name another app's cohort, hook or alert. Delivery is
+ * now scoped, so this is a second line of defence, but it turns a hook that would
+ * silently never fire into an explicit rejection at save time.
+ *
+ * hooks and alerts are core collections, so a target that cannot be resolved is
+ * rejected. Cohorts are an enterprise plugin and the collection may not exist in
+ * a given deployment, so an unresolvable cohort is allowed through and left to the
+ * delivery-time check rather than blocking a working feature.
+ *
+ * @param {object} trigger - the effective trigger, payload merged over stored
+ * @param {array} apps - the effective app ids the hook is scoped to
+ * @param {ObjectID} [hookId] - the hook being updated, so it does not clash with itself
+ * @returns {Promise<object>} {valid, error}
+ */
+async function validateTriggerConfiguration(trigger, apps, hookId) {
+    if (trigger && trigger.type === "APIEndPointTrigger") {
+        //Endpoint paths are global while hooks belong to apps, so nothing stops a hook on
+        //one app claiming a path already used by a hook on another. Dispatch matches on the
+        //path alone, so a second claimant receives the first one's callback parameters and
+        //the first one stops firing. Keep paths unique instead.
+        const path = (trigger.configuration || {}).path;
+        if (!path) {
+            return {valid: false, error: "Missing path for this trigger type"};
+        }
+        const clash = {"trigger.type": "APIEndPointTrigger", "trigger.configuration.path": path + ""};
+        if (hookId) {
+            //an update must not collide with the hook it is updating
+            clash._id = {$ne: hookId};
+        }
+        const taken = await common.db.collection("hooks").findOne(clash, {projection: {_id: 1}});
+        if (taken) {
+            return {valid: false, error: "This endpoint path is already in use. Choose another path."};
+        }
+        return {valid: true};
+    }
+    if (!trigger || trigger.type !== "InternalEventTrigger") {
+        return {valid: true};
+    }
+
+    const configuration = trigger.configuration || {};
+    const eventType = configuration.eventType;
+
+    if (!eventType || InternalEventTrigger.getInternalEvents().indexOf(eventType) === -1) {
+        return {valid: false, error: "Unknown internal event type"};
+    }
+
+    const scopedApps = Array.isArray(apps) ? apps.map(function(a) {
+        return a + "";
+    }) : [];
+
+    if (eventType === "/cohort/enter" || eventType === "/cohort/exit") {
+        if (!configuration.cohortID) {
+            return {valid: false, error: "Missing cohort for this event type"};
+        }
+        let cohort = null;
+        try {
+            //cohort ids are stored as strings, and the collection belongs to an
+            //enterprise plugin that may not be installed
+            cohort = await common.db.collection("cohorts").findOne({_id: configuration.cohortID + ""});
+        }
+        catch (e) {
+            //an unresolvable cohort is allowed through on purpose (see above), so
+            //log why rather than letting the reason disappear
+            log.d("Could not resolve cohort " + configuration.cohortID + " while validating a hook trigger: " + e.message);
+            cohort = null;
+        }
+        if (cohort && scopedApps.indexOf(cohort.app_id + "") === -1) {
+            return {valid: false, error: "Cohort does not belong to this hook's apps"};
+        }
+        return {valid: true};
+    }
+
+    if (eventType === "/hooks/trigger") {
+        if (!configuration.hookID) {
+            return {valid: false, error: "Missing hook for this event type"};
+        }
+        let sourceHook = null;
+        try {
+            sourceHook = await common.db.collection("hooks").findOne({_id: common.db.ObjectID(configuration.hookID + "")});
+        }
+        catch (e) {
+            //a malformed id lands here and is rejected below, which is correct, but
+            //the caller sees only "does not belong to this hook's apps" so record why
+            log.d("Could not resolve source hook " + configuration.hookID + " while validating a hook trigger: " + e.message);
+            sourceHook = null;
+        }
+        //the source hook's payload includes its whole document, so require it to be
+        //scoped within this hook's apps rather than merely overlapping
+        const sourceApps = (sourceHook && Array.isArray(sourceHook.apps)) ? sourceHook.apps : null;
+        if (!sourceApps || !sourceApps.length || !sourceApps.every(function(a) {
+            return scopedApps.indexOf(a + "") > -1;
+        })) {
+            return {valid: false, error: "Source hook does not belong to this hook's apps"};
+        }
+        return {valid: true};
+    }
+
+    if (eventType === "/alerts/trigger" && configuration.alertID) {
+        let alert = null;
+        try {
+            alert = await common.db.collection("alerts").findOne({_id: common.db.ObjectID(configuration.alertID + "")});
+        }
+        catch (e) {
+            //as above: a malformed id is rejected below, so record the real reason
+            log.d("Could not resolve alert " + configuration.alertID + " while validating a hook trigger: " + e.message);
+            alert = null;
+        }
+        const alertApps = (alert && Array.isArray(alert.selectedApps)) ? alert.selectedApps : [];
+        if (!alert || !alertApps.some(function(a) {
+            return scopedApps.indexOf(a + "") > -1;
+        })) {
+            return {valid: false, error: "Alert does not belong to this hook's apps"};
+        }
+    }
+
+    return {valid: true};
+}
 
 /***
  * @param {array} effects - array of effects
@@ -459,13 +651,21 @@ function getVisibilityQuery(query, params) {
  * @returns {sanitizedHookConfig} - sanitized hook config
  */
 function sanitizeConfig(hookConfig) {
-    if (hookConfig && hookConfig.effects) {
-        let emailEffectIndex = hookConfig.effects.findIndex(item => item.type === "EmailEffect");
-        if (emailEffectIndex > -1) {
-            let emailEffect = hookConfig.effects[emailEffectIndex];
-            let sanitizedTemplate = common.sanitizeHTML(emailEffect.configuration.emailTemplate);
-            emailEffect.configuration.emailTemplate = sanitizedTemplate;
-        }
+    if (hookConfig && Array.isArray(hookConfig.effects)) {
+        //every email effect, not just the first one findIndex stops at: a hook may carry
+        //several, and the ones after the first were reaching the database unsanitized
+        hookConfig.effects.forEach(function(effect) {
+            if (!effect || effect.type !== "EmailEffect" || !effect.configuration) {
+                return;
+            }
+            //an email effect without a template is a supported configuration - the effect
+            //falls back to a formatted dump of the trigger payload - but sanitizeHTML reads
+            //.replace off whatever it is given, so passing undefined threw and the save
+            //answered 500, making that configuration impossible to store
+            if (typeof effect.configuration.emailTemplate === "string") {
+                effect.configuration.emailTemplate = common.sanitizeHTML(effect.configuration.emailTemplate);
+            }
+        });
     }
     return hookConfig;
 
@@ -544,7 +744,7 @@ plugins.register("/o/hook/list", function(ob) {
                         const member = _.find(members, {_id: a.createdBy});
                         a.createdByUser = member && member.full_name;
                     });
-                    common.returnOutput(params, { hooksList } || []);
+                    common.returnOutput(params, { hooksList });
                 });
             });
         }
@@ -581,7 +781,7 @@ plugins.register("/i/hook/status", function(ob) {
         try {
             statusList = JSON.parse(params.qstring.status);
         }
-        catch (e) {
+        catch {
             common.returnMessage(params, 400, "Invalid status payload");
             return;
         }
@@ -596,7 +796,7 @@ plugins.register("/i/hook/status", function(ob) {
                 return common.db.ObjectID(id);
             });
         }
-        catch (e) {
+        catch {
             common.returnMessage(params, 400, "Invalid hook id");
             return;
         }
@@ -672,7 +872,7 @@ plugins.register("/i/hook/delete", function(ob) {
         try {
             objId = common.db.ObjectID(hookID);
         }
-        catch (err) {
+        catch {
             common.returnMessage(params, 400, "Invalid hook id");
             return;
         }
@@ -750,6 +950,15 @@ plugins.register("/i/hook/test", function(ob) {
                     common.returnMessage(params, 400, effectValidation.error || 'Config invalid');
                     return; // Add return to exit early
                 }
+            }
+
+            // a user may only test a hook for apps they could actually manage;
+            // validateCreate above only checked the request app_id, so re-check
+            // every app the hook targets to keep test from running effects (or
+            // probing data) against apps the member has no hooks rights on
+            if (!params.member.global_admin && !memberHasRightForAllApps(rights.hasCreateRight, params.member, hookConfig.apps)) {
+                common.returnMessage(params, 403, "User does not have right");
+                return;
             }
 
 

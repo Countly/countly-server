@@ -24,6 +24,27 @@ var STAR_RATING_EXT_TO_MIME = {
 (function(plugin) {
     plugin.init = function(app) {
 
+        var SAFE_PROVIDED_PATH_RE = /^[a-zA-Z0-9\-_./]*$/;
+        /**
+         * Restrict a caller-supplied asset path prefix to a same-origin
+         * relative path, rejecting absolute/protocol-relative URLs and
+         * backslash tricks browsers normalize into "//host".
+         * @param {*} rawValue - value of the provided_url query param
+         * @returns {String} sanitized path, or '' if rawValue is unsafe
+         */
+        function sanitizeProvidedUrl(rawValue) {
+            if (typeof rawValue !== 'string' || rawValue === '') {
+                return '';
+            }
+            if (rawValue.indexOf('\\') !== -1 || rawValue.indexOf(':') !== -1 || rawValue.indexOf('//') !== -1) {
+                return '';
+            }
+            if (!SAFE_PROVIDED_PATH_RE.test(rawValue)) {
+                return '';
+            }
+            return rawValue;
+        }
+
         /**
          * Method that render ratings popup template
          * @param {*} req - Express request object
@@ -31,12 +52,27 @@ var STAR_RATING_EXT_TO_MIME = {
          */
         function renderPopup(req, res) {
             let countlyPath = countlyConfig.path || '';
+            //If asset prefix path is passed - use that
+            if (req.query.provided_url) {
+                var safeProvidedUrl = sanitizeProvidedUrl(req.query.provided_url);
+                if (safeProvidedUrl) {
+                    countlyPath = safeProvidedUrl;
+                }
+            }
 
             if (countlyPath.length > 0 && !countlyPath.startsWith('/')) {
                 countlyPath = `/${countlyPath}`;
             }
 
+            //This popup is meant to be embedded by an SDK in a page on the customer's own
+            //origin, so the framing and cross-origin isolation headers the dashboard sets
+            //globally have to come back off for this response.
+            //
+            //Cross-Origin-Opener-Policy matters when the SDK opens the popup as a window
+            //rather than an iframe: it would otherwise sever window.opener and with it any
+            //callback the SDK expects.
             res.removeHeader('X-Frame-Options');
+            res.removeHeader('Cross-Origin-Opener-Policy');
             res.render('../../../plugins/star-rating/frontend/public/templates/feedback-popup', { countlyPath });
         }
 
@@ -62,7 +98,7 @@ var STAR_RATING_EXT_TO_MIME = {
                     try {
                         img = Buffer.from(data.slice(commaIdx + 1), 'base64');
                     }
-                    catch (e) {
+                    catch {
                         res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         return;
                     }

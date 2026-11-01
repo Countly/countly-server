@@ -4,7 +4,7 @@ module.exports.ObjectID = function(id) {
     try {
         return new mongodb.ObjectId(id);
     }
-    catch (ex) {
+    catch {
         return id;
     }
 };

@@ -300,7 +300,7 @@ class Message extends Mongoable {
     /**
      * Get trigger by kind
      * 
-     * @param {TriggerKind|function} kind trigger kind to search for or test function
+     * @param {TriggerKind|Function} kind trigger kind to search for or test function
      * @returns {Trigger} trigger if such trigger exists
      */
     triggerFind(kind) {

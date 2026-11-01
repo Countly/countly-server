@@ -8,7 +8,110 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "123456789";
 var WIDGET_ID = "";
+
+/**
+ * Pull out every locally-referenced asset path (href/src attributes and
+ * CSS url(...) references) from a rendered feedback-popup page, ignoring
+ * absolute URLs like the "https://count.ly" footer link.
+ * @param {string} html - rendered feedback-popup HTML
+ * @returns {Array} list of path strings found in the markup
+ */
+function extractLocalAssetPaths(html) {
+    var paths = [];
+    var attrRe = /(?:href|src)\s*=\s*["']([^"']+)["']/g;
+    var urlRe = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g;
+    var m;
+    while ((m = attrRe.exec(html)) !== null) {
+        if (m[1].startsWith('/')) {
+            paths.push(m[1]);
+        }
+    }
+    while ((m = urlRe.exec(html)) !== null) {
+        if (m[1].startsWith('/')) {
+            paths.push(m[1]);
+        }
+    }
+    return paths;
+}
+
 describe('Testing Rating plugin', function() {
+
+    describe('Feedback popup asset paths with provided_url', function() {
+        it('should prefix asset paths with countlyConfig.path when provided_url is not passed', function(done) {
+            request.get('/feedback/rating')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var paths = extractLocalAssetPaths(res.text);
+                    paths.length.should.be.above(15);
+                    paths.forEach(function(p) {
+                        p.should.startWith('/');
+                        p.should.not.startWith('//');
+                    });
+                    var dataAttr = res.text.match(/data-countly-path="([^"]*)"/);
+                    should.exist(dataAttr);
+                    dataAttr[1].should.eql('');
+                    done();
+                });
+        });
+
+        it('should not send the framing or opener headers, so the widget stays embeddable', function(done) {
+            request.get('/feedback/rating')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    //the widget is embedded by an SDK into a page on the customer's own
+                    //origin, so neither header the dashboard sets globally may survive here
+                    should.not.exist(res.headers['x-frame-options']);
+                    should.not.exist(res.headers['cross-origin-opener-policy']);
+                    done();
+                });
+        });
+
+        it('should prefix every asset path with provided_url when it has a leading slash', function(done) {
+            var providedUrl = '/reverse-proxy/countly';
+            request.get('/feedback/rating?provided_url=' + encodeURIComponent(providedUrl))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var paths = extractLocalAssetPaths(res.text);
+                    paths.length.should.be.above(15);
+                    paths.forEach(function(p) {
+                        p.should.startWith(providedUrl + '/');
+                    });
+                    var dataAttr = res.text.match(/data-countly-path="([^"]*)"/);
+                    should.exist(dataAttr);
+                    dataAttr[1].should.eql(providedUrl);
+                    done();
+                });
+        });
+
+        it('should add a leading slash to provided_url when missing and still prefix every asset path', function(done) {
+            var providedUrl = 'reverse-proxy/countly';
+            request.get('/feedback/rating?provided_url=' + encodeURIComponent(providedUrl))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var paths = extractLocalAssetPaths(res.text);
+                    paths.length.should.be.above(15);
+                    paths.forEach(function(p) {
+                        p.should.startWith('/' + providedUrl + '/');
+                    });
+                    var dataAttr = res.text.match(/data-countly-path="([^"]*)"/);
+                    should.exist(dataAttr);
+                    dataAttr[1].should.eql('/' + providedUrl);
+                    done();
+                });
+        });
+    });
 
     describe('Get empty widget list', function() {
         it('should return 200 and empty widget list', function(done) {
@@ -125,6 +228,146 @@ describe('Testing Rating plugin', function() {
                     }
                     done();
                 });
+        });
+    });
+
+    describe('Widget details read', function() {
+        var targeting = {steps: [], user_segmentation: {query: {"up.cc": {"$in": ["LV"]}}, queryText: ""}};
+
+        before(async function() {
+            WIDGET_ID = testUtils.get("WIDGET_ID");
+            //create stores targeting only when cohorts are enabled, so set it directly
+            await testUtils.db.collection("feedback_widgets").updateOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {$set: {targeting: targeting, cohortID: "test-cohort"}});
+        });
+
+        it('returns targeting and cohortID from the authenticated list filtered by widget_id', function(done) {
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widget_id=' + WIDGET_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.length.should.eql(1);
+                    ob[0]._id.should.eql(WIDGET_ID);
+                    ob[0].should.have.property('targeting', targeting);
+                    ob[0].should.have.property('cohortID', 'test-cohort');
+                    done();
+                });
+        });
+
+        it('does not return targeting or cohortID from the anonymous single widget read', function(done) {
+            request.get('/o/feedback/widget?widget_id=' + WIDGET_ID)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob._id.should.eql(WIDGET_ID);
+                    ob.should.not.have.property('targeting');
+                    ob.should.not.have.property('cohortID');
+                    done();
+                });
+        });
+
+        it('returns an empty list for an unknown widget_id', function(done) {
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widget_id=1')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.eql([]);
+                    done();
+                });
+        });
+
+        it('requires authentication', function(done) {
+            request.get('/o/feedback/widgets?app_id=' + APP_ID + '&widget_id=' + WIDGET_ID)
+                .expect(400)
+                .end(done);
+        });
+
+        after(async function() {
+            await testUtils.db.collection("feedback_widgets").updateOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {$unset: {targeting: "", cohortID: ""}});
+        });
+    });
+
+    describe('Widget show counter', function() {
+        //the popup page fetches the widget with nfd=1 and no credential; only the
+        //owning app's key may count the show, and the widget is returned either way.
+        //A show is written after the response, in request order, so each case that must
+        //not count is followed by one that must: once that show is visible, a show
+        //wrongly counted before it is visible too, and the exact total catches it.
+        var otherAppId = "";
+        var otherAppKey = "";
+        var shownBefore = 0;
+        var scale = testUtils.testScalingFactor || 1;
+
+        function timesShown() {
+            return testUtils.db.collection('feedback_widgets').findOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {projection: {timesShown: 1}}).then(function(w) {
+                return (w && w.timesShown) || 0;
+            });
+        }
+
+        function wait(ms) {
+            return new Promise(function(resolve) {
+                setTimeout(resolve, ms);
+            });
+        }
+
+        function fetchForSdk(query) {
+            return request.get('/o/feedback/widget?widget_id=' + WIDGET_ID + '&nfd=1' + query)
+                .expect(200)
+                .then(function(res) {
+                    JSON.parse(res.text).should.have.property('_id', WIDGET_ID);
+                });
+        }
+
+        async function expectTimesShown(expected) {
+            var started = Date.now();
+            var n = await timesShown();
+            while (n < expected && Date.now() - started < 20000 * scale) {
+                await wait(250 * scale);
+                n = await timesShown();
+            }
+            (await timesShown()).should.eql(expected);
+        }
+
+        before(async function() {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_KEY = testUtils.get("APP_KEY");
+            WIDGET_ID = testUtils.get("WIDGET_ID");
+            var res = await request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "SRShowCounterOtherApp", type: "mobile"})))
+                .expect(200);
+            otherAppId = res.body._id;
+            otherAppKey = res.body.key;
+            should.exist(otherAppKey);
+            shownBefore = await timesShown();
+        });
+
+        it('returns the widget without counting a show when no app key is sent', async function() {
+            await fetchForSdk('');
+            await fetchForSdk('&app_key=' + APP_KEY);
+            await expectTimesShown(shownBefore + 1);
+        });
+
+        it('returns the widget without counting a show for another app\'s key', async function() {
+            await fetchForSdk('&app_key=' + otherAppKey);
+            await fetchForSdk('&app_key=' + APP_KEY);
+            await expectTimesShown(shownBefore + 2);
+        });
+
+        it('returns the widget and counts one show for the owning app\'s key', async function() {
+            await fetchForSdk('&app_key=' + APP_KEY);
+            await expectTimesShown(shownBefore + 3);
+        });
+
+        after(async function() {
+            if (otherAppId) {
+                await request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: otherAppId})));
+            }
         });
     });
 
@@ -586,6 +829,19 @@ describe('Testing Rating plugin', function() {
                 });
         });
 
+        it('does not return another app\'s widget from the list filtered by widget_id', function(done) {
+            APP_ID = testUtils.get("APP_ID");
+            request.get('/o/feedback/widgets?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&widget_id=' + victimWidgetId)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.eql([]);
+                    done();
+                });
+        });
+
         it('rejects removing another app\'s widget', function(done) {
             APP_ID = testUtils.get("APP_ID");
             request.get('/i/feedback/widgets/remove?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&widget_id=' + victimWidgetId)
@@ -649,5 +905,47 @@ describe('Testing Rating plugin', function() {
                     done();
                 });
         });
+    });
+});
+
+// Uploads are refused unless a plugin declares the request path, so a wrong
+// declaration silently turns /i/feedback/upload into an endpoint that reports an
+// invalid image. The control test establishes what that looks like, which is
+// what makes the second assertion mean something rather than pass for any
+// reason. This endpoint only serves when the surveys plugin is absent, which is
+// the case in this repo.
+describe('Feedback logo upload', function() {
+    var logo = require("path").resolve(__dirname, './../../frontend/express/public/images/favicon.png');
+
+    it('should reject when nothing is attached', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        request
+            .post('/i/feedback/upload?api_key=' + API_KEY_ADMIN)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                // with no file there is nothing to store, and the endpoint says so
+                res.text.should.containEql('feedback.image');
+                done();
+            });
+    });
+
+    it('should receive an attached logo', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        request
+            .post('/i/feedback/upload?api_key=' + API_KEY_ADMIN)
+            .attach('feedback_logo', logo)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                // if /i/feedback/upload were not declared, the part would be
+                // dropped and this would be the invalid image response
+                var ob = JSON.parse(res.text);
+                ob.should.have.property('result', 'Success');
+                done();
+            });
     });
 });

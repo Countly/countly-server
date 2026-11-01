@@ -186,25 +186,17 @@
 
     /** Response from the API is in [{"_id":"TR","u":1},{"_id":"UK","u":5}] format
      *  We convert it to {"TR": 1, "UK": 5} format in this function
-     *  processingFunction is used for cases where keys are converted before being processed (e.g. device names)
      * @param {object} obj - data object
      * @param {string} forMetric - metric name
      * @param {boolean} prev - get data for previous period
      * @returns {object} converted object
      */
     function formatCalculatedObj(obj, forMetric, prev) {
-        var tmpObj = {},
-            processingFunction;
-
         // no need to format current metrics, as we are matching them in unformated way
-        /*switch (forMetric) {
-        case "devices":
-            processingFunction = countlyDevice.getDeviceFullName;
-            break;
-        }*/
+        var tmpObj = {};
 
         for (var i = 0; i < obj.length; i++) {
-            var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
+            var tmpKey = obj[i]._id;
 
             if (prev) {
                 tmpObj[tmpKey] = obj[i].pu || 0;

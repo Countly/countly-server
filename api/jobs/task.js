@@ -25,7 +25,7 @@ class MonitorJob extends job.Job {
         /**
          * Filter tasks to run base on job run time
          * @param {object} task object from db
-         * @return {boolean} return true if can run now
+         * @returns {boolean} return true if can run now
          */
         function tasksFilter(task) {
             //dont run task if running or is a subtask

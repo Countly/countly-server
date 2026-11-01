@@ -51,8 +51,8 @@
         segment: ["Android", "iOS", "Windows Phone"]
     };
     var messages = [
-        {"demo": 1, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "HOT offers with 30% discount, only 6 hours left!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Abonnieren Sie jetzt mit 30% Rabatt, nur noch 6 Stunden!", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": [], info: {title: "HOT offers with 30% discount, only 6 hours left!"}},
-        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": location.origin + "/images/push/sale.png", "autoOnEntry": false, "autoCohorts": [], info: {title: "Last chance! Only 3 hours left to get 30% discount!"}},
+        {"demo": 1, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥 SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "HOT offers with 30% discount, only 6 hours left!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Abonnieren Sie jetzt mit 30% Rabatt, nur noch 6 Stunden!", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": "https://placehold.co/600x400.png", "autoOnEntry": false, "autoCohorts": [], info: {title: "HOT offers with 30% discount, only 6 hours left!"}},
+        {"demo": 2, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": false, "type": "message", "messagePerLocale": {"default|t": "💥 Promotion! 💥", "default|0|t": "Get It", "default|1|t": "Cancel", "default|0|l": "theapp://promo/30off", "default|1|l": "theapp://promo/30off/cancel", "de|t": "💥SALE! 💥", "de|0|t": "OK", "de|0|l": "theapp://promo/30off", "de|1|t": "Stornieren", "de|1|l": "theapp://promo/30off/cancel", "default": "Last chance! Only 3 hours left to get 30% discount!", "default|p": {}, "default|tp": {}, "de|tp": {}, "de": "Letzte Möglichkeit! Nur noch 3 Stunden, um 30% Rabatt zu erhalten", "de|p": {}}, "locales": [{"value": "default", "title": "Default", "count": 200, "percent": 100}, {"value": "de", "title": "German", "count": 100, "percent": 50}, {"value": "en", "title": "English", "count": 100, "percent": 50}], "sound": "default", "url": "theapp://promo/30off", "source": "dash", "buttons": 2, "media": "https://placehold.co/600x400.png", "autoOnEntry": false, "autoCohorts": [], info: {title: "Last chance! Only 3 hours left to get 30% discount!"}},
         {"demo": 3, "apps": [countlyCommon.ACTIVE_APP_ID], "platforms": ["i", "a"], "tz": false, "auto": true, "type": "message", "messagePerLocale": {"default|t": "💥 Latest 💥", "default|0|t": "Go", "default|0|l": "theapp://offers", "default": "Check our latest offers!"}, "sound": "default", "source": "dash", "buttons": 1, "autoOnEntry": "events", "autoEvents": ["Login"], "autoTime": 576000, "autoCapMessages": 1, "autoCapSleep": 864000, info: {title: "Check our latest offers!"}},
         // {
         //     demo: 4,
@@ -189,7 +189,7 @@
                 item.key = JSON.parse(item.key);
             });
         }
-        catch (e) {
+        catch {
             //
         }
         return jsonString;
@@ -1296,7 +1296,8 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, events: events, ignore_cooldown: '1'};
+                // send metrics on every session; without them the server fills _os from the browser's user agent
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, events: events, ignore_cooldown: '1'};
                 if (_featuresToPopulate.includes("performance-monitoring")) {
                     req.apm = this.getTrace();
                 }
@@ -1407,9 +1408,8 @@
                                     if (selectedSequenceStep.value === "start") {
                                         // this.hasSession = true;
                                         this.isRegistered = true;
-                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1'};
+                                        req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, ignore_cooldown: '1'};
                                         if (!hasEnvironment) {
-                                            req.metrics = this.metrics;
                                             req.user_details = this.userdetails;
                                         }
                                         this.ts = this.ts + getRandomInt(100, 300);
@@ -1640,8 +1640,8 @@
      * @param {string} parameter_key - Parameter Key
      * @param {string} description - Parameter description
      * @param {string} default_value - Default value of parameter
-     * @param {function} callback - callback method
-     * @return {function} returns ajax get request
+     * @param {Function} callback - callback method
+     * @returns {Function} returns ajax get request
      **/
     function addParameter(parameter_key, description, default_value, callback) {
         var parameter = {
@@ -1668,8 +1668,8 @@
     /**
      * Add Parameter
      * @param {string} name - Name
-     * @param {function} callback - callback method
-     * @return {function} returns ajax get request
+     * @param {Function} callback - callback method
+     * @returns {Function} returns ajax get request
      **/
     function addExperiment(name, callback) {
         var experiment = {
@@ -1738,8 +1738,8 @@
      * @param {string} target_page - Only selected pages? or all pages (one of these; "all","selected")
      * @param {boolean} is_active - Is feedback popup active?
      * @param {boolean} hide_sticker - Hide sticker option
-     * @param {function} callback - callback method
-     * @return {function} returns ajax get request
+     * @param {Function} callback - callback method
+     * @returns {Function} returns ajax get request
      **/
     function createFeedbackWidget(popup_header_text, popup_comment_callout, popup_email_callout, popup_button_callout, popup_thanks_message, trigger_position, trigger_bg_color, trigger_font_color, trigger_button_text, target_devices, target_pages, target_page, is_active, hide_sticker, callback) {
         return $.ajax({
@@ -1785,8 +1785,8 @@
      *  @param {string} style - type of displaying widget (full or outline)
      *  @param {string} show - show until specific action from user
      *  @param {string} color - color theme
-     *  @param {function} callback - callback method
-     *  @return {function} returns ajax get request
+     *  @param {Function} callback - callback method
+     *  @returns {Function} returns ajax get request
      */
     function createNPSWidget(name, followUpType, mainQuestion, followUpPromoter, followUpPassive, followUpDetractor, followUpAll, thanks, style, show, color, callback) {
         return $.ajax({
@@ -1841,8 +1841,8 @@
      *  @param {string} color - color theme
      *  @param {string} logo - link to logo
      *  @param {string} exitPolicy - what to count as exit
-     *  @param {function} callback - callback method
-     *  @return {function} returns ajax get request
+     *  @param {Function} callback - callback method
+     *  @returns {Function} returns ajax get request
      */
     function createSurveyWidget(name, questions, thanks, position, show, color, logo, exitPolicy, callback) {
         return $.ajax({
@@ -1883,7 +1883,7 @@
 
         /**
          *  Create rating widgets
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateRatingWidgets(callback) {
             if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating") && _featuresToPopulate.includes("star-rating")) {
@@ -1915,7 +1915,7 @@
 
         /**
          *  Create NPS widgets
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateNPSWidgets(callback) {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys") && _featuresToPopulate.includes("surveys")) {
@@ -1930,7 +1930,7 @@
 
         /**
          *  Create survey widget 1
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveyWidgets1(callback) {
             createSurveyWidget("Customer support example", [
@@ -1974,7 +1974,7 @@
 
         /**
          *  Create survey widget 2
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveyWidgets2(callback) {
             createSurveyWidget("Product Feedback example", [
@@ -2018,7 +2018,7 @@
 
         /**
          *  Create survey widget 3
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveyWidgets3(callback) {
             createSurveyWidget("User Experience example", [
@@ -2062,7 +2062,7 @@
 
         /**
          *  Create 3 survey widgets
-         *  @param {function} callback - callback method
+         *  @param {Function} callback - callback method
          */
         function generateSurveryWidgets(callback) {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys") && _featuresToPopulate.includes("surveys")) {
@@ -2308,7 +2308,7 @@
                     const partialUserList = await Promise.allSettled(userBatch);
                     return partialUserList;
                 }
-                catch (error) {
+                catch {
                     return [];
                 }
             }
@@ -2392,7 +2392,7 @@
                     const partialUserList = await Promise.allSettled(batchPromises);
                     return partialUserList;
                 }
-                catch (error) {
+                catch {
                     return [];
                 }
             }
@@ -2877,8 +2877,20 @@
                 url: countlyCommon.API_URL + "/i/populator/templates/remove",
                 data: {template_id: templateId, app_id: countlyCommon.ACTIVE_APP_ID},
                 success: callback,
-                error: function() {
-                    CountlyHelpers.notify({message: CV.i18n("populator.failed-to-remove-template", templateId), type: "error"});
+                error: function(xhr) {
+                    //the endpoint explains what blocked the removal - environments in other
+                    //applications have to go first - and that instruction is the whole point
+                    //of the message. Falling straight to the generic notification threw it
+                    //away and left the user with nothing to act on.
+                    var reason = "";
+                    try {
+                        var body = JSON.parse(xhr && xhr.responseText);
+                        reason = (body && (body.result || body.message)) || "";
+                    }
+                    catch {
+                        reason = "";
+                    }
+                    CountlyHelpers.notify({message: reason || CV.i18n("populator.failed-to-remove-template", templateId), type: "error"});
                 }
             });
         }

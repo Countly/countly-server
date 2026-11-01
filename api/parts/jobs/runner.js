@@ -175,7 +175,7 @@ function discoverLeader() {
 /**
  * Update last seen
  * 
- * @param {function} callback to call when done
+ * @param {Function} callback to call when done
  */
 function imAlive(callback) {
     log.d('updating ls');
@@ -369,7 +369,7 @@ module.exports = {
      * 
      * IMPORTANT: A runner function must not throw of fail. It WILL be called multiple times at once, ensure you use some locking mechanism to prevent that.
      * 
-     * @param {function} runner runner function to add
+     * @param {Function} runner runner function to add
      * @returns {integer} number of runners registered in the process
      */
     push: runner => {
@@ -379,7 +379,7 @@ module.exports = {
     /**
      * Remove runner function.
      * 
-     * @param {function} runner runner function to remove
+     * @param {Function} runner runner function to remove
      * @returns {boolean|undefined} true if removed, undefined if not found
      */
     pop: runner => {

@@ -116,6 +116,8 @@ const verifyConsentHistoryDataTableElements = ({
         labelText: uid,
     });
 
+    cy.waitForListSettled([consentHistoryDataTableElements(index).TIME]);
+
     cy
         .elementExists(consentHistoryDataTableElements(index).CHANGES_OPT_IN_LABEL)
         .then((isExists) => {
@@ -169,6 +171,8 @@ const verifyConsentHistoryDataTableElements = ({
         elementText: deviceId,
     });
 
+
+    cy.waitForAnyVisible([consentHistoryDataTableElements(index).DEVICE_ID_LABEL]);
 
     cy
         .elementExists(consentHistoryDataTableElements(index).OPT_IN_LABEL)

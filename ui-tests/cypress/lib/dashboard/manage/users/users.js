@@ -73,6 +73,8 @@ const verifyStaticElementsOfPage = () => {
     });
 };
 
+const RECENT_LOGIN = /(?:just now|\d+ seconds? ago|half a minute ago|less than a minute ago|one minute ago|\d+ minutes? ago)/;
+
 const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
@@ -82,7 +84,10 @@ const verifyPageElements = () => {
         user: user.username,
         role: USER_TYPE.GLOBAL_USER,
         email: user.email,
-        lastLogin: "2 minutes ago"
+        // The user logged in during this run, but how many minutes ago depends on
+        // how long the steps before took, so accept any of the dashboard's
+        // under-an-hour "ago" forms (common.ago.* in dashboard.properties).
+        lastLogin: RECENT_LOGIN
     });
 };
 
@@ -109,10 +114,17 @@ const verifyUsersDataFromTable = ({
         labelText: email,
     });
 
-    cy.verifyElement({
-        labelElement: usersDataTableElements(index).LAST_LOGIN,
-        labelText: lastLogin,
-    });
+    if (lastLogin instanceof RegExp) {
+        cy.getElement(usersDataTableElements(index).LAST_LOGIN)
+            .invoke('text')
+            .should('match', lastLogin);
+    }
+    else {
+        cy.verifyElement({
+            labelElement: usersDataTableElements(index).LAST_LOGIN,
+            labelText: lastLogin,
+        });
+    }
 };
 
 const clickCreateNewUserButton = () =>{

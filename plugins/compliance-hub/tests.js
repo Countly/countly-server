@@ -83,6 +83,14 @@ describe('Testing Compliance Hub', function() {
         });
     });
     describe('Check app_users consents', function() {
+        // The consent table is a fixed set of columns. The projection used to be
+        // taken from the request when supplied, so project={} - which Mongo reads
+        // as "all fields" - returned whole app_users documents (name, email,
+        // phone, custom properties, payment totals, location) to any caller with
+        // compliance_hub read. The projection is now fixed server side.
+        // _id is included because Mongo returns it unless explicitly excluded.
+        var ALLOWED_FIELDS = ["_id", "did", "d", "av", "consent", "lac", "uid", "appUserExport"];
+
         it('should list app users with consent data', function(done) {
             request
                 .get('/o/app_users/consents?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
@@ -93,6 +101,69 @@ describe('Testing Compliance Hub', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.be.an.Object;
+                    setTimeout(done, 100);
+                });
+        });
+
+        it('should ignore an empty projection supplied by the caller', function(done) {
+            request
+                .get('/o/app_users/consents?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&project=' + encodeURIComponent('{}'))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('aaData');
+                    ob.aaData.should.be.an.Array;
+                    ob.aaData.forEach(function(row) {
+                        Object.keys(row).forEach(function(field) {
+                            ALLOWED_FIELDS.should.containEql(field);
+                        });
+                    });
+                    setTimeout(done, 100);
+                });
+        });
+
+        it('should ignore an explicit projection asking for extra fields', function(done) {
+            var project = JSON.stringify({uid: 1, did: 1, name: 1, email: 1, username: 1, custom: 1, consent: 1});
+            request
+                .get('/o/app_users/consents?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&project=' + encodeURIComponent(project))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('aaData');
+                    ob.aaData.forEach(function(row) {
+                        row.should.not.have.property('name');
+                        row.should.not.have.property('email');
+                        row.should.not.have.property('username');
+                        row.should.not.have.property('custom');
+                        Object.keys(row).forEach(function(field) {
+                            ALLOWED_FIELDS.should.containEql(field);
+                        });
+                    });
+                    setTimeout(done, 100);
+                });
+        });
+
+        it('should ignore the projection alias parameter as well', function(done) {
+            request
+                .get('/o/app_users/consents?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&projection=' + encodeURIComponent('{}'))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('aaData');
+                    ob.aaData.forEach(function(row) {
+                        Object.keys(row).forEach(function(field) {
+                            ALLOWED_FIELDS.should.containEql(field);
+                        });
+                    });
                     setTimeout(done, 100);
                 });
         });

@@ -611,7 +611,7 @@ class ReadBatcher {
      *  @param {string} collection - name of the collection where to update data
      *  @param {string} query - query for the document
      *  @param {string} projection - which fields to return
-     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @param {Function=} callback - optional to get result, or else will return promise
      *  @returns {Promise} if callback not passed, returns promise
      */
     getOne(collection, query, projection, callback) {
@@ -630,7 +630,7 @@ class ReadBatcher {
      *  @param {string} collection - name of the collection where to update data
      *  @param {string} query - query for the document
      *  @param {string} projection - which fields to return
-     *  @param {function=} callback - optional to get result, or else will return promise
+     *  @param {Function=} callback - optional to get result, or else will return promise
      *  @returns {Promise} if callback not passed, returns promise
      */
     getMany(collection, query, projection, callback) {
@@ -670,7 +670,7 @@ class ReadBatcher {
 /**
  *  Return promise or callback based on params
  *  @param {Promise} promise - promise for data
- *  @param {function=} callback - callback to call
+ *  @param {Function=} callback - callback to call
  *  @returns {Promise} Returned promise
  */
 function promiseOrCallback(promise, callback) {

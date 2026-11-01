@@ -1,0 +1,80 @@
+.token-manager-drawer {
+  // Two bordered radio cards sharing one line. `is-autosized` sets width:100%, and a flex
+  // item's default min-width:auto stops it shrinking below its own text, so the card with the
+  // longer description pushes the other one out of the drawer. Let them split the line evenly
+  // and allow both to shrink.
+  &__choice {
+    .el-radio.is-autosized {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .el-radio__label {
+      white-space: normal;
+    }
+  }
+
+  // Feature permission grid. The column headers and the per-feature checkboxes are separate
+  // rows, so they line up only when both use the same column widths: a fixed-width name
+  // column, then four equal cells.
+  &__permission-header,
+  &__permission-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  &__permission-header {
+    border-bottom: 1px solid #ebebeb;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+
+  &__permission-row {
+    height: 30px;
+  }
+
+  &__feature-name {
+    width: 35%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  &__feature-permissions {
+    width: 65%;
+    display: flex;
+  }
+
+  // Equal cells, and the checkbox centred in each, so a row checkbox sits under the header
+  // checkbox above it.
+  &__permission-box {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .el-checkbox {
+      margin-right: 0;
+    }
+  }
+
+  // In the header the column name sits above its checkbox rather than beside it. Inline, the
+  // label widens the cell and pushes the checkbox off the centre the rows are aligned to, so
+  // the header boxes would sit ~20px left of the column they head.
+  &__permission-header &__permission-box {
+    .el-checkbox {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+    }
+
+    .el-checkbox__label {
+      font-size: 11px;
+      padding-left: 0;
+      margin-bottom: 4px;
+      line-height: 1;
+    }
+  }
+}

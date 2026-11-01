@@ -21,3 +21,10 @@ else
     #load city data into database
     node "/opt/countly/bin/scripts/loadCitiesInDb.js"
 fi
+
+# Every start, not only the first: a newer image can carry a newer GeoNames bundle.
+# --if-changed makes it a quick check when the loaded data is already current.
+# The frontend does no geocoding, so only containers running the API load it.
+if [ "$COUNTLY_CONTAINER" != "frontend" ]; then
+    node "/opt/countly/bin/offline-geocoder/scripts/import_geonames_mongodb.js" --if-changed
+fi

@@ -3,7 +3,7 @@ const request = (apiKey) => {
 
         return cy.request({
             method: 'GET',
-            url: `/i/token/create?purpose=Countly-Token&endpointquery=%5B%5D&multi=true&ttl=0&api_key=${apiKey}`,
+            url: `/i/token/create?purpose=Countly-Token&multi=true&ttl=0&api_key=${apiKey}`,
             headers: {
                 accept: 'text/plain',
             },

@@ -17,7 +17,7 @@ if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
             IS_FLEX = true;
         }
     }
-    catch (e) {
+    catch {
         IS_FLEX = false;
     }
 }
@@ -60,6 +60,7 @@ var versionInfo = require('./version.info'),
     countlyFs = require('../../api/utils/countlyFs.js'),
     common = require('../../api/utils/common.js'),
     preventBruteforce = require('./libs/preventBruteforce.js'),
+    { createStaticFileMatcher } = require('./libs/static-files.js'),
     plugins = require('../../plugins/pluginManager.js'),
     request = require('countly-request')(plugins.getConfig("security")),
     countlyConfig = require('./config', 'dont-enclose'),
@@ -74,6 +75,36 @@ var versionInfo = require('./version.info'),
     timezones = require('../../api/utils/timezones.js').getTimeZones,
     { validateCreate } = require('../../api/utils/rights.js'),
     tracker = require('../../api/parts/mgmt/tracker.js');
+
+//Language codes as the dashboard uses them, e.g. "en", "pt-br", "zh_CN", "zh-Hans-CN".
+//Repeated subtags are allowed because a deployment can extend locale.conf.js with a code
+//that has more than one, and the shape alone is not what decides acceptance - see
+//isSelectableLang.
+var LANG_CODE_RE = /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8}){0,3}$/;
+
+/**
+* Whether a language code may be stored as a member's preference.
+*
+* Checked against the list the dashboard actually offers rather than against a shape,
+* because the shape is the weaker statement: locale.conf.js is the same list the language
+* menu is built from, plugins extend it through plugins.extendModule, and both places that
+* post here send a code straight out of that menu. So a deployment that ships extra
+* localization files can select them, and nothing else is accepted at all.
+*
+* The shape is still checked, because the stored value reaches file paths - for example
+* api/utils/localization.js and the plugin localization lookups - and the list is
+* deployment configuration rather than something this route validated.
+* @param {string} lang - language code as posted
+* @returns {boolean} true when it is one of the configured languages
+**/
+function isSelectableLang(lang) {
+    if (typeof lang !== "string" || !LANG_CODE_RE.test(lang)) {
+        return false;
+    }
+    return Array.isArray(languages) && languages.some(function(locale) {
+        return locale && locale.code === lang;
+    });
+}
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
@@ -159,11 +190,17 @@ plugins.setConfigs("security", {
     password_rotation: 3,
     password_autocomplete: true,
     robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
+    dashboard_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nCross-Origin-Opener-Policy: same-origin-allow-popups",
+    api_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500
 });
+
+//the same declarations the API process makes. secretConfigs is process local, so
+//without this omitSecretConfigs() below has nothing registered to omit and the
+//stored proxy credentials go into the page source of every logged in user.
+require('../../api/utils/configMetadata.js').register(plugins);
+
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
@@ -345,18 +382,28 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app = expose(app);
     app.enable('trust proxy');
     app.set('x-powered-by', false);
+    const isStaticFile = createStaticFileMatcher({
+        basePath: countlyConfig.path,
+        coreRoot: __dirname + '/public',
+        pluginsRoot: path.resolve(__dirname, '../../plugins')
+    });
     const limiter = rateLimit({
         keyGenerator: common.getIpAddress,
         windowMs: parseInt(plugins.getConfig("security").dashboard_rate_limit_window) * 1000,
         max: parseInt(plugins.getConfig("security").dashboard_rate_limit_requests),
         headers: false,
-        //limit only in production mode
-        skip: function() {
-            return !plugins.getConfig("frontend").production || plugins.getConfig("security").dashboard_rate_limit_requests <= 0;
+        skip: function(req) {
+            //limit only in production mode
+            if (!plugins.getConfig("frontend").production || plugins.getConfig("security").dashboard_rate_limit_requests <= 0) {
+                return true;
+            }
+            //static files do not count: one page load fetches dozens of them, and the
+            //feedback popups load theirs for every end user behind the same address
+            return isStaticFile(req);
         }
     });
 
-    //  apply to all requests
+    //  apply to all requests except static files
     app.use(limiter);
 
     var loadedThemes = {};
@@ -365,7 +412,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     /**
     * Load theme files
     * @param {string} theme - theme name
-    * @param {function} callback - when loading files done
+    * @param {Function} callback - when loading files done
     **/
     app.loadThemeFiles = function(theme, callback) {
         if (!loadedThemes[theme]) {
@@ -596,16 +643,23 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.get(countlyConfig.path + "*/screenshots/*", function(req, res) {
-        var screenshotPath = common.resolvePathInBase(__dirname + '/public', req.path);
+        // Public on purpose: emailed links are opened without a session. A
+        // screenshot is found by its random file name (the only name /o/render
+        // gives one), never by a shared id.
+        var fileName = path.basename(req.path);
+        if (!/^screenshot_[a-f0-9]{32}\.png$/.test(fileName)) {
+            return res.send(false);
+        }
+        var screenshotPath = common.resolvePathInBase(__dirname + '/public/images/screenshots', fileName);
         if (!screenshotPath) {
             return res.send(false);
         }
-        countlyFs.getStats("screenshots", screenshotPath, {id: "core"}, function(err, stats) {
+        countlyFs.getStats("screenshots", screenshotPath, {}, function(err, stats) {
             if (err || !stats || !stats.size) {
                 return res.send(false);
             }
 
-            countlyFs.getStream("screenshots", screenshotPath, {id: "core"}, function(err2, stream) {
+            countlyFs.getStream("screenshots", screenshotPath, {}, function(err2, stream) {
                 if (err2 || !stream) {
                     return res.send(false);
                 }
@@ -800,7 +854,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     for (let pathPart of ["/login", "/mobile/login"]) {
         const absPath = countlyConfig.path + pathPart;
         preventBruteforce.pathIdentifiers[absPath] = "login";
-        preventBruteforce.userIdentifiers[absPath] = (req) => req.body.username;
+        // The same key the login handlers count failures under
+        preventBruteforce.userIdentifiers[absPath] = (req) => preventBruteforce.loginKey(req.body.username);
     }
 
     preventBruteforce.blockHooks.login = function(uid, req, res) { // eslint-disable-line no-unused-vars
@@ -950,7 +1005,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     * Render dashboard
     * @param {object} req - request object
     * @param {object} res - response object
-    * @param {function} next - callback for next middleware
+    * @param {Function} next - callback for next middleware
     * @param {object} member - dashboard member document
     * @param {array} adminOfApps - list of apps member is admin of
     * @param {array} userOfApps - list of apps member is user of
@@ -1033,9 +1088,15 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     csrf_token: req.csrfToken(),
                     auth_token: req.session.auth_token,
                     member: member,
-                    config: req.config,
-                    security: plugins.getConfig("security"),
-                    tracking: plugins.getConfig("tracking"),
+                    //these namespaces are serialized into the page, so every logged in
+                    //user can read them in the source regardless of their permissions.
+                    //Secret values are dropped rather than masked: the page has no use
+                    //for a placeholder. Anything the browser genuinely needs must not
+                    //be marked secret, since masking what is already in page source
+                    //would achieve nothing.
+                    config: plugins.omitSecretConfigs("frontend", req.config),
+                    security: plugins.omitSecretConfigs("security", plugins.getConfig("security")),
+                    tracking: plugins.omitSecretConfigs("tracking", plugins.getConfig("tracking")),
                     plugins: plugins.getPlugins(),
                     pluginsFull: plugins.getPlugins(true),
                     path: countlyConfig.path || "",
@@ -1148,7 +1209,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
         else {
             countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
-                if (member) {
+                if (member && member.locked) {
+                    membersUtility.clearReqAndRes(req, res);
+                    res.redirect(countlyConfig.path + '/login?message=login.locked');
+                }
+                else if (member) {
                     plugins.callPromisedAppMethod('checkMemberLicense', { req, member }).then(licenseCheck => {
                         common.licenseAssign(req, licenseCheck);
                         req.session.cookie.maxAge = countlyConfig.cookie.maxAgeLogin;
@@ -1554,22 +1619,34 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
 
     app.post(countlyConfig.path + '/login', function(req, res/*, next*/) {
-        membersUtility.login(req, res, function(member) {
-            if (member) {
-                if (member.locked) {
-                    res.redirect(countlyConfig.path + '/login?message=login.locked');
+        var bruteforceKey = preventBruteforce.loginKey(req.body.username);
+        preventBruteforce.isBlocked("login", bruteforceKey, function(isBlocked, fails, err) {
+            if (isBlocked) {
+                if (err) {
+                    res.status(500).send('Server Error');
                 }
                 else {
-                    res.redirect(countlyConfig.path + '/dashboard');
-                    preventBruteforce.reset("login", req.body.username);
+                    res.redirect(countlyConfig.path + '/login?message=login.blocked');
                 }
+                return;
             }
-            else {
-                res.redirect(countlyConfig.path + '/login?message=login.result');
-                if (req.body.username) {
-                    preventBruteforce.fail("login", req.body.username);
+            membersUtility.login(req, res, function(member) {
+                if (member) {
+                    if (member.locked) {
+                        res.redirect(countlyConfig.path + '/login?message=login.locked');
+                    }
+                    else {
+                        res.redirect(countlyConfig.path + '/dashboard');
+                        preventBruteforce.resetForMember(member);
+                    }
                 }
-            }
+                else {
+                    res.redirect(countlyConfig.path + '/login?message=login.result');
+                    if (req.body.username) {
+                        preventBruteforce.fail("login", bruteforceKey);
+                    }
+                }
+            });
         });
     });
 
@@ -1585,7 +1662,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
         var user = basicAuth(req);
         if (user && user.name && user.pass) {
-            preventBruteforce.isBlocked("login", user.name, function(isBlocked, fails, err) {
+            var bruteforceKey = preventBruteforce.loginKey(user.name);
+            preventBruteforce.isBlocked("login", bruteforceKey, function(isBlocked, fails, err) {
                 if (isBlocked) {
                     if (err) {
                         res.status(500).send('Server Error');
@@ -1604,14 +1682,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             }
                             else {
                                 plugins.callMethod("apikeySuccessful", {req: req, res: res, next: next, data: {username: member.username}});
-                                preventBruteforce.reset("login", user.name);
+                                preventBruteforce.resetForMember(member);
                                 countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                                 res.status(200).send(member.api_key);
                             }
                         }
                         else {
                             plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: user.name}});
-                            preventBruteforce.fail("login", user.name);
+                            preventBruteforce.fail("login", bruteforceKey);
                             unauthorized(res);
                         }
                     });
@@ -1639,25 +1717,37 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.post(countlyConfig.path + '/mobile/login', function(req, res, next) {
         if (req.body.username && req.body.password) {
             req.body.username = (req.body.username + "").trim();
+            var bruteforceKey = preventBruteforce.loginKey(req.body.username);
 
-            verifyMemberArgon2Hash(req.body.username, req.body.password, (err, member) => {
-                if (member) {
-                    if (member.locked) {
-                        plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                        res.render('mobile/login', { "message": "login.locked", "csrf": req.csrfToken() });
+            preventBruteforce.isBlocked("login", bruteforceKey, function(isBlocked, fails, blockErr) {
+                if (isBlocked) {
+                    if (blockErr) {
+                        res.status(500).send('Server Error');
                     }
                     else {
-                        plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
-                        preventBruteforce.reset("login", req.body.username);
-                        countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
-                        res.render('mobile/key', { "key": member.api_key || -1 });
+                        res.render('mobile/login', { "message": "login.blocked", "csrf": req.csrfToken() });
                     }
+                    return;
                 }
-                else {
-                    plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                    preventBruteforce.fail("login", req.body.username);
-                    res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
-                }
+                verifyMemberArgon2Hash(req.body.username, req.body.password, (err, member) => {
+                    if (member) {
+                        if (member.locked) {
+                            plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
+                            res.render('mobile/login', { "message": "login.locked", "csrf": req.csrfToken() });
+                        }
+                        else {
+                            plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
+                            preventBruteforce.resetForMember(member);
+                            countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
+                            res.render('mobile/key', { "key": member.api_key || -1 });
+                        }
+                    }
+                    else {
+                        plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
+                        preventBruteforce.fail("login", bruteforceKey);
+                        res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
+                    }
+                });
             });
         }
         else {
@@ -1849,8 +1939,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
         var updatedUser = {};
 
-        if (req.body.lang) {
-            updatedUser.lang = req.body.lang;
+        //The stored lang reaches file paths in several places, for example
+        //api/utils/localization.js and the plugin localization lookups, so it is checked
+        //here rather than relying on every reader to sanitize it.
+        if (req.body.lang && isSelectableLang(req.body.lang + "")) {
+            updatedUser.lang = req.body.lang + "";
 
             countlyDb.collection('members').update({"_id": countlyDb.ObjectID(req.session.uid + "")}, {'$set': updatedUser}, {safe: true}, function(err, member) {
                 if (member && !err) {
@@ -1862,6 +1955,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             });
         }
         else {
+            //not one of the configured languages, so it did not come from the language
+            //menu. Logged because the only way to reach here is a hand made request.
+            log.w("Refused a language that is not in locale.conf");
             res.send(false);
             return false;
         }
@@ -1957,7 +2053,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         membersUtility.loginWithToken(req, function(member) {
             if (member) {
                 var serverSideRendering = req.query.ssr || false;
-                preventBruteforce.reset("login", member.username);
+                preventBruteforce.resetForMember(member);
                 var options = "";
                 if (serverSideRendering) {
                     options += "ssr=" + serverSideRendering;
@@ -1981,6 +2077,33 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     //startup (idempotent) so existing apps are covered after an upgrade with no
     //migration script; createApp also ensures it for new apps.
     countlyDb.collection('apps').createIndex({"keys.key": 1}, { background: true }, function() {});
+    //backfill the accepted-keys array for apps that predate key rotation, so the
+    //SDK app lookup resolves them via the indexed keys.key field on its first
+    //query instead of falling back to the current-key field. Idempotent (only
+    //touches apps missing the array, and is guarded again per-app at write time)
+    //and self-disabling once filled, so it is safe to run on every startup; this
+    //process runs in low replica count and the apps collection is small, so no
+    //migration script or cross-process coordination is needed. App resolution
+    //stays correct before this completes via the current-key fallback in
+    //common.resolveAppByKey, so it does not need to gate startup.
+    countlyDb.collection('apps').find({ keys: { $exists: false } }, { projection: { key: 1, created_at: 1, last_data: 1 } }).toArray(function(ferr, legacyApps) {
+        if (ferr) {
+            console.log("Failed to read apps for accepted-keys backfill", ferr);
+            return;
+        }
+        var nowSec = Math.floor(Date.now() / 1000);
+        (legacyApps || []).forEach(function(legacyApp) {
+            countlyDb.collection('apps').updateOne(
+                { _id: legacyApp._id, keys: { $exists: false } },
+                { $set: { keys: [{ key: legacyApp.key, added_at: legacyApp.created_at || nowSec, last_data: legacyApp.last_data || 0 }] } },
+                function(uerr) {
+                    if (uerr) {
+                        console.log("Failed to backfill accepted-keys array for app", legacyApp._id, uerr);
+                    }
+                }
+            );
+        });
+    });
     countlyDb.collection('members').createIndex({"api_key": 1}, { unique: true }, function() {});
     countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
     countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});

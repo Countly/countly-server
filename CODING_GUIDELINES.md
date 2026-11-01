@@ -29,7 +29,7 @@ countly plugin lint <pluginname>
 countly plugin lintfix <pluginname>
 
 # Lint entire codebase
-npx grunt eslint
+npm run lint
 
 # Install pre-commit hooks for automatic linting
 bash bin/dev-scripts/install-pre-commit-hooks.sh

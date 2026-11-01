@@ -18,9 +18,14 @@ const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 const tracker = require('./parts/mgmt/tracker.js');
 const { RateLimiterMemory } = require("rate-limiter-flexible");
+const uploadTemp = require('./utils/upload-temp.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
+
+// Core endpoints that read params.files. Plugins declare their own.
+plugins.uploadPaths.push({path: "/i/apps/create"});
+plugins.uploadPaths.push({path: "/i/apps/update"});
 
 if (cluster.isMaster) {
     console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
@@ -93,6 +98,11 @@ plugins.connectToAllDatabases().then(function() {
         trim_trailing_ending_spaces: false
     });
 
+    //declared in a module both this process and the dashboard require, because the
+    //metadata is process local and the dashboard serializes the security namespace
+    //into every page it renders
+    require('./utils/configMetadata.js').register(plugins);
+
     /**
     * Set Plugins APPs Config
     */
@@ -116,8 +126,8 @@ plugins.connectToAllDatabases().then(function() {
         password_rotation: 3,
         password_autocomplete: true,
         robotstxt: "User-agent: *\nDisallow: /",
-        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
-        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
+        dashboard_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nCross-Origin-Opener-Policy: same-origin-allow-popups",
+        api_additional_headers: "X-Frame-Options:deny\nStrict-Transport-Security:max-age=31536000; includeSubDomains\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin\nPermissions-Policy: camera=(), microphone=(), geolocation=(), payment=()\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
         dashboard_rate_limit_requests: 500,
         api_rate_limit_window: 0,
@@ -482,6 +492,27 @@ function handleRequest(req, res) {
         if (countlyConfig.api.maxUploadFileSize) {
             formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
         }
+        // The body is parsed before the request is routed or authorized, so
+        // uploads are refused unless a plugin declared that this exact path
+        // reads params.files
+        Object.assign(formidableOptions, uploadTemp.parseOptions(req.url, common.config && common.config.path, plugins.uploadPaths));
+
+        // Whatever did get written is removed once the response is done with.
+        // 'close' matters as well as 'finish': an upload aborted mid-stream
+        // leaves a partial file that 'finish' never sees. Handlers that consume
+        // an upload unlink it themselves; this only catches what they did not,
+        // which is every request rejected before reaching a handler at all.
+        /**
+         * Remove any upload temp file the handlers did not consume
+         * @returns {void}
+         */
+        const discardOnce = () => {
+            res.removeListener('finish', discardOnce);
+            res.removeListener('close', discardOnce);
+            uploadTemp.discardUploads(params);
+        };
+        res.on('finish', discardOnce);
+        res.on('close', discardOnce);
 
         const form = new formidable.IncomingForm(formidableOptions);
         if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
@@ -506,6 +537,11 @@ function handleRequest(req, res) {
         form.parse(req, (err, fields, files) => {
             //handle bakcwards compatability with formiddble v1
             for (let i in files) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (i === "__proto__" || i === "constructor" || i === "prototype") {
+                    continue;
+                }
                 if (files[i].filepath) {
                     files[i].path = files[i].filepath;
                 }
@@ -517,17 +553,22 @@ function handleRequest(req, res) {
                 }
             }
             params.files = files;
+            //snapshot the paths formidable produced, before a handler can
+            //repoint params.files[x].path at something that must not be removed
+            uploadTemp.trackUploads(params, files);
             if (multiFormData) {
                 let formDataUrl = [];
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
-                    formDataUrl.push(`${i}=${fields[i]}`);
+                    //back to the scalar the request carried; formidable's json body
+                    //parser is the only thing that makes these structures
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
+                    formDataUrl.push(`${i}=${params.qstring[i]}`);
                 }
                 params.formDataUrl = formDataUrl.join('&');
             }
             else {
                 for (const i in fields) {
-                    params.qstring[i] = fields[i];
+                    params.qstring[i] = common.asRequestScalar(fields[i]);
                 }
             }
             if (!params.apiPath) {

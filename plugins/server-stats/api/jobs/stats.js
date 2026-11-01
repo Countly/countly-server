@@ -136,7 +136,7 @@ class StatsJob extends job.Job {
     /**
     * Returns a human readable name given application id.
     * @param {Object} db - Database object, used for querying
-    * @param {function} done - Completion callback
+    * @param {Function} done - Completion callback
     * @returns {undefined} Returns nothing, only callback
     **/
     run(db, done) {

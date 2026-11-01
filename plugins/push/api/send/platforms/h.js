@@ -77,7 +77,7 @@ class HPK extends Splitter {
     /**
      * Get new access token from Huawei
      *
-     * @return {Promise} resolves to {token: "token string", until: expiration timestamp} or error
+     * @returns {Promise} resolves to {token: "token string", until: expiration timestamp} or error
      */
     getToken() {
         return new Promise((resolve, reject) => {
@@ -331,7 +331,7 @@ function empty(msg) {
  * Finish data object after setting all the properties
  *
  * @param {object} obj platform-specific obj to finalize
- * @return {object} resulting object
+ * @returns {object} resulting object
  */
 function finish(obj) {
     if (!obj.data.message && !obj.data.sound) {

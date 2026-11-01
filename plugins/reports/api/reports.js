@@ -16,7 +16,10 @@ var reportsInstance = {},
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js'),
     countlyApiConfig = require('./../../../api/config', 'dont-enclose'),
+    rights = require('../../../api/utils/rights.js'),
     pdf = require('../../../api/utils/pdf');
+
+const FEATURE_NAME = 'reports';
 
 countlyConfig.passwordSecret || "";
 
@@ -31,6 +34,13 @@ function generateRandomString(length) {
 
 plugins.setConfigs("reports", {
     secretKey: countlyApiConfig?.encryption?.reports_key || generateRandomString(32),
+});
+
+//this key signs the subscribe/unsubscribe tokens, and /subscribe_report and
+///unsubscribe_report accept those without authentication. It self-generates, so
+//unlike the other secrets it is always set on every install.
+plugins.setSecretConfigs("reports", {
+    secretKey: true
 });
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
@@ -70,23 +80,132 @@ var metricProps = {
 };
 (function(reports) {
     let _periodObj = null;
+    /**
+     * Whether the member a report is scheduled as may still read every app it covers.
+     *
+     * The endpoints authorize a request, but nothing re-checked anything once a report
+     * was scheduled, so one created before access was revoked kept mailing that app's
+     * figures indefinitely with no further action by anybody.
+     *
+     * A report with no apps is a non-core report (a dashboard, say), whose target is
+     * authorized by its own plugin through /report/authorize rather than per app, so
+     * there is nothing to judge here and it passes.
+     *
+     * @param {object} member - the member the report is scheduled as
+     * @param {Array} apps - app ids the report covers
+     * @returns {boolean} true when the report may still be sent
+     */
+    function ownerMayStillReadApps(member, apps) {
+        if (!member) {
+            return false;
+        }
+        if (member.global_admin) {
+            return true;
+        }
+        if (typeof apps === "undefined" || apps === null) {
+            return true;
+        }
+        //a value that is not a list is not a list of no apps either: it cannot be
+        //authorized app by app, so it must not be sent rather than pass as empty
+        if (!Array.isArray(apps)) {
+            log.d("Not sending a report whose apps is not a list");
+            return false;
+        }
+        if (apps.length === 0) {
+            return true;
+        }
+        //members created before the permission object reach apps through user_of, and
+        //the right helpers fall through to admin_of alone, so without this their
+        //reports would stop arriving
+        const legacy = (typeof member.permission === "undefined" && Array.isArray(member.user_of))
+            ? member.user_of.map(String)
+            : [];
+        return apps.every(function(appId) {
+            return rights.hasReadRight(FEATURE_NAME, appId + "", member) || legacy.indexOf(appId + "") > -1;
+        });
+    }
+
+    /**
+     * Whether a stored report may still be sent, judged by its owner's current access.
+     *
+     * Used by both the scheduled job and the send-now path, which reach the renderer by
+     * different routes and would otherwise disagree.
+     *
+     * @param {object} db - database connection
+     * @param {object} report - the stored report
+     * @param {Function} cb - cb(maySend), called with false when it must not be sent
+     * @returns {void}
+     */
+    reports.ownerMayStillSend = function(db, report, cb) {
+        if (!report) {
+            return cb(false);
+        }
+        db.collection('members').findOne({_id: db.ObjectID(report.user + "")}, function(memberErr, owner) {
+            if (memberErr) {
+                log.e("Could not resolve the owner of report " + report._id + ", not sending", memberErr);
+                return cb(false);
+            }
+            //A deleted account holds access to nothing, so the same rule applies: stop
+            //sending. getReport still falls back to a global admin when it cannot resolve
+            //the owner, which is what preview and pdf rely on, but that fallback must not
+            //be the thing that keeps an app's figures being mailed out.
+            if (!owner) {
+                log.d("Owner of report " + report._id + " no longer exists, not sending");
+                return cb(false);
+            }
+            if (!ownerMayStillReadApps(owner, report.apps)) {
+                log.d("Not sending report " + report._id + ": its owner no longer has access to the apps it covers");
+                return cb(false);
+            }
+            cb(true);
+        });
+    };
+
     reports.sendReport = function(db, id, callback) {
         reports.loadReport(db, id, function(err, report) {
             if (err) {
                 return callback(err, null);
             }
-            reports.getReport(db, report, function(err2, ob) {
-                if (!err2) {
-                    reports.send(ob.report, ob.message, function() {
-                        if (callback) {
-                            callback(err2, ob.message);
-                        }
-                    });
+            if (!report) {
+                return callback("Report not found", null);
+            }
+            //Do not keep mailing an app's figures to somebody who may no longer read it.
+            //Checked here rather than in getReport, so that preview and pdf keep being
+            //judged against the caller making the request instead.
+            reports.ownerMayStillSend(db, report, function(maySend) {
+                if (!maySend) {
+                    //not an error, but not a send either. Reported as a third argument
+                    //so /i/reports/send does not answer "Success" for a report it
+                    //deliberately did not send, while existing callers that only read
+                    //(err, res) keep working unchanged.
+                    return callback(null, null, true);
                 }
-                else if (callback) {
-                    callback(err2, ob.message);
-                }
+                reports.sendLoadedReport(db, report, callback);
             });
+        });
+    };
+
+    /**
+     * Render and send a report that has already been loaded and authorized.
+     * @param {object} db - database connection
+     * @param {object} report - the stored report
+     * @param {Function} callback - callback
+     * @returns {void}
+     */
+    reports.sendLoadedReport = function(db, report, callback) {
+        reports.getReport(db, report, function(err2, ob) {
+            if (!err2) {
+                reports.send(ob.report, ob.message, function() {
+                    if (callback) {
+                        callback(err2, ob.message);
+                    }
+                });
+            }
+            else if (callback) {
+                //getReport reports some failures with the error alone, so there is not
+                //always a second argument to read a message off
+                callback(err2, ob && ob.message);
+            }
         });
     };
 
@@ -98,7 +217,23 @@ var metricProps = {
         });
     };
 
+    //Fields the generator derives while sending. They have no business arriving
+    //from the database: a document stored before the create/update allow-list
+    //existed may still hold them, and reports.send prefers a present
+    //messages[].html over rendering the trusted template.
+    //
+    //Stripped here rather than in loadReport because /o/reports/preview and
+    ///o/reports/pdf run their own findOne and call this directly, so this is the
+    //one point all three paths share.
+    const DERIVED_FIELDS = ["messages", "data", "subject", "mailTemplate", "properties",
+        "period", "start", "end", "date", "total_new", "universe"];
+
     reports.getReport = function(db, report, callback, cache) {
+        if (report) {
+            DERIVED_FIELDS.forEach(function(field) {
+                delete report[field];
+            });
+        }
         /**
          * find Member
          * @param {func} cb - callback function
@@ -123,7 +258,7 @@ var metricProps = {
 
         /**
          *  Load event group information
-         *  @param {function} cb - callback function
+         *  @param {Function} cb - callback function
          */
         function loadEventGroups(cb) {
             db.collection('event_groups').find({}, {projection: {name: 1, status: 1}}).toArray(function(err1, event_groups) {
@@ -189,7 +324,7 @@ var metricProps = {
                     /**
                      * metricIterator curry function
                      * @param {obj} params - params injected in inner func
-                     * @return {func} metricIterator - function for iterartion
+                     * @returns {func} metricIterator - function for iterartion
                      */
                     function metricIteratorCurryFunc(params) {
                         /**
@@ -688,12 +823,16 @@ var metricProps = {
 
                 if (report.sendPdf === true) {
                     let htmlForPdf = html;
+                    //the two origins the templates load their images from, passed so
+                    //the renderer can refuse everything else
+                    let renderOrigins = [message.data && message.data.host];
                     if (pdfHasTemplate) { // report from dashboard
                         let emailFiller = Object.assign({}, message.data);
                         //use localhost for pdf generation instead of domain
                         //it prevents the issue when one server has local files and loadbalancer sends the request to another server
                         emailFiller.localhost = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + countlyConfig.web.host + ':' + countlyConfig.web.port + countlyConfig.path;
                         htmlForPdf = ejs.render(message.template, emailFiller);
+                        renderOrigins.push(emailFiller.localhost);
                     }
                     pdf.renderPDF(htmlForPdf, function() {
                         msg.attachments = [{filename: "Countly_Report.pdf", path: filePath}];
@@ -717,8 +856,15 @@ var metricProps = {
                             mail.sendMail(msg, deletePDFCallback);
                         }
                     }, options, {
+                        //--disable-web-security stays. The html is opened as a data:
+                        //url, whose origin is opaque, and Chromium refuses http
+                        //subresources from an opaque origin, so without this the
+                        //template's own images do not load at all. What made the flag
+                        //dangerous was that any request could be made in the first
+                        //place; renderOrigins is the control for that, and with it the
+                        //flag can only relax checks for Countly's own origin.
                         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
-                    }, true).catch(err => {
+                    }, true, renderOrigins).catch(err => {
                         log.d(err);
                     });
 
@@ -741,7 +887,7 @@ var metricProps = {
     * set metrics  in collection
     * @param {object} metricsObj - metrics data
     * @param {object} events - event data
-    * @return {object} collections - collections names
+    * @returns {object} collections - collections names
     */
     function metricsToCollections(metricsObj, events) {
         var collections = {users: true};
@@ -780,7 +926,7 @@ var metricProps = {
     * @param {object} _sessionDb - session original data
     * @param {object} totalUserOverrideObj - user data
     * @param {object} previousTotalUserOverrideObj - user data for previous period
-    * @return {object} dataArr - session statstics contains serveral metrics.
+    * @returns {object} dataArr - session statstics contains serveral metrics.
     */
     function getSessionData(_sessionDb, totalUserOverrideObj, previousTotalUserOverrideObj) {
         //Update the current period object in case selected date is changed
@@ -961,64 +1107,64 @@ var metricProps = {
         //var timeSpentString = countlyCommon.timeString(sessionDuration);
 
         dataArr =
-        {
-            "total_sessions": {
-                "total": currentTotal,
-                "change": changeTotal.percent,
-                "trend": changeTotal.trend
-            },
-            "paying_users": {
-                "total": currentPayingTotal,
-                "prev-total": previousPayingTotal,
-                "change": changePaying.percent,
-                "trend": changePaying.trend,
-                "isEstimate": isEstimate
-            },
-            "total_users": {
-                "total": currentUnique,
-                "prev-total": previousUnique,
-                "change": changeUnique.percent,
-                "trend": changeUnique.trend,
-                "isEstimate": isEstimate
-            },
-            "messaging_users": {
-                "total": currentMsgEnabledTotal,
-                "prev-total": previousMsgEnabledTotal,
-                "change": changeMsgEnabled.percent,
-                "trend": changeMsgEnabled.trend,
-                "isEstimate": isEstimate
-            },
-            "new_users": {
-                "total": currentNew,
-                "change": changeNew.percent,
-                "trend": changeNew.trend
-            },
-            "returning_users": {
-                "total": (currentUnique - currentNew),
-                "change": changeReturning.percent,
-                "trend": changeReturning.trend
-            },
-            "total_time": {
-                "total": timeSpentString,
-                "change": changeDuration.percent,
-                "trend": changeDuration.trend
-            },
-            "avg_time": {
-                "total": countlyCommon.timeString(durationPerUser),
-                "change": changeDurationPerUser.percent,
-                "trend": changeDurationPerUser.trend
-            },
-            "total_requests": {
-                "total": currentEvents,
-                "change": changeEvents.percent,
-                "trend": changeEvents.trend
-            },
-            "avg_requests": {
-                "total": eventsPerUser.toFixed(1),
-                "change": changeEventsPerUser.percent,
-                "trend": changeEventsPerUser.trend
-            }
-        };
+            {
+                "total_sessions": {
+                    "total": currentTotal,
+                    "change": changeTotal.percent,
+                    "trend": changeTotal.trend
+                },
+                "paying_users": {
+                    "total": currentPayingTotal,
+                    "prev-total": previousPayingTotal,
+                    "change": changePaying.percent,
+                    "trend": changePaying.trend,
+                    "isEstimate": isEstimate
+                },
+                "total_users": {
+                    "total": currentUnique,
+                    "prev-total": previousUnique,
+                    "change": changeUnique.percent,
+                    "trend": changeUnique.trend,
+                    "isEstimate": isEstimate
+                },
+                "messaging_users": {
+                    "total": currentMsgEnabledTotal,
+                    "prev-total": previousMsgEnabledTotal,
+                    "change": changeMsgEnabled.percent,
+                    "trend": changeMsgEnabled.trend,
+                    "isEstimate": isEstimate
+                },
+                "new_users": {
+                    "total": currentNew,
+                    "change": changeNew.percent,
+                    "trend": changeNew.trend
+                },
+                "returning_users": {
+                    "total": (currentUnique - currentNew),
+                    "change": changeReturning.percent,
+                    "trend": changeReturning.trend
+                },
+                "total_time": {
+                    "total": timeSpentString,
+                    "change": changeDuration.percent,
+                    "trend": changeDuration.trend
+                },
+                "avg_time": {
+                    "total": countlyCommon.timeString(durationPerUser),
+                    "change": changeDurationPerUser.percent,
+                    "trend": changeDurationPerUser.trend
+                },
+                "total_requests": {
+                    "total": currentEvents,
+                    "change": changeEvents.percent,
+                    "trend": changeEvents.trend
+                },
+                "avg_requests": {
+                    "total": eventsPerUser.toFixed(1),
+                    "change": changeEventsPerUser.percent,
+                    "trend": changeEventsPerUser.trend
+                }
+            };
 
         return dataArr;
     }
@@ -1026,7 +1172,7 @@ var metricProps = {
     /**
     * get crash data
     * @param {object} _crashTimeline - timeline object
-    * @return {object} dataArr - crash data with several dimension statistics
+    * @returns {object} dataArr - crash data with several dimension statistics
     */
     function getCrashData(_crashTimeline) {
 
@@ -1098,40 +1244,40 @@ var metricProps = {
             changeResolved = countlyCommon.getPercentChange(previousResolved, currentResolved);
 
         dataArr =
-        {
-            "total_crashes": {
-                "total": currentTotal,
-                "change": changeTotal.percent,
-                "trend": changeTotal.trend,
-                "isEstimate": false
-            },
-            "unique_crashes": {
-                "total": currentUnique,
-                "prev-total": previousUnique,
-                "change": changeUnique.percent,
-                "trend": changeUnique.trend,
-                "isEstimate": false
-            },
-            "non_fatal_crashes": {
-                "total": currentNonfatal,
-                "prev-total": previousNonfatal,
-                "change": changeNonfatal.percent,
-                "trend": changeNonfatal.trend,
-                "isEstimate": false
-            },
-            "fatal_crashes": {
-                "total": currentFatal,
-                "change": changeFatal.percent,
-                "trend": changeFatal.trend,
-                "isEstimate": false
-            },
-            "resolved_upgrades": {
-                "total": currentResolved,
-                "change": changeResolved.percent,
-                "trend": changeResolved.trend,
-                "isEstimate": false
-            }
-        };
+            {
+                "total_crashes": {
+                    "total": currentTotal,
+                    "change": changeTotal.percent,
+                    "trend": changeTotal.trend,
+                    "isEstimate": false
+                },
+                "unique_crashes": {
+                    "total": currentUnique,
+                    "prev-total": previousUnique,
+                    "change": changeUnique.percent,
+                    "trend": changeUnique.trend,
+                    "isEstimate": false
+                },
+                "non_fatal_crashes": {
+                    "total": currentNonfatal,
+                    "prev-total": previousNonfatal,
+                    "change": changeNonfatal.percent,
+                    "trend": changeNonfatal.trend,
+                    "isEstimate": false
+                },
+                "fatal_crashes": {
+                    "total": currentFatal,
+                    "change": changeFatal.percent,
+                    "trend": changeFatal.trend,
+                    "isEstimate": false
+                },
+                "resolved_upgrades": {
+                    "total": currentResolved,
+                    "change": changeResolved.percent,
+                    "trend": changeResolved.trend,
+                    "isEstimate": false
+                }
+            };
 
         return dataArr;
     }
@@ -1140,7 +1286,7 @@ var metricProps = {
     /**
     * get event data
     * @param {object} eventDb -  original event data
-    * @return {number}  - return event calc data
+    * @returns {number}  - return event calc data
     */
     function getEventData(eventDb) {
         _periodObj = countlyCommon.periodObj;
@@ -1180,7 +1326,7 @@ var metricProps = {
     /**
     * get revenue chart data
     * @param {object} eventDb -  event data
-    * @return {object}  - return revenu data chart object
+    * @returns {object}  - return revenu data chart object
     */
     function getRevenueData(eventDb) {
         _periodObj = countlyCommon.periodObj;
@@ -1249,7 +1395,7 @@ var metricProps = {
     * get event count
     * @param {object} eventDb -  event data
     * @param {string/array}  period -  period defined by countly
-    * @return {number}  - return event count
+    * @returns {number}  - return event count
     */
     function eventCount(eventDb, period) {
         var tmpObj = countlyCommon.getDescendantProp(eventDb, period);
@@ -1259,7 +1405,7 @@ var metricProps = {
     /**
     * clear session object data format, will set properties to 0 if not exisit
     * @param {object} obj - db object
-    * @return {object} obj - cleared object
+    * @returns {object} obj - cleared object
     */
     function clearCrashObject(obj) {
         if (obj) {
@@ -1289,7 +1435,7 @@ var metricProps = {
     /**
     * clear session object data format, will set properties to 0 if not exisit
     * @param {object} obj - db object
-    * @return {object} obj - cleared object
+    * @returns {object} obj - cleared object
     */
     function clearSessionObject(obj) {
         if (obj) {
@@ -1326,7 +1472,7 @@ var metricProps = {
     * sort first array base on second array, and render the rest of elements by original relative sequence.
     * @param {object} arrayToSort - array need to sort
     * @param {object} sortList - array for reference.
-    * @return {object} retArr - return sorted array
+    * @returns {object} retArr - return sorted array
     */
     function sortBy(arrayToSort, sortList) {
         if (!sortList.length) {

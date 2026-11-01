@@ -3,7 +3,7 @@
 This guide is for AI agents and developers working in the `api/` backend of Countly Server.
 
 ## Essentials
-- **Tech:** Node.js 22+, MongoDB
+- **Tech:** Node.js 22+ (26 by default), MongoDB
 - **Start all services:** `npm run start:all:dev`
 - **Unit tests:** `npm run test:unit`
 - **Build frontend assets:** `npx grunt dist-all`

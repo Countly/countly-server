@@ -1,5 +1,5 @@
 const plugins = require('../../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 var common = require('../../../../api/utils/common');
 
 var drill;

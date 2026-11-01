@@ -311,23 +311,34 @@
         };
 
         /**
-        * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
+        * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first, all . (dot) symbols to &#46; and NUL to &#9647 in the string
+        *
+        * Mirrors the encoder in api/lib/countly.common.js. Keys are substituted because
+        * mongo will not accept $ or . in a key name, and the two encoders have to agree
+        * on the substitution set or the decoder below cannot undo all of it.
         * @memberof countlyCommon
         * @param {string} str - value to encode
         * @returns {string} encoded string
         */
         countlyCommon.encode = function(str) {
-            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;').replace(/\u0000/g, "&#9647");
         };
 
         /**
-        * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
+        * Decode value from db, decoding first &#36; to $, all &#46; to . (dots) and &#9647 back to NUL. Decodes also url encoded values as &amp;#36; and &amp;#46;.
+        *
+        * What this receives was encoded by the api, not by countlyCommon.encode above, so
+        * the set it has to undo is the api's. It used to handle only $ and . even though
+        * this comment already promised the url encoded forms, so &#9647, &amp;#36; and
+        * &amp;#46; reached callers still encoded. That went unnoticed because the result
+        * is usually interpolated into html, where the browser resolves the leftovers as
+        * character references anyway; it shows through anywhere that is not html.
         * @memberof countlyCommon
         * @param {string} str - value to decode
         * @returns {string} decoded string
         */
         countlyCommon.decode = function(str) {
-            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
+            return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.').replace(/&#9647/g, '\u0000');
         };
 
         /**
@@ -1115,7 +1126,7 @@
                                         var noteTime = moment(notes[0].ts).format("D MMM, HH:mm");
                                         var noteId = notes[0].app_id;
                                         var app = countlyGlobal.apps[noteId] || {};
-                                        titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + app.name + "</span></div></div>" +
+                                        titleDom = "<div> <div class='note-header'><div class='note-title'>" + noteTime + "</div><div class='note-app' style='display:flex;line-height: 15px;'> <div class='icon' style='display:inline-block; border-radius:2px; width:15px; height:15px; margin-right: 5px; background: url(appimages/" + noteId + ".png) center center / cover no-repeat;'></div><span>" + countlyCommon.encodeHtml(app.name) + "</span></div></div>" +
                                         "<div class='note-content'>" + notes[0].note + "</div>" +
                                         "<div class='note-footer'> <span class='note-owner'>" + (notes[0].owner_name) + "</span> | <span class='note-type'>" + (jQuery.i18n.map["notes.note-" + notes[0].noteType] || notes[0].noteType) + "</span> </div>" +
                                             "</div>";
@@ -1534,7 +1545,7 @@
         * @param {object} db - countly standard metric data object
         * @param {string} propertyName - name of the property to extract
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} explainRange - function to convert range/bucket index to meaningful label
+        * @param {Function} explainRange - function to convert range/bucket index to meaningful label
         * @param {array} myorder - arrays of preferred order for give keys. Optional. If not passed - sorted by values
         * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
         * @example <caption>Extracting session frequency from users collection</caption>
@@ -1628,7 +1639,7 @@
         * Extract single level data without metrics/segments, like total user data from users collection
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} chartData - prefill chart data with labels, colors, etc
         * @param {object} dataProperties - describing which properties and how to extract
         * @param {string}  metric  - metric to select
@@ -1859,7 +1870,7 @@
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {object} dataProperties - describing which properties and how to extract
         * @param {object=} estOverrideMetric - data from total users api request to correct unique user values
         * @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
@@ -2085,6 +2096,20 @@
         };
 
         /**
+        * Whether a string, used as an object key, names a member of Object.prototype.
+        * Such a name can arrive as a stored segmentation/metric value or as an own key of a
+        * JSON/BSON response; writing THROUGH it (target[name][...] = ...) reaches
+        * Object.prototype for the life of the page. Every hand-rolled merge below skips
+        * these names before indexing, mirroring api/utils/common.js isForbiddenFieldName.
+        * @memberof countlyCommon
+        * @param {string} name - the candidate key
+        * @returns {boolean} true when the name must not be used as a key as-is
+        */
+        countlyCommon.isForbiddenFieldName = function(name) {
+            return name === "__proto__" || name === "constructor" || name === "prototype";
+        };
+
+        /**
         * Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
         * @memberof countlyCommon
         * @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
@@ -2112,6 +2137,11 @@
                     newName = jQuery.i18n.map["common.unknown"];
                 }
                 data[metric] = newName;
+                // a stored segmentation/range value can be a prototype member name;
+                // writing through uniqueNames[newName] below would reach Object.prototype
+                if (countlyCommon.isForbiddenFieldName(newName)) {
+                    continue;
+                }
                 if (newName && !uniqueNames[newName]) {
                     uniqueNames[newName] = data;
                 }
@@ -2138,11 +2168,11 @@
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-        * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
         * @param {String} metric - name of the metric to use ordering and returning
         * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
-        * @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
+        * @param {Function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -2172,8 +2202,8 @@
         * @memberof countlyCommon
         * @param {object} db - countly standard metric data object
         * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-        * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-        * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+        * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
         * @returns {array} array with top 3 values
         * @example <caption>Return data</caption>
         * [
@@ -2417,6 +2447,9 @@
 
             var tmpNumber = "";
 
+            if (!isFinite(number)) {
+                return number + "";
+            }
             if (number >= 1000000000 || number <= -1000000000) {
                 tmpNumber = ((number / 1000000000).toFixed(1).replace(".0", "")) + "B";
             }
@@ -2428,7 +2461,7 @@
             }
             else if (number >= 0.1 || number <= -0.1) {
                 number += "";
-                tmpNumber = number.replace(".0", "");
+                tmpNumber = number.replace(/\.0$/, "");
             }
             else {
                 tmpNumber = number + "";
@@ -2563,6 +2596,13 @@
                     continue;
                 }
 
+                // an own "__proto__"/"constructor"/"prototype" key survives JSON/BSON and
+                // hasOwnProperty does not exclude it; writing through dbObj[year][level1]
+                // below would reach Object.prototype
+                if (countlyCommon.isForbiddenFieldName(level1)) {
+                    continue;
+                }
+
                 if (intRegex.test(level1)) {
                     continue;
                 }
@@ -2621,6 +2661,10 @@
                 if (tmpUpdateObj[level1]) {
                     for (var level2 in tmpUpdateObj[level1]) {
                         if (!Object.prototype.hasOwnProperty.call(tmpUpdateObj[level1], level2)) {
+                            continue;
+                        }
+
+                        if (countlyCommon.isForbiddenFieldName(level2)) {
                             continue;
                         }
 
@@ -3442,7 +3486,7 @@
         * @param {array} properties - array of all properties to extract
         * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
         * @param {object} estOverrideMetric - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
-        * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @param {string=} segment - segment value for which to fetch metric data
         * @returns {object} dashboard data object
         * @example
@@ -3624,7 +3668,7 @@
         * @memberof countlyCommon
         * @param {object} data - countly metric model data
         * @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
-        * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+        * @param {Function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
         * @returns {object} object with sparkleline data for each property
         * @example
         * var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
@@ -3828,7 +3872,7 @@
                 try {
                     period = JSON.parse(period);
                 }
-                catch (SyntaxError) {
+                catch {
                     period = "30days";
                 }
             }
@@ -4612,7 +4656,7 @@
         * @memberof countlyCommon
         * @param {array} chartDPs  - chart data points
         * @param {string} labelName  - label name
-        * @return {array} chartDPs
+        * @returns {array} chartDPs
         * @example
         * for example:
         *     chartDPs = [
@@ -4768,7 +4812,7 @@
                 try {
                     period = JSON.parse(period);
                 }
-                catch (SyntaxError) {
+                catch {
                     period = countlyCommon.DEFAULT_PERIOD;
                 }
             }
@@ -4832,7 +4876,7 @@
         try {
             collator = (typeof Intl !== "undefined" && typeof Intl.Collator !== "undefined") ? Intl.Collator("generic", { sensitivity: "base" }) : null;
         }
-        catch (err) {
+        catch {
             // console.log("Failed to initialize collator for Levenshtein\n" + err.stack);
         }
 
@@ -4852,7 +4896,7 @@
             * @param {string} str2 String the second string.
             * @param {object} [options] Additional options.
             * @param {boolean} [options.useCollator] Use `Intl.Collator` for locale-sensitive string comparison.
-            * @return {number} Integer the levenshtein distance (0 and above).
+            * @returns {number} Integer the levenshtein distance (0 and above).
             */
             get: function(str1, str2, options) {
                 var useCollator = (options && collator && options.useCollator);

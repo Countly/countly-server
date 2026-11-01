@@ -45,7 +45,7 @@ Common message structures:
 class Channel extends EventEmitter {
     /**
     * Constructor accepting check function
-    * @param {function} check - to check/filter message for specific channel
+    * @param {Function} check - to check/filter message for specific channel
     **/
     constructor(check) {
         super();
@@ -223,7 +223,7 @@ class CentralSuper {
      * Constructor
      *
      * @param  {string} name A parameter name used to uniquely identify a message for this Central
-     * @param  {function} handler function to process incoming messages
+     * @param  {Function} handler function to process incoming messages
      *                            return value of this function is sent back to the worker as a reply
      */
     constructor(name, handler) {
@@ -234,7 +234,7 @@ class CentralSuper {
     /**
      * Returns whether the message is for this channel instance
      * @param  {Object}  m message
-     * @return {Boolean}   true if for this channel
+     * @returns {Boolean}   true if for this channel
      */
     isForMe(m) {
         return this.name in m;
@@ -246,7 +246,7 @@ class CentralSuper {
      * @param  {Long} date  date of the message
      * @param  {Boolean} reply whether this message is a reply
      * @param  {String} error if any
-     * @return {Object}       message object
+     * @returns {Object}       message object
      */
     fromMe(data, date, reply, error) {
         return {[this.name]: data, date, reply, error};
@@ -335,7 +335,7 @@ class CentralWorker extends CentralSuper {
      * Constructor
      *
      * @param  {string} name A parameter name used to uniquely identify a message for this Central
-     * @param  {function} handler function to process incoming messages
+     * @param  {Function} handler function to process incoming messages
      *                            return value of this function is sent back to the master as a reply
      * @param  {integer} readTimeout how much ms to wait until rejecting
      */
@@ -419,7 +419,7 @@ class CentralWorker extends CentralSuper {
     /**
     * Send request to the Central with a promise
     * @param {any} data - data to send to master process
-    * @return {Promise} which either resolves to the value returned by Central, or rejects with error from master / timeout from current process
+    * @returns {Promise} which either resolves to the value returned by Central, or rejects with error from master / timeout from current process
     **/
     request(data) {
         let now = this.date(),

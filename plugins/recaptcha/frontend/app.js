@@ -1,6 +1,6 @@
 var exportedPlugin = {},
     countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
-    recaptcha = require('express-recaptcha');
+    RecaptchaV2 = require('express-recaptcha').RecaptchaV2;
 var plugins = require("../../pluginManager.js");
 
 plugins.setConfigs("recaptcha", {
@@ -9,16 +9,41 @@ plugins.setConfigs("recaptcha", {
     secret_key: ""
 });
 
+//only secret_key. site_key is public by design: it goes to the browser to render the
+//challenge, so marking it secret would achieve nothing.
+plugins.setSecretConfigs("recaptcha", {
+    secret_key: true
+});
+
 (function(plugin) {
+    var recaptcha = null,
+        recaptchaKeys = null;
+
+    /**
+     * The RecaptchaV2 client for the keys configured now, rebuilt when they change.
+     * express-recaptcha 5 replaced the module-level init/render/verify with this class.
+     * @returns {object|null} client, or null if it could not be created
+     */
+    function getRecaptcha() {
+        var config = plugins.getConfig("recaptcha"),
+            keys = config.site_key + "\n" + config.secret_key;
+        if (keys !== recaptchaKeys) {
+            recaptchaKeys = keys;
+            try {
+                recaptcha = new RecaptchaV2(config.site_key, config.secret_key);
+            }
+            catch (ex) {
+                console.log(ex);
+                recaptcha = null;
+            }
+        }
+        return recaptcha;
+    }
+
     plugin.init = function(app, countlyDb) {
         plugins.loadConfigs(countlyDb, function() {
             if (plugins.getConfig("recaptcha").enable && plugins.getConfig("recaptcha").site_key !== "" && plugins.getConfig("recaptcha").secret_key !== "") {
-                try {
-                    recaptcha.init(plugins.getConfig("recaptcha").site_key, plugins.getConfig("recaptcha").secret_key);
-                }
-                catch (ex) {
-                    console.log(ex);
-                }
+                getRecaptcha();
             }
         });
         app.post(countlyConfig.path + '/login', function(req, res, next) {
@@ -36,7 +61,12 @@ plugins.setConfigs("recaptcha", {
                     next();
                 }
                 else {
-                    recaptcha.verify(req, function(error) {
+                    var client = getRecaptcha();
+                    if (!client) {
+                        res.redirect(countlyConfig.path + '/login?message=recaptcha.incorrect');
+                        return;
+                    }
+                    client.verify(req, function(error) {
                         if (!error) {
                             next();
                         }
@@ -57,7 +87,10 @@ plugins.setConfigs("recaptcha", {
                 req.template.js += "$(document).ready(function() {" +
                     "$('body').addClass('recaptcha-enabled');" +
                     "});";
-                req.template.form += recaptcha.render();
+                var client = getRecaptcha();
+                if (client) {
+                    req.template.form += client.render();
+                }
             }
             next();
         });

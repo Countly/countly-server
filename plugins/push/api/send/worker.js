@@ -181,7 +181,7 @@ if (isMainThread) {
          * Passes stream to the worker
          * 
          * @param {array} chunks Array of chunks
-         * @param {function} callback called when the frame is fully processed
+         * @param {Function} callback called when the frame is fully processed
          */
         _writev(chunks, callback) {
             // this.log.f('d', log => {
@@ -208,7 +208,7 @@ if (isMainThread) {
          * Wait for the worker to become free and write next chunk
          * 
          * @param {chunk[]} chunks array of chunks to send to the worker
-         * @param {function} callback callback to be called when all chunks are written
+         * @param {Function} callback callback to be called when all chunks are written
          */
         wait_and_write(chunks, callback) {
             if (!chunks.length) {
@@ -239,7 +239,7 @@ if (isMainThread) {
         /**
          * Gracefully shutdown the worker
          * 
-         * @param {function} callback callback to call when done
+         * @param {Function} callback callback to call when done
          */
         _final(callback) {
             if (this.worker && this.connected) {
@@ -264,7 +264,7 @@ if (isMainThread) {
          * Not that gracefully destroy the stream terminating the worker/connection along the way
          * 
          * @param {Error} error error if destroying because of error
-         * @param {function} callback callback to call when done
+         * @param {Function} callback callback to call when done
          */
         _destroy(error, callback) {
             if (this.worker) {

@@ -16,7 +16,7 @@ var query = {"$and": [{"last_login": {"$lt": ts}}, {"locked": {"$ne": true}}]};
 //although mogodb does not return null on $lt, keep like above for safety
 
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 var errored = 0;
 if (dry_run) {

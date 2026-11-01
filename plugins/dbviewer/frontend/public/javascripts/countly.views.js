@@ -547,7 +547,7 @@
                                     self.fields = Object.keys(map);
                                 }
                                 if (res.removed && typeof res.removed === 'object' && Object.keys(res.removed).length > 0) {
-                                    self.removed = CV.i18n('dbviewer.removed-warning') + Object.keys(res.removed).join(", ");
+                                    self.removed = CV.i18n('dbviewer.removed-warning') + countlyCommon.unescapeHtml(Object.keys(res.removed).join(", "));
 
                                 }
                                 else {
@@ -569,7 +569,7 @@
                             self.queryLoading = false;
                         });
                     }
-                    catch (err) {
+                    catch {
                         CountlyHelpers.notify({
                             message: CV.i18n('dbviewer.invalid-pipeline'),
                             type: "error"

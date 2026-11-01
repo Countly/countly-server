@@ -203,7 +203,7 @@ class Splitter extends Base {
     /**
      * Gracefully shutdown the worker
      * 
-     * @param {function} callback callback to call when done
+     * @param {Function} callback callback to call when done
      */
     _final(callback) {
         if (this.socket) {

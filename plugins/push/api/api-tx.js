@@ -60,6 +60,12 @@ async function check(params, push) {
         throw new PushError('No such message or it doesn\'t have API trigger', ERROR.DATA_COUNTLY);
     }
 
+    // Ensure the message belongs to the request app before use, consistent with the
+    // other message handlers that scope their lookups by app.
+    if (!message.app || message.app.toString() !== params.app._id.toString()) {
+        throw new PushError('No such message or it doesn\'t have API trigger', ERROR.DATA_COUNTLY);
+    }
+
     let trigger = message.triggerFind(TriggerKind.API);
     if (!trigger) {
         throw new PushError('Message is not api', ERROR.DATA_COUNTLY);

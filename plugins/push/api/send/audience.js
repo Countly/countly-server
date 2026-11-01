@@ -18,7 +18,7 @@ const common = require('../../../../api/utils/common'),
             try {
                 return require('../../../drill/api');
             }
-            catch (e) {
+            catch {
                 return undefined;
             }
         }
@@ -36,7 +36,7 @@ const common = require('../../../../api/utils/common'),
             try {
                 return require('../../../geo/api');
             }
-            catch (e) {
+            catch {
                 return undefined;
             }
         }
@@ -315,7 +315,7 @@ class Audience {
      * Get uids by message $in
      * 
      * @param  {Object} min filter condition: [oid], {$in: [oid]}, {$nin: [oid]}
-     * @return {Promise}    resoves to array of uids
+     * @returns {Promise}    resoves to array of uids
      */
     async filterMessage(min) {
         let query = (min.$in || min.$nin) ? min : {$in: min};

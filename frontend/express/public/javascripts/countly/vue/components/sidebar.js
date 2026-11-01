@@ -528,7 +528,7 @@
                         try {
                             moment.locale(countlyCommon.BROWSER_LANG_SHORT);
                         }
-                        catch (e) {
+                        catch {
                             moment.locale("en");
                         }
 

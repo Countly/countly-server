@@ -22,11 +22,13 @@
   "dependencies": {
     "firebase-admin": "12.1.0",
     "jsonwebtoken": "9.0.3",
-    "node-forge": "1.4.0"
+    "node-forge": "1.4.1"
   },
   "overrides": {
     "uuid": "^11.1.1",
-    "@tootallnate/once": "^2.0.1"
+    "@tootallnate/once": "^2.0.1",
+    "protobufjs": "^7.6.5",
+    "@fastify/busboy": "^3.2.2"
   },
   "private": true
 }

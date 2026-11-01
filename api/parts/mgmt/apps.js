@@ -168,7 +168,7 @@ appsApi.getAppsDetails = function(params) {
 /**
 *  upload app icon function
 *  @param {params} params - params object with args to create app
-*  @return {object} return promise object;
+*  @returns {object} return promise object;
 **/
 const iconUpload = async function(params) {
     const appId = params.app_id || common.sanitizeFilename(params.qstring.args.app_id);
@@ -320,8 +320,15 @@ appsApi.createApp = async function(params) {
                     appId: app.ops[0]._id,
                     data: newApp
                 });
-                iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}));
-                common.returnOutput(params, newApp);
+                //respond only once the icon has been processed, so the uploaded
+                //temp file is not removed while jimp is still reading it
+                iconUpload(Object.assign({}, params, {app_id: app.ops[0]._id}))
+                    .catch(function() {
+                        //iconUpload logs its own failures, the app was created either way
+                    })
+                    .then(function() {
+                        common.returnOutput(params, newApp);
+                    });
             }
             else {
                 common.returnMessage(params, 500, "Error creating App: " + err);
@@ -437,7 +444,7 @@ appsApi.updateApp = function(params) {
         try {
             removeKeys = JSON.parse(removeKeys);
         }
-        catch (e) {
+        catch {
             removeKeys = [removeKeys];
         }
     }
@@ -465,30 +472,25 @@ appsApi.updateApp = function(params) {
                 updatedApp.id_key = appBefore.key;
             }
 
-            //maintain the set of accepted keys. Lazily materialize it for apps
+            //maintain the set of accepted keys: lazily materialize it for apps
             //that predate the keys array (no upgrade script needed), keep old
             //keys valid after a rotation, and apply any requested removals
-            //(never the current key, which always stays accepted).
+            //(never the current key, which always stays accepted). Each change
+            //is its own guarded update on the stored array, never a rewrite of
+            //the array read above, so concurrent updates cannot restore a key
+            //another one removed.
             var nowSec = Math.floor(Date.now() / 1000);
-            var keysArr = (Array.isArray(appBefore.keys) && appBefore.keys.length)
-                ? appBefore.keys.slice()
-                : [{key: appBefore.key, added_at: appBefore.created_at || nowSec, last_data: appBefore.last_data || 0}];
             var currentKey = (typeof updatedApp.key !== "undefined" && updatedApp.key !== "") ? updatedApp.key : appBefore.key;
-            if (removeKeys.length) {
-                keysArr = keysArr.filter(function(k) {
-                    return removeKeys.indexOf(k.key) === -1 || k.key === currentKey;
-                });
-            }
-            if (!keysArr.some(function(k) {
-                return k.key === currentKey;
-            })) {
-                keysArr.push({key: currentKey, added_at: nowSec, last_data: 0});
-            }
-            updatedApp.keys = keysArr;
+            var keysToRemove = removeKeys.map(function(k) {
+                return k + "";
+            }).filter(function(k) {
+                return k !== currentKey;
+            });
+            var appObjectId = common.db.ObjectID(params.qstring.args.app_id);
 
             checkUniqueKey(params, function() {
                 if ((params.member && params.member.global_admin) || hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
-                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
+                    writeAppUpdate(appObjectId, appBefore, updatedApp, keysToRemove, currentKey, nowSec).then(function() {
                         plugins.dispatch("/i/apps/update", {
                             params: params,
                             appId: params.qstring.args.app_id,
@@ -497,8 +499,18 @@ appsApi.updateApp = function(params) {
                                 update: updatedApp
                             }
                         });
-                        iconUpload(params);
-                        common.returnOutput(params, updatedApp);
+                        //respond only once the icon has been processed, so the
+                        //uploaded temp file is not removed while jimp is reading it
+                        iconUpload(params)
+                            .catch(function() {
+                                //iconUpload logs its own failures, the app was updated either way
+                            })
+                            .then(function() {
+                                common.returnOutput(params, updatedApp);
+                            });
+                    }, function(writeErr) {
+                        log.e("Updating app %s failed: %j", params.qstring.args.app_id + "", writeErr);
+                        common.returnMessage(params, 500, 'Error updating app');
                     });
                 }
                 else {
@@ -617,7 +629,7 @@ appsApi.updateAppPlugins = function(params) {
                                     data: {
                                         config: k,
                                         app_id: app._id + "",
-                                        before: common.dot(app, `plugins.${k}` || {}),
+                                        before: common.dot(app, `plugins.${k}`),
                                         after: params.qstring.args[k]
                                     }
                                 });
@@ -638,7 +650,7 @@ appsApi.updateAppPlugins = function(params) {
                             data: {
                                 config: k,
                                 app_id: app._id + "",
-                                before: common.dot(app, `plugins.${k}` || {}),
+                                before: common.dot(app, `plugins.${k}`),
                                 after: params.qstring.args[k]
                             }
                         });
@@ -747,7 +759,7 @@ appsApi.deleteApp = function(params) {
     * Removes 'appId' from group permission
     **/
     async function updateGroupPermission() {
-        common.db.collection('groups').update({}, {
+        await common.db.collection('groups').update({}, {
             $pull: {
                 'permission._.a': appId,
             },
@@ -757,7 +769,7 @@ appsApi.deleteApp = function(params) {
                 [`permission.u.${appId}`]: '',
                 [`permission.d.${appId}`]: '',
             }
-        }, {multi: true}, function() {});
+        }, {multi: true});
 
         // permission._.u is nested array so it has to be queried to remove 'appId' from it
         await common.db.collection('groups').update({
@@ -767,11 +779,11 @@ appsApi.deleteApp = function(params) {
         }, {multi: true});
 
         // Cleanup empty permission._.u array
-        common.db.collection('groups').update({
+        await common.db.collection('groups').update({
             'permission._.u': { $elemMatch: { $size: 0 } },
         }, {
             $pull: { 'permission._.u': { $size: 0 } },
-        }, {multi: true}, function() {});
+        }, {multi: true});
     }
 
     /**
@@ -785,40 +797,52 @@ appsApi.deleteApp = function(params) {
                 return false;
             }
 
+            //a deleted app's keys stop resolving from the app-by-key cache at once
+            appKeyValues(app).forEach(function(k) {
+                common.invalidateAppByKey(k);
+            });
+
             var iconPath = __dirname + '/../../../frontend/express/public/appimages/' + appId + '.png';
             countlyFs.deleteFile("appimages", iconPath, {id: appId + ".png"}, function() {});
 
-            common.db.collection('members').update({}, {
-                $pull: {
-                    'apps': appId,
-                    'admin_of': appId,
-                    'user_of': appId,
-                    'permission._.a': appId,
-                },
-                $unset: {
-                    [`permission.c.${appId}`]: '',
-                    [`permission.r.${appId}`]: '',
-                    [`permission.u.${appId}`]: '',
-                    [`permission.d.${appId}`]: '',
+            // the member and group permission updates finish before the
+            // response, so a caller that reads members next sees them applied
+            try {
+                await common.db.collection('members').update({}, {
+                    $pull: {
+                        'apps': appId,
+                        'admin_of': appId,
+                        'user_of': appId,
+                        'permission._.a': appId,
+                    },
+                    $unset: {
+                        [`permission.c.${appId}`]: '',
+                        [`permission.r.${appId}`]: '',
+                        [`permission.u.${appId}`]: '',
+                        [`permission.d.${appId}`]: '',
+                    }
+                }, {multi: true});
+
+                // permission._.u is nested array so it has to be queried to remove 'appId' from it
+                await common.db.collection('members').update({
+                    'permission._.u': { $elemMatch: { $elemMatch: { $eq: appId } } },
+                }, {
+                    $pull: { 'permission._.u.$': appId },
+                }, {multi: true});
+
+                // Cleanup empty permission._.u array
+                await common.db.collection('members').update({
+                    'permission._.u': { $elemMatch: { $size: 0 } },
+                }, {
+                    $pull: { 'permission._.u': { $size: 0 } },
+                }, {multi: true});
+
+                if (plugins.isPluginEnabled('groups')) {
+                    await updateGroupPermission();
                 }
-            }, {multi: true}, function() {});
-
-            // permission._.u is nested array so it has to be queried to remove 'appId' from it
-            await common.db.collection('members').update({
-                'permission._.u': { $elemMatch: { $elemMatch: { $eq: appId } } },
-            }, {
-                $pull: { 'permission._.u.$': appId },
-            }, {multi: true});
-
-            // Cleanup empty permission._.u array
-            common.db.collection('members').update({
-                'permission._.u': { $elemMatch: { $size: 0 } },
-            }, {
-                $pull: { 'permission._.u': { $size: 0 } },
-            }, {multi: true}, function() {});
-
-            if (plugins.isPluginEnabled('groups')) {
-                updateGroupPermission();
+            }
+            catch (e) {
+                log.e("Failed to remove deleted app " + appId + " from permissions", e);
             }
             deleteAppData(appId, true, params, app);
             deleteTopEventsData();
@@ -1196,9 +1220,61 @@ function isValidCountry(country) {
 }
 
 /**
+* Every key an app document is resolved by: its current key and its accepted keys.
+* @param {object} app - app document
+* @returns {Array<string>} distinct key values
+**/
+function appKeyValues(app) {
+    var values = [];
+    if (app && app.key) {
+        values.push(app.key + "");
+    }
+    ((app && Array.isArray(app.keys)) ? app.keys : []).forEach(function(k) {
+        if (k && k.key && values.indexOf(k.key + "") === -1) {
+            values.push(k.key + "");
+        }
+    });
+    return values;
+}
+
+/**
+* Write an app update and its accepted-keys changes, then read the stored keys
+* back into updatedApp (the response and the /i/apps/update payload carry them).
+* Removed keys are pulled from the stored array and the current key is added
+* only when absent and still current, so two updates that each retire a key both take effect.
+* A removed key is also dropped from the app-by-key cache straight away.
+* @param {object} appId - app _id
+* @param {object} appBefore - app document read before the update
+* @param {object} updatedApp - fields to set; its keys are filled in on success
+* @param {Array<string>} keysToRemove - keys to retire, never the current key
+* @param {string} currentKey - the key the app has after this update
+* @param {number} nowSec - timestamp for keys added by this update
+* @returns {Promise} resolves when written, rejects on any write error
+**/
+async function writeAppUpdate(appId, appBefore, updatedApp, keysToRemove, currentKey, nowSec) {
+    var apps = common.db.collection('apps');
+    if (!Array.isArray(appBefore.keys) || !appBefore.keys.length) {
+        await apps.updateOne({_id: appId, "keys.0": {$exists: false}}, {$set: {keys: [{key: appBefore.key, added_at: appBefore.created_at || nowSec, last_data: appBefore.last_data || 0}]}});
+    }
+    var update = {$set: updatedApp, "$unset": {"checksum_salt": ""}};
+    if (keysToRemove.length) {
+        update.$pull = {keys: {key: {$in: keysToRemove, $ne: currentKey}}};
+    }
+    await apps.updateOne({_id: appId}, update);
+    //only while it is still the current key: a later rotation that already
+    //replaced and retired it must not get it back
+    await apps.updateOne({_id: appId, key: currentKey, "keys.key": {$ne: currentKey}}, {$push: {keys: {key: currentKey, added_at: nowSec, last_data: 0}}});
+    keysToRemove.forEach(function(k) {
+        common.invalidateAppByKey(k);
+    });
+    var stored = await apps.findOne({_id: appId}, {projection: {keys: 1}});
+    updatedApp.keys = (stored && stored.keys) || [];
+}
+
+/**
 * Check if APP KEY is unique before updating app
 * @param {params} params - params object 
-* @param {function} callback - callback to update app
+* @param {Function} callback - callback to update app
 * @param {boolean} update - true when updating app, false when creating new app
 **/
 function checkUniqueKey(params, callback, update) {

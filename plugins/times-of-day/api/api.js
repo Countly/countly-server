@@ -194,7 +194,7 @@ const FEATURE_NAME = 'times_of_day';
                 try {
                     appObjId = common.db.ObjectID(params.qstring.app_id + "");
                 }
-                catch (e) {
+                catch {
                     common.returnMessage(params, 400, "Invalid app_id");
                     return false;
                 }
@@ -322,7 +322,7 @@ const FEATURE_NAME = 'times_of_day';
             /**
              * Get date range for period
              * @param {string} period | Period
-             * @return {string|null} | Response
+             * @returns {string|null} | Response
              */
             function getDateRange(period) {
                 let d;

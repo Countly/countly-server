@@ -21,7 +21,7 @@ const pluginManager = require('../../../plugins/pluginManager.js');
 const moment = require('moment-timezone');
 const crypto = require('crypto');
 const lastUnixTimestamp = moment(LAST_TIMESTAMP).unix();
-var Promise = require("bluebird");
+var Promise = require("../../../api/utils/promise.js");
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

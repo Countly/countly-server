@@ -12,7 +12,7 @@ class ScheduleJob extends job.Job {
     /**
     * run task
     * @param {object} db - db object
-    * @param {function} done - callback function
+    * @param {Function} done - callback function
     */
     run(db, done) {
         log.d("[hooks schedule]", this._json);

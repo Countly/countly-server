@@ -1,4 +1,4 @@
-/* eslint-disable no-unreachable */
+
 /* globals app, countlyDrillMeta, countlyQueryBuilder, CountlyHelpers, countlyCrashSymbols, countlyCommon, countlyGlobal, countlyCrashes, countlyVue, moment, hljs, jQuery, countlyDeviceList, CV, countlyAuth */
 
 (function() {
@@ -952,7 +952,7 @@
                         })
                         .catch(function(err) {
                             if (err.responseJSON) {
-                                self.symbolicationErrorDialog.msg = err.responseJSON.result;
+                                self.symbolicationErrorDialog.msg = countlyCommon.unescapeHtml(err.responseJSON.result);
                             }
                             else {
                                 self.symbolicationErrorDialog.msg = err.statusText;
@@ -1221,7 +1221,7 @@
                             };
                         });
                     }
-                    catch (err) {
+                    catch {
                         binaryImages = [];
                     }
                 }
@@ -1481,7 +1481,7 @@
         try {
             parsedQuery = JSON.parse(rawQuery);
         }
-        catch (err) {
+        catch {
             // no need to do anything, default parsedQuery is null
         }
 

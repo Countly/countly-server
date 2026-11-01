@@ -72,7 +72,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 ]).toArray();
                 events = events.concat(metaEvents.map(e => e.e));
             }
-            catch (err) {
+            catch {
                 close("Invalid regex");
             }
         }

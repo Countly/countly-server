@@ -103,6 +103,26 @@ describe('Initial reading', function() {
                 });
         });
     });
+    describe('Reading users /me does not return credentials', function() {
+        it('should omit api_key and the second factor secret', function(done) {
+            request
+                .get('/o/users/me?api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    // the account's own fields are still there
+                    ob.should.have.property('email', testUtils.email);
+                    // but nothing that authenticates as this account
+                    ob.should.not.have.property('api_key');
+                    ob.should.not.have.property('password');
+                    ob.should.not.have.property('two_factor_auth');
+                    done();
+                });
+        });
+    });
     describe('Reading users /all', function() {
         it('should return information', function(done) {
             request

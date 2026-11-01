@@ -6,7 +6,7 @@ const { dot } = require('../../../../../api/utils/common');
  * @param {String} string string to personalize
  * @param {Object} personalizations object of {5: {f: 'fallback', c: false, k: 'key'}, 10: {...}} kind
  * 
- * @returns {function} function with single obejct parameter which returns final string for a given data
+ * @returns {Function} function with single obejct parameter which returns final string for a given data
  */
 module.exports = function personalize(string, personalizations) {
     let parts = [];

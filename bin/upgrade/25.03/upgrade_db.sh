@@ -33,6 +33,9 @@ then
     #run upgrade scripts
     nodejs "$SCRIPTS/scripts/merge_events_collections.js"
 
+    #load GeoNames reverse-geocoding data into database (replaces the sqlite file)
+    nodejs "$DIR/offline-geocoder/scripts/import_geonames_mongodb.js" --if-changed
+
 
     if [ "$1" != "combined" ]; then
         countly upgrade;

@@ -14,7 +14,7 @@ var apps = []; //Put in your APP ID like ["3469834986y34968y206y2"]
 var internal_events = [];
 var verbose = true;
 
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 var crypto = require('crypto');
 var pluginManager = require("../../../plugins/pluginManager");
 

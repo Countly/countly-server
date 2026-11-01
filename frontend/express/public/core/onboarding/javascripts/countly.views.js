@@ -289,6 +289,12 @@
     });
 
     app.route('/initial-setup', 'initial-setup', function() {
+        if (!_.isEmpty(countlyGlobal.apps)) {
+            // Apps already exist; the initial-setup dead-end shouldn't be shown
+            // (e.g. reached via a stale restored route). Send to the default app.
+            app.navigate("/" + (countlyGlobal.defaultApp && countlyGlobal.defaultApp._id ? countlyGlobal.defaultApp._id : ""), true);
+            return;
+        }
         this.renderWhenReady(new CV.views.BackboneWrapper({
             component: appSetupView,
             vuex: [{ clyModel: countlyOnboarding }],

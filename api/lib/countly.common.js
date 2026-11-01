@@ -357,7 +357,7 @@ function getPeriodObject(prmPeriod, bucket) {
         try {
             period = JSON.parse(period);
         }
-        catch (SyntaxError) {
+        catch {
             console.log("period JSON parse failed");
             period = "30days";
         }
@@ -745,7 +745,7 @@ countlyCommon.isValidPeriodParam = function(period) {
         try {
             period = JSON.parse(period);
         }
-        catch (SyntaxError) {
+        catch {
             return false;
         }
     }
@@ -932,7 +932,7 @@ countlyCommon.getDescendantProp = function(obj, desc) {
 * @param {object} db - countly standard metric data object
 * @param {string} propertyName - name of the property to extract
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-* @param {function} explainRange - function to convert range/bucket index to meaningful label
+* @param {Function} explainRange - function to convert range/bucket index to meaningful label
 * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
 * @example <caption>Extracting session frequency from users collection</caption>
 *    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
@@ -1019,7 +1019,7 @@ countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainR
 /**
 * Extract single level data without metrics/segments, like total user data from users collection
 * @param {object} db - countly standard metric data object
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} chartData - prefill chart data with labels, colors, etc
 * @param {object} dataProperties - describing which properties and how to extract
 * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
@@ -1172,7 +1172,7 @@ countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProp
  * Extract single level data without metrics/segments, like total user data from users collection
  * @memberof countlyCommon
  * @param {object} db - countly standard metric data object
- * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+ * @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
  * @param {object} chartData - prefill chart data with labels, colors, etc
  * @param {object} dataProperties - describing which properties and how to extract
  * @param {string}  metric  - metric to select
@@ -1393,7 +1393,7 @@ countlyCommon.extractStackedBarData = function(db, clearFunction, chartData, dat
 * Get total data for period's each time bucket as comma separated string to generate sparkle/small bar lines
 * @param {object} data - countly metric model data
 * @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
-* @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} periodObject - period object override
 * @returns {object} object with sparkleline data for each property
 * @example
@@ -1468,7 +1468,7 @@ countlyCommon.getSparklineData = function(data, props, clearObject, periodObject
 * Extract two level data with metrics/segments, like total user data from carriers collection
 * @param {object} db - countly standard metric data object
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
 * @param {string=} period - period to override
@@ -1695,12 +1695,12 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
 * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
 * @param {object} db - countly standard metric data object
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
-* @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+* @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
 * @param {number} maxItems - amount of items to return, default 3, if -1 return all
 * @param {string=} metric - metric to output and use in sorting, default "t"
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
-* @param {function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
+* @param {Function} fixBarSegmentData - function to make any adjustments to the extracted data based on segment
 * @param {string} period - period to extract data from
 * @returns {array} array with top 3 values
 * @example <caption>Return data</caption>
@@ -1840,7 +1840,7 @@ countlyCommon.getDateRange = function() {
 /**
 * Extract single level data without metrics/segments, like total user data from users collection
 * @param {object} db - countly standard metric data object
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
 * @param {module:api/lib/countly.common.periodObj} periodObject - period object override to use for extracting data
 * @returns {array} object to use in timeline graph
@@ -1978,7 +1978,7 @@ countlyCommon.extractData = function(db, clearFunction, dataProperties, periodOb
 * Extract metrics data break down by segments, like total user by carriers
 * @param {object} db - countly standard metric data object
 * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
-* @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+* @param {Function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
 * @param {object} dataProperties - describing which properties and how to extract
 * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
 * @returns {array} object to use in timeline graph
@@ -2632,7 +2632,7 @@ countlyCommon.getPeriodObj = function(params, defaultPeriod = "30days") {
         try {
             params.qstring.period = JSON.parse(params.qstring.period);
         }
-        catch (SyntaxError) {
+        catch {
             console.log("period JSON parse failed");
             params.qstring.period = defaultPeriod;
         }
@@ -2721,7 +2721,7 @@ countlyCommon.calculatePeriodObject = function(period, bucket) {
 /**
  * Function that increments strings alphabetically.
  * @param {string} str - string that next character will be calculated
- * @return {string} - calculated string
+ * @returns {string} - calculated string
  */
 countlyCommon.stringIncrement = function(str) {
     let carry = 1;

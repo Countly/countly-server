@@ -41,7 +41,7 @@ csv()
         }
     })
     .on('done', ()=>{
-        Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).spread(function(db, dbDrill) {
+        Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(function([db, dbDrill]) {
             if (batch.length > 0) {
                 batches.push(batch);
             }

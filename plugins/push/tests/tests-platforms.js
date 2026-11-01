@@ -4,8 +4,13 @@ const should = require('should'),
     { Splitter } = require('../api/send/platforms/utils/splitter'),
     FCM = require('../api/send/platforms/a');
 
-function decode() {
-    return Buffer.from('QUFBQTFFZE83dWs6QVBBOTFiRUVfWE5LU3U5aXdncTJuOGctYUdYaW9SeE9jN2swODBweHV2MklOcVVLZUV0alEtdDBxWWJ2cE01X2JYNmxKV0ZuUWNTSTIwU1g0c1drMXEyZThBT080Mk1FYjJGQm5faUc5cUV5M3dEZG5fZTl4WlZRWWNMX1FMQjJnVWIySkpVWTE2TTQ=', 'base64').toString('ascii');
+/**
+ * A FCM service-account.json data URI
+ * @param {object} account - its JSON content
+ * @returns {string} data URI
+ */
+function serviceAccount(account) {
+    return 'data:application/json;base64,' + Buffer.from(JSON.stringify(account)).toString('base64');
 }
 
 describe('PUSH PLATFORMS', () => {
@@ -79,25 +84,28 @@ describe('PUSH PLATFORMS', () => {
     //     splitter.end({frame: FRAME.SEND, payload: data, length: JSON.stringify(data).length});
     // });
 
-    it('FCM validates incorrect key', done => {
-        let cr = new FCM.CREDS.fcm({
-                key: 'test'
-            }),
-            c = new FCM.connection('push:test', 'a', cr, [], {pool: {concurrency: 10}, connection: {retries: 2}});
-        c.connect().then(ok => {
-            should.equal(ok, false);
-            done();
-        }, done);
-    }).timeout(3000);
+    // FCM credentials are a Firebase service account; the legacy server key API was shut
+    // down by Google in 2024. Checking an account against Google needs a real one, so these
+    // cover the validation that decides what can be saved.
+    it('FCM refuses credentials without a service account file, including a legacy server key', () => {
+        should.deepEqual(new FCM.CREDS.fcm({type: 'fcm'}).validate(), ['Updating FCM credentials requires a service-account.json file']);
+        should.deepEqual(new FCM.CREDS.fcm({type: 'fcm', key: 'AAAA-legacy-server-key'}).validate(), ['Updating FCM credentials requires a service-account.json file']);
+    });
 
-    it('FCM validates correct key', done => {
-        let cr = new FCM.CREDS.fcm({
-                key: decode()
-            }),
-            c = new FCM.connection('push:test', 'a', cr, [], {pool: {concurrency: 10}, connection: {retries: 2}});
-        c.connect().then(ok => {
-            should.equal(ok, true);
-            done();
-        }, done);
-    }).timeout(3000);
+    it('FCM refuses a service account file that is not a usable json', () => {
+        should.deepEqual(new FCM.CREDS.fcm({type: 'fcm', serviceAccountFile: 'data:text/plain;base64,e30='}).validate(), ['Service account file needs to be valid json file with .json file extension']);
+        should.deepEqual(new FCM.CREDS.fcm({type: 'fcm', serviceAccountFile: 'data:application/json;base64,' + Buffer.from('{x').toString('base64')}).validate(), ['Service account file includes an invalid JSON data']);
+        should.deepEqual(new FCM.CREDS.fcm({type: 'fcm', serviceAccountFile: serviceAccount({project_id: 'p', client_email: 'e@p'})}).validate(), ["Service account json doesn't contain project_id, private_key and client_email"]);
+    });
+
+    it('FCM accepts a complete service account and hashes it', () => {
+        const file = serviceAccount({project_id: 'countly-test', private_key: '-----BEGIN PRIVATE KEY-----\nx\n-----END PRIVATE KEY-----\n', client_email: 'push@countly-test.iam.gserviceaccount.com'}),
+            creds = new FCM.CREDS.fcm({type: 'fcm', serviceAccountFile: file}),
+            same = new FCM.CREDS.fcm({type: 'fcm', serviceAccountFile: file});
+        should.not.exist(creds.validate());
+        should.not.exist(same.validate());
+        // the hash identifies the account, so uploading the same file again matches it
+        creds._data.hash.should.match(/^[0-9a-f]{64}$/);
+        should.equal(same._data.hash, creds._data.hash);
+    });
 });

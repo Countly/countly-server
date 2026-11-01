@@ -508,6 +508,14 @@ export interface Common {
     fixEventKey: (eventKey: string) => string | false;
 
     /**
+     * Keep a request parameter out of the shape Mongo reads as a query expression:
+     * a scalar is returned unchanged, an object or array as its JSON text. Applied
+     * where request fields are copied into params.qstring, so a structure cannot
+     * reach a Mongo value position and be read there as an operator document.
+     */
+    asRequestScalar: (value: any) => any;
+
+    /**
      * Block {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} from ouputting anything
      * @param {Params} params - params object
      */

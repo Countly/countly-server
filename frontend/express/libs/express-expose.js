@@ -27,7 +27,7 @@ var _name = 'javascript';
  * @param {Object|String|Function} obj - object to expose
  * @param {String} namespace - namespace for exposing
  * @param {String} name - name of the key
- * @return {HTTPServer} for chaining
+ * @returns {HTTPServer} for chaining
  * @api public
  */
 function expose(obj, namespace, name) {
@@ -109,7 +109,7 @@ function expose(obj, namespace, name) {
  * Render the exposed javascript.
  *
  * @param {string} name - name of exposed value
- * @return {String} exposed value
+ * @returns {String} exposed value
  * @api private
  */
 function exposed(name) {
@@ -132,7 +132,7 @@ function exposed(name) {
  *    foo.bar.baz = foo.bar.baz || {};
  *
  * @param {String} str - namespace name
- * @return {String} rendered string to be used in source
+ * @returns {String} rendered string to be used in source
  * @api private
  */
 function renderNamespace(str) {
@@ -151,7 +151,7 @@ function renderNamespace(str) {
  *
  * @param {Object} obj - object to render
  * @param {String} namespace - render ybder provided namespace
- * @return {String} rendered object
+ * @returns {String} rendered object
  * @api private
  */
 function renderObject(obj, namespace) {
@@ -165,7 +165,7 @@ function renderObject(obj, namespace) {
  * Return a string representation of `obj`.
  *
  * @param {Mixed} obj - object to stringify
- * @return {String} stringified object
+ * @returns {String} stringified object
  * @api private
  */
 function string(obj) {
@@ -186,9 +186,13 @@ function string(obj) {
     else {
         obj = JSON.stringify(obj);
         if (obj) {
-            // Only escape things that could break out of script context
-            obj = obj.replace(/<\/script>/ig, '</scr"+"ipt>');
-            obj = obj.replace(/<!--/g, '<\\!--');
+            // Escape "<" so nothing serialized here can open or close a tag in the inline
+            // <script> block this value is written into. A "</script>" end tag terminates the
+            // script in any of its whitespace/slash spellings (</script >, </script/>, ...),
+            // which an exact-match replace of "</script>" misses; escaping every "<" closes all
+            // of those plus "<!--" and "<script". "<" parses back to "<", so runtime
+            // values read from the exposed object are unchanged.
+            obj = obj.replace(/</g, '\\u003c');
             obj = obj.replace(/\u2028/g, '\\u2028'); // Line separator
             obj = obj.replace(/\u2029/g, '\\u2029'); // Paragraph separator
         }
@@ -200,7 +204,7 @@ function string(obj) {
 * Escape special characters that could break JavaScript string context
 *
 * @param  {string} str - The string to escape
-* @return {string} escaped string
+* @returns {string} escaped string
 * @public
 */
 function escape_js_string(str) {
@@ -222,7 +226,8 @@ function escape_js_string(str) {
         .replace(/\0/g, '\\0') // Null character
         .replace(/[\u0000-\u001F\u007F-\u009F]/g, function(ch) {
             return '\\u' + ('0000' + ch.charCodeAt(0).toString(16)).slice(-4);
-        });
+        })
+        .replace(/</g, '\\u003c'); // "<" so a key cannot break out of the <script> block
 }
 
 exports = module.exports = function(app) {

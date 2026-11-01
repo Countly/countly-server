@@ -21,7 +21,7 @@ var separator = "***";
 /**
  *  Gets collection name to select data from
  *  @param {string} val - data index
- *  @return {string} collection name
+ *  @returns {string} collection name
  */
 function toCollection(val) {
     var ob = {
@@ -43,7 +43,7 @@ function toCollection(val) {
 /**
  *  Gets model name to select data from
  *  @param {string} val - data index
- *  @return {string} model name
+ *  @returns {string} model name
  */
 function toModel(val) {
     var ob = {
@@ -62,7 +62,7 @@ function toModel(val) {
 /**
  *  Gets segment name to select data from
  *  @param {string} val - data index
- *  @return {string} segment name
+ *  @returns {string} segment name
  */
 function toSegment(val) {
     var ob = {
@@ -1044,6 +1044,11 @@ async function getPushDataForApp(params, apps, appId, widget) {
             data = model.getTimelineData();
 
             for (var z in data) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (z === "__proto__" || z === "constructor" || z === "prototype") {
+                    continue;
+                }
                 if (!widgetData[z]) {
                     widgetData[z] = {};
                 }

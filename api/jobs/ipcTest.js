@@ -83,7 +83,7 @@ class Test extends job.IPCJob {
      * Run the job
      * @param {Db} db connection
      * @param {done} done callback
-     * @param {function} progress to report progress of the job
+     * @param {Function} progress to report progress of the job
      */
     run(db, done, progress) {
         log.d('running ', this._json);

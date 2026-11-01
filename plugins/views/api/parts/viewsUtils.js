@@ -2,8 +2,39 @@ var common = require('../../../../api/utils/common.js');
 var plugins = require('../../../pluginManager.js');
 var log = common.log('views:api');
 var crypto = require('crypto');
+var { hasReadRight } = require('../../../../api/utils/rights.js');
 
 module.exports = {
+    /**
+    * Whether a token's owner, bounded by the token, may read a feature for an app.
+    *
+    * The member handed in here must already be the token-scoped one: rights.js bounds a
+    * member by the authenticating token's permissions before any handler runs, and this
+    * route resolves its own token, so it has to do the same before asking this.
+    *
+    * hasReadRight covers feature permissions, an app admin and a global admin, but not the
+    * legacy membership validateRead still honours: a member stored before permission
+    * objects existed has no `permission` at all and is granted read through `user_of`.
+    * Refusing those would take away access the same member's api_key still has. A locked
+    * account is refused, as validateRead refuses it.
+    * @param {object} member - the member a token resolved to, already token-scoped
+    * @param {string} appId - id of the app the request resolved to
+    * @param {string} feature - feature being read
+    * @returns {boolean} true when this caller may read
+    **/
+    ownerCanRead: function(member, appId, feature) {
+        if (!member || member.locked) {
+            return false;
+        }
+        if (member.global_admin) {
+            return true;
+        }
+        if (typeof member.permission === "undefined") {
+            return Array.isArray(member.user_of) && member.user_of.indexOf(appId) !== -1;
+        }
+        return !!hasReadRight(feature, appId, member);
+    },
+
     ommit_segments: function(options, callback) {
         var db = options.db || common.db;
         var omit = options.omit || [];

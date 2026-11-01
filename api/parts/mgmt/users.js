@@ -8,11 +8,13 @@ var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
+    preventBruteforce = require('../../../frontend/express/libs/preventBruteforce.js'),
     plugins = require('../../../plugins/pluginManager.js'),
     { hasAdminAccess, getUserApps, getAdminApps, hasReadRight } = require('./../../utils/rights.js');
 
 const countlyCommon = require('../../lib/countly.common.js');
 const log = require('../../utils/log.js')('core:mgmt.users');
+const authorize = require('../../utils/authorizer.js');
 const _ = require('lodash');
 
 //for password checking when deleting own account. Could be removed after merging with next
@@ -24,9 +26,26 @@ var crypto = require('crypto');
 * @returns {boolean} true
 **/
 usersApi.getCurrentUser = function(params) {
-    delete params.member.password;
+    //Answer with a copy, so removing fields here cannot affect the member object the rest
+    //of the request still uses.
+    var member = Object.assign({}, params.member);
 
-    common.returnOutput(params, params.member);
+    //The api_key is not scoped: it grants everything its owner can do, on every app they
+    //can reach. getUserById and getAllUsers already project it away, and the member event
+    //payloads delete it, so this was the one read path that handed it out. It matters here
+    //because a request can be authorized by a token rather than by the key itself, and a
+    //token can be limited to a single app, so returning the key would let a token that is
+    //limited to one app produce a credential that is limited to nothing. Anyone who needs
+    //their own key can still read it from the dashboard's /api-key route.
+    delete member.password;
+    delete member.api_key;
+    //Same reasoning for the second factor, whose secret lives on the member document: a
+    //response carrying both the key and the secret behind the factor protecting it protects
+    //nothing. The whole object goes, since this endpoint has no consumer that needs it and
+    //the enabled flag is available from the user listing.
+    delete member.two_factor_auth;
+
+    common.returnOutput(params, member);
     return true;
 };
 
@@ -95,7 +114,8 @@ usersApi.getAllUsers = function(params) {
             var membersObj = {};
 
             for (let i = 0; i < members.length; i++) {
-                const result = failedLogins.find(x => (x._id === JSON.stringify(["login", members[i].username]))) || { fails: 0 };
+                const counterIds = preventBruteforce.loginCounterIds(members[i].username);
+                const result = failedLogins.find(x => x._id === counterIds[0]) || failedLogins.find(x => x._id === counterIds[1]) || { fails: 0 };
 
                 if (result.fails > 0 && result.fails % bruteforceFails === 0 && Math.floor(new Date().getTime() / 1000) < (((result.fails / bruteforceFails) * bruteforceWait) + result.lastFail)) {
                     members[i].blocked = true;
@@ -127,7 +147,7 @@ usersApi.getAllUsers = function(params) {
 * @returns {boolean} true if timeban reseted
 **/
 usersApi.resetTimeBan = function(params) {
-    common.db.collection('failed_logins').remove({_id: JSON.stringify(["login", params.qstring.username])}, (err) => {
+    common.db.collection('failed_logins').remove({_id: {$in: preventBruteforce.loginCounterIds(params.qstring.username)}}, (err) => {
         if (err) {
             common.returnMessage(params, 500, 'Remove from collection failed.');
             return false;
@@ -286,9 +306,15 @@ usersApi.createUser = async function(params) {
                         mail.sendToNewMemberLink(member[0], prid);
                     });
 
+                    // Broadcast a credential-free copy of the new member to
+                    // event listeners (e.g. hooks): the member's password hash
+                    // and api_key must never be forwarded into a hook payload.
+                    var createdMemberEventData = Object.assign({}, member[0]);
+                    delete createdMemberEventData.password;
+                    delete createdMemberEventData.api_key;
                     plugins.dispatch("/i/users/create", {
                         params: params,
-                        data: member[0]
+                        data: createdMemberEventData
                     });
                     delete member[0].password;
 
@@ -305,11 +331,13 @@ usersApi.createUser = async function(params) {
 };
 
 /**
-    * Removes all active sessions for user
+    * Removes all active sessions and tokens of a user
     * @param {string} userId - id of the user for which to remove sessions
+    * @returns {Promise} resolves once the tokens are revoked
     **/
 function killAllSessionForUser(userId) {
-    common.db.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
+    const userIdString = userId + "";
+    common.db.collection('sessions_').find({"session": { $regex: userIdString }}).toArray(function(err, sessions) {
 
         var delete_us = [];
         sessions = sessions || [];
@@ -318,10 +346,10 @@ function killAllSessionForUser(userId) {
             try {
                 parsed_data = JSON.parse(sessions[i].session);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse ' + sessions[i].session + ' JSON failed');
             }
-            if (parsed_data && parsed_data.uid === userId) {
+            if (parsed_data && (parsed_data.uid + "") === userIdString) {
                 delete_us.push(sessions[i]._id);
             }
         }
@@ -329,10 +357,10 @@ function killAllSessionForUser(userId) {
             common.db.collection('sessions_').remove({ '_id': { $in: delete_us } });
         }
     });
-    //delete auth tokens
-    common.db.collection('auth_tokens').remove({
-        'owner': userId,
-        'purpose': "LoggedInAuth"
+    //every token the member owns: used when an admin sets the password, locks the member,
+    //and when the member is deleted
+    return authorize.revokeMemberTokens({db: common.db, owner: userIdString}).catch(function(err) {
+        console.log('Revoking tokens of member ' + userIdString + ' failed', err);
     });
 
 }
@@ -353,7 +381,7 @@ usersApi.updateHomeSettings = function(params) {
         try {
             params.qstring.homeSettings = JSON.parse(params.qstring.homeSettings);
         }
-        catch (SyntaxError) {
+        catch {
             params.qstring.homeSettings = {};
         }
         var updateObj = {};
@@ -548,6 +576,24 @@ usersApi.updateUser = async function(params) {
         delete updatedMember.user_of;
     }
 
+    //a permission sent without its app lists gets them here, as it does on creation: the rights
+    //checks read permission._, so a member saved without it was refused on every app admin call
+    if (updatedMember.permission) {
+        if (typeof updatedMember.permission._ !== "object" || updatedMember.permission._ === null) {
+            updatedMember.permission._ = {};
+        }
+        if (!Array.isArray(updatedMember.permission._.a)) {
+            updatedMember.permission._.a = [];
+        }
+        if (!Array.isArray(updatedMember.permission._.u)) {
+            updatedMember.permission._.u = [];
+        }
+        ["c", "r", "u", "d"].forEach(function(accessType) {
+            if (typeof updatedMember.permission[accessType] !== "object" || updatedMember.permission[accessType] === null) {
+                updatedMember.permission[accessType] = {};
+            }
+        });
+    }
 
     common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err, memberBefore) {
         common.db.collection('members').update({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, { '$set': updatedMember }, { safe: true }, function(errUpdatingUser) {
@@ -558,15 +604,25 @@ usersApi.updateUser = async function(params) {
             common.db.collection('members').findOne({ '_id': common.db.ObjectID(params.qstring.args.user_id) }, function(err2, member) {
                 if (member && !err2) {
                     updatedMember._id = params.qstring.args.user_id;
+                    // never forward credentials into event payloads (e.g. hooks)
+                    var updatedMemberEventData = Object.assign({}, updatedMember);
+                    delete updatedMemberEventData.password;
+                    delete updatedMemberEventData.api_key;
+                    var memberBeforeEventData = Object.assign({}, memberBefore);
+                    delete memberBeforeEventData.password;
+                    delete memberBeforeEventData.api_key;
                     plugins.dispatch("/i/users/update", {
                         params: params,
-                        data: updatedMember,
-                        member: memberBefore
+                        data: updatedMemberEventData,
+                        member: memberBeforeEventData
                     });
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
-                    if (updatedMember.password && params.member._id + "" !== updatedMember._id + "") {
+                    //a new password or a new lock ends the member's sessions and tokens, so unlocking
+                    //does not bring them back; never the session of the admin saving it
+                    var newlyLocked = updatedMember.locked === true && !(memberBefore && memberBefore.locked === true);
+                    if ((updatedMember.password || newlyLocked) && params.member._id + "" !== updatedMember._id + "") {
                         killAllSessionForUser(updatedMember._id);
                     }
 
@@ -616,10 +672,14 @@ usersApi.deleteUser = async function(params) {
         else {
             const user = await common.db.collection('members').findOne({ '_id': common.db.ObjectID(userIds[i]) });
             const promisifiedDispatch = function(prms, data) {
+                // never forward credentials into event payloads (e.g. hooks)
+                var safeData = Object.assign({}, data);
+                delete safeData.password;
+                delete safeData.api_key;
                 return new Promise((resolve, reject) => {
                     plugins.dispatch("/i/users/delete", {
                         params: prms,
-                        data,
+                        data: safeData,
                     }, async(__, otherPluginResults) => {
                         const rejectReasons = otherPluginResults.reduce((acc, result) => {
                             if (result.status === "rejected") {
@@ -635,7 +695,7 @@ usersApi.deleteUser = async function(params) {
                             reject(false);
                         }
                         else {
-                            await common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
+                            await killAllSessionForUser(userIds[i]);
                             await usersApi.deleteUserNotes({ member: { _id: userIds[i] } });
                             await common.db.collection('members').remove({_id: common.db.ObjectID(userIds[i])});
                             deleteUserPresets(userIds[i]);
@@ -801,7 +861,7 @@ usersApi.deleteOwnAccount = function(params) {
                 else {
                     try {
                         await common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")});
-                        killAllSessionForUser(member._id);
+                        await killAllSessionForUser(member._id);
                         deleteUserPresets(member._id);
                         common.returnMessage(params, 200, 'Success');
                     }
@@ -813,6 +873,10 @@ usersApi.deleteOwnAccount = function(params) {
             };
 
             if (member) {
+                // never forward credentials into event payloads (e.g. hooks)
+                var memberEventData = Object.assign({}, member);
+                delete memberEventData.password;
+                delete memberEventData.api_key;
                 if (member.global_admin) {
                     common.db.collection('members').count({'global_admin': true}, function(err2, count) {
                         if (err2) {
@@ -825,7 +889,7 @@ usersApi.deleteOwnAccount = function(params) {
                         else {
                             plugins.dispatch("/i/users/delete", {
                                 params: params,
-                                data: member
+                                data: memberEventData
                             }, dispatchDeleteCallback);
                         }
                     });
@@ -833,7 +897,7 @@ usersApi.deleteOwnAccount = function(params) {
                 else {
                     plugins.dispatch("/i/users/delete", {
                         params: params,
-                        data: member
+                        data: memberEventData
                     }, dispatchDeleteCallback);
                 }
             }
@@ -1117,9 +1181,9 @@ usersApi.fetchNotes = async function(params) {
         // for any caller with notes:read.
         var rawSearch = (params.qstring.sSearch + "").slice(0, 256);
         var escapedSearch = rawSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        /*eslint-disable */
+
         query.note = {$regex: new RegExp(escapedSearch, "i")};
-        /*eslint-enable */
+
     }
     if (params.qstring.iSortCol_0 && params.qstring.iSortCol_0 !== '0') {
         Object.assign(sortBy, { [orderByKey[params.qstring.iSortCol_0]]: orderDirection[params.qstring.sSortDir_0]});

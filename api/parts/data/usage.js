@@ -7,7 +7,7 @@
 var usage = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
-    geocoder = require('offline-geocoder')(),
+    geocoder = require('../../../bin/offline-geocoder/src/index.js')({getDb: () => common.db}),
     log = require('../../utils/log.js')('api:usage'),
     async = require('async'),
     plugins = require('../../../plugins/pluginManager.js'),
@@ -172,7 +172,7 @@ usage.setUserLocation = function(params, loc) {
 /**
 * Process session_duration calls
 * @param {params} params - params object
-* @param {function} callback - callback when done
+* @param {Function} callback - callback when done
 **/
 usage.processSessionDuration = function(params, callback) {
     var updateUsers = {},
@@ -413,7 +413,7 @@ usage.returnAllProcessedMetrics = function(params) {
 * Process session duration ranges for Session duration metric
 * @param {number} totalSessionDuration - duration of session
 * @param {params} params - params object
-* @param {function} done - callback when done
+* @param {Function} done - callback when done
 **/
 usage.processSessionDurationRange = function(totalSessionDuration, params, done) {
     var durationRanges = [
@@ -465,7 +465,7 @@ usage.processSessionDurationRange = function(totalSessionDuration, params, done)
 * Process ending user session and calculate loyalty and frequency range metrics
 * @param {object} dbAppUser - user's document
 * @param {params} params - params object
-* @param {function} done - callback when done
+* @param {Function} done - callback when done
 * @returns {void} void
 **/
 function processUserSession(dbAppUser, params, done) {
@@ -642,7 +642,7 @@ function processUserSession(dbAppUser, params, done) {
 * @param {array} uniqueLevelsZero - unique properties of zero document
 * @param {array} uniqueLevelsMonth - unique properties of month document
 * @param {params} params - params object
-* @param {function} done - callback when done
+* @param {Function} done - callback when done
 * @returns {boolean} true
 **/
 function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
@@ -720,7 +720,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
     /**
     * Get meta of aggregated data
     * @param {string} id - id of the document in database
-    * @param {function} callback - callback when done
+    * @param {Function} callback - callback when done
     **/
     function fetchMeta(id, callback) {
         common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err, metaDoc) => {

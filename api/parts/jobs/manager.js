@@ -9,7 +9,7 @@ const JOB = require('./job.js'),
     STATUS = JOB.STATUS,
     log = require('../../utils/log.js')('jobs:manager'),
     manager = require('../../../plugins/pluginManager.js'),
-    later = require('later');
+    later = require('@breejs/later');
 
 const DELAY_BETWEEN_CHECKS = 1000,
     MAXIMUM_IN_LINE_JOBS_PER_NAME = 10,
@@ -102,7 +102,7 @@ class Manager {
                         /**
                         * Apply transformation to each array elementFromPoint
                         * @param {array} arr - array to transform
-                        * @param {function} transform - transformation function
+                        * @param {Function} transform - transformation function
                         * @returns {Promise} promise
                         **/
                         let sequence = (arr, transform) => {

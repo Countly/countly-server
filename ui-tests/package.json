@@ -16,9 +16,9 @@
     "moment": "^2.29.4"
   },
   "devDependencies": {
-    "cypress": "^15.11.0",
-    "pdfjs-dist": "^5.4.530",
-    "pixelmatch": "^7.1.0",
+    "cypress": "^16.0.0",
+    "pdfjs-dist": "^6.2.108",
+    "pixelmatch": "^8.0.0",
     "pngjs": "^7.0.0",
     "sharp": "^0.35.0"
   }

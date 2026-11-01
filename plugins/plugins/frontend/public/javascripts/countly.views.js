@@ -28,7 +28,7 @@
                     try {
                         self.pluginsData = JSON.parse(JSON.stringify(countlyPlugins.getData()));
                     }
-                    catch (ex) {
+                    catch {
                         self.pluginsData = [];
                     }
                     for (var i = 0; i < self.pluginsData.length; i++) {
@@ -59,7 +59,7 @@
                                 return true;
                             });
                         }
-                        catch (ex) {
+                        catch {
                             self.pluginsData = [];
                         }
                     }
@@ -199,7 +199,7 @@
                         return true;
                     });
                 }
-                catch (ex) {
+                catch {
                     this.pluginsData = [];
                 }
             },
@@ -274,7 +274,7 @@
                     try {
                         this.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
                     }
-                    catch (ex) {
+                    catch {
                         this.configsData = {};
                     }
 
@@ -564,7 +564,7 @@
                 try {
                     this.configsData = JSON.parse(JSON.stringify(countlyPlugins.getConfigsData()));
                 }
-                catch (ex) {
+                catch {
                     this.configsData = {};
                 }
                 this.diff = [];
@@ -737,7 +737,7 @@
                     try {
                         self.userConfigs = JSON.parse(JSON.stringify(countlyPlugins.getUserConfigsData()));
                     }
-                    catch (ex) {
+                    catch {
                         self.userConfigs = {};
                     }
                     if (!self.userConfigs.frontend) {
@@ -1359,6 +1359,13 @@
     });
 
     app.route('/account-settings/no-access', 'account-settings', function() {
+        if (!_.isEmpty(countlyGlobal.apps)) {
+            // The member actually has app access; don't render the no-access
+            // dead-end (e.g. reached via a stale restored route). Send them to
+            // their default app instead.
+            app.navigate("/" + (countlyGlobal.defaultApp && countlyGlobal.defaultApp._id ? countlyGlobal.defaultApp._id : ""), true);
+            return;
+        }
         var view = getAccountView();
         view.params = {noaccess: true};
         this.renderWhenReady(view);

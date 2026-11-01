@@ -11,7 +11,7 @@ var INDEX_NAME = "cd_1";
 
 var async = require('async'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../../../../api/utils/promise.js"),
     plugins = require('../../../plugins/pluginManager.js');
 
 //var db = plugins.dbConnection("countly");

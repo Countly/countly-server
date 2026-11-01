@@ -131,7 +131,7 @@ class Note {
 
     /**
      * Whether the notification doesn't need a build phase at creation
-     * @return {Boolean} true if doesn't
+     * @returns {Boolean} true if doesn't
      */
     get doesntPrepare() {
         return this.auto || this.tx || (this.date && this.delayed && this.date.getTime() > Date.now() + 5 * 60000);
@@ -416,7 +416,7 @@ class Note {
      * apn-push-type check
      * @param  {String}  platform platform
      * @param  {Object}  msg      message object
-     * @return {Boolean}          true if the note is an alert for corresponding message
+     * @returns {Boolean}          true if the note is an alert for corresponding message
      */
     isAlert(platform, msg) {
         if (platform === Platform.IOS) {
@@ -515,6 +515,12 @@ class Note {
             }
             if (data) {
                 for (let k in data) {
+                    //data comes off a stored message, so k can be a literal "__proto__".
+                    //compiled is built here, so compiled[k] would be Object.prototype,
+                    //which satisfies every test below and would be written into.
+                    if (k === "__proto__" || k === "constructor" || k === "prototype") {
+                        continue;
+                    }
                     if (compiled[k] && typeof compiled[k] === 'object' && !Array.isArray(compiled[k]) && typeof data[k] === 'object') {
                         for (let kk in data[k]) {
                             compiled[k][kk] = data[k][kk];
@@ -760,7 +766,7 @@ class Note {
      * @param  {Mongo} db           db instance
      * @param  {int} count          number of notifications to cancel
      * @param  {String} errorCode   error code
-     * @return {Promise}            db update result
+     * @returns {Promise}            db update result
      */
     cancelNotes(db, count, errorCode) {
         let update = {$inc: {'result.processed': count, 'result.errors': count, ['result.errorCodes.' + errorCode]: count}};

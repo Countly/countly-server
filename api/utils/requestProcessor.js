@@ -8,11 +8,11 @@
  * @typedef {import('../../types/common').TimeObject} TimeObject
  */
 
-const Promise = require('bluebird');
+const Promise = require('./promise.js');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getUserAppsWithReadRight, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -191,7 +191,7 @@ const processRequest = (params) => {
                     try {
                         requests = JSON.parse(requests);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
                         requests = null;
                     }
@@ -218,7 +218,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse %s JSON failed. URL: %s, Body: %s', apiPath, params.req.url, JSON.stringify(params.req.body));
                     }
                 }
@@ -354,7 +354,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
@@ -374,6 +374,15 @@ const processRequest = (params) => {
             }
             case '/o/render': {
                 validateUserForRead(params, function() {
+                    //The render endpoint mints an owner-authority login token and drives a headless
+                    //session with it, so it must only be reachable by a credential that already holds
+                    //the owner's full authority. A scoped token (or a legacy app/endpoint-restricted
+                    //one) would otherwise have a view rendered with more authority than the token
+                    //itself carries. Same rule as the token management endpoints.
+                    if (isScopedCredential(params)) {
+                        common.returnMessage(params, 403, "A restricted token cannot render a view");
+                        return;
+                    }
                     var options = {};
                     var view = params.qstring.view || "";
                     var route = params.qstring.route || "";
@@ -384,8 +393,9 @@ const processRequest = (params) => {
 
                     var imageName = "screenshot_" + common.crypto.randomBytes(16).toString("hex") + ".png";
 
+                    //no source: the screenshot is stored under its own random file name,
+                    //which is what the public screenshots route looks it up by
                     options.savePath = path.resolve(__dirname, "../../frontend/express/public/images/screenshots/" + imageName);
-                    options.source = "core";
 
                     authorize.save({
                         db: common.db,
@@ -393,6 +403,8 @@ const processRequest = (params) => {
                         owner: params.member._id,
                         ttl: 300,
                         purpose: "LoginAuthToken",
+                        //the headless renderer authenticates by redeeming this at /login/token
+                        can_login: true,
                         callback: function(err2, token) {
                             if (err2) {
                                 common.returnMessage(params, 400, 'Error creating token: ' + err2);
@@ -426,7 +438,7 @@ const processRequest = (params) => {
                         try {
                             params.qstring.data = JSON.parse(params.qstring.data);
                         }
-                        catch (ex) {
+                        catch {
                             console.log("Could not parse data", params.qstring.data);
                             common.returnMessage(params, 400, 'Could not parse parameter "data": ' + params.qstring.data);
                             return false;
@@ -461,7 +473,7 @@ const processRequest = (params) => {
                         try {
                             params.qstring.update = JSON.parse(params.qstring.update);
                         }
-                        catch (ex) {
+                        catch {
                             console.log("Could not parse update", params.qstring.update);
                             common.returnMessage(params, 400, 'Could not parse parameter "update": ' + params.qstring.update);
                             return false;
@@ -707,7 +719,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
@@ -913,7 +925,7 @@ const processRequest = (params) => {
                                 try {
                                     params.qstring.whitelisted_segments = JSON.parse(params.qstring.whitelisted_segments);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     params.qstring.whitelisted_segments = {}; console.log('Parse ' + params.qstring.whitelisted_segments + ' JSON failed', params.req.url, params.req.body);
                                 }
 
@@ -988,7 +1000,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.order = JSON.parse(params.qstring.event_order);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.order = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', params.req.url, params.req.body);
                                 }
                             }
@@ -1000,7 +1012,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.overview = JSON.parse(params.qstring.event_overview);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', params.req.url, params.req.body);
                                 }
                                 if (update_array.overview && Array.isArray(update_array.overview)) {
@@ -1056,7 +1068,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.omitted_segments = JSON.parse(JSON.stringify(event.omitted_segments));
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.omitted_segments = {};
                                 }
                             }
@@ -1069,7 +1081,7 @@ const processRequest = (params) => {
                                         omitted_segments_empty = true;
                                     }
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     params.qstring.omitted_segments = {}; console.log('Parse ' + params.qstring.omitted_segments + ' JSON failed', params.req.url, params.req.body);
                                 }
 
@@ -1095,7 +1107,7 @@ const processRequest = (params) => {
                                 try {
                                     params.qstring.event_map = JSON.parse(params.qstring.event_map);
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     params.qstring.event_map = {}; console.log('Parse ' + params.qstring.event_map + ' JSON failed', params.req.url, params.req.body);
                                 }
 
@@ -1103,7 +1115,7 @@ const processRequest = (params) => {
                                     try {
                                         update_array.map = JSON.parse(JSON.stringify(event.map));
                                     }
-                                    catch (SyntaxError) {
+                                    catch {
                                         update_array.map = {};
                                     }
                                 }
@@ -1296,7 +1308,7 @@ const processRequest = (params) => {
                         try {
                             idss = JSON.parse(params.qstring.events);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             idss = [];
                         }
 
@@ -1459,7 +1471,7 @@ const processRequest = (params) => {
                             try {
                                 idss = JSON.parse(params.qstring.events);
                             }
-                            catch (SyntaxError) {
+                            catch {
                                 idss = [];
                             }
                             if (!Array.isArray(idss)) {
@@ -1470,7 +1482,7 @@ const processRequest = (params) => {
                                 try {
                                     update_array.map = JSON.parse(JSON.stringify(event.map));
                                 }
-                                catch (SyntaxError) {
+                                catch {
                                     update_array.map = {};
                                     console.log('Parse ' + event.map + ' JSON failed', params.req.url, params.req.body);
                                 }
@@ -1574,7 +1586,7 @@ const processRequest = (params) => {
                     try {
                         params.qstring.events = JSON.parse(params.qstring.events);
                     }
-                    catch (SyntaxError) {
+                    catch {
                         console.log('Parse events JSON failed', params.qstring.events, params.req.url, params.req.body);
                     }
                 }
@@ -1607,7 +1619,26 @@ const processRequest = (params) => {
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.getAllUsers);
                     break;
                 case 'me':
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
+                    validateUserForMgmtReadAPI(function() {
+                        //This endpoint answers with the caller's own account and belongs to no
+                        //application, so a token that was deliberately limited to some
+                        //applications has no business reading it. Without this an app limited
+                        //token still reached account level data, because the app restriction in
+                        //verify_token is only compared when the request itself names an app.
+                        //
+                        //params.token_data is the document the validation above already read.
+                        //It is deliberately not looked up again: verify_token consumes a single
+                        //use token, so a second read finds nothing, and absence would then read
+                        //as "unrestricted" - the restriction would be dropped for exactly the
+                        //tokens that are meant to be the most limited. A request authorized by
+                        //an api_key carries no token_data and has no restriction to honour.
+                        var tokenData = params.token_data;
+                        if (tokenData && tokenData.app && tokenData.app.length) {
+                            common.returnMessage(params, 401, 'Token is restricted to specific applications');
+                            return false;
+                        }
+                        return countlyApi.mgmt.users.getCurrentUser(params);
+                    }, params);
                     break;
                 case 'id':
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.users.getUserById);
@@ -1674,7 +1705,7 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
                         return false;
                     }
-                    validateUserForRead(params, countlyApi.mgmt.appUsers.loyalty);
+                    validateRead(params, 'core', countlyApi.mgmt.appUsers.loyalty);
                     break;
                 }
                 /**
@@ -1867,8 +1898,25 @@ const processRequest = (params) => {
                         params.qstring.query.subtask = {$exists: false};
                         params.qstring.query.app_id = params.qstring.app_id;
                         if (params.qstring.app_ids && params.qstring.app_ids !== "") {
-                            var ll = params.qstring.app_ids.split(",");
+                            var ll = params.qstring.app_ids.split(",").map(function(id) {
+                                return id.trim();
+                            }).filter(Boolean);
                             if (ll.length > 1) {
+                                // validateRead only checked the single app_id; every app
+                                // in the multi-app list must also be one the member can read
+                                if (!params.member.global_admin) {
+                                    var allowedTaskApps = (getAdminApps(params.member) || [])
+                                        .concat(getUserAppsForFeaturePermission(params.member, 'core', 'r') || []);
+                                    if (typeof params.member.permission === "undefined" && Array.isArray(params.member.user_of)) {
+                                        allowedTaskApps = allowedTaskApps.concat(params.member.user_of);
+                                    }
+                                    for (var taskAppIdx = 0; taskAppIdx < ll.length; taskAppIdx++) {
+                                        if (allowedTaskApps.indexOf(ll[taskAppIdx]) === -1) {
+                                            common.returnMessage(params, 401, 'User does not have access to one or more of the requested apps');
+                                            return;
+                                        }
+                                    }
+                                }
                                 params.qstring.query.app_id = {$in: ll};
                             }
                         }
@@ -2092,6 +2140,15 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "collection"');
                             return false;
                         }
+                        // query params can be parsed into arrays/objects; force a
+                        // plain string before any substring check or access lookup
+                        params.qstring.collection = params.qstring.collection + "";
+                        // keep the db export surface aligned with DB Viewer: internal
+                        // index metadata and the dashboard session store are not exportable
+                        if (params.qstring.collection.indexOf("system.indexes") !== -1 || params.qstring.collection.indexOf("sessions_") !== -1) {
+                            common.returnMessage(params, 401, 'User does not have access right for this collection');
+                            return false;
+                        }
                         if (typeof params.qstring.filter === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.filter, common.reviver);
@@ -2114,7 +2171,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.projection = JSON.parse(params.qstring.projection);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.projection = null;
                             }
                         }
@@ -2122,15 +2179,21 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.projection = JSON.parse(params.qstring.project);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.projection = null;
                             }
                         }
+                        //The projection reaches find() as given, and the credential redaction
+                        //further down works by field name, so an expression that renames or
+                        //computes a field would carry a redacted value out under a name the
+                        //redaction does not know. Restrict it to plain include and exclude, the
+                        //same guard the DB Viewer applies to its own projections.
+                        common.sanitizeProjection(params.qstring.projection);
                         if (typeof params.qstring.sort === "string") {
                             try {
                                 params.qstring.sort = JSON.parse(params.qstring.sort);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.sort = null;
                             }
                         }
@@ -2139,7 +2202,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.formatFields = JSON.parse(params.qstring.formatFields);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.formatFields = null;
                             }
                         }
@@ -2148,13 +2211,16 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.get_index = JSON.parse(params.qstring.get_index);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.get_index = null;
                             }
                         }
 
+                        //the shared event collections hold every app's rows: exportable with the read right of a
+                        //feature that reads them on at least one app, and scoped to those apps below
+                        var sharedFeatures = getSharedCollectionExportFeatures(params.qstring.db, params.qstring.collection);
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
-                            if (hasAccess || (params.qstring.db === "countly_drill" && params.qstring.collection === "drill_events") || (params.qstring.db === "countly" && params.qstring.collection === "events_data")) {
+                            if (hasAccess || (sharedFeatures && (params.member.global_admin || getUserAppsWithReadRight(params.member, sharedFeatures).length > 0))) {
                                 var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
                                 var db = "";
                                 if (params.qstring.db && dbs[params.qstring.db]) {
@@ -2163,28 +2229,14 @@ const processRequest = (params) => {
                                 else {
                                     db = common.db;
                                 }
-                                if (!params.member.global_admin && params.qstring.collection === "drill_events" || params.qstring.collection === "events_data") {
-                                    var base_filter = getBaseAppFilter(params.member, params.qstring.db, params.qstring.collection);
-                                    if (base_filter && Object.keys(base_filter).length > 0) {
-                                        params.qstring.query = params.qstring.query || {};
-                                        for (var key in base_filter) {
-                                            if (params.qstring.query[key]) {
-                                                params.qstring.query.$and = params.qstring.query.$and || [];
-                                                params.qstring.query.$and.push({[key]: base_filter[key]});
-                                                params.qstring.query.$and.push({[key]: params.qstring.query[key]});
-                                                delete params.qstring.query[key];
-                                            }
-                                            else {
-                                                params.qstring.query[key] = base_filter[key];
-                                            }
-                                        }
-                                    }
-                                }
                                 countlyApi.data.exports.fromDatabase({
                                     db: db,
                                     params: params,
                                     collection: params.qstring.collection,
                                     query: params.qstring.query,
+                                    //the app scope of the shared collections; the user query is run as
+                                    //given and the scope is combined around it, never merged into it
+                                    appFilter: getExportAppFilter(params.member, params.qstring.db, params.qstring.collection),
                                     projection: params.qstring.projection,
                                     sort: params.qstring.sort,
                                     limit: params.qstring.limit,
@@ -2218,7 +2270,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.projection = JSON.parse(params.qstring.projection);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.projection = {};
                             }
                         }
@@ -2227,7 +2279,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.columnNames = JSON.parse(params.qstring.columnNames);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.columnNames = {};
                             }
                         }
@@ -2235,7 +2287,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.mapper = JSON.parse(params.qstring.mapper);
                             }
-                            catch (ex) {
+                            catch {
                                 params.qstring.mapper = {};
                             }
                         }
@@ -2259,64 +2311,119 @@ const processRequest = (params) => {
                             common.returnMessage(params, 400, 'Missing parameter "path"');
                             return false;
                         }
-                        if (typeof params.qstring.data === "string") {
+
+                        //The endpoint named here supplies the collection and pipeline that get
+                        //executed, so it decides what this export reads. That is only safe for
+                        //endpoints written to build an export query, which authorize the request
+                        //and construct the query themselves. Those endpoints say so by answering
+                        //this hook; anything else is refused rather than re-run.
+                        var exportProducers = {params: params, producers: []};
+                        plugins.dispatch("/export/query/producers", exportProducers, function() {
+                            var requested;
                             try {
-                                params.qstring.data = JSON.parse(params.qstring.data);
+                                //parse rather than match on substrings: a repeated parameter
+                                //makes "method=views" present in a string whose effective value
+                                //is something else entirely
+                                requested = new URL(params.qstring.path + "", "http://localhost");
                             }
-                            catch (ex) {
-                                console.log("Error parsing export request data", params.qstring.data, ex);
-                                params.qstring.data = {};
+                            catch {
+                                common.returnMessage(params, 400, 'Invalid parameter "path"');
+                                return false;
                             }
+                            //a write endpoint is never an export query producer
+                            if (requested.pathname !== "/o" && requested.pathname.indexOf("/o/") !== 0) {
+                                common.returnMessage(params, 400, "Path is not an export query producer");
+                                return false;
+                            }
+                            var producer = exportProducers.producers.filter(function(candidate) {
+                                if (!candidate || candidate.path !== requested.pathname) {
+                                    return false;
+                                }
+                                var required = candidate.require || {};
+                                return Object.keys(required).every(function(key) {
+                                    return requested.searchParams.get(key) === required[key];
+                                });
+                            })[0];
+                            if (!producer) {
+                                common.returnMessage(params, 400, "Path is not an export query producer");
+                                return false;
+                            }
+                            //pin the values that select the producer's export branch, so the
+                            //caller cannot steer it into a different mode
+                            Object.keys(producer.require || {}).forEach(function(key) {
+                                requested.searchParams.set(key, producer.require[key]);
+                            });
+                            params.qstring.path = requested.pathname + "?" + requested.searchParams.toString();
+                            runExportQuery(producer);
+                        });
+
+                        /**
+                         * Re-run the producer and stream its query's results.
+                         *
+                         * @param {object} producer - the matched producer declaration
+                         * @returns {void}
+                         */
+                        function runExportQuery(producer) {
+                            var exportDbs = {countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb};
+                            if (typeof params.qstring.data === "string") {
+                                try {
+                                    params.qstring.data = JSON.parse(params.qstring.data);
+                                }
+                                catch (ex) {
+                                    console.log("Error parsing export request data", params.qstring.data, ex);
+                                    params.qstring.data = {};
+                                }
+                            }
+                            var my_name = JSON.stringify(params.qstring);
+
+                            var ff = taskmanager.longtask({
+                                db: common.db,
+                                threshold: plugins.getConfig("api").request_threshold,
+                                force: true,
+                                gridfs: true,
+                                binary: true,
+                                app_id: params.qstring.app_id,
+                                params: params,
+                                type: params.qstring.type_name || "tableExport",
+                                report_name: params.qstring.filename + "." + params.qstring.type,
+                                meta: JSON.stringify({
+                                    "app_id": params.qstring.app_id,
+                                    "query": params.qstring.query || {}
+                                }),
+                                name: my_name,
+                                view: "#/exportedData/tableExport/",
+                                processData: function(err, res, callback) {
+                                    if (!err) {
+                                        callback(null, res);
+                                    }
+                                    else {
+                                        callback(err, '');
+                                    }
+                                },
+                                outputData: function(err, data) {
+                                    if (err) {
+                                        common.returnMessage(params, 400, err);
+                                    }
+                                    else {
+                                        common.returnMessage(params, 200, data);
+                                    }
+                                }
+                            });
+
+                            countlyApi.data.exports.fromRequestQuery({
+                                db: exportDbs[producer.db] || common.db,
+                                params: params,
+                                path: params.qstring.path,
+                                data: params.qstring.data,
+                                method: params.qstring.method,
+                                prop: params.qstring.prop,
+                                type: params.qstring.type,
+                                filename: params.qstring.filename + "." + params.qstring.type,
+                                output: function(data) {
+                                    ff(null, data);
+                                }
+                            });
                         }
-                        var my_name = JSON.stringify(params.qstring);
-
-                        var ff = taskmanager.longtask({
-                            db: common.db,
-                            threshold: plugins.getConfig("api").request_threshold,
-                            force: true,
-                            gridfs: true,
-                            binary: true,
-                            app_id: params.qstring.app_id,
-                            params: params,
-                            type: params.qstring.type_name || "tableExport",
-                            report_name: params.qstring.filename + "." + params.qstring.type,
-                            meta: JSON.stringify({
-                                "app_id": params.qstring.app_id,
-                                "query": params.qstring.query || {}
-                            }),
-                            name: my_name,
-                            view: "#/exportedData/tableExport/",
-                            processData: function(err, res, callback) {
-                                if (!err) {
-                                    callback(null, res);
-                                }
-                                else {
-                                    callback(err, '');
-                                }
-                            },
-                            outputData: function(err, data) {
-                                if (err) {
-                                    common.returnMessage(params, 400, err);
-                                }
-                                else {
-                                    common.returnMessage(params, 200, data);
-                                }
-                            }
-                        });
-
-                        countlyApi.data.exports.fromRequestQuery({
-                            db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
-                            params: params,
-                            path: params.qstring.path,
-                            data: params.qstring.data,
-                            method: params.qstring.method,
-                            prop: params.qstring.prop,
-                            type: params.qstring.type,
-                            filename: params.qstring.filename + "." + params.qstring.type,
-                            output: function(data) {
-                                ff(null, data);
-                            }
-                        });
                     }, params);
                     break;
                 case 'download': {
@@ -2407,7 +2514,7 @@ const processRequest = (params) => {
                             try {
                                 params.qstring.data = JSON.parse(params.qstring.data);
                             }
-                            catch (ex) {
+                            catch {
                                 common.returnMessage(params, 400, 'Incorrect parameter "data"');
                                 return false;
                             }
@@ -2492,6 +2599,12 @@ const processRequest = (params) => {
                 */
                 case 'delete':
                     validateUser(() => {
+                        //revoking the owner's other credentials is credential management, not
+                        //something a token narrowed to a subset of the owner's access may do
+                        if (isScopedCredential(params)) {
+                            common.returnMessage(params, 403, "A restricted token cannot delete tokens");
+                            return;
+                        }
                         if (params.qstring.tokenid) {
                             common.db.collection("auth_tokens").remove({
                                 "_id": params.qstring.tokenid,
@@ -2517,9 +2630,12 @@ const processRequest = (params) => {
                  *
                  * @apiDescription Creates spesific token
                  * @apiQuery {String} purpose, Purpose is description of the created token
-                 * @apiQuery {Array} endpointquery, Includes "params" and  "endpoint" inside
-                 * {"params":{qString Key: qString Val}
-                 * "endpoint": "_endpointAdress"
+                 * @apiQuery {String} endpoint, Comma separated API paths the token is limited to, each
+                 * a literal path with at least two segments, such as /o/actions, matched exactly
+                 * @apiQuery {Array} endpointquery, Instead of endpoint: [{"endpoint": "/o/path",
+                 * "params": {qString Key: qString Val}}], with literal paths and values matched exactly
+                 * @apiQuery {Object} permission, Permissions the token grants; required for an app
+                 * restriction without endpoints
                  * @apiQuery {Boolean} multi, Defines availability multiple times
                  * @apiQuery {Boolean} apps, App Id of selected application
                  * @apiQuery {Boolean} ttl, expiration time for token
@@ -2538,12 +2654,123 @@ const processRequest = (params) => {
                 */
                 case 'create':
                     validateUser(params, () => {
-                        let ttl, multi, endpoint, purpose, apps;
+                        let ttl, multi, endpoint, purpose, apps, tokenPermission;
+
+                        // The credential doing the creating, not its owner, is the ceiling for what
+                        // may be granted. params.member is already that ceiling: rights.js bounds the
+                        // member by the authenticating token's permissions before any handler runs, so
+                        // for an api_key it is the full member, and for a scoped token it is exactly
+                        // that token's authority. A token therefore cannot mint a child that reaches
+                        // an app or feature it cannot reach itself, even though their owner can.
+                        const creatorToken = params.token_data;
+                        /**
+                        * Whether a legacy app/endpoint scope value actually restricts anything.
+                        * @param {string|Array} scope - the app or endpoint field of a token
+                        * @returns {boolean} true if the token is restricted by it
+                        */
+                        const isScopeRestricted = function(scope) {
+                            return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+                        };
+                        // Tokens created before the permission model carry an app/endpoint regex scope
+                        // instead of permissions. That scope is not carried into params.member, so
+                        // there is nothing to bound such a token's grants by - refuse rather than
+                        // issue a child that could be wider than its parent.
+                        // An endpoint restriction is not part of a permission object either, so a
+                        // token limited to endpoints cannot pass it on, with or without permissions.
+                        const creatorIsLegacyRestricted = !!creatorToken && (isScopeRestricted(creatorToken.endpoint) || (!creatorToken.token_permission && isScopeRestricted(creatorToken.app)));
+                        if (creatorIsLegacyRestricted) {
+                            common.returnMessage(params, 403, "A restricted token cannot create tokens");
+                            return;
+                        }
+
+                        if (params.qstring.permission && params.qstring.permission !== "") {
+                            if (typeof params.qstring.permission === "string") {
+                                try {
+                                    tokenPermission = JSON.parse(params.qstring.permission);
+                                }
+                                catch {
+                                    common.returnMessage(params, 400, "Invalid permission object");
+                                    return;
+                                }
+                            }
+                            else {
+                                tokenPermission = params.qstring.permission;
+                            }
+                            if (typeof tokenPermission !== "object" || Array.isArray(tokenPermission)) {
+                                common.returnMessage(params, 400, "Invalid permission object");
+                                return;
+                            }
+                            if (!isPermissionSubset(tokenPermission, params.member)) {
+                                common.returnMessage(params, 403, "Token permissions must be a subset of the creating credential's permissions");
+                                return;
+                            }
+                        }
+
+                        // A scoped credential has to say what it is granting. A token with no
+                        // token_permission is bounded only by its owner, so a child created without
+                        // one would reach everything the owner can - wider than the parent that
+                        // created it. The subset check above cannot catch this, because there is no
+                        // permission object to compare; the omission itself is the escalation.
+                        if (!tokenPermission && creatorToken && creatorToken.token_permission) {
+                            common.returnMessage(params, 403, "A scoped token must state the permissions it grants");
+                            return;
+                        }
+
+                        // A new endpoint restriction names concrete API paths and is matched exactly
+                        // (authorizer.parseEndpointRestriction). A token may carry it alone, or with
+                        // permissions, and is then held to both.
+                        const endpointRestriction = authorize.parseEndpointRestriction(params.qstring.endpoint, params.qstring.endpointquery);
+                        if (endpointRestriction.error) {
+                            common.returnMessage(params, 400, endpointRestriction.error);
+                            return;
+                        }
+                        endpoint = endpointRestriction.endpoint;
+
+                        // Login is a capability of the token, never of its purpose string, and it is
+                        // only ever passed on by a credential that holds it, to a child that is not
+                        // narrowed. That makes a scoped token unable to produce a session, which is
+                        // what the purpose allowlist used to (and could not) guarantee.
+                        const requestedLogin = params.qstring.can_login === true || params.qstring.can_login === "true" || params.qstring.can_login === "1";
+                        let canLogin = false;
+                        if (requestedLogin) {
+                            //a token created before this model that carries no restriction at all is a
+                            //full-permission credential, and keeps the login authority it has today
+                            const creatorHasLogin = !creatorToken || creatorToken.can_login === true || (typeof creatorToken.can_login === "undefined" && !creatorToken.token_permission);
+                            if (!creatorHasLogin || tokenPermission || isScopeRestricted(endpoint)) {
+                                common.returnMessage(params, 403, "The creating credential cannot grant login permission");
+                                return;
+                            }
+                            canLogin = true;
+                        }
+
                         if (params.qstring.ttl) {
                             ttl = parseInt(params.qstring.ttl);
                         }
                         else {
                             ttl = 1800;
+                        }
+
+                        // A scoped token may pass its permissions on, but not more life than it
+                        // has left. A ttl of 0 means "never expires", so a sixty second credential
+                        // minting one of those outlives itself indefinitely - the permissions were
+                        // bounded and the lifetime was not, and capturing the parent for a moment
+                        // would then be permanent. An api_key, and an unscoped credential such as
+                        // the dashboard session token, are the owner's own authority and carry no
+                        // cap: they are not narrower than the member they belong to.
+                        let maxEnds;
+                        if (creatorToken && creatorToken.token_permission && creatorToken.ttl > 0) {
+                            //the absolute bound; authorizer.save applies it at insertion, so the async
+                            //member lookup in between cannot push the child past the parent
+                            maxEnds = creatorToken.ends;
+                            const remainingLife = (creatorToken.ends || 0) - Math.round(Date.now() / 1000);
+                            if (remainingLife < 1) {
+                                common.returnMessage(params, 403, "The creating token has no remaining lifetime to grant");
+                                return;
+                            }
+                            //also catches a ttl that did not parse, which would otherwise be stored as NaN
+                            if (!(ttl > 0) || ttl > remainingLife) {
+                                ttl = remainingLife;
+                            }
                         }
                         multi = true;
                         if (params.qstring.multi === false || params.qstring.multi === 'false') {
@@ -2553,22 +2780,19 @@ const processRequest = (params) => {
                         if (params.qstring.apps) {
                             apps = params.qstring.apps.split(',');
                         }
-
-                        if (params.qstring.endpointquery && params.qstring.endpointquery !== "") {
-                            try {
-                                endpoint = JSON.parse(params.qstring.endpointquery); //structure with also info for qstring params.
-                            }
-                            catch (ex) {
-                                if (params.qstring.endpoint) {
-                                    endpoint = params.qstring.endpoint.split(',');
-                                }
-                                else {
-                                    endpoint = "";
-                                }
-                            }
+                        //keep the app list in step with the granted permissions, so the token list
+                        //shows what the token reaches and the app check stays a useful early filter
+                        if (tokenPermission && !params.qstring.apps) {
+                            apps = getPermissionApps(tokenPermission);
                         }
-                        else if (params.qstring.endpoint) {
-                            endpoint = params.qstring.endpoint.split(',');
+
+                        // An app restriction on its own is the format from before the permission
+                        // model: it carries the owner's whole authority on those apps, on every path.
+                        // Tokens already stored that way keep working, bounded to their apps by
+                        // applyTokenScope, but a new one must state permissions or name its endpoints.
+                        if (!tokenPermission && isScopeRestricted(apps) && !isScopeRestricted(endpoint)) {
+                            common.returnMessage(params, 400, "A restricted token must state the permissions it grants");
+                            return;
                         }
 
                         if (params.qstring.purpose) {
@@ -2582,6 +2806,9 @@ const processRequest = (params) => {
                             app: apps,
                             endpoint: endpoint,
                             purpose: purpose,
+                            token_permission: tokenPermission,
+                            can_login: canLogin,
+                            maxEnds: maxEnds,
                             callback: (err, token) => {
                                 if (err) {
                                     common.returnMessage(params, 404, err);
@@ -2671,6 +2898,14 @@ const processRequest = (params) => {
                 */
                 case 'list':
                     validateUser(params, function() {
+                        // Every document here includes its _id, which is the token itself. Listing
+                        // them from a scoped token would hand it the owner's other credentials -
+                        // including the unrestricted session token - and let it act as any of them,
+                        // which is the escalation the permission model exists to prevent.
+                        if (isScopedCredential(params)) {
+                            common.returnMessage(params, 403, "A restricted token cannot list tokens");
+                            return;
+                        }
                         common.db.collection("auth_tokens").find({"owner": params.member._id + ""}).toArray(function(err, res) {
                             if (err) {
                                 common.returnMessage(params, 404, err.message);
@@ -2855,7 +3090,7 @@ const processRequest = (params) => {
                         try {
                             params.qstring.events = JSON.parse(params.qstring.events);
                         }
-                        catch (SyntaxError) {
+                        catch {
                             console.log('Parse events array failed', params.qstring.events, params.req.url, params.req.body);
                         }
                         if (params.qstring.overview) {
@@ -3165,7 +3400,7 @@ const processRequest = (params) => {
  * Process Request Data
  * @param {Params} params - params object
  * @param {object} app - app document
- * @param {function} done - callbck when processing done
+ * @param {Function} done - callbck when processing done
  */
 const processRequestData = (params, app, done) => {
 
@@ -3235,14 +3470,14 @@ const processRequestData = (params, app, done) => {
  * Process fetch request from sdk
  * @param  {object} params - params object
  * @param  {object} app - app document
- * @param  {function} done - callback when processing done
+ * @param  {Function} done - callback when processing done
  */
 const processFetchRequest = (params, app, done) => {
     if (params.qstring.metrics) {
         try {
             countlyApi.data.usage.returnAllProcessedMetrics(params);
         }
-        catch (ex) {
+        catch {
             console.log("Could not process metrics");
         }
     }
@@ -3470,7 +3705,7 @@ function validateRedirect(ob) {
                         var resp = JSON.parse(response.body);
                         message = resp.result || resp;
                     }
-                    catch (e) {
+                    catch {
                         if (response.result) {
                             message = response.result;
                         }
@@ -3508,7 +3743,7 @@ function validateRedirect(ob) {
  * Checks app_key from the http request against "apps" collection.
  * This is the first step of every write request to API.
  * @param {Params} params - params object
- * @param {function} done - callback when processing done
+ * @param {Function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
  * @returns {void} void
  */
@@ -3517,7 +3752,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
         return done ? done() : false;
     }
 
-    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3566,10 +3801,10 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 if (err1) {
                     console.log("Failed to update apps collection " + err1);
                 }
-                //invalidate using the same query the request loaded the app
-                //with (current key OR an accepted old key), so the cache entry
-                //for old-key requests is also cleared
-                common.readBatcher.invalidate("apps", {$or: [{"key": params.qstring.app_key + ""}, {"keys.key": params.qstring.app_key + ""}]}, {}, false);
+                //invalidate both cache shapes the request may have loaded the
+                //app with (accepted-keys lookup, then current-key fallback), so
+                //the cache entry for old-key requests is also cleared
+                common.invalidateAppByKey(params.qstring.app_key);
             });
         }
 
@@ -3610,7 +3845,7 @@ const validateAppForWriteAPI = (params, done, try_times) => {
                 try {
                     params.qstring.metrics = JSON.parse(params.qstring.metrics);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
                 }
             }
@@ -3669,15 +3904,15 @@ const validateAppForWriteAPI = (params, done, try_times) => {
 /**
  * Validate app for fetch API from sdk
  * @param  {object} params - params object
- * @param  {function} done - callback when processing done
+ * @param  {Function} done - callback when processing done
  * @param  {number} try_times - how many times request was retried
- * @returns {function} done - done callback
+ * @returns {Function} done - done callback
  */
 const validateAppForFetchAPI = (params, done, try_times) => {
     if (ignorePossibleDevices(params)) {
         return done ? done() : false;
     }
-    common.readBatcher.getOne("apps", {$or: [{'key': params.qstring.app_key + ""}, {'keys.key': params.qstring.app_key + ""}]}, (err, app) => {
+    common.resolveAppByKey(params.qstring.app_key, (err, app) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
@@ -3709,7 +3944,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
             try {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
-            catch (SyntaxError) {
+            catch {
                 console.log('Parse metrics JSON failed for sdk fetch request', params.qstring.metrics, params.req.url, params.req.body);
             }
         }
@@ -3752,10 +3987,10 @@ const validateAppForFetchAPI = (params, done, try_times) => {
 /**
  * Restart Request
  * @param {Params} params - params object
- * @param {function} initiator - function which initiated request
- * @param {function} done - callback when processing done
+ * @param {Function} initiator - function which initiated request
+ * @param {Function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
- * @param {function} fail - callback when restart limit reached
+ * @param {Function} fail - callback when restart limit reached
  * @returns {void} void
  */
 const restartRequest = (params, initiator, done, try_times, fail) => {
@@ -3779,8 +4014,8 @@ const restartRequest = (params, initiator, done, try_times, fail) => {
 
 /**
  * @param  {object} params - params object
- * @param  {function} initiator - function which initiated request
- * @param  {function} done - callback when processing done
+ * @param  {Function} initiator - function which initiated request
+ * @param  {Function} done - callback when processing done
  * @param  {number} try_times - how many times request was retried
  * @returns {Promise} - resolved
  */
@@ -3880,8 +4115,8 @@ const fetchAppUser = (params) => {
 /**
  * Add devices to ignore them
  * @param  {Params} params - params object
- * @param  {function} done - callback when processing done
- * @returns {function} done
+ * @param  {Function} done - callback when processing done
+ * @returns {Function} done
  */
 const ignorePossibleDevices = (params) => {
     //ignore possible opted out users for ios 10
@@ -3896,7 +4131,7 @@ const ignorePossibleDevices = (params) => {
 
 /**
  * Fetches version mark history (filesystem)
- * @param {function} callback - callback when response is ready
+ * @param {Function} callback - callback when response is ready
  * @returns {void} void
  */
 function loadFsVersionMarks(callback) {
@@ -3931,7 +4166,7 @@ function loadFsVersionMarks(callback) {
 
 /**
  * Fetches version mark history (database)
- * @param {function} callback - callback when response is ready
+ * @param {Function} callback - callback when response is ready
  * @returns {void} void
  */
 function loadDbVersionMarks(callback) {

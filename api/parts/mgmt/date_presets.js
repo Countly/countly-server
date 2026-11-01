@@ -217,7 +217,7 @@ presetsApi.create = function(params) {
                 throw new SyntaxError();
             }
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid range');
             return false;
         }
@@ -227,7 +227,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_email_edit = JSON.parse(params.qstring.shared_email_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_edit');
             return false;
         }
@@ -237,7 +237,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_email_view = JSON.parse(params.qstring.shared_email_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_view');
             return false;
         }
@@ -247,7 +247,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_user_groups_edit = JSON.parse(params.qstring.shared_user_groups_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_edit');
             return false;
         }
@@ -257,7 +257,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.shared_user_groups_view = JSON.parse(params.qstring.shared_user_groups_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_view');
             return false;
         }
@@ -267,7 +267,7 @@ presetsApi.create = function(params) {
         try {
             params.qstring.exclude_current_day = JSON.parse(params.qstring.exclude_current_day);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid exclude_current_day');
             return false;
         }
@@ -276,12 +276,6 @@ presetsApi.create = function(params) {
     if (!(newPreset = common.validateArgs(params.qstring, argProps))) {
         common.returnMessage(params, 400, 'Not enough args');
         return false;
-    }
-
-    for (let i in params.qstring) {
-        if (typeof newPreset[i] === "undefined" && !["app_id"].includes(i)) {
-            newPreset[i] = params.qstring[i];
-        }
     }
 
     newPreset.created_at = Math.floor(((new Date()).getTime()) / 1000);
@@ -396,12 +390,13 @@ presetsApi.update = function(params) {
         memberEmail = member.email,
         filterCond = {};
 
+    var groups = member.group_id || [];
+    if (!Array.isArray(groups)) {
+        groups = [groups];
+    }
+    groups = groups.map(group_id => group_id + "");
+
     if (!member.global_admin) {
-        var groups = member.group_id || [];
-        if (!Array.isArray(groups)) {
-            groups = [groups];
-        }
-        groups = groups.map(group_id => group_id + "");
         filterCond = {
             $or: [
                 {owner_id: memberId},
@@ -418,7 +413,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.range = JSON.parse(params.qstring.range);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid range');
             return false;
         }
@@ -428,7 +423,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_email_edit = JSON.parse(params.qstring.shared_email_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_edit');
             return false;
         }
@@ -438,7 +433,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_email_view = JSON.parse(params.qstring.shared_email_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_email_view');
             return false;
         }
@@ -448,7 +443,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_user_groups_edit = JSON.parse(params.qstring.shared_user_groups_edit);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_edit');
             return false;
         }
@@ -458,7 +453,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.shared_user_groups_view = JSON.parse(params.qstring.shared_user_groups_view);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid shared_user_groups_view');
             return false;
         }
@@ -468,7 +463,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.exclude_current_day = JSON.parse(params.qstring.exclude_current_day);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid exclude_current_day');
             return false;
         }
@@ -478,7 +473,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.fav = JSON.parse(params.qstring.fav);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid fav');
             return false;
         }
@@ -488,7 +483,7 @@ presetsApi.update = function(params) {
         try {
             params.qstring.sort_order = JSON.parse(params.qstring.sort_order);
         }
-        catch (SyntaxError) {
+        catch {
             common.returnMessage(params, 400, 'Invalid sort_order');
             return false;
         }
@@ -507,19 +502,35 @@ presetsApi.update = function(params) {
             return false;
         }
 
-        for (let i in params.qstring) {
-            if (typeof updatedPreset[i] === "undefined" && !["preset_id", "fav", "app_id"].includes(i)) {
-                updatedPreset[i] = params.qstring[i];
+        //The selector above is wider than edit rights on purpose, so it cannot decide
+        //them. Two changes are open to anybody who can see a preset, and both reach
+        //this same handler: marking it a favourite, which is stored on the preset as an
+        //entry in fav per member, and dragging it in the management table, which writes
+        //the shared sort_order. Everything else belongs to the owner and the members
+        //named in the edit lists, which is what the drawer offers and what the delete
+        //handler already requires.
+        //
+        //Both of those send the whole row, so a viewer's request carries the fields
+        //they may not change as well. Those are dropped rather than refused, because
+        //refusing would fail the two actions the UI does offer them.
+        var canEdit = canEditPreset(presetBefore, member, groups);
+
+        if (canEdit) {
+            updatedPreset.edited_at = Math.floor(((new Date()).getTime()) / 1000);
+
+            if (updatedPreset.share_with !== "selected-users") {
+                updatedPreset.shared_email_edit = [];
+                updatedPreset.shared_email_view = [];
+                updatedPreset.shared_user_groups_edit = [];
+                updatedPreset.shared_user_groups_view = [];
             }
         }
-
-        updatedPreset.edited_at = Math.floor(((new Date()).getTime()) / 1000);
-
-        if (updatedPreset.share_with !== "selected-users") {
-            updatedPreset.shared_email_edit = [];
-            updatedPreset.shared_email_view = [];
-            updatedPreset.shared_user_groups_edit = [];
-            updatedPreset.shared_user_groups_view = [];
+        else {
+            //sort_order is the list's shared ordering, and the management table lets
+            //anybody who can see a preset drag it, so it stays writable here next to
+            //fav. Everything the report is about, the content, the sharing lists and
+            //owner_id, does not.
+            updatedPreset = typeof updatedPreset.sort_order === "undefined" ? {} : {sort_order: updatedPreset.sort_order};
         }
 
         //Handle fav
@@ -532,6 +543,11 @@ presetsApi.update = function(params) {
                 fav.splice(fav.indexOf(params.member._id + ""), 1);
             }
             updatedPreset.fav = fav;
+        }
+
+        if (Object.keys(updatedPreset).length === 0) {
+            common.returnMessage(params, 403, 'Not allowed to edit this preset');
+            return false;
         }
 
         common.db.collection('date_presets').update({_id: presetBefore._id}, {$set: updatedPreset}, {safe: true}, function(err1) {
@@ -670,17 +686,66 @@ presetsApi.getById = function(params) {
 
     filterCond._id = common.db.ObjectID(params.qstring.preset_id);
 
-    common.db.collection('date_presets').findOne(filterCond, function(err, preset) {
+    common.db.collection('date_presets').findOne(filterCond, {projection: PRESET_FIELDS}, function(err, preset) {
         if (err || !preset) {
             common.returnMessage(params, 500, 'Could not find preset');
             return false;
         }
         preset.is_owner = (preset.owner_id === memberId) || member.global_admin;
+        //who a preset is shared with is shown only to those who may edit it, as in getAll
+        if (!canEditPreset(preset, member, groups || [])) {
+            preset.shared_email_edit = false;
+            preset.shared_email_view = false;
+            preset.shared_user_groups_edit = false;
+            preset.shared_user_groups_view = false;
+        }
         let fav = preset.fav || [];
         preset.fav = fav.includes(memberId);
         common.returnOutput(params, preset);
         return true;
     });
 };
+
+/**
+* The fields a preset is made of. Used as a projection so a stored document cannot
+* return anything beyond them, and as the shape both write handlers persist.
+**/
+const PRESET_FIELDS = {
+    name: 1,
+    range: 1,
+    exclude_current_day: 1,
+    share_with: 1,
+    shared_email_edit: 1,
+    shared_email_view: 1,
+    shared_user_groups_edit: 1,
+    shared_user_groups_view: 1,
+    owner_id: 1,
+    fav: 1,
+    sort_order: 1,
+    created_at: 1,
+    edited_at: 1
+};
+
+/**
+* Whether a member may change a preset rather than only see it. Mirrors what the
+* drawer offers and what the delete handler already requires: the owner, a global
+* admin, or somebody named in one of the edit lists. Being in a view list, or the
+* preset being shared with all users, grants no write.
+* @param {object} preset - the stored preset
+* @param {object} member - params.member
+* @param {array} groups - the member's group ids, as strings
+* @returns {boolean} true when the member may edit the preset
+**/
+function canEditPreset(preset, member, groups) {
+    if (member.global_admin || preset.owner_id === member._id + "") {
+        return true;
+    }
+    if ((preset.shared_email_edit || []).includes(member.email)) {
+        return true;
+    }
+    return (preset.shared_user_groups_edit || []).some(function(group) {
+        return groups.includes(group + "");
+    });
+}
 
 module.exports = presetsApi;

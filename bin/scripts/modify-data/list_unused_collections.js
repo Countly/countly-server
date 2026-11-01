@@ -7,7 +7,7 @@
 
 var pluginManager = require('./../../../plugins/pluginManager.js'),
     crypto = require('crypto'),
-    Promise = require("bluebird");
+    Promise = require("../../../api/utils/promise.js");
 
 
 var appIDs = [];

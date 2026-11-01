@@ -1,4 +1,4 @@
-/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, CountlyHelpers, _ */
+/* global jQuery, Vue, moment, countlyCommon, countlyGlobal, _ */
 
 (function(countlyVue, $) {
 
@@ -266,7 +266,7 @@
                         }
                         ob[col.label] = row[col.field];
                     }
-                    catch (e) {
+                    catch {
                         //not important
                     }
                 });
@@ -297,18 +297,7 @@
             };
         }
 
-        var form = $('<form method="POST" action="' + url + '">');
-
-        $.each(formData, function(k, v) {
-            if (CountlyHelpers.isJSON(v)) {
-                form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="' + k + '">' + v + '</textarea>'));
-            }
-            else {
-                form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
-            }
-        });
-        $('body').append(form);
-        form.submit();
+        countlyVue.helpers.submitExportForm(url, formData);
     };
 
     Vue.component("cly-datatable", countlyBaseComponent.extend({
@@ -466,7 +455,7 @@
                     }
                     return defaultState;
                 }
-                catch (ex) {
+                catch {
                     return defaultState;
                 }
             },

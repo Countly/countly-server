@@ -26,7 +26,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Copy code
         shell: bash
@@ -76,7 +76,10 @@ jobs:
         if: ${{ always() }}
         run: sudo cat /var/log/nginx/error.log
   lint:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -96,7 +99,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Copy code
         shell: bash
@@ -115,9 +118,13 @@ jobs:
 
       - name: ESLint
         shell: bash
+        # ESLint and its plugins come from the repo's devDependencies, at the versions
+        # package-lock.json pins; eslint.config.mjs loads the in-repo rules in bin/eslint-rules.
+        # eslint-suppressions.json is the baseline of findings that predate ESLint 10; a new
+        # finding fails, and fixing a baselined one needs `npx eslint . --prune-suppressions`.
         run: |
-         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0
-         npx eslint .
+         npm ci --ignore-scripts
+         npm run lint
 
       - name: Check for any external web resources
         shell: bash
@@ -137,7 +144,10 @@ jobs:
         working-directory: /opt/countly
         run: sudo countly task dist-all
   test-api-core:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -157,7 +167,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Prepare tests
         shell: bash
@@ -189,7 +199,10 @@ jobs:
           node bin/scripts/test.connection.js
           npx grunt mochaTest
   test-api-plugins:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     services:
       mongodb:
@@ -209,7 +222,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Copy code
         shell: bash
@@ -245,10 +258,26 @@ jobs:
           npm install
           /sbin/my_init &
           node bin/scripts/test.connection.js
+          # On a fresh database the first start installs every plugin while its workers are
+          # already loading, so a worker can miss later plugins' jobs (push:schedule) until
+          # it restarts. Wait for the first start to record every plugin, then restart the
+          # API once, as an install does after setup.
+          PLUGIN_DIRS=$(find plugins -mindepth 1 -maxdepth 1 -type d | wc -l)
+          for i in $(seq 1 180); do
+            RECORDED=$(mongosh mongodb/countly --quiet --eval 'Object.keys((db.plugins.findOne({_id: "plugins"}) || {}).plugins || {}).length')
+            [ "$RECORDED" -ge "$PLUGIN_DIRS" ] && break
+            sleep 1
+          done
+          echo "plugins recorded: $RECORDED of $PLUGIN_DIRS"
+          sv restart countly-api
+          node bin/scripts/test.connection.js
           npx grunt mochaTest       
 
   ui-tests:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04, not ubuntu-latest: mongod 8.0.34 and older refuses to start on the
+    # 6.19-7.0.13 kernels of newer ubuntu-24.04 runners (SERVER-121912). Move back to
+    # ubuntu-latest once mongo:8.0 is 8.0.35 or later (SERVER-131779) and starts there.
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -273,7 +302,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Chrome
         shell: bash
@@ -332,7 +361,10 @@ jobs:
           cd ui-tests
           npm install
           if [ "${{ matrix.test_type }}" = "dashboard" ]; then
-            xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
+            # The dashboard picks "today" from the browser clock, while the API buckets data by the
+            # app's timezone. Run the browser in the test app's timezone (bin/backup/apps.json) so
+            # both agree on the date between 21:00 and 24:00 UTC.
+            TZ=Europe/Istanbul xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:dashboard
           else
             xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" npm run cy:run:onboarding
           fi

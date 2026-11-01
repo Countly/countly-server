@@ -33,7 +33,8 @@
         <cly-section>
             <cly-confirm-dialog @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :title="dialog.title" :show-close="false">
                 <template slot-scope="scope">
-                    <div v-html="dialog.text"></div>
+                    <!-- dialog.text is a localized sentence with an environment name substituted in, never markup -->
+                    <div>{{dialog.text}}</div>
                 </template>
             </cly-confirm-dialog>
             <cly-datatable-n ref="populatorEnvTable" id="populator-environment-table" :data-source="remoteTableDataSource" :force-loading="isLoading" searchPlaceholder="Search in User Name" :hasExport="false">

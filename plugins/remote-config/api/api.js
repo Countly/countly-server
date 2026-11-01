@@ -95,7 +95,7 @@ plugins.setConfigs("remote-config", {
                 try {
                     keys = JSON.parse(params.qstring.keys);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse keys failed: ', params.qstring.keys);
                 }
             }
@@ -313,7 +313,7 @@ plugins.setConfigs("remote-config", {
             try {
                 JSON.parse(params.qstring.keys);
             }
-            catch (ex) {
+            catch {
                 problems.push("Could not parse keys");
             }
         }
@@ -322,7 +322,7 @@ plugins.setConfigs("remote-config", {
             try {
                 JSON.parse(params.qstring.omit_keys);
             }
-            catch (SyntaxError) {
+            catch {
                 problems.push("Could not parse omit keys");
             }
         }
@@ -383,8 +383,9 @@ plugins.setConfigs("remote-config", {
 
         try {
             parameter = JSON.parse(params.qstring.parameter);
+            common.stripRequestCredentials(parameter);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse parameter failed: ', params.qstring.parameter);
         }
         if (!parameter.status) {
@@ -441,8 +442,10 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            //appId is included so hooks can scope this event to the app it
+            //belongs to; copied rather than set on the stored document
             plugins.dispatch("/i/remote-config/add-parameter", {
-                params: parameter
+                params: Object.assign({}, parameter, {appId: appId})
             });
 
             if (params.internal) {
@@ -497,7 +500,7 @@ plugins.setConfigs("remote-config", {
         try {
             config = JSON.parse(params.qstring.config);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse config failed: ', params.qstring.config);
         }
 
@@ -728,7 +731,7 @@ plugins.setConfigs("remote-config", {
                 try {
                     keys = JSON.parse(params.qstring.keys);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse keys failed: ', params.qstring.keys);
                 }
             }
@@ -737,7 +740,7 @@ plugins.setConfigs("remote-config", {
                 try {
                     omitKeys = JSON.parse(params.qstring.omit_keys);
                 }
-                catch (SyntaxError) {
+                catch {
                     console.log('Parse omit keys failed: ', params.qstring.omit_keys);
                 }
             }
@@ -857,7 +860,7 @@ plugins.setConfigs("remote-config", {
                                     query: conditionObj.condition
                                 });
                             }
-                            catch (e) {
+                            catch {
                                 log.w("Skipping condition", conditionObj);
                                 continue;
                             }
@@ -866,7 +869,22 @@ plugins.setConfigs("remote-config", {
                             var deviceId = params.qstring.device_id || "";
                             user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
 
-                            var conditionStatus = remoteConfig.processFilter(user, conditionObj.condition);
+                            var conditionIssues = [];
+                            var conditionStatus;
+
+                            try {
+                                conditionStatus = remoteConfig.processFilter(user, conditionObj.condition, conditionIssues);
+                            }
+                            catch (e) {
+                                log.e("Failed to evaluate condition " + conditionObj._id + common.reqInfo(params) + ": " + e.message);
+                                continue;
+                            }
+
+                            if (conditionIssues.length) {
+                                log.w("Condition " + conditionObj._id + " matches nobody" + common.reqInfo(params) +
+                                    ": " + conditionIssues.join("; "));
+                                continue;
+                            }
 
                             if (conditionStatus) {
                                 parameterValue = conditionObj.value;
@@ -953,8 +971,9 @@ plugins.setConfigs("remote-config", {
 
         try {
             parameter = JSON.parse(params.qstring.parameter);
+            common.stripRequestCredentials(parameter);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse parameter failed: ', params.qstring.parameter);
         }
         if (!parameter.status) {
@@ -1005,8 +1024,9 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            //appId is included so hooks can scope this event to the app it belongs to
             plugins.dispatch("/i/remote-config/update-parameter", {
-                params: parameter
+                params: Object.assign({}, parameter, {appId: appId})
             });
 
             return common.returnMessage(params, 200);
@@ -1025,14 +1045,16 @@ plugins.setConfigs("remote-config", {
         var valuesList = JSON.parse(JSON.stringify(parameter.valuesList));
         delete parameter.valuesList;
 
-        var update = {
+        //unsetRequestCredentials also clears a credential stored before this was fixed:
+        //$set leaves a field it does not name exactly as it was
+        var update = common.unsetRequestCredentials({
             $set: parameter,
             $addToSet: {
                 valuesList: {
                     $each: valuesList
                 }
             }
-        };
+        });
 
         common.outDb.collection(collectionName).findOne({"_id": common.outDb.ObjectID(parameterId)}, function(err, beforeData) {
             if (!err) {
@@ -1070,9 +1092,9 @@ plugins.setConfigs("remote-config", {
                         'filter': {
                             '_id': id
                         },
-                        'update': {
+                        'update': common.unsetRequestCredentials({
                             '$set': parameter.parameter
-                        }
+                        })
                     },
                 });
             });
@@ -1131,8 +1153,9 @@ plugins.setConfigs("remote-config", {
                 common.outDb.collection(collectionName).remove({_id: common.outDb.ObjectID(parameterId)}, function(removeErr) {
                     if (!removeErr) {
                         plugins.dispatch("/systemlogs", {params: params, action: "rc_parameter_removed", data: parameter});
+                        //appId is included so hooks can scope this event to the app it belongs to
                         plugins.dispatch("/i/remote-config/remove-parameter", {
-                            params: parameter
+                            params: Object.assign({}, parameter, {appId: appId})
                         });
                         return common.returnMessage(params, 200, 'Success');
                     }
@@ -1165,8 +1188,9 @@ plugins.setConfigs("remote-config", {
 
         try {
             condition = JSON.parse(params.qstring.condition);
+            common.stripRequestCredentials(condition);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse condition failed: ', params.qstring.condition);
         }
 
@@ -1235,8 +1259,9 @@ plugins.setConfigs("remote-config", {
             }
 
             var conditionId = result && result[1] || null;
+            //appId is included so hooks can scope this event to the app it belongs to
             plugins.dispatch("/i/remote-config/add-condition", {
-                params: condition
+                params: Object.assign({}, condition, {appId: appId})
             });
             if (params.internal) {
                 return conditionId;
@@ -1372,8 +1397,9 @@ plugins.setConfigs("remote-config", {
 
         try {
             condition = JSON.parse(params.qstring.condition);
+            common.stripRequestCredentials(condition);
         }
-        catch (SyntaxError) {
+        catch {
             console.log('Parse condition failed: ', params.qstring.condition);
         }
 
@@ -1431,8 +1457,9 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            //appId is included so hooks can scope this event to the app it belongs to
             plugins.dispatch("/i/remote-config/update-condition", {
-                params: condition
+                params: Object.assign({}, condition, {appId: appId})
             });
 
             return common.returnMessage(params, 200);
@@ -1445,7 +1472,7 @@ plugins.setConfigs("remote-config", {
         function updateConditionInDb(callback) {
             var collectionName = "remoteconfig_conditions" + appId;
             common.outDb.collection(collectionName).findOne({_id: common.outDb.ObjectID(conditionId)}, function(err, beforeData) {
-                common.outDb.collection(collectionName).update({_id: common.outDb.ObjectID(conditionId)}, {$set: condition}, function(updateErr) {
+                common.outDb.collection(collectionName).update({_id: common.outDb.ObjectID(conditionId)}, common.unsetRequestCredentials({$set: condition}), function(updateErr) {
                     plugins.dispatch("/systemlogs", {params: params, action: "rc_condition_edited", data: {before: beforeData, after: condition} });
                     return callback(updateErr);
                 });
@@ -1582,7 +1609,7 @@ plugins.setConfigs("remote-config", {
         try {
             parameter.default_value = JSON.parse(parameter.default_value);
         }
-        catch (e) {
+        catch {
             //Error
         }
 
@@ -1592,7 +1619,7 @@ plugins.setConfigs("remote-config", {
             try {
                 parameter.conditions[i].value = JSON.parse(parameter.conditions[i].value);
             }
-            catch (e) {
+            catch {
                 //Error
             }
 
@@ -1692,7 +1719,7 @@ plugins.setConfigs("remote-config", {
                     }
                 });
             }
-            catch (e) {
+            catch {
                 // ignore
             }
         });

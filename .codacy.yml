@@ -1,4 +1,5 @@
 exclude_paths:
+  - '.github/scripts/**'
   - 'frontend/express/public/javascripts/dom/**'
   - 'frontend/express/public/javascripts/min/**'
   - 'frontend/express/public/javascripts/utils/**'

@@ -178,7 +178,8 @@
     </cly-tabs>
     <cly-confirm-dialog class="populator-wrapper__start-dialog" :show-close="false" @cancel="closeConfirmDialog" @confirm="submitConfirmDialog" :before-close="closeConfirmDialog" ref="deleteConfirmDialog" :visible.sync="dialog.showDialog" dialogType="success" :saveButtonLabel="dialog.saveButtonLabel" :cancelButtonLabel="dialog.cancelButtonLabel" :saveButtonVisibility="dialog.saveButtonVisibility" :title="dialog.title" >
         <template slot-scope="scope">
-            <div v-html="dialog.text"></div>
+            <!-- dialog.text is a localized sentence with a template or environment name substituted in, never markup -->
+            <div>{{dialog.text}}</div>
         </template>
     </cly-confirm-dialog>
     <cly-populator-template-drawer ref="populatorTemplateDrawer" @refresh-table="refresh" @closeHandler="refreshTable" :titleDescription="titleDescription" :controls="drawers.populatorTemplate"></cly-populator-template-drawer>

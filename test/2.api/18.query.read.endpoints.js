@@ -1,4 +1,5 @@
 var request = require('supertest');
+var should = require('should');
 var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
@@ -103,6 +104,34 @@ describe('Testing query-validated read endpoints (happy path)', function() {
                     done();
                 });
         });
+
+        it('should not export the session store collection', function(done) {
+            request
+                .get('/o/export/db?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&collection=sessions_&type=json&filter=' + emptyQuery)
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'User does not have access right for this collection');
+                    done();
+                });
+        });
+
+        it('should not export system index metadata', function(done) {
+            request
+                .get('/o/export/db?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&collection=system.indexes&type=json&filter=' + emptyQuery)
+                .expect(401)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'User does not have access right for this collection');
+                    done();
+                });
+        });
     });
 
     describe('GET /o (method=all_apps)', function() {
@@ -117,6 +146,71 @@ describe('Testing query-validated read endpoints (happy path)', function() {
                     }
                     JSON.parse(res.text);
                     done();
+                });
+        });
+    });
+
+    describe('GET /o/tasks/all multi-app permission', function() {
+        var victimAppId = "";
+        var scopedApiKey = "";
+        var scopedUserId = "";
+        var uniq = Date.now();
+
+        it('should create a second app and a user scoped to the base app only', function(done) {
+            request
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "TasksVictimApp", type: "mobile"})))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    victimAppId = res.body._id;
+                    var perm = { _: {a: [], u: [APP_ID]}, c: {}, r: {}, u: {}, d: {} };
+                    ["c", "r", "u", "d"].forEach(function(t) {
+                        perm[t][APP_ID] = {all: false, allowed: {core: true}};
+                    });
+                    var userParams = {full_name: "tasksuser" + uniq, username: "tasksuser" + uniq, password: "p4ssw0rD!", email: "tasksuser" + uniq + "@mail.test", permission: perm};
+                    request
+                        .get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
+                        .expect(200)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            scopedApiKey = res2.body.api_key;
+                            scopedUserId = res2.body._id;
+                            done();
+                        });
+                });
+        });
+
+        it('should reject an app_ids list containing an unauthorized app', function(done) {
+            request
+                .get('/o/tasks/all?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&app_ids=' + APP_ID + ',' + victimAppId + '&query=' + emptyQuery)
+                .expect(401)
+                .end(function(err) {
+                    return done(err);
+                });
+        });
+
+        it('should allow an app_ids list of only authorized apps', function(done) {
+            request
+                .get('/o/tasks/all?api_key=' + scopedApiKey + '&app_id=' + APP_ID + '&app_ids=' + APP_ID + ',' + APP_ID + '&query=' + emptyQuery)
+                .expect(200)
+                .end(function(err) {
+                    return done(err);
+                });
+        });
+
+        after(function(done) {
+            request
+                .get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [scopedUserId]})))
+                .end(function() {
+                    request
+                        .get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: victimAppId})))
+                        .end(function() {
+                            done();
+                        });
                 });
         });
     });

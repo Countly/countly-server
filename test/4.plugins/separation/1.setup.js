@@ -70,7 +70,10 @@ describe('Creating users', function() {
 describe('Create app', function() {
     it('should create app', function(done) {
         var appName = "Test App";
-        var params = {name: appName};
+        // UTC+0 with no DST, like the runners (see test/2.api/08.create.app.js):
+        // the default Europe/Istanbul puts the app on a different date than the
+        // runner clock between 21:00 and 24:00 UTC.
+        var params = {name: appName, timezone: "Africa/Abidjan"};
         request
             .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
             .expect(200)
@@ -80,6 +83,7 @@ describe('Create app', function() {
                 }
                 var ob = JSON.parse(res.text);
                 ob.should.have.property('name', appName);
+                ob.should.have.property('timezone', 'Africa/Abidjan');
                 APP_ID = ob._id;
                 APP_KEY = ob.key;
                 testUtils.set("APP_ID", APP_ID);

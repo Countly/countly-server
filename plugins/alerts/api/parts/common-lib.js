@@ -148,7 +148,7 @@ async function determineAudience(alert) {
  */
 function getUserEmailsBasedOnGroups(groupIds) {
     const memberEmails = [];
-    // eslint-disable-next-line require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc
     const fetchMembers = (groupId) => {
         const model = { "_id": groupId };
         const query = model.inverse ? { group_id: { $ne: model._id } } : { group_id: model._id };
@@ -235,7 +235,12 @@ async function trigger(result, log) {
     // increase counter just by date
     await increaseAlertCounter(app, date);
     if (alert.alertBy === "hook") {
-        return common.plugins.dispatch("/alerts/trigger");
+        //the app id lets hooks scope this event to the app the alert belongs to;
+        //without it every hook on the instance fires on any app's alert
+        return common.plugins.dispatch("/alerts/trigger", {
+            appId: app && app._id,
+            alertID: alert && alert._id
+        });
     }
 
     const audienceEmails = await determineAudience(alert);

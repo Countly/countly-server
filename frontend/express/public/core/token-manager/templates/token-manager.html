@@ -38,9 +38,11 @@
                             {{scope.row.app}}
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="endpoint" :label="i18n('token_manager.table.endpoint')">
+                    <el-table-column sortable="custom" prop="permissionSummary" :label="i18n('token_manager.table.permission')">
                         <template slot-scope="scope">
-                            {{scope.row.endpoint}}
+                            <p>{{scope.row.permissionSummary}}</p>
+                            <p v-if="scope.row.canLogin" class="text-small color-cool-gray-40">{{i18n('token_manager.permission.can-login-tag')}}</p>
+                            <p v-if="scope.row.endpoint" class="text-small color-cool-gray-40">{{scope.row.endpoint}}</p>
                         </template>
                     </el-table-column>
                     <el-table-column>

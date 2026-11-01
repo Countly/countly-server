@@ -31,7 +31,7 @@ class Resultor extends DoFinish {
      * @param {Log} log logger
      * @param {MongoClient} db mongo client
      * @param {object} data map of {_id: {a, m, u, t, f}} (app id, uid, token, field) of the messages currently being sent
-     * @param {function} check function which returns boolean in case no more data is expected and the stream can be closed
+     * @param {Function} check function which returns boolean in case no more data is expected and the stream can be closed
      */
     constructor(log, db, data, check) {
         super({objectMode: true});
@@ -101,7 +101,7 @@ class Resultor extends DoFinish {
      * 
      * @param {object[]} chunk array of results [push id|[push id, new token]]
      * @param {string} encoding ignored
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     _transform(chunk, encoding, callback) {
         let {frame, payload: results} = chunk,
@@ -340,7 +340,7 @@ class Resultor extends DoFinish {
     /**
      * Actual flush function
      * 
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     do_flush(callback) {
         this.log.d('in resultor do_flush');
@@ -415,6 +415,11 @@ class Resultor extends DoFinish {
 
         // changed tokens - set new ones
         for (let aid in this.changed) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (aid === "__proto__" || aid === "constructor" || aid === "prototype") {
+                continue;
+            }
             let collection = 'push_' + aid;
             if (!updates[collection]) {
                 updates[collection] = [];
@@ -438,6 +443,11 @@ class Resultor extends DoFinish {
 
         // expired tokens - unset
         for (let aid in this.removeTokens) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (aid === "__proto__" || aid === "constructor" || aid === "prototype") {
+                continue;
+            }
             let collectionPush = `push_${aid}`,
                 collectionAppUsers = `app_users${aid}`;
             if (!updates[collectionPush]) {
@@ -475,11 +485,21 @@ class Resultor extends DoFinish {
 
         let now = Date.now();
         for (let aid in this.sentUsers) {
+            // a key off a stored document or a parsed payload can be a prototype
+            // member name; writing through one would reach Object.prototype
+            if (aid === "__proto__" || aid === "constructor" || aid === "prototype") {
+                continue;
+            }
             let collection = 'push_' + aid;
             if (!updates[collection]) {
                 updates[collection] = [];
             }
             for (let mid in this.sentUsers[aid]) {
+                // a key off a stored document or a parsed payload can be a prototype
+                // member name; writing through one would reach Object.prototype
+                if (mid === "__proto__" || mid === "constructor" || mid === "prototype") {
+                    continue;
+                }
                 if (this.sentUsers[aid][mid].users.length) {
                     updates[collection].push({
                         updateMany: {
@@ -566,7 +586,7 @@ class Resultor extends DoFinish {
     /**
      * Flush & release resources
      * 
-     * @param {function} callback callback function
+     * @param {Function} callback callback function
      */
     do_final(callback) {
         callback();

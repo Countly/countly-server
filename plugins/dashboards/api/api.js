@@ -12,9 +12,12 @@ var pluginOb = {},
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
     mail = require("../../../api/parts/mgmt/mail"),
-    { validateUser, getUserApps, getAdminApps} = require('../../../api/utils/rights.js');
+    { validateUser, getUserApps, getAdminApps, hasDashboardAccess} = require('../../../api/utils/rights.js');
 
 var ejs = require("ejs");
+
+//apps value stored for widgets that show no app data, such as notes
+var APP_LESS_WIDGET_APPS = "*";
 
 plugins.setConfigs("dashboards", {
     sharing_status: true,
@@ -118,6 +121,9 @@ plugins.setConfigs("dashboards", {
             }
 
             validateUser(params, function() {
+                if (refuseDashboardToken(params, "r")) {
+                    return;
+                }
                 var member = params.member,
                     memberId = member._id + "";
 
@@ -331,6 +337,9 @@ plugins.setConfigs("dashboards", {
         }
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
@@ -429,6 +438,9 @@ plugins.setConfigs("dashboards", {
         let just_schema = params.qstring.just_schema;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             var member = params.member,
                 memberId = member._id + "",
                 memberEmail = member.email,
@@ -557,6 +569,9 @@ plugins.setConfigs("dashboards", {
         }
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                 //return the same access-denied shape whether the dashboard is
                 //missing or not viewable, so dashboard ids cannot be enumerated
@@ -601,6 +616,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "c")) {
+                return;
+            }
             var dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit || [],
                 sharedEmailView = params.qstring.shared_email_view || [],
@@ -618,7 +636,7 @@ plugins.setConfigs("dashboards", {
                     refreshRate = parseInt(params.qstring.refreshRate, 10);
                     refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
                 }
-                catch (ex) {
+                catch {
                     refreshRate = 0;
                     log.e("passed unexpected refresh rate");
                 }
@@ -628,28 +646,28 @@ plugins.setConfigs("dashboards", {
             try {
                 sharedEmailEdit = JSON.parse(sharedEmailEdit);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_email_edit failed', sharedEmailEdit);
             }
 
             try {
                 sharedEmailView = JSON.parse(sharedEmailView);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_email_view failed', sharedEmailView);
             }
 
             try {
                 sharedUserGroupEdit = JSON.parse(sharedUserGroupEdit);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_user_groups_edit failed', sharedUserGroupEdit);
             }
 
             try {
                 sharedUserGroupView = JSON.parse(sharedUserGroupView);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse shared_user_groups_view failed', sharedUserGroupView);
             }
 
@@ -821,6 +839,31 @@ plugins.setConfigs("dashboards", {
             function insertNewWidgets(dataObj, callback) {
                 var widgets = dataObj.widgets || [];
 
+                //Copying a dashboard makes the copier the owner of the copied
+                //widgets, and owners have edit rights. A widget is therefore only
+                //copied when the copier can read every app it points at.
+                //Otherwise a view-only recipient could rewrite a borrowed
+                //widget's query and read more of that app than the dashboard
+                //owner chose to show them. Widgets that reference no apps, such
+                //as notes, are always copied.
+                widgets = widgets.filter(function(widget) {
+                    if (isAppLessWidget(widget)) {
+                        widget.apps = APP_LESS_WIDGET_APPS;
+                        return true;
+                    }
+
+                    if (typeof widget.apps === "undefined") {
+                        return true;
+                    }
+
+                    var widgetApps = normalizeAppIds(widget.apps);
+                    if (widgetApps === null) {
+                        return false;
+                    }
+
+                    return memberHasAccessToAllApps(params.member, widgetApps);
+                });
+
                 if (!widgets.length) {
                     return callback();
                 }
@@ -872,6 +915,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "u")) {
+                return;
+            }
             var dashboardId = params.qstring.dashboard_id,
                 dashboardName = params.qstring.name,
                 sharedEmailEdit = params.qstring.shared_email_edit,
@@ -889,7 +935,7 @@ plugins.setConfigs("dashboards", {
                     refreshRate = parseInt(params.qstring.refreshRate, 10);
                     refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
                 }
-                catch (ex) {
+                catch {
                     refreshRate = 0;
                     log.e("passed unexpected refresh rate");
                 }
@@ -915,7 +961,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedEmailEdit = JSON.parse(sharedEmailEdit);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_email_edit failed', sharedEmailEdit);
                 }
 
@@ -929,7 +975,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedEmailView = JSON.parse(sharedEmailView);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_email_view failed', sharedEmailView);
                 }
 
@@ -943,7 +989,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedUserGroupEdit = JSON.parse(sharedUserGroupEdit);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_user_groups_edit failed', sharedUserGroupEdit);
                 }
 
@@ -957,7 +1003,7 @@ plugins.setConfigs("dashboards", {
                 try {
                     sharedUserGroupView = JSON.parse(sharedUserGroupView);
                 }
-                catch (SyntaxError) {
+                catch {
                     log.d('Parse shared_user_groups_view failed', sharedUserGroupView);
                 }
 
@@ -1093,6 +1139,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "d")) {
+                return;
+            }
             var dashboardId = params.qstring.dashboard_id,
                 memberId = params.member._id + "";
 
@@ -1176,6 +1225,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "c")) {
+                return;
+            }
 
             var dashboardId = params.qstring.dashboard_id,
                 widget = params.qstring.widget || {};
@@ -1183,7 +1235,7 @@ plugins.setConfigs("dashboards", {
             try {
                 widget = JSON.parse(common.sanitizeHTML(widget));
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse widget failed', widget);
             }
 
@@ -1192,31 +1244,34 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
+            //Whatever apps value was sent, a note is stored with "*".
+            if (isAppLessWidget(widget)) {
+                widget.apps = APP_LESS_WIDGET_APPS;
+            }
+
             if (!isWidgetValid(widget)) {
                 common.returnMessage(params, 400, 'Invalid parameter: widget');
                 return true;
             }
 
             if (widget.widget_type === "note") {
-                widget.contenthtml = sanitizeNote(widget.contenthtml);
+                widget.contenthtml = sanitizeNote(widget.contenthtml || "");
             }
 
-            //Filter out app_ids that current users does not have access to
-            if (widget.apps && Array.isArray(widget.apps)) {
-                var user_apps = getUserApps(params.member) || [];
-                var admin_apps = getAdminApps(params.member) || [];
-                widget.apps = widget.apps.filter(appId => {
-                    if (params.member.global_admin) {
-                        return true;
-                    }
-                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    return false;
-                });
+            //A new widget may only reference apps the creator can read. Reject
+            //rather than silently strip, so a widget is never stored pointing at
+            //an app whose data will not be served.
+            if (!isAppLessWidget(widget)) {
+                var newWidgetApps = normalizeAppIds(widget.apps);
+                if (newWidgetApps === null) {
+                    common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
+                    return true;
+                }
+                if (!memberHasAccessToAllApps(params.member, newWidgetApps)) {
+                    common.returnMessage(params, 403, 'Not allowed to use one or more of the given apps');
+                    return true;
+                }
+                widget.apps = newWidgetApps;
             }
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
@@ -1276,6 +1331,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "u")) {
+                return;
+            }
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -1284,12 +1342,8 @@ plugins.setConfigs("dashboards", {
             try {
                 widget = JSON.parse(common.sanitizeHTML(widget));
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse widget failed', widget);
-            }
-
-            if (widget.widget_type === "note") {
-                widget.contenthtml = sanitizeNote(widget.contenthtml);
             }
 
             if (!dashboardId || dashboardId.length !== 24) {
@@ -1301,24 +1355,6 @@ plugins.setConfigs("dashboards", {
                 common.returnMessage(params, 400, 'Invalid parameter: widget_id');
                 return true;
             }
-            //Filter out app_ids that current users does not have access to
-            if (widget.apps && Array.isArray(widget.apps)) {
-                var user_apps = getUserApps(params.member) || [];
-                var admin_apps = getAdminApps(params.member) || [];
-                widget.apps = widget.apps.filter(appId => {
-                    if (params.member.global_admin) {
-                        return true;
-                    }
-                    else if (user_apps && user_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    else if (admin_apps && admin_apps.indexOf(appId) !== -1) {
-                        return true;
-                    }
-                    return false;
-                });
-            }
-
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
@@ -1336,15 +1372,60 @@ plugins.setConfigs("dashboards", {
                             unsetQuery.$unset = {"isPluginWidget": ""};
                         }
                         if (hasEditAccess) {
-                            common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
-                                if (er || !result || !result.value) {
-                                    common.returnMessage(params, 500, "Failed to update widget");
+                            //A member with edit access may keep the apps a widget
+                            //already points at, even ones they cannot read - the
+                            //dashboard owner delegated that by sharing with edit
+                            //rights. They may not ADD an app they cannot read,
+                            //which is what would turn a shared widget into a
+                            //window onto an unrelated app.
+                            common.db.collection("widgets").findOne({_id: common.db.ObjectID(widgetId)}, {projection: {apps: 1, widget_type: 1}}, function(readErr, existingWidget) {
+                                if (readErr || !existingWidget) {
+                                    return common.returnMessage(params, 500, "Failed to update widget");
                                 }
-                                else {
-                                    plugins.dispatch("/systemlogs", {params: params, action: "widget_edited", data: {before: result.value, update: widget}});
-                                    plugins.dispatch("/dashboard/widget/updated", {params: params, widget: {before: result.value, update: widget}});
-                                    common.returnMessage(params, 200, 'Success');
+
+                                //A partial update may omit widget_type, so fall
+                                //back to the stored type to recognise a note.
+                                var isNote = isAppLessWidget({widget_type: widget.widget_type || existingWidget.widget_type});
+
+                                if (isNote) {
+                                    //Whatever apps value was sent, a note is
+                                    //stored with "*".
+                                    widget.apps = APP_LESS_WIDGET_APPS;
+                                    if (typeof widget.contenthtml !== "undefined") {
+                                        widget.contenthtml = sanitizeNote(widget.contenthtml);
+                                    }
                                 }
+                                else if (typeof widget.apps !== "undefined") {
+                                    //Normalize so an array-like value such as
+                                    //{length: 1, "0": "<app id>"} cannot slip past
+                                    //the access check while still being read
+                                    //through .length/[i] by every consumer.
+                                    var updatedWidgetApps = normalizeAppIds(widget.apps);
+                                    if (updatedWidgetApps === null) {
+                                        return common.returnMessage(params, 400, 'Invalid parameter: widget.apps');
+                                    }
+                                    widget.apps = updatedWidgetApps;
+
+                                    var existingApps = normalizeAppIds(existingWidget.apps) || [];
+                                    var addedApps = widget.apps.filter(function(appId) {
+                                        return existingApps.indexOf(appId) === -1;
+                                    });
+
+                                    if (!memberHasAccessToAllApps(params.member, addedApps)) {
+                                        return common.returnMessage(params, 403, 'Not allowed to use one or more of the given apps');
+                                    }
+                                }
+
+                                common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
+                                    if (er || !result || !result.value) {
+                                        common.returnMessage(params, 500, "Failed to update widget");
+                                    }
+                                    else {
+                                        plugins.dispatch("/systemlogs", {params: params, action: "widget_edited", data: {before: result.value, update: widget}});
+                                        plugins.dispatch("/dashboard/widget/updated", {params: params, widget: {before: result.value, update: widget}});
+                                        common.returnMessage(params, 200, 'Success');
+                                    }
+                                });
                             });
                         }
                         else if (hasViewAccess) {
@@ -1377,6 +1458,9 @@ plugins.setConfigs("dashboards", {
         var params = ob.params;
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "d")) {
+                return;
+            }
 
             var dashboardId = params.qstring.dashboard_id,
                 widgetId = params.qstring.widget_id,
@@ -1385,7 +1469,7 @@ plugins.setConfigs("dashboards", {
             try {
                 widget = JSON.parse(widget);
             }
-            catch (SyntaxError) {
+            catch {
                 log.d('Parse widget failed', widget);
             }
 
@@ -1474,6 +1558,8 @@ plugins.setConfigs("dashboards", {
                         purpose: "LoginAuthToken",
                         temporary: true,
                         ttl: 540, //9 minutes
+                        //the headless renderer authenticates by redeeming this at /login/token
+                        can_login: true,
                         callback: function(er, token) {
                             if (er) {
                                 return resolve();
@@ -1508,7 +1594,7 @@ plugins.setConfigs("dashboards", {
                                 options.waitForRegexAfterCbfn = true;
 
                                 //options.beforeScrnCbFn = function() {
-                                // eslint-disable-next-line no-undef
+
                                 //var $ = window.$;
                                 //$(".funnels table colgroup col:first-child").width("145px");
                                 //$(".funnels table colgroup col:last-child").width("80px");
@@ -1612,6 +1698,9 @@ plugins.setConfigs("dashboards", {
             var report = ob.report;
 
             if (report.report_type === "dashboards") {
+                if (!hasDashboardAccess(params.member, "r")) {
+                    return resolve();
+                }
                 var dashboardId = report.dashboards;
                 common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
                     if (err) {
@@ -1691,6 +1780,23 @@ plugins.setConfigs("dashboards", {
     }
 
     /**
+     * Answer 403 to a scoped token that has no dashboards grant for the operation.
+     *
+     * Dashboards are opened by ownership and sharing, not per app, so a token scoped to some apps
+     * reaches them only through the dashboards grant of its token_permission.
+     * @param  {Object} params - params object, member already validated
+     * @param  {String} operation - c, r, u or d
+     * @returns {Boolean} true if the request was answered and the handler must stop
+     */
+    function refuseDashboardToken(params, operation) {
+        if (hasDashboardAccess(params.member, operation)) {
+            return false;
+        }
+        common.returnMessage(params, 403, "Token has no access to dashboards");
+        return true;
+    }
+
+    /**
      * Function to validate dashboard id
      * @param  {String} dashboardId - dashboard id
      * @param  {Function} cb - callback function
@@ -1715,6 +1821,74 @@ plugins.setConfigs("dashboards", {
 
         for (var i = 0; i < requiredProps.length; i++) {
             if (widget[requiredProps[i]] === undefined) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Function to check whether a widget shows no app data. Such widgets are
+     * always stored with apps: APP_LESS_WIDGET_APPS ("*", the format notes
+     * have always had) and skip app id validation and access checks.
+     * @param  {Object} widget - widget
+     * @returns {Boolean} true if the widget references no apps
+     */
+    function isAppLessWidget(widget) {
+        return !!widget && widget.widget_type === "note";
+    }
+
+    /**
+     * Function to normalize a widget apps value into an array of app id strings
+     *
+     * Only a genuine Array of 24 character hex strings is accepted. An
+     * array-like object such as {length: 1, "0": "<app id>"} is rejected here,
+     * because it would otherwise pass an Array.isArray() guard while still
+     * being consumed through .length/[i] by fetchWidgetApps and by every
+     * /dashboard/data handler.
+     *
+     * @param  {Any} apps - widget apps value as supplied or as stored
+     * @returns {Array|null} array of app id strings, or null if not a valid list
+     */
+    function normalizeAppIds(apps) {
+        if (!Array.isArray(apps)) {
+            return null;
+        }
+
+        var appIds = [];
+
+        for (var i = 0; i < apps.length; i++) {
+            var appId = apps[i];
+
+            if (typeof appId !== "string" || !/^[a-f0-9]{24}$/i.test(appId)) {
+                return null;
+            }
+
+            if (appIds.indexOf(appId) === -1) {
+                appIds.push(appId);
+            }
+        }
+
+        return appIds;
+    }
+
+    /**
+     * Function to check whether a member can read every given app
+     * @param  {Object} member - user
+     * @param  {Array} appIds - normalized app id strings
+     * @returns {Boolean} true if the member has access to all of them
+     */
+    function memberHasAccessToAllApps(member, appIds) {
+        if (member.global_admin) {
+            return true;
+        }
+
+        var userApps = getUserApps(member) || [];
+        var adminApps = getAdminApps(member) || [];
+
+        for (var i = 0; i < appIds.length; i++) {
+            if (userApps.indexOf(appIds[i]) === -1 && adminApps.indexOf(appIds[i]) === -1) {
                 return false;
             }
         }
@@ -2139,6 +2313,9 @@ plugins.setConfigs("dashboards", {
         }
 
         validateUser(params, function() {
+            if (refuseDashboardToken(params, "r")) {
+                return;
+            }
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (!err && dashboard) {
                     hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
@@ -2242,7 +2419,7 @@ plugins.setConfigs("dashboards", {
                         }
                     });
                 }
-                catch (e) {
+                catch {
                     // ignore
                 }
                 if (funnelIds.length) {

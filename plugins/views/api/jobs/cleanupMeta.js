@@ -1,6 +1,6 @@
 const job = require('../../../../api/parts/jobs/job.js');
 const log = require('../../../../api/utils/log.js')('job:views:cleanup_meta');
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 
 
 const viewsUtils = require("../parts/viewsUtils.js");
@@ -12,9 +12,9 @@ class CleanupMetaJob extends job.Job {
     /**
      * Get's called to run the job
      * @param {mongoDatabase} countlyDb ref to countlyDb
-     * @param {function} doneJob callback
-     * @param {function} progressJob progress callback
-     * @return {void} just for exit
+     * @param {Function} doneJob callback
+     * @param {Function} progressJob progress callback
+     * @returns {void} just for exit
      */
     run(countlyDb, doneJob, progressJob) {
         log.i("Starting Views meta recheck job");

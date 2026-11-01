@@ -1,7 +1,7 @@
 var pluginManager = require('../../../../plugins/pluginManager.js'),
     async = require('async'),
     crypto = require('crypto'),
-    Promise = require("bluebird");
+    Promise = require("../../../../api/utils/promise.js");
 
 pluginManager.dbConnection().then((countlyDb) => {
     countlyDb.collection('long_tasks').update({autoRefresh: true,type:"formulas", taskgtoup:{$exists:false},subtask:{$exists:false}},{$set:{"period_desc":"732days",taskgroup:true}},{multi:true},function (err,res){

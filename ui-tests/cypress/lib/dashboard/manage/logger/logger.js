@@ -157,6 +157,8 @@ const verifyLogsDataTable = ({
         elementText: information,
     });
 
+    cy.waitForListSettled([logsDataTableElements(index).INFORMATION_FILTER]);
+
     cy.elementExists(logsDataTableElements(index).INFORMATION_PROBLEMS)
         .then((isExists) => {
             if (isExists) {

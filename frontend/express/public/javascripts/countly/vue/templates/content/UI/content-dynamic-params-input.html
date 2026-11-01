@@ -1,0 +1,151 @@
+<div
+  class="cly-vue-content-dynamic-params-input"
+  :data-test-id="testId"
+>
+  <div
+    ref="editor"
+    class="cly-vue-content-dynamic-params-input__editor"
+    spellcheck="false"
+    style="background: #FFFFFF; border: 1px solid #DBDDE1; border-radius: 4px; padding: 5px 12px; min-height: 30px; max-height: 110px; overflow-y: auto; font-size: 14px; line-height: 20px; color: #383A3F; white-space: pre-wrap; word-break: break-all; outline: none;"
+    :contenteditable="!disabled"
+    :data-test-id="testId + '-url-editor'"
+    @click="onEditorClick"
+    @input="onEditorInput"
+    @blur="rebuildEditor"
+    @keydown.enter.prevent
+    @paste="onEditorPaste"
+  ></div>
+  <el-button
+    ref="addButton"
+    class="cly-vue-content-dynamic-params-input__add-button"
+    :disabled="disabled"
+    icon="cly-io cly-io-plus"
+    size="small"
+    type="text"
+    :data-test-id="testId + '-add-user-property-button'"
+    @click="onAddButtonClick"
+  >
+    {{ i18n('content.dynamic-params.add-user-property') }}
+  </el-button>
+  <div
+    v-if="isPanelOpen"
+    class="cly-vue-content-dynamic-params-input__panel bu-p-3 bu-mt-1"
+    style="background: #FFFFFF; border: 1px solid #E2E4E8; border-radius: 4px;"
+    :data-test-id="testId + '-panel'"
+  >
+    <div class="bu-mb-3 text-medium bu-has-text-weight-medium">
+      {{ panelTitle }}
+    </div>
+    <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.parameter-name') }}</div>
+    <el-input
+      v-model="property.key"
+      class="bu-mb-4"
+      autocomplete="off"
+      :placeholder="i18n('content.dynamic-params.enter-parameter-name')"
+      :data-test-id="testId + '-parameter-name-input'"
+    />
+    <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.value-type') }}</div>
+    <el-select
+      v-model="selectedPropertyCategory"
+      class="bu-mb-4"
+      style="width: 100%;"
+      :data-test-id="testId + '-property-category'"
+      @change="onCategoryChange"
+    >
+      <el-option
+        v-for="item in propertyCategoryOptions"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      />
+    </el-select>
+    <template v-if="selectedPropertyCategory === 'static'">
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.parameter-value') }}</div>
+      <el-input
+        v-model="property.staticValue"
+        class="bu-mb-4"
+        autocomplete="off"
+        :placeholder="i18n('content.dynamic-params.enter-parameter-value')"
+        :data-test-id="testId + '-static-value-input'"
+      />
+    </template>
+    <template v-else-if="selectedPropertyCategory === 'external'">
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.api-property') }}</div>
+      <el-input
+        class="bu-mb-4"
+        autocomplete="off"
+        :placeholder="i18n('content.dynamic-params.enter-value')"
+        :value="property.value"
+        :data-test-id="testId + '-api-property-input'"
+        @input="onPropertySelect"
+      />
+    </template>
+    <template v-else>
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.property') }}</div>
+      <cly-select-x
+        class="bu-mb-4"
+        mode="single-list"
+        :hide-all-options-tab="false"
+        :options="options"
+        :placeholder="i18n('content.dynamic-params.select-property')"
+        :search-placeholder="i18n('content.dynamic-params.search-in-properties')"
+        :value="property.value"
+        :width="264"
+        :data-test-id="testId + '-property-select'"
+        @change="onPropertySelect"
+      />
+    </template>
+    <template v-if="selectedPropertyCategory !== 'static'">
+      <el-checkbox
+        v-model="property.isUppercase"
+        class="bu-mb-4"
+        style="display: flex; align-items: flex-start; white-space: normal;"
+        :data-test-id="testId + '-uppercase-checkbox'"
+      >
+        <span style="white-space: normal; word-break: normal; display: inline-block;">
+          {{ i18n('content.dynamic-params.start-with-capital-letter') }}
+        </span>
+      </el-checkbox>
+      <div class="bu-mb-1 text-small">{{ i18n('content.dynamic-params.fallback-value') }}</div>
+      <el-input
+        v-model="property.fallback"
+        class="bu-mb-4"
+        autocomplete="off"
+        :placeholder="i18n('content.dynamic-params.enter-fallback-value')"
+        :data-test-id="testId + '-fallback-input'"
+      />
+    </template>
+    <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between">
+      <el-button
+        v-if="editingIndex !== null"
+        size="small"
+        style="color: #D23F00;"
+        type="text"
+        :data-test-id="testId + '-remove-button'"
+        @click="onRemoveParam"
+      >
+        {{ i18n('content.dynamic-params.remove') }}
+      </el-button>
+      <div v-else></div>
+      <div>
+        <el-button
+          size="small"
+          type="default"
+          :data-test-id="testId + '-cancel-button'"
+          @click="onCancel"
+        >
+          {{ i18n('common.cancel') }}
+        </el-button>
+        <el-button
+          size="small"
+          type="success"
+          :disabled="isConfirmDisabled"
+          :data-test-id="testId + '-confirm-button'"
+          @click="onConfirm"
+        >
+          {{ i18n('content.dynamic-params.confirm') }}
+        </el-button>
+      </div>
+    </div>
+  </div>
+</div>

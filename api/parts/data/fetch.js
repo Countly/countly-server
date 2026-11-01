@@ -174,7 +174,7 @@ fetch.fetchMergedEventGroups = function(params) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventGroups = function(params, event, options, callback) {
     const COLLECTION_NAME = "event_groups";
@@ -215,6 +215,21 @@ fetch.fetchMergedEventData = function(params) {
 };
 
 /**
+* Whether a key produced by for...in over a stored document may be walked into a
+* merge target. A field literally named __proto__ (or constructor / prototype)
+* deserializes as an own enumerable property, but indexing the target with it
+* resolves to the target's prototype rather than an own slot, so assigning through
+* it writes into Object.prototype for the life of the worker. Inherited keys are
+* skipped for the same reason.
+* @param {object} source - the object being iterated
+* @param {string} key - the key for...in produced
+* @returns {boolean} true when the key is safe to merge
+**/
+function isMergeableKey(source, key) {
+    return Object.prototype.hasOwnProperty.call(source, key) && !common.isForbiddenFieldName(key);
+}
+
+/**
 * Get merged data from multiple events in standard data model
 * @param {params} params - params object with app_id and date
 * @param {array} events - array with event keys
@@ -225,7 +240,7 @@ fetch.fetchMergedEventData = function(params) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getMergedEventData = function(params, events, options, callback) {
     var eventKeysArr = [];
@@ -247,6 +262,9 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                 // delete allEventData[i].meta;
 
                 for (let levelOne in allEventData[i]) {
+                    if (!isMergeableKey(allEventData[i], levelOne)) {
+                        continue;
+                    }
                     if (typeof allEventData[i][levelOne] !== 'object') {
                         if (mergedEventOutput[levelOne]) {
                             mergedEventOutput[levelOne] += allEventData[i][levelOne];
@@ -257,6 +275,9 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                     }
                     else {
                         for (let levelTwo in allEventData[i][levelOne]) {
+                            if (!isMergeableKey(allEventData[i][levelOne], levelTwo)) {
+                                continue;
+                            }
                             if (!mergedEventOutput[levelOne]) {
                                 mergedEventOutput[levelOne] = {};
                             }
@@ -271,6 +292,9 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                             }
                             else {
                                 for (let levelThree in allEventData[i][levelOne][levelTwo]) {
+                                    if (!isMergeableKey(allEventData[i][levelOne][levelTwo], levelThree)) {
+                                        continue;
+                                    }
                                     if (!mergedEventOutput[levelOne][levelTwo]) {
                                         mergedEventOutput[levelOne][levelTwo] = {};
                                     }
@@ -285,6 +309,9 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                                     }
                                     else {
                                         for (let levelFour in allEventData[i][levelOne][levelTwo][levelThree]) {
+                                            if (!isMergeableKey(allEventData[i][levelOne][levelTwo][levelThree], levelFour)) {
+                                                continue;
+                                            }
                                             if (!mergedEventOutput[levelOne][levelTwo][levelThree]) {
                                                 mergedEventOutput[levelOne][levelTwo][levelThree] = {};
                                             }
@@ -299,6 +326,9 @@ fetch.getMergedEventData = function(params, events, options, callback) {
                                             }
                                             else {
                                                 for (let levelFive in allEventData[i][levelOne][levelTwo][levelThree][levelFour]) {
+                                                    if (!isMergeableKey(allEventData[i][levelOne][levelTwo][levelThree][levelFour], levelFive)) {
+                                                        continue;
+                                                    }
                                                     if (!mergedEventOutput[levelOne][levelTwo][levelThree][levelFour]) {
                                                         mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] = {};
                                                     }
@@ -322,6 +352,9 @@ fetch.getMergedEventData = function(params, events, options, callback) {
 
             meta = allEventData.map(x => x.meta).reduce((acc, x) => {
                 for (var key in x) {
+                    if (!isMergeableKey(x, key)) {
+                        continue;
+                    }
                     if (acc[key]) {
                         acc[key] = acc[key].concat(x[key]);
                     }
@@ -360,7 +393,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
     /**
     * Get event data from database
     * @param {string} eventKey - event keys
-    * @param {function} done - function to call when data fetched
+    * @param {Function} done - function to call when data fetched
     **/
     function getEventData(eventKey, done) {
         var collectionName = crypto.createHash('sha1').update(eventKey.e + eventKey.a).digest('hex');
@@ -657,7 +690,7 @@ fetch.fetchAllApps = function(params) {
 * Calls aggregation query to calculate top three values based on 't' in given collection
 * @param {params} params - params object
 * @param {string} collection - collection name
-* @param {function} callback - callback function
+* @param {Function} callback - callback function
 **/
 function getDataforTops(params, collection, callback) {
     var periodObj = countlyCommon.getPeriodObj(params);
@@ -767,7 +800,7 @@ fetch.fetchTop = function(params) {
             try {
                 params.qstring.metrics = JSON.parse(params.qstring.metrics);
             }
-            catch (ex) {
+            catch {
                 console.log("Error parsing metrics", params.qstring.metrics);
                 params.qstring.metrics = [];
             }
@@ -952,7 +985,7 @@ fetch.fetchDurations = function(params) {
 * @param {params} params - params object with app_id and date
 * @param {string} metric - name of the collection where to get data from
 * @param {object} totalUsersMetric - data from total users api request to correct unique user values
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 * @example <caption>Retrieved data</caption>
 * [
 *    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
@@ -987,7 +1020,7 @@ fetch.getMetric = function(params, metric, totalUsersMetric, callback) {
 * @param {object=} fetchTimeOptions.levels - describes which metrics to expect on which levels
 * @param {array=} fetchTimeOptions.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} fetchTimeOptions.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 * @example <caption>Retrieved data</caption>
 * [
 *    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
@@ -1065,7 +1098,7 @@ fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTim
 /**
 * Get collection and metric name from metric string
 * @param {string} metric - metric/segment name
-* @return {Array} array with collection, metric, model object
+* @returns {Array} array with collection, metric, model object
 **/
 fetch.metricToCollection = function(metric) {
     switch (metric) {
@@ -1304,7 +1337,7 @@ fetch.fetchEvents = function(params) {
                     params.qstring.events = [params.qstring.events];
                 }
             }
-            catch (ex) {
+            catch {
                 common.returnMessage(params, 400, 'Must provide valid array with event keys as events param.');
                 return false;
             }
@@ -1374,7 +1407,7 @@ fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObj = function(collection, params, options, callback) {
     fetchTimeObj(collection, params, null, options, callback);
@@ -1391,7 +1424,7 @@ fetch.getTimeObj = function(collection, params, options, callback) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObjForEvents = function(collection, params, options, callback) {
 
@@ -1424,7 +1457,7 @@ fetch.fetchTotalUsersObj = function(metric, params) {
 * Get data for estimating total users count if period contains today
 * @param {string} metric - name of the collection where to get data from
 * @param {params} params - params object with app_id and date
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTotalUsersObj = function(metric, params, callback) {
     fetch.getTotalUsersObjWithOptions(metric, params, {}, callback);
@@ -1436,7 +1469,7 @@ fetch.getTotalUsersObj = function(metric, params, callback) {
 * @param {params} params - params object with app_id and date
 * @param {object=} options - additional optional settings
 * @param {object=} options.db - database connection to use, by default will try to use common.db
-* @param {function} callback - callback to retrieve the data, receiving only one param which is output
+* @param {Function} callback - callback to retrieve the data, receiving only one param which is output
 * @returns {void} void
 */
 fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) {
@@ -1602,18 +1635,11 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
 * @returns {object} total users object with formated values
 **/
 fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
-    var tmpObj = {},
-        processingFunction;
-
-    switch (forMetric) {
-    case "devices":
-        //processingFunction = countlyDevice.getDeviceFullName;
-        break;
-    }
+    var tmpObj = {};
 
     if (obj) {
         for (let i = 0; i < obj.length; i++) {
-            var tmpKey = (processingFunction) ? processingFunction(obj[i]._id) : obj[i]._id;
+            var tmpKey = obj[i]._id;
 
             if (prev) {
                 tmpObj[tmpKey] = obj[i].pu || 0;
@@ -1639,7 +1665,7 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
 * @param {object=} options.levels - describes which metrics to expect on which levels
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
-* @param {function} callback - to call when fetch done
+* @param {Function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     if (typeof options === "function") {
@@ -1813,6 +1839,12 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     **/
     function deepMerge(ob1, ob2) {
         for (let i in ob2) {
+            //Skip anything that would let a stored field name reach a prototype. This
+            //is the durable guard: it also neutralises documents poisoned before the
+            //input paths were fixed, which re-pollute on every read otherwise.
+            if (!isMergeableKey(ob2, i)) {
+                continue;
+            }
             if (typeof ob1[i] === "undefined") {
                 ob1[i] = ob2[i];
             }
@@ -1881,6 +1913,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     //old meta merge
                     if (mergedDataObj.meta) {
                         for (let metaEl in dataObjects[i].meta) {
+                            if (!isMergeableKey(dataObjects[i].meta, metaEl)) {
+                                continue;
+                            }
                             if (mergedDataObj.meta[metaEl]) {
                                 mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], dataObjects[i].meta[metaEl]);
                             }
@@ -1896,6 +1931,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     //new meta merge as hash tables
                     if (dataObjects[i].meta_v2) {
                         for (let metaEl in dataObjects[i].meta_v2) {
+                            if (!isMergeableKey(dataObjects[i].meta_v2, metaEl)) {
+                                continue;
+                            }
                             if (mergedDataObj.meta[metaEl]) {
                                 mergedDataObj.meta[metaEl] = union(mergedDataObj.meta[metaEl], Object.keys(dataObjects[i].meta_v2[metaEl]));
                             }
@@ -1922,16 +1960,25 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
                     if (!isRefresh) {
                         for (let day in dataObjects[i].d) {
+                            if (!isMergeableKey(dataObjects[i].d, day)) {
+                                continue;
+                            }
                             if (options.unique.indexOf(day) !== -1) {
                                 continue;
                             }
                             for (let prop in dataObjects[i].d[day]) {
+                                if (!isMergeableKey(dataObjects[i].d[day], prop)) {
+                                    continue;
+                                }
                                 if (options.unique.indexOf(prop) !== -1 || prop <= 23 && prop >= 0) {
                                     continue;
                                 }
 
                                 if (typeof dataObjects[i].d[day][prop] === 'object') {
                                     for (let secondLevel in dataObjects[i].d[day][prop]) {
+                                        if (!isMergeableKey(dataObjects[i].d[day][prop], secondLevel)) {
+                                            continue;
+                                        }
                                         if ((levels.daily.length) ? levels.daily.indexOf(secondLevel) !== -1 : options.unique.indexOf(secondLevel) === -1) {
                                             if (!mergedDataObj[year][month][prop]) {
                                                 mergedDataObj[year][month][prop] = {};
@@ -1978,19 +2025,22 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     }
                 }
             }
-            //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
-            for (let i in mergedDataObj.meta) {
-                for (var p = 0; p < mergedDataObj.meta[i].length; p++) {
-                    if (mergedDataObj.meta[i][p] && typeof mergedDataObj.meta[i][p] === 'string') {
-                        mergedDataObj.meta[i][p] = mergedDataObj.meta[i][p].replace(new RegExp("\"", "g"), '&quot;');
-                    }
-                }
-            }
+            // NOTE: meta values must stay byte-identical to the data-object keys so the
+            // frontend can look up each value's counts. returnOutput escapes both the meta
+            // array values and the data keys with the same escape_html pass, so they already
+            // match. Do NOT pre-escape quotes here: it turns `"` into `&quot;`, which that
+            // later pass re-escapes to `&amp;quot;` (whenever the value also contains < or >),
+            // so any segmentation value carrying an HTML attribute (e.g. style="..",
+            // data-x="..") no longer matched its data key and silently vanished from the
+            // "All Events" breakdown while still showing in Drill.
             //truncate large meta on refresh		
             if (isRefresh) {
                 var metric_length = plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit;
                 if (metric_length > 0) {
                     for (let i in mergedDataObj.meta) {
+                        if (!isMergeableKey(mergedDataObj.meta, i)) {
+                            continue;
+                        }
                         if (mergedDataObj.meta[i].length > metric_length) {
                             delete mergedDataObj.meta[i]; //don't  return if there is more than limit
                         }
@@ -2002,6 +2052,9 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     var value_length = plugins.getConfig("api", params.app && params.app.plugins, true).event_segmentation_value_limit;
                     if (value_length > 0) {
                         for (let i in mergedDataObj.meta) {
+                            if (!isMergeableKey(mergedDataObj.meta, i)) {
+                                continue;
+                            }
                             if (mergedDataObj.meta[i].length > value_length) {
                                 mergedDataObj.meta[i].splice(value_length); //removes some elements if there is more than set limit
                             }
@@ -2239,7 +2292,7 @@ fetch.alljobs = async function(metric, params) {
                 $match: { name: { $regex: rr } }
             });
         }
-        catch (e) {
+        catch {
             console.log('Could not use as regex:' + params.qstring.sSearch);
         }
     }

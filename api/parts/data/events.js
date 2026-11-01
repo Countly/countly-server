@@ -8,7 +8,7 @@ var countlyEvents = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
+    Promise = require("../../utils/promise.js"),
     plugins = require('../../../plugins/pluginManager.js');
 
 /**
@@ -59,7 +59,7 @@ countlyEvents.processEvents = function(params) {
                     try {
                         params.qstring.events[i].key = JSON.stringify(params.qstring.events[i].key);
                     }
-                    catch (error) {
+                    catch {
                         params.qstring.events[i].key += "";
                     }
                 }
@@ -121,7 +121,9 @@ countlyEvents.processEvents = function(params) {
                         var tmpSegVal;
                         var myValues = [];
                         if (Array.isArray(currEvent.segmentation[segKey])) {
-                            currEvent.segmentation[segKey] = currEvent.segmentation[segKey].splice(0, (pluginsGetConfig.array_list_limit || 10));
+                            // slice, not splice: drill trims this same request array too,
+                            // and splice empties the array it is called on
+                            currEvent.segmentation[segKey] = currEvent.segmentation[segKey].slice(0, (pluginsGetConfig.array_list_limit || 10));
                             //myValues = currEvent.segmentation[segKey];
                             myValues = []; //ignore array values.
                         }
@@ -179,7 +181,7 @@ countlyEvents.processEvents = function(params) {
             /**
             * Fetch event meta
             * @param {string} id - id to of event to fetchEventMeta
-            * @param {function} callback - for result
+            * @param {Function} callback - for result
             **/
             function fetchEventMeta(id, callback) {
                 common.readBatcher.getOne("events_data", {'_id': metaToFetch[id].app_id + "_" + metaToFetch[id].coll + "_" + metaToFetch[id].id}, {meta_v2: 1}, (err2, eventMetaDoc) => {
@@ -201,7 +203,7 @@ countlyEvents.processEvents = function(params) {
 * @param {params} params - params object
 * @param {array} omitted_segments - array of segments to omit
 * @param {array} whitelisted_segments - array of segments to keep
-* @param {function} done - callback function to call when done processing
+* @param {Function} done - callback function to call when done processing
 **/
 function processEvents(appEvents, appSegments, appSgValues, params, omitted_segments, whitelisted_segments, done) {
     var events = [],
@@ -330,7 +332,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     continue;
                 }
                 //skip keys that map to object prototype members when used as field names
-                if (segKey === "__proto__" || segKey === "constructor" || segKey === "prototype") {
+                if (common.isForbiddenFieldName(segKey)) {
                     continue;
                 }
 
@@ -356,7 +358,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     try {
                         tmpSegVal = tmpSegVal + "";
                     }
-                    catch (ex) {
+                    catch {
                         tmpSegVal = "";
                     }
 
@@ -368,6 +370,15 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
 
                     if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                        tmpSegVal = "[CLY]" + tmpSegVal;
+                    }
+
+                    //the value becomes a field name at d.<day>.<value>.<metric>; a value
+                    //naming an Object.prototype member is prefixed like the day numbers
+                    //above, so a later deepMerge of the stored document cannot walk it
+                    //into the prototype. The key is already guarded above; this is the
+                    //value path four lines down that the key guard does not reach.
+                    if (common.isForbiddenFieldName(tmpSegVal)) {
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
 
@@ -593,6 +604,14 @@ function mergeEvents(firstObj, secondObj) {
             continue;
         }
 
+        //a stored event document can carry "__proto__" as an OWN key, which the check
+        //above accepts. firstObj[firstLevel] is then Object.prototype, which is truthy,
+        //so the "if (!firstObj[firstLevel])" branch below does not fire either and the
+        //two writes land on the prototype for the life of the worker.
+        if (common.isForbiddenFieldName(firstLevel)) {
+            continue;
+        }
+
         if (!firstObj[firstLevel]) {
             firstObj[firstLevel] = secondObj[firstLevel];
             continue;
@@ -617,7 +636,7 @@ function mergeEvents(firstObj, secondObj) {
 /**
 * Merge multiple event document objects
 * @param {object} eventDoc - document with information about event
-* @param {function} callback - to call when update done
+* @param {Function} callback - to call when update done
 **/
 /*function updateEventDb(eventDoc, callback) {
     common.db.collection(eventDoc.collection).update({'_id': eventDoc._id}, eventDoc.updateObj, {
@@ -642,7 +661,7 @@ function mergeEvents(firstObj, secondObj) {
 /**
 * Rollback already updated events in case error happened and we have safe api enabled
 * @param {object} eventUpdateResult - db result object of updating event document
-* @param {function} callback - to call when rollback done
+* @param {Function} callback - to call when rollback done
 **/
 /*function rollbackEventDb(eventUpdateResult, callback) {
     if (eventUpdateResult.status === "failed") {

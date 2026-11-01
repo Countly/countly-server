@@ -200,7 +200,7 @@ var getSessionTimeoutInMs = function(req) {
 * @param {object} req - request object
 * @param {object} member - member object
 * @param {object} countlyDb  -data base reference
-* @param {function} callback - callback function, called after token and variables are set. Returns nothing.
+* @param {Function} callback - callback function, called after token and variables are set. Returns nothing.
 **/
 function setLoggedInVariables(req, member, countlyDb, callback) {
     req.session.uid = member._id;
@@ -225,6 +225,9 @@ function setLoggedInVariables(req, member, countlyDb, callback) {
         tryReuse: reuse,
         ttl: getSessionTimeoutInMs(req) / 1000,
         purpose: "LoggedInAuth",
+        //the server is establishing an interactive session here, which is the one place login
+        //permission originates; the token is unscoped, so it stays as capable as the session it is
+        can_login: true,
         callback: function(err2, token) {
             if (err2) {
                 console.log(err2);
@@ -258,7 +261,7 @@ membersUtility.clearReqAndRes = function(req, res) {
 *
 * @param {string} username - username or the email address of the user
 * @param {string} password - password
-* @param {function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
+* @param {Function} callback - callback function.  First parameter in callback function is member object if logging in is successful.
 * @example
 *   membersUtility.verifyCredentials(username, password, function(member) {
         if (member) {
@@ -303,7 +306,7 @@ membersUtility.verifyCredentials = function(username, password, callback) {
 * @param {string} req.body.username - username
 * @param {string} req.body.password - password
 * @param {object} res - response object
-* @param {function} callback - callback function. First parameter in callback
+* @param {Function} callback - callback function. First parameter in callback
 * function is member object, if it could be retrieved succesfully. Second
 * parameter is a boolean that is true when logged in succesfully.
 * @example
@@ -367,7 +370,7 @@ membersUtility.login = function(req, res, callback) {
 * @param {object} req - request object
 * @param {string} req.body.username - username
 * @param {object} res - response object
-* @param {function} callback - callback function. First parameter in callback
+* @param {Function} callback - callback function. First parameter in callback
 * function is member object, if it could be retrieved succesfully. Second
 * parameter is a boolean that is true when logged in succesfully.
 * @example
@@ -433,8 +436,11 @@ membersUtility.loginWithExternalAuthentication = function(req, res, callback) {
 * @param {string} my_token - current auth token
 * @param {string} my_session - current session id
 * @param {object} countlyDb  -data base reference
+* @param {boolean=} passwordChanged - the password changed: revoke every token the member owns, of any purpose, instead of only the dashboard login tokens
+* @returns {Promise} resolves once the tokens are revoked
 **/
-function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
+function killOtherSessionsForUser(userId, my_token, my_session, countlyDb, passwordChanged) {
+    userId = userId + "";
     countlyDb.collection('sessions_').find({"session": { $regex: userId }}).toArray(function(err, sessions) {
         var delete_us = [];
         if (sessions) {
@@ -447,7 +453,7 @@ function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
                     console.log(error);
                 }
 
-                if ((!my_session || sessions[i]._id !== my_session) && parsed_data && parsed_data.uid === userId) {
+                if ((!my_session || sessions[i]._id !== my_session) && parsed_data && (parsed_data.uid + "") === userId) {
                     delete_us.push(sessions[i]._id);
                 }
             }
@@ -456,19 +462,20 @@ function killOtherSessionsForUser(userId, my_token, my_session, countlyDb) {
             }
         }
     });
-    //delete other auth tokens with purpose:"LoggedInAuth"
-    if (my_token) {
-        countlyDb.collection('auth_tokens').remove({'owner': countlyDb.ObjectID(userId), 'purpose': "LoggedInAuth", '_id': {$ne: my_token}});
-    }
-    else {
-        countlyDb.collection('auth_tokens').remove({'owner': countlyDb.ObjectID(userId), 'purpose': "LoggedInAuth"});
-    }
+    return authorize.revokeMemberTokens({
+        db: countlyDb,
+        owner: userId,
+        purpose: passwordChanged ? undefined : "LoggedInAuth",
+        keepToken: my_token || undefined
+    }).catch(function(err) {
+        console.log("Revoking tokens of member " + userId + " failed", err);
+    });
 }
 
 /**
 * Logins user with token
 * @param {object} req - request object
-* @param {function} callback - callback function
+* @param {Function} callback - callback function
 **/
 membersUtility.loginWithToken = function(req, callback) {
     var token = req.params.token;
@@ -487,23 +494,37 @@ membersUtility.loginWithToken = function(req, callback) {
                 return callback(undefined);
             }
 
-            // Only allow tokens whose purpose is explicitly "log this member in".
-            //   - "LoggedInAuth"   — legitimate session tokens (set by setLoggedInVariables;
-            //                        mail.sendTimeBanWarning).
-            //   - "LoginAuthToken" — short-lived (TTL=300, multi:false) tokens used by the
-            //                        server-side Puppeteer renderer to authenticate the
-            //                        headless Chrome session at /login/token/:token.
-            // Any other purpose — including arbitrary purposes settable via /i/token/create
-            // by a global admin — MUST NOT be redeemable here.
-            var allowedLoginPurposes = ["LoggedInAuth", "LoginAuthToken"];
-            if (allowedLoginPurposes.indexOf(valid.purpose) === -1) {
-                plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "wrong_purpose"}});
+            // Redeeming a token here grants the owner's full dashboard session, so it is allowed
+            // only for a token that explicitly carries login permission. can_login is set by the
+            // server where a session is established or propagated (setLoggedInVariables, the
+            // renderer, the ban-warning mail, OIDC), and by /i/token/create only when the creating
+            // credential already holds it and the child is not narrowed. Purpose is a description,
+            // not a capability: it used to be the gate here while being freely settable at create
+            // time, which is what let a scoped token forge its way into a full session.
+            var canLogin = valid.can_login === true;
+            if (!canLogin && typeof valid.can_login === "undefined") {
+                // Tokens minted before this model have no can_login field. Honour the ones that
+                // were legitimately redeemable then - a login purpose and no restriction at all -
+                // so live sessions and existing login-token integrations keep working. Scoped
+                // legacy tokens stay locked out.
+                var isLoginScopeRestricted = function(scope) {
+                    return !(scope === undefined || scope === null || scope === "" || (Array.isArray(scope) && scope.length === 0));
+                };
+                var legacyLoginPurposes = ["LoggedInAuth", "LoginAuthToken"];
+                canLogin = legacyLoginPurposes.indexOf(valid.purpose) !== -1 && !isLoginScopeRestricted(valid.app) && !isLoginScopeRestricted(valid.endpoint) && !valid.token_permission;
+            }
+            if (!canLogin) {
+                plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "no_login_permission"}});
                 return callback(undefined);
             }
 
             membersUtility.db.collection('members').findOne({"_id": membersUtility.db.ObjectID(valid.owner)}, function(err, member) {
                 if (err || !member) {
                     plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner}});
+                    callback(undefined);
+                }
+                else if (member.locked) {
+                    plugins.callMethod("tokenLoginFailed", {req: req, data: {token: token, token_owner: valid.owner, reason: "locked"}});
                     callback(undefined);
                 }
                 else {
@@ -598,7 +619,7 @@ membersUtility.extendSession = function(req) {
  * @param {string} req.body.username - Username. Mandatory.
  * @param {string} req.body.password  - Password. Mandatory.
  * @param {string} req.body.email  - E-mail. Mandatory.
- * @param {function} callback  - Function with one return value - error (if there is one)
+ * @param {Function} callback  - Function with one return value - error (if there is one)
  * @example
  *   membersUtility.setup(req, res, countlyConfig, function(error) {
  *      if(error) {
@@ -691,7 +712,7 @@ membersUtility.setup = function(req, callback) {
 /**
  * Function validates if email is not used by any other member.
  * @param {string} email - mandatory. E-mail to check
- * @param {function} callback -  function with one return value. Returns true if email is not used, false if taken.
+ * @param {Function} callback -  function with one return value. Returns true if email is not used, false if taken.
  * @example
  * membersUtility.checkEmail(email, function(isFree) {
  *      if(isFree ===true) {
@@ -716,7 +737,7 @@ membersUtility.checkEmail = function(email, callback) {
 /**
  * Function validates if username is not used by any other member.
  * @param {string} username - mandatory. Username to check.
- * @param {function} callback -  function with one return value. Returns true if username is free, false if taken.
+ * @param {Function} callback -  function with one return value. Returns true if username is free, false if taken.
  * @example
  * membersUtility.checkUsername(username, function(isFree) {
  *      if(isFree ===true) {
@@ -743,7 +764,7 @@ membersUtility.checkUsername = function(username, callback) {
  * @param {object} req - request object.
  * @param {string} req.body.email - mandatory. User email.
  * @param {string} req.body.lang - optional. Language.(default "en"  - english)
- * @param {function} callback  - function with one return value. Returns member object if successful.
+ * @param {Function} callback  - function with one return value. Returns member object if successful.
  * @example
  * membersUtility.forgot(req, function(member) {
  *      if(member) {
@@ -783,7 +804,7 @@ membersUtility.forgot = function(req, callback) {
  * @param {string} req.body.password - mandatory. new password.
  * @param {string} req.body.again - mandatory.
  * @param {string} req.body.prid - mandatory. Password reset id.
- * @param {function} callback - function with one two return values. First one is password validation error(false if no error) and second one is member object if reset is sucessful.
+ * @param {Function} callback - function with one two return values. First one is password validation error(false if no error) and second one is member object if reset is sucessful.
 */
 membersUtility.reset = function(req, callback) {
     var result = validatePassword(req.body.password);
@@ -791,28 +812,36 @@ membersUtility.reset = function(req, callback) {
         if (req.body.password && req.body.again && req.body.prid) {
             req.body.prid += "";
             var secret = membersUtility.countlyConfig.passwordSecret || "";
-            argon2Hash(req.body.password + secret).then(password => {
-                membersUtility.db.collection('password_reset').findOne({ prid: req.body.prid }, function(err, passwordReset) {
-                    if (err || !passwordReset || !passwordReset.user_id) {
-                        callback(false, undefined);
+            argon2Hash(req.body.password + secret).then(async password => {
+                //take the link before using it: two submissions of one link can no longer both set a password
+                var claim = await membersUtility.db.collection('password_reset').findOneAndDelete({ prid: req.body.prid });
+                var passwordReset = claim && Object.prototype.hasOwnProperty.call(claim, "value") ? claim.value : claim;
+                if (!passwordReset || !passwordReset.user_id) {
+                    callback(false, undefined);
+                    return;
+                }
+                //enforce the same 10 minute expiry the reset page checks; the
+                //password change endpoint previously did not, so an expired
+                //(e.g. leaked/old) reset link stayed usable indefinitely
+                var nowTs = Math.round(new Date().getTime() / 1000);
+                if (nowTs > (passwordReset.timestamp + 600)) {
+                    callback(false, undefined);
+                    return;
+                }
+                membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
+                    if (err2) {
+                        //the password was not set: give the link back so it can be used again
+                        membersUtility.db.collection('password_reset').insertOne(passwordReset).catch(function() {}).then(function() {
+                            callback(false, undefined);
+                        });
                         return;
                     }
-                    //enforce the same 10 minute expiry the reset page checks; the
-                    //password change endpoint previously did not, so an expired
-                    //(e.g. leaked/old) reset link stayed usable indefinitely
-                    var nowTs = Math.round(new Date().getTime() / 1000);
-                    if (nowTs > (passwordReset.timestamp + 600)) {
-                        membersUtility.db.collection('password_reset').remove({ prid: req.body.prid }, function() { });
-                        callback(false, undefined);
-                        return;
-                    }
-                    membersUtility.db.collection('members').findAndModify({ _id: passwordReset.user_id }, {}, { '$set': { "password": password } }, function(err2, member) {
-                        member = member && member.ok ? member.value : null;
-                        killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db);
+                    member = member && member.ok ? member.value : null;
+                    //answer once the old sessions and tokens are gone
+                    killOtherSessionsForUser(passwordReset.user_id + "", null, null, membersUtility.db, true).then(function() {
                         plugins.callMethod("passwordReset", { req: req, data: member }); //only req, used for systemolgs
                         callback(false, member);
                     });
-                    membersUtility.db.collection('password_reset').remove({ prid: req.body.prid }, function() { });
                 });
             }).catch(function() {
                 callback(false, undefined);
@@ -834,7 +863,7 @@ membersUtility.reset = function(req, callback) {
  * @param {string} req.body.api_key - mandatory. User API KEY (current or the one to change to)
  * @param {string} req.body.old_pwd  - Old password. Optional. Passed if changing password.
  * @param {string} req.body.new_pwd  - New password. Optional. Passed if changing password.
- * @param {function} callback  - function with two return values. First one is true - if successful (false if not sucessful) and the second one - error message(in some cases).
+ * @param {Function} callback  - function with two return values. First one is true - if successful (false if not sucessful) and the second one - error message(in some cases).
 */
 membersUtility.settings = function(req, callback) {
     var updatedUser = {};
@@ -890,7 +919,7 @@ membersUtility.settings = function(req, callback) {
                             try {
                                 match = await verifyArgon2Hash(member.password, req.body.old_pwd);
                             }
-                            catch (ex) {
+                            catch {
                                 match = null;
                             }
                             if (!match) {
@@ -912,13 +941,13 @@ membersUtility.settings = function(req, callback) {
                                 return callback(false, "user-settings.old-password-not-match");
                             }
                         }
-                        // eslint-disable-next-line require-atomic-updates
+
                         member.change.password = true;
                         try {
                             var newPassword_SHA5 = sha512Hash(req.body.new_pwd),
                                 newPassword_ARGON2 = await argon2Hash(req.body.new_pwd);
                         }
-                        catch (ex) {
+                        catch {
                             callback(false);
                             return;
                         }
@@ -945,7 +974,7 @@ membersUtility.settings = function(req, callback) {
                                     const promiseResults = await Promise.all(promises);
                                     isUsedBefore = promiseResults.some(x => x === true);
                                 }
-                                catch (ex) {
+                                catch {
                                     callback(false);
                                     return;
                                 }
@@ -959,9 +988,11 @@ membersUtility.settings = function(req, callback) {
                                 updatedUser.password_changed = Math.round(new Date().getTime() / 1000);
                                 membersUtility.db.collection('members').update({"_id": membersUtility.db.ObjectID(req.session.uid + "")}, {'$set': updatedUser, $push: {password_history: {$each: [newPassword_ARGON2], $slice: -parseInt(plugins.getConfig('security').password_rotation)}}}, {safe: true}, function(err3, result) {
                                     if (result && result.result && result.result.ok && result.result.nModified > 0 && !err3) {
-                                        killOtherSessionsForUser(req.session.uid, req.session.auth_token, req.sessionID, membersUtility.db);
-                                        plugins.callMethod("userSettings", {req: req, data: member});
-                                        callback(true, updatedUser.password_changed + "");
+                                        //keeps this session and its token, revokes every other one
+                                        killOtherSessionsForUser(req.session.uid, req.session.auth_token, req.sessionID, membersUtility.db, true).then(function() {
+                                            plugins.callMethod("userSettings", {req: req, data: member});
+                                            callback(true, updatedUser.password_changed + "");
+                                        });
                                     }
                                     else {
                                         callback(false, "user-settings.old-password-not-match");
@@ -1001,7 +1032,7 @@ membersUtility.settings = function(req, callback) {
 /**
  * Searches for a user with the given username/email. Useful for the input from the login prompt.
  * @param {string} input - username or the email address of the user we are looking for
- * @param {function} callback - function with one parameter, the member object if a user is found, undefined otherwise
+ * @param {Function} callback - function with one parameter, the member object if a user is found, undefined otherwise
 */
 membersUtility.findByUsernameOrEmail = function(input, callback) {
     input = (input + "").trim();
@@ -1164,7 +1195,7 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     }
     catch (error) {
         console.error(`create member error ${provider} ${error.message}`, error);
-        throw new Error(error);
+        throw new Error(error, { cause: error });
     }
 };
 
@@ -1227,5 +1258,7 @@ membersUtility.mergePermissions = (current, addition) => {
         }
     }
 };
+
+membersUtility.killOtherSessionsForUser = killOtherSessionsForUser;
 
 module.exports = membersUtility;

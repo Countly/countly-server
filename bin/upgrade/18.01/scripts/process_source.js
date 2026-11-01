@@ -1,5 +1,5 @@
 var pluginManager = require("../../../../plugins/pluginManager");
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 var countlyCommon = require("../../../../api/lib/countly.common");
 
 Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("countly_drill")]).spread(function(countlyDB,countlyDrillDB){
@@ -111,15 +111,15 @@ Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("c
     var arguments = process.argv.splice(2);
     var command = arguments && arguments[0];
     
-    Promise.coroutine(function * () {
-        webApps = yield getWebApps(countlyDB);
+    (async function() {
+        webApps = await getWebApps(countlyDB);
         for (var i = 0; i < webApps.length; i++) {
             var appID = webApps[i]._id;
-            var events = yield getAppEventList(countlyDB, appID);
+            var events = await getAppEventList(countlyDB, appID);
             events.push("[CLY]_session");
             for (var k = 0; k < events.length; k++) {
                 collectionName = "drill_events" + crypto.createHash('sha1').update(events[k] + appID).digest('hex');
-                var doc = yield checkSource(countlyDrillDB, collectionName);
+                var doc = await checkSource(countlyDrillDB, collectionName);
                 if (doc) {
                     var newDoc = {};
                     for (var key in doc) {
@@ -127,9 +127,9 @@ Promise.all([pluginManager.dbConnection("countly"),pluginManager.dbConnection("c
                         var newUrl = urlParser(url);
                         var newKey = countlyCommon.encode(newUrl);
                         newDoc[newKey] = doc[key];
-                        yield updateDocs(countlyDrillDB, collectionName, key, newKey);
+                        await updateDocs(countlyDrillDB, collectionName, key, newKey);
                     }
-                    yield updateNewMetaDoc(countlyDrillDB, collectionName, newDoc);
+                    await updateNewMetaDoc(countlyDrillDB, collectionName, newDoc);
                     console.log(doc);
                     console.log("new doc", newDoc);
                 }

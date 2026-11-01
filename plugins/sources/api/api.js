@@ -140,7 +140,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
                             throw "invalid URL";
                         }
                     }
-                    catch (ex) {
+                    catch {
                         delete params.qstring.metrics._source_channel;
                     }
                 }

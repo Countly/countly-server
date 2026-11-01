@@ -1,6 +1,6 @@
 const job = require("../parts/jobs/job.js");
 const crypto = require("crypto");
-const Promise = require("bluebird");
+const Promise = require("../utils/promise.js");
 const countlyApi = {
     data: {
         fetch: require("../parts/data/fetch.js"),
@@ -26,7 +26,7 @@ class TopEventsJob extends job.Job {
     /**
      * Events collections.
      * @param {Object} params - event, id.
-     * @return {string} event collection.
+     * @returns {string} event collection.
      */
     eventsCollentions(params) {
         const { event, id } = params;
@@ -112,7 +112,7 @@ class TopEventsJob extends job.Job {
     /**
      * Encode event name.
      * @param {Object} data - event data.
-     * @return {Object} encoded data.
+     * @returns {Object} encoded data.
      */
     encodeEvents(data) {
         const _data = {};
@@ -125,7 +125,7 @@ class TopEventsJob extends job.Job {
 
     /**
      * timeSecond function
-     * @return {Number} - timesecond
+     * @returns {Number} - timesecond
      */
     timeSecond() {
         return Math.round(new Date().getTime() / 1000);
@@ -134,7 +134,7 @@ class TopEventsJob extends job.Job {
     /**
      * mutatePeriod function
      * @param {String} period - 30days, hour
-     * @return {String} - period
+     * @returns {String} - period
      */
     mutatePeriod(period) {
         if (period === "yesterday") {
@@ -230,6 +230,11 @@ class TopEventsJob extends job.Job {
                 }
 
                 for (var event in data) {
+                    // a key off a stored document or a parsed payload can be a prototype
+                    // member name; writing through one would reach Object.prototype
+                    if (event === "__proto__" || event === "constructor" || event === "prototype") {
+                        continue;
+                    }
                     //Calculating trend
                     var trend = countlyCommon.getPercentChange(data[event].data.count["prev-total"], data[event].data.count.total);
                     data[event].data.count.change = trend.percent;

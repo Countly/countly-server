@@ -24,6 +24,13 @@ describe("SSRF protection utility", function() {
         it("allows a public IP literal", async function() {
             (await ssrf.isUrlSafe("http://8.8.8.8/")).safe.should.equal(true);
         });
+
+        it("blocks the RFC 8215 local-use NAT64 prefix (64:ff9b:1::/48)", async function() {
+            (await ssrf.isUrlSafe("http://[64:ff9b:1::7f00:1]/")).safe.should.equal(false);
+        });
+        it("allows a public IPv6 literal", async function() {
+            (await ssrf.isUrlSafe("http://[2001:4860:4860::8888]/")).safe.should.equal(true);
+        });
     });
 
     describe("safeLookup (connect-time DNS pinning)", function() {

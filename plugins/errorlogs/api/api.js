@@ -10,7 +10,7 @@ var plugin = {},
  * Read from end
  * @param {string} file - File path
  * @param {number} size - Size
- * @return {object} - Promise
+ * @returns {object} - Promise
  */
 const readFromEnd = (file, size) => {
     return common.p((resolve, reject) => {

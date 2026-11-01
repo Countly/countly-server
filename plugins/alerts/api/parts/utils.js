@@ -7,7 +7,7 @@ const common = require('../../../../api/utils/common.js');
 const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
-var Promise = require("bluebird");
+var Promise = require("../../../../api/utils/promise.js");
 const _ = require("lodash");
 const log = require('../../../../api/utils/log.js')('alert:utils');
 const ssrfProtection = require('../../../../api/utils/ssrf-protection');
@@ -231,7 +231,7 @@ utils.checkAppLocalTimeHour = function(appId, targetHour) {
  */
 utils.getUserEmailsBasedOnGroups = function(groupIds) {
     const memberEmails = [];
-    // eslint-disable-next-line require-jsdoc
+    // eslint-disable-next-line jsdoc/require-jsdoc
     const fetchMembers = (groupId) => {
         const model = { "_id": groupId };
         const query = model.inverse ? { group_id: { $ne: model._id } } : { group_id: model._id };

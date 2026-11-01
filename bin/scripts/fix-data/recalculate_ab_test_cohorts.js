@@ -27,7 +27,7 @@ pluginManager.dbConnection('countly_out').then(async(db) => {
     try {
         urlObj = new URL(SERVER_URL);
     }
-    catch (err) {
+    catch {
         urlObj = new URL((process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost"));
     }
     urlObj.pathname = 'i/cohorts/recalculate';

@@ -28,7 +28,7 @@ class ProxyAgent extends https.Agent {
      * Create connection
      * 
      * @param {object} opts options
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     createConnection(opts, callback) {
         let reqopts = {
@@ -101,7 +101,7 @@ class ProxyAgent extends https.Agent {
      * @param {number} port port
      * @param {*} localAddress local address
      * @param {Request} req request
-     * @param {function} callback callback
+     * @param {Function} callback callback
      */
     createSocket(name, host, port, localAddress, req, callback) {
         let self = this,

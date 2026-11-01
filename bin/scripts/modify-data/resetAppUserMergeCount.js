@@ -5,7 +5,7 @@
  * Command: node resetAppUserMergeCount.js
  */
 const pluginManager = require('../../../plugins/pluginManager.js');
-const Promise = require('bluebird');
+const Promise = require('../../../api/utils/promise.js');
 
 
 const APPS = []; //leave array empty to process all apps;
