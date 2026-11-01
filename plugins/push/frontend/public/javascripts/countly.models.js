@@ -112,6 +112,9 @@
         API: 'a'
     });
 
+    // matches DEFAULTS.test_users_max of the push API, the most users o/push/test-users returns
+    var TEST_USERS_BATCH_SIZE = 1000;
+
     var AddTestUserDefinitionTypeEnum = Object.freeze({
         USER_ID: 'userId',
         COHORT: 'cohorts'
@@ -2492,8 +2495,15 @@
                 });
             }
             else if (hasUids) {
-                // without drill & user profiles (Countly Lite) push looks the users up itself
-                usersPromise = countlyPushNotification.api.searchTestUsers({uids: testUsers.uids.join(',')}, options);
+                // without drill & user profiles (Countly Lite) push looks the users up itself,
+                // in batches of the most uids its endpoint returns at once
+                var batches = [];
+                for (var i = 0; i < testUsers.uids.length; i += TEST_USERS_BATCH_SIZE) {
+                    batches.push(countlyPushNotification.api.searchTestUsers({uids: testUsers.uids.slice(i, i + TEST_USERS_BATCH_SIZE).join(',')}, options));
+                }
+                usersPromise = Promise.all(batches).then(function(results) {
+                    return [].concat.apply([], results);
+                });
             }
             return new Promise(function(resolve, reject) {
                 Promise.all([usersPromise, self.fetchCohorts(testUsers.cohorts || [], false)])
@@ -2521,7 +2531,12 @@
             var self = this;
             return new Promise(function(resolve, reject) {
                 if (!self.isUserSearchEnabled()) {
-                    // without drill & user profiles (Countly Lite) push searches device IDs itself
+                    // without drill & user profiles (Countly Lite) push searches device IDs itself;
+                    // a cleared search box has nothing to look up
+                    if (!idQuery || !idQuery.trim()) {
+                        resolve([]);
+                        return;
+                    }
                     countlyPushNotification.api.searchTestUsers({search: idQuery}, options)
                         .then(resolve)
                         .catch(function(error) {
