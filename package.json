@@ -125,6 +125,12 @@
     "js-yaml@^3.0.0": "^3.15.1",
     "js-yaml@^4.0.0": "^4.3.1"
   },
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "argon2": true,
+    "dtrace-provider": true,
+    "puppeteer": true
+  },
   "jshintConfig": {
     "esversion": 6,
     "node": true

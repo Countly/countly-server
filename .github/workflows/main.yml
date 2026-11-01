@@ -16,6 +16,12 @@ on:
         required: false
         default: ''
 
+# npm 11 lists the dependencies allowed to run install scripts in each package.json's
+# allowScripts; in CI a dependency with an install script that is not listed fails the
+# install instead of only printing a warning. npm 10 ignores this setting.
+env:
+  npm_config_strict_allow_scripts: true
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -35,7 +41,10 @@ jobs:
           touch log/countly-dashboard.log
           touch log/countly-api.log
           cp -rf ./* /opt/countly
-        
+          # the installer runs npm as the countly user, whose home and npm user config is
+          # /opt/countly, and sudo drops the workflow env; set the strict check there too
+          echo "strict-allow-scripts=true" | sudo tee /opt/countly/.npmrc
+
       - name: Github Actions Azure connection fix
         run: |
           # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712

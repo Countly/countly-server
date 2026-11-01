@@ -26,14 +26,6 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
-#npm 11 removed --unsafe-perm and --build-from-source, which the commands below still use
-npm install -g npm@10;
-
-if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
-    rm /usr/local/bin/npm
-    ln -s /usr/bin/npm /usr/local/bin/npm
-fi
-
 #upgrade nodejs
 if [ -f /etc/redhat-release ]; then
     curl -sL https://rpm.nodesource.com/setup_22.x | bash -
@@ -62,8 +54,9 @@ rm -rf "$DIR/../plugins/hooks/node_modules"
 
 #no sudo: the script runs as root, and sudo would reset PATH and drop
 #npm_config_python, losing the RHEL 8 toolchain set up above
-(cd "$DIR/.." && npm install --unsafe-perm && npm install argon2 --build-from-source)
-(cd "$DIR/../plugins/hooks" && npm install --unsafe-perm)
+#argon2 ships prebuilt Node-API binaries, so it needs no rebuild for a new Node.js
+(cd "$DIR/.." && npm install)
+(cd "$DIR/../plugins/hooks" && npm install)
 
 #isolated-vm (hooks custom code) needs node started with --no-node-snapshot on
 #Node.js 20 and later; add it to the supervisord commands of an existing install

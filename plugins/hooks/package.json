@@ -30,5 +30,8 @@
     "tar": "^7.5.22",
     "brace-expansion": "^2.1.2"
   },
+  "allowScripts": {
+    "isolated-vm": true
+  },
   "private": true
 }
