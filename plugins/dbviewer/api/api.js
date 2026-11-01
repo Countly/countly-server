@@ -9,7 +9,7 @@ var common = require('../../../api/utils/common.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
-const { EJSON } = require('bson');
+const { EJSON } = require('mongodb').BSON;
 
 const FEATURE_NAME = 'dbviewer';
 // upper bound on rows returned per find()/aggregation page, to keep a crafted
@@ -24,6 +24,7 @@ const { findDisallowedProjectionValue, escapeRegExp } = require('./parts/query_g
 // module because the same redaction applies in three places (document read,
 // collection read, aggregation) and a per-site list drifts.
 const { hasRedactedFields, redactFields, redactionStage } = require('./parts/redaction.js');
+const cursorStream = require('../../../api/utils/cursorStream.js');
 var spawn = require('child_process').spawn,
     child;
 
@@ -288,7 +289,7 @@ var spawn = require('child_process').spawn,
                 }
                 try {
                     var total = await cursor.count();
-                    var stream = cursor.skip(skip).limit(limit).stream({
+                    var stream = cursorStream(cursor.skip(skip).limit(limit), {
                         transform: function(doc) {
 
                             if (hasRedactedFields(params.qstring.collection)) {

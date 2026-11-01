@@ -15,6 +15,7 @@ const { scopeQueryToApps } = require('./../../utils/rights.js');
 
 var XLSXTransformStream = require('xlsx-write-stream');
 const Transform = require('stream').Transform;
+const cursorStream = require('./../../utils/cursorStream.js');
 var contents = {
     "json": "application/json",
     "csv": "text/csv",
@@ -424,7 +425,7 @@ exports.stream = function(params, stream, options) {
             params.res.write(head.join(',') + '\r\n');
         }
 
-        stream.stream(options.streamOptions).on('data', function(doc) {
+        cursorStream(stream, options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd}); // if we have list at end - then we don'thave projection
@@ -463,7 +464,7 @@ exports.stream = function(params, stream, options) {
         if (listAtEnd === false) {
             xc.write(paramList);
         }
-        stream.stream(options.streamOptions).on('data', function(doc) {
+        cursorStream(stream, options.streamOptions).on('data', function(doc) {
             var values = [];
             var valuesMap = {};
             getValues(values, valuesMap, paramList, doc, {mapper: mapper, collectProp: listAtEnd});
@@ -484,7 +485,7 @@ exports.stream = function(params, stream, options) {
     else {
         params.res.write("[");
         var first = false;
-        stream.stream(options.streamOptions).on('data', function(doc) {
+        cursorStream(stream, options.streamOptions).on('data', function(doc) {
             if (!first) {
                 first = true;
                 params.res.write(doc);

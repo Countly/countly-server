@@ -47,8 +47,8 @@ RUN sed -i 's|http://|https://|g' /etc/apt/sources.list && \
     # node
     wget -qO- https://deb.nodesource.com/setup_26.x | bash - && \
     # data_migration (mongo clients)
-    wget -qO - https://www.mongodb.org/static/pgp/server-8.0.asc | sudo apt-key add - && \
-    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list && \
+    wget -qO - https://pgp.mongodb.com/server-9.asc | sudo apt-key add - && \
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/9.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-9.0.list && \
     apt-get update && \
     apt-get install -y nodejs mongodb-mongosh mongodb-org-tools && \
     \

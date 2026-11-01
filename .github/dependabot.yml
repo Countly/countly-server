@@ -36,6 +36,13 @@ updates:
     labels:
       - dependencies
     versioning-strategy: increase-if-necessary
+    ignore:
+      # Hold: undici 8 needs Node.js >= 22.19, and 25.03.x releases must still run on the
+      # Node.js 20 that 25.03.0 installed (test/unit-tests/api.utils.countly-request.engines.js).
+      # undici 7.x minors and patches keep coming. Plan: drop this hold, move to undici 8 and
+      # raise that test's Node.js floor in the release that ends Node.js 20 support.
+      - dependency-name: "undici"
+        update-types: ["version-update:semver-major"]
 
   # Scripts
   - package-ecosystem: npm

@@ -1,4 +1,6 @@
 #!/bin/bash
+#each step is piped into the install log; keep the step's exit code, not tee's
+set -o pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATE=$(date +%Y-%m-%d:%H:%M:%S)
 totalm=$(free -m | awk '/^Mem:/{print $2}')

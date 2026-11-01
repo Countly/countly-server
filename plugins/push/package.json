@@ -30,5 +30,9 @@
     "protobufjs": "^7.6.5",
     "@fastify/busboy": "^3.2.2"
   },
+  "allowScripts": {
+    "farmhash": true,
+    "protobufjs": true
+  },
   "private": true
 }

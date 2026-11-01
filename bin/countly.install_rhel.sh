@@ -100,7 +100,7 @@ fi
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install argon2; npm install; )
+( cd "$DIR/.."; npm install; )
 
 #install numactl
 sudo dnf install -y numactl

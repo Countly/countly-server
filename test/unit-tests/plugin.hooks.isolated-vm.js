@@ -2,15 +2,16 @@ require("should");
 var isolatedVm = require("../../plugins/hooks/api/parts/isolated-vm.js");
 var CustomCodeEffect = require("../../plugins/hooks/api/parts/effects/custom_code.js");
 
-// The hooks plugin installs isolated-vm 6 (Node.js 22) and 7 (Node.js 24+) as optional
-// dependencies, because neither builds on every supported Node.js. These pin which one is
+// The hooks plugin installs isolated-vm 5 (Node.js 20), 6 (Node.js 22) and 7 (Node.js 24+)
+// as optional dependencies, because none builds on every supported Node.js. These pin which one is
 // picked, that a missing build falls back to the other, and that custom code still runs in
 // the sandbox on whatever Node.js this suite runs on.
 describe("hooks isolated-vm by Node.js version", function() {
-    it("prefers 6 on Node.js 22 and 7 on Node.js 24 and later", function() {
-        isolatedVm.candidates("22.23.4").should.eql(["isolated-vm-6", "isolated-vm-7", "isolated-vm"]);
-        isolatedVm.candidates("24.15.0").should.eql(["isolated-vm-7", "isolated-vm-6", "isolated-vm"]);
-        isolatedVm.candidates("26.12.1").should.eql(["isolated-vm-7", "isolated-vm-6", "isolated-vm"]);
+    it("prefers 5 on Node.js 20, 6 on Node.js 22 and 7 on Node.js 24 and later", function() {
+        isolatedVm.candidates("20.18.3").should.eql(["isolated-vm-5", "isolated-vm-6", "isolated-vm-7", "isolated-vm"]);
+        isolatedVm.candidates("22.23.4").should.eql(["isolated-vm-6", "isolated-vm-7", "isolated-vm-5", "isolated-vm"]);
+        isolatedVm.candidates("24.15.0").should.eql(["isolated-vm-7", "isolated-vm-6", "isolated-vm-5", "isolated-vm"]);
+        isolatedVm.candidates("26.12.1").should.eql(["isolated-vm-7", "isolated-vm-6", "isolated-vm-5", "isolated-vm"]);
     });
 
     it("falls back to the other build when the preferred one did not install", function() {
@@ -41,7 +42,7 @@ describe("hooks isolated-vm by Node.js version", function() {
             isolatedVm.load(function(name) {
                 throw new Error("missing " + name);
             }, "22.23.4");
-        }).should.throw(/No isolated-vm build loads on Node\.js 22\.23\.4.*missing isolated-vm-6.*missing isolated-vm-7.*missing isolated-vm\b/);
+        }).should.throw(/No isolated-vm build loads on Node\.js 22\.23\.4.*missing isolated-vm-6.*missing isolated-vm-7.*missing isolated-vm-5.*missing isolated-vm\b/);
     });
 
     it("runs custom code in the sandbox on this Node.js", async function() {
