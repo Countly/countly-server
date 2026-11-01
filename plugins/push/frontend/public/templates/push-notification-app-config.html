@@ -126,7 +126,7 @@
                             <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.USER_ID" border>
                                 <div class="text">{{i18n('push-notification.define-with-user-id')}}</div>
                             </el-radio>
-                            <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.COHORT" border>
+                            <el-radio v-if="isCohortsEnabled" class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.COHORT" border>
                                 <div class="text">{{i18n('push-notification.define-with-cohort')}}</div>
                             </el-radio>
                         </div>
@@ -193,7 +193,7 @@
             </el-select>
             <cly-datatable-n :rows="selectedTestUsersRows" v-loading="areRowsLoading || isUpdateTestUsersLoading" :force-loading="areRowsLoading || isUpdateTestUsersLoading" :hideTop="true">
                 <template v-slot="scope">
-                    <el-table-column :label="i18n('push-notification.username')" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID">
+                    <el-table-column :label="i18n('push-notification.username')" v-if="isUserSearchEnabled && selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID">
                         <template slot-scope="rowScope">
                             <div class="bu-is-flex bu-is-align-items-center">
                                 <img :src="rowScope.row.picture" width="16px" height="16px" class="bu-mr-2" style="border-radius: 50%;" />

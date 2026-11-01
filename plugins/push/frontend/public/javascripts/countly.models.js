@@ -783,6 +783,25 @@
                 return Promise.resolve(countlySegmentation.getFilters());
             });
         },
+        searchTestUsers: function(query, options) {
+            var data = Object.assign({app_id: options.appId}, query);
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + '/o/push/test-users',
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
+        },
         searchUsers: function(query, options) {
             var data = {
                 query: JSON.stringify(query)
@@ -2259,6 +2278,9 @@
         isDrillPluginEnabled: function() {
             return Boolean(window.countlyDrill);
         },
+        isUserSearchEnabled: function() {
+            return this.isDrillPluginEnabled() && this.isUserProfilesPluginEnabled();
+        },
         hasApproverBypassPermission: function() {
             return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver_bypass;
         },
@@ -2462,26 +2484,24 @@
         },
         fetchTestUsers: function(testUsers, options) {
             var self = this;
-            var usersQuery = null;
-            if (testUsers.uids && testUsers.uids.length) {
-                usersQuery = {uid: {$in: testUsers.uids}};
+            var hasUids = testUsers.uids && testUsers.uids.length;
+            var usersPromise = Promise.resolve([]);
+            if (hasUids && self.isUserSearchEnabled()) {
+                usersPromise = countlyPushNotification.api.searchUsers({uid: {$in: testUsers.uids}}, options).then(function(response) {
+                    return response.aaData;
+                });
+            }
+            else if (hasUids) {
+                // without drill & user profiles (Countly Lite) push looks the users up itself
+                usersPromise = countlyPushNotification.api.searchTestUsers({uids: testUsers.uids.join(',')}, options);
             }
             return new Promise(function(resolve, reject) {
-                if (!self.isDrillPluginEnabled()) {
-                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
-                    return;
-                }
-                if (!self.isUserProfilesPluginEnabled()) {
-                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
-                    return;
-                }
-                Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery, options) : Promise.resolve([]), self.fetchCohorts(testUsers.cohorts || [], false)])
+                Promise.all([usersPromise, self.fetchCohorts(testUsers.cohorts || [], false)])
                     .then(function(responses) {
                         try {
-                            var usersList = responses[0];
+                            var users = responses[0];
                             var cohortsList = responses[1];
 
-                            var users = usersList.aaData;
                             var result = {};
                             result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
                             result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
@@ -2500,12 +2520,14 @@
         searchUsersById: function(idQuery, options) {
             var self = this;
             return new Promise(function(resolve, reject) {
-                if (!self.isDrillPluginEnabled()) {
-                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
-                    return;
-                }
-                if (!self.isUserProfilesPluginEnabled()) {
-                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
+                if (!self.isUserSearchEnabled()) {
+                    // without drill & user profiles (Countly Lite) push searches device IDs itself
+                    countlyPushNotification.api.searchTestUsers({search: idQuery}, options)
+                        .then(resolve)
+                        .catch(function(error) {
+                            console.error(error);
+                            reject(error);
+                        });
                     return;
                 }
                 var drillQuery = {did: {rgxcn: [idQuery]}};

@@ -6,6 +6,7 @@ require('./tests/tests-platforms.js');
 require('./tests/tests-migrate.js');
 require('./tests/tests-api-credentials.js');
 require('./tests/tests-audience.js');
+require('./tests/tests-test-users.js');
 
 // Not run yet: tests-worker.js and tests-integration.js were written for the 2022 push and
 // simulate its whole sending pipeline (timed waits for scheduled jobs, notifications queued
