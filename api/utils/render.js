@@ -5,19 +5,7 @@
 * @module api/utils/render
 */
 
-var puppeteer;
-try {
-    puppeteer = require('puppeteer');
-}
-catch (err) {
-    if (process.env.COUNTLY_CONTAINER !== 'frontend') {
-        console.warn(
-            `Puppeteer not installed. Please install puppeteer if
-            you would like to use api/utils/render.js. \nGracefully skipping
-            any functionality associated with Puppeteer...`, err.stack
-        );
-    }
-}
+var loadPuppeteer = require('./loadPuppeteer.js');
 var pathModule = require('path');
 var exec = require('child_process').exec;
 var alternateChrome = true;
@@ -171,14 +159,15 @@ exports.renderAssetOrigins = renderAssetOrigins;
  * @returns {void} void
  */
 exports.renderView = function(options, cb) {
-    if (puppeteer === undefined) {
-        cb = typeof cb === 'function' ? cb : () => undefined;
-        return cb(new Error(
-            'Puppeteer not installed. Please install Puppeteer to use this plugin.'
-        ));
-    }
-
     (async() => {
+        const puppeteer = await loadPuppeteer();
+        if (!puppeteer) {
+            cb = typeof cb === 'function' ? cb : () => undefined;
+            return cb(new Error(
+                'Puppeteer not installed. Please install Puppeteer to use this plugin.'
+            ));
+        }
+
         try {
 
             if (!chromePath && alternateChrome) {
