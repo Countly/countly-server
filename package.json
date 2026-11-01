@@ -101,6 +101,9 @@
     "xlsx-write-stream": "^1.0.0"
   },
   "overrides": {
+    "sass": {
+      "chokidar": "^4.0.3"
+    },
     "mocha": {
       "diff": "^8.0.4"
     },

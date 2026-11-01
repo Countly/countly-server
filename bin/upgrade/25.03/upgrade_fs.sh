@@ -31,14 +31,6 @@ then
     
     #get web sdk
     countly update sdk-web
-
-    #isolated-vm (hooks custom code) needs node started with --no-node-snapshot on
-    #Node.js 20 and later; installs from before 25.03.58 start it without
-    SUPERVISORD_CONF="$DIR/config/supervisord.conf"
-    if [ -f "$SUPERVISORD_CONF" ] && ! grep -q -- "--no-node-snapshot" "$SUPERVISORD_CONF"; then
-        sed -i 's#^command=node #command=node --no-node-snapshot #' "$SUPERVISORD_CONF"
-        echo "Added --no-node-snapshot to $SUPERVISORD_CONF; it applies when Countly restarts"
-    fi
    
     
     if [ "$1" != "combined" ]; then
