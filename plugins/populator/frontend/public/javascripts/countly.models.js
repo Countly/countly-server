@@ -1296,7 +1296,8 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, events: events, ignore_cooldown: '1'};
+                // send metrics on every session; without them the server fills _os from the browser's user agent
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, events: events, ignore_cooldown: '1'};
                 if (_featuresToPopulate.includes("performance-monitoring")) {
                     req.apm = this.getTrace();
                 }
@@ -1407,9 +1408,8 @@
                                     if (selectedSequenceStep.value === "start") {
                                         // this.hasSession = true;
                                         this.isRegistered = true;
-                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1'};
+                                        req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, ignore_cooldown: '1'};
                                         if (!hasEnvironment) {
-                                            req.metrics = this.metrics;
                                             req.user_details = this.userdetails;
                                         }
                                         this.ts = this.ts + getRandomInt(100, 300);
