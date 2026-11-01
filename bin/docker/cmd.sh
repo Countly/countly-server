@@ -2,6 +2,11 @@
 
 /opt/countly/bin/docker/postinstall.sh
 
+# arm64 images ship Debian's chromium instead of Puppeteer's Chrome (see Dockerfile-api)
+if [ -z "$PUPPETEER_EXECUTABLE_PATH" ] && [ -x /usr/bin/chromium ]; then
+  export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+fi
+
 if [ -z "$COUNTLY_CONFIG_HOSTNAME" ]; then
   echo "[docker] ERROR: Please set COUNTLY_CONFIG_HOSTNAME with your planned Countly hostname, i.e. countly.example.com"
 fi
