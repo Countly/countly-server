@@ -38,7 +38,7 @@ old key until they are upgraded or naturally retire.
 The new key takes effect immediately, and the previous key remains accepted.
 
 A key must be unique across all applications, including keys that are still
-accepted from previous rotations. If you choose a value already in use, the save
+accepted from previous rotations and keys that were retired. If you choose a value already in use, the save
 is rejected.
 
 > **Dashboard support.** The application management screen lists all accepted
@@ -68,6 +68,10 @@ management API and passing the key(s) to retire in the `remove_keys` field.
 Once removed, that key is no longer accepted: requests sent with it are rejected
 as if the application did not exist. The **current key cannot be removed** — an
 application always has at least one accepted key.
+
+A retired key stays reserved: no other application can be created with it or
+switch to it, so clients still sending it are rejected rather than counted in
+another application. The application that retired it can take it back.
 
 There is no fixed deadline to remove an old key. You can keep it as long as you
 need and retire it whenever you decide it is safe.
