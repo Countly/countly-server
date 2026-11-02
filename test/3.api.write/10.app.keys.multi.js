@@ -205,6 +205,85 @@ describe('App multiple keys (rotation grace)', function() {
         });
     });
 
+    describe('retired keys stay reserved', function() {
+        var ROTATED_KEY = "multikey0000000000000000000000000rotated";
+        var LATEST_KEY = "multikey00000000000000000000000000latest";
+
+        /**
+         * Asks for an app update and expects the key to be refused
+         * @param {object} args - /i/apps/update args
+         * @param {function} done - mocha callback
+         */
+        function expectKeyInUse(args, done) {
+            request
+                .get('/i/apps/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(args))
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'App key already in use');
+                    done();
+                });
+        }
+
+        it('should not let another app take the retired original key', function(done) {
+            expectKeyInUse({app_id: OTHER_APP_ID, key: ORIGINAL_KEY}, done);
+        });
+
+        it('should not let a new app be created with the retired original key', function(done) {
+            request
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({name: "Retired Key App", key: ORIGINAL_KEY}))
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'App key already in use');
+                    done();
+                });
+        });
+
+        it('should rotate twice and retire the key in between', function(done) {
+            request
+                .get('/i/apps/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({app_id: APP_ID, key: ROTATED_KEY}))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    request
+                        .get('/i/apps/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({app_id: APP_ID, key: LATEST_KEY, remove_keys: [ROTATED_KEY]}))
+                        .expect(200)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            appByKey(LATEST_KEY, function(e, app) {
+                                should.not.exist(e);
+                                (app.keys || []).map(function(k) {
+                                    return k.key;
+                                }).should.not.containEql(ROTATED_KEY);
+                                app.should.have.property('retired_keys');
+                                app.retired_keys.should.containEql(ROTATED_KEY);
+                                done();
+                            });
+                        });
+                });
+        });
+
+        it('should not let another app take the key retired in between', function(done) {
+            expectKeyInUse({app_id: OTHER_APP_ID, key: ROTATED_KEY}, done);
+        });
+
+        it('should still let the app that retired a key take it back', function(done) {
+            request
+                .get('/i/apps/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({app_id: APP_ID, key: ROTATED_KEY}))
+                .expect(200)
+                .end(done);
+        });
+    });
+
     describe('lazy materialization for legacy apps', function() {
         it('should create an app then simulate a legacy doc (no keys array)', function(done) {
             request

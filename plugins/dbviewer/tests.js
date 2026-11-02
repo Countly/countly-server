@@ -120,4 +120,63 @@ describe('Testing DBViewer', function() {
                 });
         });
     });
+    describe('Aggregation long tasks record the app of the collection', function() {
+        var taskIds = [];
+
+        /**
+         * Runs an aggregation as a saved report and returns the stored long task
+         * @param {string} query - query string after /o/db?
+         * @param {function} done - callback(err, task)
+         */
+        function aggregateAsTask(query, done) {
+            request
+                .get('/o/db?' + query + '&dbs=countly&aggregation=' + encodeURIComponent(JSON.stringify([{"$match": {}}, {"$limit": 1}])) + '&save_report=true&report_name=dbviewer-app-' + Date.now() + '&api_key=' + API_KEY_ADMIN)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var taskId = JSON.parse(res.text).task_id;
+                    should.exist(taskId);
+                    taskIds.push(taskId);
+                    var attempts = 0;
+                    (function findTask() {
+                        testUtils.client.db("countly").collection("long_tasks").findOne({_id: taskId}, function(findErr, task) {
+                            if (findErr || task || ++attempts > 20) {
+                                return done(findErr, task);
+                            }
+                            setTimeout(findTask, 100);
+                        });
+                    })();
+                });
+        }
+
+        it('records the app a per-app collection belongs to, not the request app', function(done) {
+            aggregateAsTask('collection=app_users' + APP_ID, function(err, task) {
+                if (err) {
+                    return done(err);
+                }
+                should.exist(task);
+                task.should.have.property('app_id', APP_ID);
+                done();
+            });
+        });
+
+        it('records no app for a collection shared by all apps', function(done) {
+            aggregateAsTask('collection=plugins&app_id=' + APP_ID, function(err, task) {
+                if (err) {
+                    return done(err);
+                }
+                should.exist(task);
+                task.should.have.property('app_id', 'undefined');
+                done();
+            });
+        });
+
+        after(function(done) {
+            testUtils.client.db("countly").collection("long_tasks").deleteMany({_id: {$in: taskIds}}, function() {
+                done();
+            });
+        });
+    });
 });

@@ -2064,6 +2064,10 @@ const processRequest = (params) => {
                         else {
                             params.qstring.query.$or = [{"global": {"$ne": false}}, {"creator": params.member._id + ""}];
                         }
+                        var scopedCountApps = taskmanager.scopedCredentialApps(params.member);
+                        if (scopedCountApps) {
+                            params.qstring.query.$and = (params.qstring.query.$and || []).concat([{"app_id": {"$in": scopedCountApps}}]);
+                        }
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
@@ -2091,6 +2095,12 @@ const processRequest = (params) => {
                         }
                         else {
                             params.qstring.query.$and.push({"$or": [{"global": {"$ne": false}}, {"creator": params.member._id + ""}]});
+                        }
+
+                        //a scoped credential lists only tasks on the apps it was given
+                        var scopedTaskApps = taskmanager.scopedCredentialApps(params.member);
+                        if (scopedTaskApps) {
+                            params.qstring.query.$and.push({"app_id": {"$in": scopedTaskApps}});
                         }
 
                         if (params.qstring.data_source !== "all" && params.qstring.app_id) {

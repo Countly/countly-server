@@ -474,9 +474,15 @@ appsApi.updateApp = function(params) {
                 ? appBefore.keys.slice()
                 : [{key: appBefore.key, added_at: appBefore.created_at || nowSec, last_data: appBefore.last_data || 0}];
             var currentKey = (typeof updatedApp.key !== "undefined" && updatedApp.key !== "") ? updatedApp.key : appBefore.key;
+            //keys this update retires, kept reserved so no other app can take them over
+            var retiredKeys = [];
             if (removeKeys.length) {
                 keysArr = keysArr.filter(function(k) {
-                    return removeKeys.indexOf(k.key) === -1 || k.key === currentKey;
+                    var keep = removeKeys.indexOf(k.key) === -1 || k.key === currentKey;
+                    if (!keep) {
+                        retiredKeys.push(k.key + "");
+                    }
+                    return keep;
                 });
             }
             if (!keysArr.some(function(k) {
@@ -488,7 +494,11 @@ appsApi.updateApp = function(params) {
 
             checkUniqueKey(params, function() {
                 if ((params.member && params.member.global_admin) || hasUpdateRight(FEATURE_NAME, params.qstring.args.app_id, params.member)) {
-                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp, "$unset": {"checksum_salt": ""}}, function() {
+                    var appUpdate = {$set: updatedApp, "$unset": {"checksum_salt": ""}};
+                    if (retiredKeys.length) {
+                        appUpdate.$addToSet = {retired_keys: {$each: retiredKeys}};
+                    }
+                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, appUpdate, function() {
                         plugins.dispatch("/i/apps/update", {
                             params: params,
                             appId: params.qstring.args.app_id,
@@ -1220,10 +1230,11 @@ function checkUniqueKey(params, callback, update) {
         callback();
     }
     else {
-        //a key must be globally unique across every app's current key AND every
-        //app's set of still-accepted (old) keys
+        //a key must be globally unique across every app's current key, every
+        //app's set of still-accepted (old) keys, and the keys an app no longer
+        //accepts: its retired keys and the identity key its user ids derive from
         var key = params.qstring.args.key + "";
-        var query = {$or: [{key: key}, {"keys.key": key}]};
+        var query = {$or: [{key: key}, {"keys.key": key}, {retired_keys: key}, {id_key: key}]};
         if (update) {
             query._id = {$ne: common.db.ObjectID(params.qstring.args.app_id + "")};
         }
