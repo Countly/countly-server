@@ -112,6 +112,9 @@
         API: 'a'
     });
 
+    // matches DEFAULTS.test_users_max of the push API, the most users o/push/test-users returns
+    var TEST_USERS_BATCH_SIZE = 1000;
+
     var AddTestUserDefinitionTypeEnum = Object.freeze({
         USER_ID: 'userId',
         COHORT: 'cohorts'
@@ -781,6 +784,25 @@
             }
             return countlySegmentation.initialize("").then(function() {
                 return Promise.resolve(countlySegmentation.getFilters());
+            });
+        },
+        searchTestUsers: function(query, options) {
+            var data = Object.assign({app_id: options.appId}, query);
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: window.countlyCommon.API_URL + '/o/push/test-users',
+                    data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
             });
         },
         searchUsers: function(query, options) {
@@ -2259,6 +2281,9 @@
         isDrillPluginEnabled: function() {
             return Boolean(window.countlyDrill);
         },
+        isUserSearchEnabled: function() {
+            return this.isDrillPluginEnabled() && this.isUserProfilesPluginEnabled();
+        },
         hasApproverBypassPermission: function() {
             return this.isPushNotificationApproverPluginEnabled && countlyGlobal.member.approver_bypass;
         },
@@ -2462,26 +2487,31 @@
         },
         fetchTestUsers: function(testUsers, options) {
             var self = this;
-            var usersQuery = null;
-            if (testUsers.uids && testUsers.uids.length) {
-                usersQuery = {uid: {$in: testUsers.uids}};
+            var hasUids = testUsers.uids && testUsers.uids.length;
+            var usersPromise = Promise.resolve([]);
+            if (hasUids && self.isUserSearchEnabled()) {
+                usersPromise = countlyPushNotification.api.searchUsers({uid: {$in: testUsers.uids}}, options).then(function(response) {
+                    return response.aaData;
+                });
+            }
+            else if (hasUids) {
+                // without drill & user profiles (Countly Lite) push looks the users up itself,
+                // in batches of the most uids its endpoint returns at once
+                var batches = [];
+                for (var i = 0; i < testUsers.uids.length; i += TEST_USERS_BATCH_SIZE) {
+                    batches.push(countlyPushNotification.api.searchTestUsers({uids: testUsers.uids.slice(i, i + TEST_USERS_BATCH_SIZE).join(',')}, options));
+                }
+                usersPromise = Promise.all(batches).then(function(results) {
+                    return [].concat.apply([], results);
+                });
             }
             return new Promise(function(resolve, reject) {
-                if (!self.isDrillPluginEnabled()) {
-                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
-                    return;
-                }
-                if (!self.isUserProfilesPluginEnabled()) {
-                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
-                    return;
-                }
-                Promise.all([usersQuery ? countlyPushNotification.api.searchUsers(usersQuery, options) : Promise.resolve([]), self.fetchCohorts(testUsers.cohorts || [], false)])
+                Promise.all([usersPromise, self.fetchCohorts(testUsers.cohorts || [], false)])
                     .then(function(responses) {
                         try {
-                            var usersList = responses[0];
+                            var users = responses[0];
                             var cohortsList = responses[1];
 
-                            var users = usersList.aaData;
                             var result = {};
                             result[AddTestUserDefinitionTypeEnum.USER_ID] = users;
                             result[AddTestUserDefinitionTypeEnum.COHORT] = cohortsList;
@@ -2500,12 +2530,19 @@
         searchUsersById: function(idQuery, options) {
             var self = this;
             return new Promise(function(resolve, reject) {
-                if (!self.isDrillPluginEnabled()) {
-                    reject(new Error('Error finding test users. Drill plugin must be enabled.'));
-                    return;
-                }
-                if (!self.isUserProfilesPluginEnabled()) {
-                    reject(new Error('Error finding test users. User profiles plugin must be enabled.'));
+                if (!self.isUserSearchEnabled()) {
+                    // without drill & user profiles (Countly Lite) push searches device IDs itself;
+                    // a cleared search box has nothing to look up
+                    if (!idQuery || !idQuery.trim()) {
+                        resolve([]);
+                        return;
+                    }
+                    countlyPushNotification.api.searchTestUsers({search: idQuery}, options)
+                        .then(resolve)
+                        .catch(function(error) {
+                            console.error(error);
+                            reject(error);
+                        });
                     return;
                 }
                 var drillQuery = {did: {rgxcn: [idQuery]}};

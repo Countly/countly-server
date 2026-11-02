@@ -878,6 +878,68 @@ module.exports.user = async params => {
 };
 
 /**
+ * Find app users for the test users setting by device ID, or list the configured ones.
+ * Lets test users be picked without the drill & users plugins (Countly Lite).
+ *
+ * @param {object} params params
+ * @returns {Promise} resolves to true
+ *
+ * @api {GET} o/push/test-users Test users lookup
+ * @apiName test-users
+ * @apiDescription Search app users by part of their device ID, or get users by uid, to pick push test users
+ * @apiGroup Push Notifications
+ *
+ * @apiQuery {String} app_id Application ID
+ * @apiQuery {String} [search] Part of the device ID to search for
+ * @apiQuery {String} [uids] Comma separated list of user IDs (uid)
+ *
+ * @apiSuccess {Object[]} users Array of users with _id, uid & did
+ *
+ * @apiUse PushValidationError
+ */
+module.exports.testUsers = async params => {
+    let data = common.validateArgs(params.qstring, {
+        search: {type: 'RegExp', required: false, mods: 'i'},
+        uids: {type: 'String', required: false},
+    }, true);
+    if (data.result) {
+        data = data.obj;
+    }
+    else {
+        common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
+    }
+
+    if (!params.app) {
+        common.returnMessage(params, 400, {errors: ['Missing parameter "app_id"']}, null, true);
+        return true;
+    }
+
+    let query, limit;
+    if (data.uids) {
+        query = {uid: {$in: data.uids.split(',').filter(uid => uid).slice(0, DEFAULTS.test_users_max)}};
+        limit = DEFAULTS.test_users_max;
+    }
+    else if (data.search && params.qstring.search.trim()) {
+        query = {did: data.search};
+        limit = DEFAULTS.test_users_search_limit;
+    }
+    else {
+        common.returnMessage(params, 400, {errors: ['One of search & uids parameters is required']}, null, true);
+        return true;
+    }
+
+    let users = await common.db.collection(`app_users${params.app._id}`)
+        .find(query, {projection: {uid: 1, did: 1}})
+        .sort({did: 1})
+        .limit(limit)
+        .toArray();
+
+    common.returnOutput(params, users);
+    return true;
+};
+
+/**
  * Get messages
  * 
  * @param {object} params params

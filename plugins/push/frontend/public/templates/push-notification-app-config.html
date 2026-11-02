@@ -101,7 +101,7 @@
                 <h3 class="bu-my-4 "> {{i18n('push-notification.test-users')}}</h3>
                 <cly-tooltip-icon :tooltip="i18n('push-notification.test-users-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
             </div>
-            <el-button type="default" size="small" @click="onAddNewTestUser" class="is-light-blue"> {{i18n('push-notification.define-new-user')}}</el-button>
+            <el-button type="default" size="small" @click="onAddNewTestUser" class="is-light-blue" data-test-id="push-test-users-define-button"> {{i18n('push-notification.define-new-user')}}</el-button>
         </div>
         <cly-section class="cly-vue-section__content white-bg">
             <div class="bu-is-flex bu-level bu-p-3 bu-mx-1 config-section">
@@ -109,7 +109,7 @@
                     <p class="bu-has-text-weight-medium">{{i18n('push-notification.user-definition')}}</p>
                     <p>{{i18n('push-notification.user-definition-description')}}</p>
                 </div>
-                <el-link type="primary" size="small" @click="onShowTestUserList">{{i18n('push-notification.see-user-list')}} </el-link>
+                <el-link type="primary" size="small" @click="onShowTestUserList" data-test-id="push-test-users-see-list-link">{{i18n('push-notification.see-user-list')}} </el-link>
             </div>
         </cly-section>
         <cly-drawer 
@@ -117,16 +117,17 @@
             @open="onOpen"
             :requires-async-submit="true"
             v-bind="drawers.testUsersDrawer" 
+            test-id="push-test-users-drawer"
             :title="i18n('push-notification.define-new-user-title')" 
             :saveButtonLabel="i18n('push-notification.add-test-users-label')">
             <template v-slot:default="formScope">
                 <cly-form-step id="step1" name="Define new user">
                     <cly-form-field name="definition" :label="i18n('push-notification.definition-type')">
                         <div class="bu-is-flex bu-is-align-items-center">
-                            <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.USER_ID" border>
+                            <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.USER_ID" border data-test-id="push-test-users-definition-user-id">
                                 <div class="text">{{i18n('push-notification.define-with-user-id')}}</div>
                             </el-radio>
-                            <el-radio class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.COHORT" border>
+                            <el-radio v-if="isCohortsEnabled" class="is-autosized bu-is-justify-content-center" v-model="formScope.editedObject.definitionType" :label="AddTestUserDefinitionTypeEnum.COHORT" border data-test-id="push-test-users-definition-cohort">
                                 <div class="text">{{i18n('push-notification.define-with-cohort')}}</div>
                             </el-radio>
                         </div>
@@ -142,12 +143,14 @@
                             :remote-method="onSearchUsers"
                             :placeholder="i18n('push-notification.enter-user-id')"
                             :loading="isSearchUsersLoading"
+                            data-test-id="push-test-users-user-select"
                             style="width:100%">
                             <el-option
                                 v-for="userIdOption in userIdOptions"
                                 :key="userIdOption._id"
                                 :label="userIdOption.did"
-                                :value="userIdOption.uid">
+                                :value="userIdOption.uid"
+                                :data-test-id="'push-test-users-user-option-' + userIdOption.did">
                             </el-option>
                         </el-select>
                     </cly-form-field>
@@ -184,16 +187,16 @@
             :visible.sync="isDialogVisible">
             <template slot="title">
                 <div class="bu-is-flex bu-is-align-items-center bu-ml-2">
-                    <h3>{{i18n('push-notification.user-list')}}</h3>
+                    <h3 data-test-id="push-test-users-list-title">{{i18n('push-notification.user-list')}}</h3>
                     <cly-tooltip-icon :tooltip="i18n('push-notification.test-users-description')" icon="ion ion-help-circled" style="margin-left:8px"> </cly-tooltip-icon>
                 </div>
             </template>
-            <el-select v-model="selectedTestUsersListOption" class="bu-my-3 bu-ml-4">
+            <el-select v-model="selectedTestUsersListOption" class="bu-my-3 bu-ml-4" data-test-id="push-test-users-list-type-select">
                 <el-option v-for="item in testUsersListOptions" :key="item.label" :value="item.value" :label="item.label"></el-option>
             </el-select>
-            <cly-datatable-n :rows="selectedTestUsersRows" v-loading="areRowsLoading || isUpdateTestUsersLoading" :force-loading="areRowsLoading || isUpdateTestUsersLoading" :hideTop="true">
+            <cly-datatable-n test-id="push-test-users-list" :rows="selectedTestUsersRows" v-loading="areRowsLoading || isUpdateTestUsersLoading" :force-loading="areRowsLoading || isUpdateTestUsersLoading" :hideTop="true">
                 <template v-slot="scope">
-                    <el-table-column :label="i18n('push-notification.username')" v-if="selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID">
+                    <el-table-column :label="i18n('push-notification.username')" v-if="isUserSearchEnabled && selectedTestUsersListOption === AddTestUserDefinitionTypeEnum.USER_ID">
                         <template slot-scope="rowScope">
                             <div class="bu-is-flex bu-is-align-items-center">
                                 <img :src="rowScope.row.picture" width="16px" height="16px" class="bu-mr-2" style="border-radius: 50%;" />
@@ -209,8 +212,8 @@
                     </el-table-column>
                     <el-table-column type="options">
                         <template slot-scope="scope">
-                            <cly-more-options v-if="scope.row.hover" size="small" @command="onDeleteTestUser(scope.row)">
-                                <el-dropdown-item>{{i18n('push-notification.delete')}}</el-dropdown-item>
+                            <cly-more-options v-if="scope.row.hover" size="small" @command="onDeleteTestUser(scope.row)" test-id="push-test-users-row">
+                                <el-dropdown-item data-test-id="push-test-users-row-delete-button">{{i18n('push-notification.delete')}}</el-dropdown-item>
                             </cly-more-options>
                         </template>
                     </el-table-column>
