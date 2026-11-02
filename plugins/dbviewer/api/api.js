@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight, getSharedCollectionApps } = require('../../../api/utils/rights.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
@@ -512,7 +512,8 @@ var spawn = require('child_process').spawn,
             if (appId) {
                 if (hasReadRight(FEATURE_NAME, appId, parameters.member)) {
                     if (collection === "events_data" || collection === "drill_events") {
-                        return callback(true);
+                        //unless the member's app_restrict closes this app's DB Viewer
+                        return callback(getSharedCollectionApps(parameters.member, FEATURE_NAME).indexOf(appId + "") !== -1);
                     }
                     else {
                         return dbUserHasAccessToCollection(parameters, collection, appId, callback);
@@ -524,9 +525,10 @@ var spawn = require('child_process').spawn,
                 var userApps = getUserAppsWithReadRight(parameters.member, FEATURE_NAME);
                 if (collection === "events_data" || collection === "drill_events") {
                     //the shared collections hold every app's rows: readable when the
-                    //member holds the dbviewer read right on at least one app, and the
-                    //rows are then scoped to those apps by getBaseAppFilter
-                    return callback(userApps.length > 0);
+                    //member holds the dbviewer read right on at least one app whose DB
+                    //Viewer their app_restrict leaves open, and the rows are then scoped
+                    //to those apps by getBaseAppFilter
+                    return callback(getSharedCollectionApps(parameters.member, FEATURE_NAME).length > 0);
                 }
                 //go through all apps of user and check if any of them has access to collection
                 var result = await Promise.all(userApps.map(function(id) {

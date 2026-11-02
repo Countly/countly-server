@@ -2,7 +2,9 @@
  * The shared event collections (`events_data`, `drill_events`) need the
  * dbviewer read right like every other collection, and their rows are scoped
  * to the apps the member holds that right on, not to every app they belong to.
- * The DB export (/o/export/db) follows the same rule.
+ * The DB export (/o/export/db) follows the same rule. An app whose DB Viewer a
+ * member's app_restrict closes ("#/manage/db") is left out of that scope, as it
+ * is for the per-app collections.
  *
  * This server has no `countly_drill` database (it is connected only when the
  * drill plugin is installed), so the DB Viewer reads are checked on
@@ -34,6 +36,10 @@ describe('DBViewer shared collections right', () => {
     let drillKey = '';
     /** users read on APP_A, no dbviewer anywhere. */
     let usersKey = '';
+    /** dbviewer read on APP_A and APP_B, DB Viewer closed on APP_B by app_restrict. */
+    let restrictedKey = '';
+    /** dbviewer read on APP_A only, DB Viewer closed on APP_A by app_restrict. */
+    let restrictedOnlyKey = '';
     const memberIds = [];
     /** A token with the dbviewer read on APP_A and no app membership (no `_.u`). */
     let viewerToken = '';
@@ -183,6 +189,11 @@ describe('DBViewer shared collections right', () => {
         viewerKey = await createMember('dbvviewer', readPermission({ [APP_A]: ['dbviewer'], [APP_B]: ['events'] }));
         drillKey = await createMember('dbvdrill', readPermission({ [APP_A]: ['drill'] }));
         usersKey = await createMember('dbvusers', readPermission({ [APP_A]: ['users'] }));
+        restrictedKey = await createMember('dbvrestricted', readPermission({ [APP_A]: ['dbviewer'], [APP_B]: ['dbviewer'] }));
+        restrictedOnlyKey = await createMember('dbvrestrictedonly', readPermission({ [APP_A]: ['dbviewer'] }));
+        //app_restrict is a legacy member field no API sets any more, so it is written directly
+        await countlyDb.collection('members').updateOne({ api_key: restrictedKey }, { $set: { app_restrict: { [APP_B]: ['#/manage/db'] } } });
+        await countlyDb.collection('members').updateOne({ api_key: restrictedOnlyKey }, { $set: { app_restrict: { [APP_A]: ['#/manage/db'] } } });
 
         await countlyDb.collection('events_data').insertMany([
             { _id: APP_A + '_' + marker, marker },
@@ -268,6 +279,39 @@ describe('DBViewer shared collections right', () => {
 
     it('should accept a drill_events export with the users right', async() => {
         should((await exportCollection(usersKey, 'countly_drill', 'drill_events')).status).equal(200);
+    });
+
+    // ── dbviewer right on two apps, DB Viewer closed on one by app_restrict ──
+
+    it('should return no events_data rows of an app whose DB Viewer app_restrict closes', async() => {
+        const res = await readCollection(restrictedKey, 'countly', 'events_data', { filter: JSON.stringify({ marker }) });
+        should(res.status).equal(200);
+        should(res.body.collections.map((row) => row._id)).eql([APP_A + '_' + marker]);
+    });
+
+    it('should aggregate no events_data rows of an app whose DB Viewer app_restrict closes', async() => {
+        const res = await readCollection(restrictedKey, 'countly', 'events_data', { aggregation: JSON.stringify([{ $match: { marker } }]) });
+        should(res.status).equal(200);
+        should(res.body.aaData.map((row) => row._id)).eql([APP_A + '_' + marker]);
+    });
+
+    it('should return no events_data document of an app whose DB Viewer app_restrict closes', async() => {
+        const other = await readDocument(restrictedKey, APP_B);
+        should(other.status).equal(200);
+        should(other.body).eql({});
+    });
+
+    it('should export no events_data rows of an app whose DB Viewer app_restrict closes', async() => {
+        const res = await exportCollection(restrictedKey, 'countly', 'events_data');
+        should(res.status).equal(200);
+        should(JSON.parse(res.text).map((row) => row._id)).eql([APP_A + '_' + marker]);
+    });
+
+    it('should refuse the shared collections when app_restrict closes the DB Viewer on every app with the right', async() => {
+        should((await readCollection(restrictedOnlyKey, 'countly', 'events_data')).status).equal(401);
+        should((await exportCollection(restrictedOnlyKey, 'countly', 'events_data')).status).equal(401);
+        should((await exportCollection(restrictedOnlyKey, 'countly_drill', 'drill_events')).status).equal(401);
+        should(await listedCollections(restrictedOnlyKey)).not.containEql('events_data');
     });
 
     // ── A token with the dbviewer read on one app and no membership ──────────
