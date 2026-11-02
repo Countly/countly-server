@@ -15,11 +15,87 @@ var plugins = require('../../plugins/pluginManager.js');
 const log = require('./log.js')('core:taskmanager');
 
 /**
+ * Every app whose data a task holds.
+ *
+ * `app_ids` is stored by a task that reads more than one app; every other task is
+ * scoped by its single `app_id`. Tasks created outside an app carry '' or the string
+ * "undefined" (longtask stringifies a missing id), which is no app at all.
+ *
+ * @param {object} task - long_tasks document
+ * @returns {string[]} the task's apps, empty when it belongs to none
+ */
+taskmanager.taskApps = function(task) {
+    if (!task) {
+        return [];
+    }
+    if (Array.isArray(task.app_ids) && task.app_ids.length > 0) {
+        return task.app_ids.map(function(id) {
+            return id + "";
+        });
+    }
+    if (task.app_id && task.app_id !== "undefined" && task.app_id !== "null") {
+        return [task.app_id + ""];
+    }
+    return [];
+};
+
+/**
+ * Whether a member's apps include every app a task holds data of.
+ * @param {object} member - params.member
+ * @param {object} task - long_tasks document
+ * @returns {boolean} true if the member can reach all of the task's apps
+ */
+function memberReachesTaskApps(member, task) {
+    var apps = taskmanager.taskApps(task);
+    if (apps.length === 0) {
+        return false;
+    }
+    if (member.global_admin) {
+        //an endpoint-restricted legacy token keeps its owner's global_admin, and its endpoint
+        //scope does not narrow apps
+        return true;
+    }
+    var rights = require('./rights.js');
+    var userApps = (rights.getUserApps(member) || []).map(function(appId) {
+        return appId + "";
+    });
+    return apps.every(function(appId) {
+        return userApps.indexOf(appId) !== -1 || rights.hasAdminAccess(member, appId);
+    });
+}
+
+/**
+ * Query clause limiting a task listing to what a scoped credential reaches.
+ *
+ * A scoped token resolves to its owner, so a listing filtered on the creator alone answers with
+ * the owner's tasks on every app; a scoped caller sees only tasks whose every app it reaches.
+ * @param {params} params - request params
+ * @returns {object|null} clause to add to the listing's $and, or null when the caller is not scoped
+ */
+taskmanager.scopedListClause = function(params) {
+    var rights = require('./rights.js');
+    if (!rights.isScopedCredential(params)) {
+        return null;
+    }
+    if (params.member && params.member.global_admin) {
+        //an endpoint-restricted legacy token keeps its owner's global_admin, and getUserApps
+        //answers [] for a global admin: its endpoint scope does not narrow apps
+        return null;
+    }
+    var apps = (rights.getUserApps(params.member || {}) || []).map(function(appId) {
+        return appId + "";
+    });
+    //every app of the task (taskApps): its app_id, and each of its app_ids when it has them
+    return {app_id: {$in: apps}, $nor: [{app_ids: {$elemMatch: {$nin: apps}}}]};
+};
+
+/**
  * Authorize a member to act on a long_tasks document.
  *
  * A task is operatable only by:
  *   - global admins,
- *   - the member who created it (task.creator === member._id),
+ *   - the member who created it (task.creator === member._id); through a scoped
+ *     credential, only when it reaches every app the task holds data of (taskApps),
  *   - app-admins of the task's app_id (when task.app_id is set).
  *
  * The /i/tasks/{update,delete,name,edit} endpoints used to be reachable
@@ -41,7 +117,12 @@ taskmanager.isAuthorizedFor = function(member, task) {
         return true;
     }
     if (task.creator && (task.creator + "") === (member._id + "")) {
-        return true;
+        //a scoped token resolves to its owner, so being the creator says nothing about the
+        //token's rights: it acts on its owner's tasks only when it reaches every app the task
+        //holds data of
+        if (!member.scoped_credential || memberReachesTaskApps(member, task)) {
+            return true;
+        }
     }
     if (task.app_id) {
         try {
@@ -89,7 +170,8 @@ taskmanager.loadIfAuthorized = function(db, id, member, cb) {
  * than write: in addition to creator / global-admin / app-admin
  * (isAuthorizedFor), a task explicitly marked global (global !== false) is
  * readable by any authenticated user - matching the /o/tasks/all listing
- * filter ({global: {$ne: false}}). Write routes must keep using
+ * filter ({global: {$ne: false}}) - and by a scoped credential only when it
+ * reaches every app the task holds data of. Write routes must keep using
  * isAuthorizedFor, not this.
  * @param {object} member - request member
  * @param {object} task - long_tasks document
@@ -99,7 +181,7 @@ taskmanager.isReadableBy = function(member, task) {
     if (!task) {
         return false;
     }
-    if (task.global !== false) {
+    if (task.global !== false && (!member || !member.scoped_credential || memberReachesTaskApps(member, task))) {
         return true;
     }
     return taskmanager.isAuthorizedFor(member, task);

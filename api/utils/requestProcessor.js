@@ -1924,6 +1924,10 @@ const processRequest = (params) => {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
                         }
+                        var scopedTaskClause = taskmanager.scopedListClause(params);
+                        if (scopedTaskClause) {
+                            params.qstring.query.$and = [].concat(params.qstring.query.$and || [], scopedTaskClause);
+                        }
                         taskmanager.getResults({
                             db: common.db,
                             query: params.qstring.query
@@ -1954,6 +1958,10 @@ const processRequest = (params) => {
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        var scopedTaskClause = taskmanager.scopedListClause(params);
+                        if (scopedTaskClause) {
+                            params.qstring.query.$and = [].concat(params.qstring.query.$and || [], scopedTaskClause);
                         }
                         taskmanager.getCounts({
                             db: common.db,
@@ -1997,6 +2005,10 @@ const processRequest = (params) => {
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        var scopedTaskClause = taskmanager.scopedListClause(params);
+                        if (scopedTaskClause) {
+                            params.qstring.query.$and.push(scopedTaskClause);
                         }
                         const skip = params.qstring.iDisplayStart;
                         const limit = params.qstring.iDisplayLength;
