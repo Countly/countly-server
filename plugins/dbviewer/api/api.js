@@ -411,14 +411,24 @@ var spawn = require('child_process').spawn,
         * holds, not the app selected in the dashboard, so the task is shown to and
         * authorized for the members of that app. A pipeline that joins or unions other
         * collections keeps that app only when every collection it reads belongs to it.
-        * Collections shared by all apps, global collections, collections of another
-        * database and results mixing apps belong to no app ("undefined", as longtask
-        * records a task made outside an app), which only its creator and global admins reach.
+        * A member's aggregation of a collection shared by all apps is filed under the apps
+        * its rows are scoped to (the first as app_id, all of them as app_ids when more than
+        * one), so its creator keeps reaching it through a scoped credential too. A global
+        * admin's unscoped one, global collections, collections of another database and
+        * results mixing apps belong to no app ("undefined", as longtask records a task made
+        * outside an app), which only its creator and global admins reach.
         * @param {string} collection - collection name
         * @param {Array} aggregation - aggregation pipeline
-        * @param {Function} callback - callback(appId)
+        * @param {Function} callback - callback(appId, appIds)
         */
         function aggregationTaskApp(collection, aggregation, callback) {
+            if ((collection === "events_data" || collection === "drill_events") && !params.member.global_admin) {
+                //rows of a collection all apps share are scoped to these apps (getBaseAppFilter),
+                //so the task holds data of exactly them
+                var scopeApps = getSharedCollectionApps(params.member, FEATURE_NAME).map(String);
+                callback(scopeApps[0] || "undefined", scopeApps.length > 1 ? scopeApps : undefined);
+                return;
+            }
             var refs = [{ coll: collection }].concat(findJoinedCollections(aggregation));
             if (refs.some(function(ref) {
                 return typeof ref.db !== "undefined" && ref.db !== dbNameOnParam;
@@ -505,8 +515,8 @@ var spawn = require('child_process').spawn,
                         common.returnOutput(params, { task_id: task_id });
                     }
                     else {
-                        aggregationTaskApp(collection, aggregation, function(taskAppId) {
-                            runAggregationTask(collection, aggregation, changes, taskAppId);
+                        aggregationTaskApp(collection, aggregation, function(taskAppId, taskAppIds) {
+                            runAggregationTask(collection, aggregation, changes, taskAppId, taskAppIds);
                         });
                     }
                 });
@@ -519,12 +529,14 @@ var spawn = require('child_process').spawn,
         * @param {object} aggregation - aggregation pipeline, already guarded and scoped
         * @param {object} changes - object referencing removed stages from pipeline
         * @param {string} taskAppId - app the task is filed under (aggregationTaskApp)
+        * @param {Array<string>=} taskAppIds - every app the task holds data of, when more than one
         */
-        function runAggregationTask(collection, aggregation, changes, taskAppId) {
+        function runAggregationTask(collection, aggregation, changes, taskAppId, taskAppIds) {
             var name = 'Aggregation-' + Date.now();
             var taskCb = taskManager.longtask({
                 db: common.db,
                 app_id: taskAppId,
+                app_ids: taskAppIds,
                 threshold: plugins.getConfig("api").request_threshold,
                 params: params,
                 type: "dbviewer",

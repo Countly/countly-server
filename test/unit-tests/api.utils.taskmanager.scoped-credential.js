@@ -91,8 +91,25 @@ describe('long tasks and scoped credentials', function() {
             taskmanager.isAuthorizedFor(onAOfGlobal, taskOnA).should.equal(true);
         });
         it('requires every app of a multi-app task', function() {
+            taskmanager.isAuthorizedFor(scopedParams(owner, adminOf([APP_A])).member, multiAppTask).should.equal(false);
             taskmanager.isAuthorizedFor(scopedParams(owner, adminOf([APP_B])).member, multiAppTask).should.equal(false);
             taskmanager.isAuthorizedFor(scopedParams(owner, adminOf([APP_A, APP_B])).member, multiAppTask).should.equal(true);
+        });
+        it('lets a token read its own task of a shared collection, filed under the apps it reaches', function() {
+            //a DB Viewer aggregation of events_data/drill_events through a token limited to
+            //APP_A and APP_B is filed under exactly those apps
+            const sharedTask = {_id: 't6', creator: OWNER_ID, app_id: APP_A, app_ids: [APP_A, APP_B], global: false};
+            const onBoth = scopedParams(owner, userOf(APP_A)).member;
+            taskmanager.isAuthorizedFor(scopedParams(owner, adminOf([APP_A, APP_B])).member, sharedTask).should.equal(true);
+            taskmanager.isReadableBy(scopedParams(owner, adminOf([APP_A, APP_B])).member, sharedTask).should.equal(true);
+            taskmanager.isAuthorizedFor(onBoth, Object.assign({}, sharedTask, {app_ids: undefined})).should.equal(true);
+        });
+        it('does not let the admin of one app act on another member\'s task holding data of several', function() {
+            const adminOfA = {_id: 'c'.repeat(24), permission: adminOf([APP_A])};
+            const otherOwnersTask = Object.assign({}, multiAppTask, {creator: 'd'.repeat(24)});
+            taskmanager.isAuthorizedFor(adminOfA, otherOwnersTask).should.equal(false);
+            taskmanager.isAuthorizedFor({_id: 'c'.repeat(24), permission: adminOf([APP_A, APP_B])}, otherOwnersTask).should.equal(true);
+            taskmanager.isAuthorizedFor(adminOfA, Object.assign({}, taskOnA, {creator: 'd'.repeat(24)})).should.equal(true);
         });
         it('refuses a token its owner\'s task made outside any app', function() {
             taskmanager.isAuthorizedFor(onA, appLessTask).should.equal(false);
@@ -125,6 +142,33 @@ describe('long tasks and scoped credentials', function() {
         });
         it('keeps a global task readable by any member without a scoped credential', function() {
             taskmanager.isReadableBy({_id: 'c'.repeat(24), permission: userOf(APP_A)}, globalTaskOnB).should.equal(true);
+        });
+    });
+
+    describe('createTask', function() {
+        it('stores the apps of a task holding data of several, and none otherwise', function() {
+            const writes = [];
+            const db = {
+                collection: () => ({
+                    replaceOne: (query, doc) => {
+                        writes.push(doc);
+                        return Promise.resolve({});
+                    },
+                    update: (query, doc) => {
+                        writes.push(doc.$set || doc);
+                        return Promise.resolve({});
+                    },
+                    updateOne: (query, doc) => {
+                        writes.push(doc.$set || doc);
+                        return Promise.resolve({});
+                    }
+                })
+            };
+            taskmanager.createTask({db, id: 'x1', app_id: APP_A, app_ids: [APP_A, APP_B], creator: OWNER_ID});
+            taskmanager.createTask({db, id: 'x2', app_id: APP_A, creator: OWNER_ID});
+            writes.length.should.equal(2);
+            writes[0].should.have.property('app_ids', [APP_A, APP_B]);
+            writes[1].should.not.have.property('app_ids');
         });
     });
 

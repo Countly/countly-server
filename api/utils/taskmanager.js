@@ -96,7 +96,8 @@ taskmanager.scopedListClause = function(params) {
  *   - global admins,
  *   - the member who created it (task.creator === member._id); through a scoped
  *     credential, only when it reaches every app the task holds data of (taskApps),
- *   - app-admins of the task's app_id (when task.app_id is set).
+ *   - app-admins of every app the task holds data of (taskApps: its app_ids, or its
+ *     app_id when it has an app).
  *
  * The /i/tasks/{update,delete,name,edit} endpoints used to be reachable
  * by any logged-in user (validateUserForWrite is just validateUser),
@@ -124,12 +125,16 @@ taskmanager.isAuthorizedFor = function(member, task) {
             return true;
         }
     }
-    if (task.app_id) {
+    var apps = taskmanager.taskApps(task);
+    if (apps.length > 0) {
         try {
             // Lazy require to avoid a circular dependency: rights.js requires
             // common.js which is required at the top of this module.
             var rights = require('./rights.js');
-            if (rights.hasAdminAccess(member, task.app_id + "")) {
+            //admin of one app is not enough for a task holding data of several
+            if (apps.every(function(appId) {
+                return rights.hasAdminAccess(member, appId);
+            })) {
                 return true;
             }
         }
@@ -410,6 +415,12 @@ taskmanager.createTask = function(options, callback) {
     update.view = options.view || "";
     update.request = JSON.stringify(options.request || {});
     update.app_id = options.app_id || "";
+    if (Array.isArray(options.app_ids) && options.app_ids.length > 0) {
+        //a task holding data of more than one app (see taskApps)
+        update.app_ids = options.app_ids.map(function(id) {
+            return id + "";
+        });
+    }
     update.creator = options.creator;
     update.global = options.global || false;
     update.r_hour = options.r_hour || 0;

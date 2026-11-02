@@ -362,7 +362,46 @@ describe('DBViewer shared collections right', () => {
         should(lookup.app_id).equal('undefined');
     });
 
-    it('should file an aggregation task of a collection all apps share under no app', async() => {
+    it('should file a scoped token aggregation of a shared collection under the token apps, and let the token read it', async() => {
+        const tokenRes = await request.get('/i/token/create').query({
+            api_key: API_KEY_ADMIN,
+            multi: true,
+            ttl: 600,
+            apps: APP_A,
+            permission: JSON.stringify({ _: { a: [], u: [[APP_A]] }, c: {}, r: { [APP_A]: { all: false, allowed: { dbviewer: true, core: true } } }, u: {}, d: {} }),
+        });
+        should(tokenRes.status).equal(200, tokenRes.text);
+        const token = tokenRes.body.result;
+        try {
+            const res = await request.get('/o/db').query({
+                auth_token: token,
+                app_id: APP_A,
+                dbs: 'countly',
+                collection: 'events_data',
+                aggregation: JSON.stringify([{ $match: { marker } }]),
+                save_report: true,
+                report_name: 'dbv scoped task ' + uniq,
+            });
+            should(res.status).equal(200, res.text);
+            const taskId = res.body.aaData && res.body.aaData.task_id;
+            should(taskId).be.ok();
+            taskIds.push(taskId);
+            const task = await countlyDb.collection('long_tasks').findOne({ _id: taskId });
+            should(task.app_id).equal(APP_A);
+            should(task).not.have.property('app_ids');
+
+            const read = await request.get('/o/tasks/task').query({ auth_token: token, app_id: APP_A, task_id: taskId });
+            should(read.status).equal(200, read.text);
+            const list = await request.get('/o/tasks/list').query({ auth_token: token, app_id: APP_A, data_source: 'all', iDisplayStart: 0, iDisplayLength: 100 });
+            should(list.status).equal(200, list.text);
+            should(list.body.aaData.map((row) => row._id)).containEql(taskId);
+        }
+        finally {
+            await request.get('/i/token/delete').query({ api_key: API_KEY_ADMIN, tokenid: token });
+        }
+    });
+
+    it('should file a global admin aggregation task of a collection all apps share under no app', async() => {
         const task = await savedAggregationTask('events_data');
         should(task.app_id).equal('undefined');
     });
