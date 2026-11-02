@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight, getSharedCollectionApps } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight, getSharedCollectionApps, getCollectionApp, getUserApps } = require('../../../api/utils/rights.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
@@ -407,6 +407,40 @@ var spawn = require('child_process').spawn,
         }
 
         /**
+        * App the task of an aggregation is filed under: the app whose data the collection
+        * holds, not the app selected in the dashboard, so the task is shown to and
+        * authorized for the members of that app. Collections shared by all apps and
+        * global collections belong to no app ("undefined", as longtask records a task
+        * made outside an app).
+        * @param {string} collection - collection name
+        * @param {Function} callback - callback(appId)
+        */
+        function aggregationTaskApp(collection, callback) {
+            var appId = getCollectionApp(collection);
+            if (appId || collection === "events_data" || collection === "drill_events" || !/^(events|drill_events|app_viewdata)./.test(collection)) {
+                callback(appId || "undefined");
+                return;
+            }
+            //an event or view collection is mapped to its app by the events data, which the
+            //access check loads for a member but not for a global admin: load it here
+            var load = params.member.global_admin
+                ? common.db.collection('apps').find({}, {projection: {_id: 1, name: 1}}).toArray()
+                : Promise.resolve((getUserApps(params.member) || []).map(function(id) {
+                    return {_id: id};
+                }));
+            load.then(function(apps) {
+                //a fresh member object, so the events data is read rather than taken from
+                //the request's cached event list
+                dbLoadEventsData({member: {}}, apps || [], function() {
+                    callback(getCollectionApp(collection) || "undefined");
+                });
+            }, function(err) {
+                log.e(err);
+                callback("undefined");
+            });
+        }
+
+        /**
         * Get aggregated result by the parameter on the url
         * @param {string} collection - collection will be applied related query
         * @param {object} aggregation - aggregation object
@@ -449,45 +483,59 @@ var spawn = require('child_process').spawn,
                         common.returnOutput(params, { task_id: task_id });
                     }
                     else {
-                        var name = 'Aggregation-' + Date.now();
-                        var taskCb = taskManager.longtask({
-                            db: common.db,
-                            threshold: plugins.getConfig("api").request_threshold,
-                            params: params,
-                            type: "dbviewer",
-                            force: params.qstring.save_report || false,
-                            gridfs: true,
-                            meta: JSON.stringify({
-                                db: dbNameOnParam,
-                                collection: params.qstring.collection,
-                                aggregation: aggregation
-                            }),
-                            view: "#/manage/db/task/",
-                            report_name: params.qstring.report_name || name + "." + params.qstring.type,
-                            report_desc: params.qstring.report_desc,
-                            period_desc: params.qstring.period_desc,
-                            name,
-                            creator: params.member._id + "",
-                            global: params.qstring.global === 'true',
-                            autoRefresh: params.qstring.autoRefresh === 'true',
-                            manually_create: params.qstring.manually_create === 'true',
-                            processData: function(error, result, callback) {
-                                callback(error, result);
-                            },
-                            outputData: function(aggregationErr, result) {
-                                if (!aggregationErr) {
-                                    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result, "removed": (changes || {}) });
-                                }
-                                else {
-                                    log.e(aggregationErr);
-                                    common.returnMessage(params, 500, "An unexpected error occurred.");
-                                }
-                            }
+                        aggregationTaskApp(collection, function(taskAppId) {
+                            runAggregationTask(collection, aggregation, changes, taskAppId);
                         });
-                        dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
                     }
                 });
             }
+        }
+
+        /**
+        * Run an aggregation as a long task
+        * @param {string} collection - collection will be applied related query
+        * @param {object} aggregation - aggregation pipeline, already guarded and scoped
+        * @param {object} changes - object referencing removed stages from pipeline
+        * @param {string} taskAppId - app the task is filed under (aggregationTaskApp)
+        */
+        function runAggregationTask(collection, aggregation, changes, taskAppId) {
+            var name = 'Aggregation-' + Date.now();
+            var taskCb = taskManager.longtask({
+                db: common.db,
+                app_id: taskAppId,
+                threshold: plugins.getConfig("api").request_threshold,
+                params: params,
+                type: "dbviewer",
+                force: params.qstring.save_report || false,
+                gridfs: true,
+                meta: JSON.stringify({
+                    db: dbNameOnParam,
+                    collection: params.qstring.collection,
+                    aggregation: aggregation
+                }),
+                view: "#/manage/db/task/",
+                report_name: params.qstring.report_name || name + "." + params.qstring.type,
+                report_desc: params.qstring.report_desc,
+                period_desc: params.qstring.period_desc,
+                name,
+                creator: params.member._id + "",
+                global: params.qstring.global === 'true',
+                autoRefresh: params.qstring.autoRefresh === 'true',
+                manually_create: params.qstring.manually_create === 'true',
+                processData: function(error, result, callback) {
+                    callback(error, result);
+                },
+                outputData: function(aggregationErr, result) {
+                    if (!aggregationErr) {
+                        common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result, "removed": (changes || {}) });
+                    }
+                    else {
+                        log.e(aggregationErr);
+                        common.returnMessage(params, 500, "An unexpected error occurred.");
+                    }
+                }
+            });
+            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
         }
 
         /**

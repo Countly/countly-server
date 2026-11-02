@@ -41,6 +41,8 @@ describe('DBViewer shared collections right', () => {
     /** dbviewer read on APP_A only, DB Viewer closed on APP_A by app_restrict. */
     let restrictedOnlyKey = '';
     const memberIds = [];
+    /** Tasks saved by the aggregation cases, removed afterwards. */
+    const taskIds = [];
     /** A token with the dbviewer read on APP_A and no app membership (no `_.u`). */
     let viewerToken = '';
     let countlyDb;
@@ -157,6 +159,9 @@ describe('DBViewer shared collections right', () => {
     after(async() => {
         if (countlyDb) {
             await countlyDb.collection('events_data').deleteMany({ marker });
+        }
+        if (taskIds.length) {
+            await countlyDb.collection('long_tasks').deleteMany({ _id: { $in: taskIds } });
         }
         if (viewerToken) {
             await request.get('/i/token/delete').query({ api_key: API_KEY_ADMIN, tokenid: viewerToken });
@@ -312,6 +317,41 @@ describe('DBViewer shared collections right', () => {
         should((await exportCollection(restrictedOnlyKey, 'countly', 'events_data')).status).equal(401);
         should((await exportCollection(restrictedOnlyKey, 'countly_drill', 'drill_events')).status).equal(401);
         should(await listedCollections(restrictedOnlyKey)).not.containEql('events_data');
+    });
+
+    // ── The app a saved aggregation task is filed under ──────────────────────
+
+    /**
+     * Save an aggregation of a collection as a report while APP_B is the selected app,
+     * and return the stored task.
+     * @param {string} collection collection name
+     * @returns {Promise<object>} long_tasks document
+     */
+    async function savedAggregationTask(collection) {
+        const res = await request.get('/o/db').query({
+            api_key: API_KEY_ADMIN,
+            app_id: APP_B,
+            dbs: 'countly',
+            collection,
+            aggregation: JSON.stringify([{ $match: { marker } }]),
+            save_report: true,
+            report_name: 'dbv task app ' + uniq,
+        });
+        should(res.status).equal(200, res.text);
+        const taskId = res.body.aaData && res.body.aaData.task_id;
+        should(taskId).be.ok();
+        taskIds.push(taskId);
+        return countlyDb.collection('long_tasks').findOne({ _id: taskId });
+    }
+
+    it('should file an aggregation task under the app the collection belongs to, not the selected app', async() => {
+        const task = await savedAggregationTask('app_users' + APP_A);
+        should(task.app_id).equal(APP_A);
+    });
+
+    it('should file an aggregation task of a collection all apps share under no app', async() => {
+        const task = await savedAggregationTask('events_data');
+        should(task.app_id).equal('undefined');
     });
 
     // ── A token with the dbviewer read on one app and no membership ──────────

@@ -78,9 +78,14 @@ describe("alerts: session and user metrics are read per app", function() {
      */
     function valueSeenBy(mod, subType) {
         var alert = {_id: "alert1", alertDataSubType: subType, period: "daily", compareType: commonLib.COMPARE_TYPE_ENUM.MORE_THAN, compareValue: "0"};
-        var app = {_id: {toString: function() {
-            return APP_A;
-        }}, timezone: "UTC"};
+        var app = {
+            _id: {
+                toString: function() {
+                    return APP_A;
+                }
+            },
+            timezone: "UTC"
+        };
         return mod.check({alert: alert, app: app, done: function() {}, scheduledTo: DATE}).then(function() {
             return triggered.length ? triggered[0].metricValue : undefined;
         });

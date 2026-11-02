@@ -850,6 +850,36 @@ function dbLoadEventsData(params, apps, callback) {
 }
 exports.dbLoadEventsData = dbLoadEventsData;
 
+/**
+* App whose data a collection holds: the app id a per-app collection name ends with, or,
+* for an event or view collection (events<hash>, drill_events<hash>, app_viewdata<hash>),
+* the app the events data loaded by dbLoadEventsData maps its hash to. Collections shared
+* by all apps (events_data, drill_events) and global collections belong to no app.
+* @param {string} collection - collection name
+* @returns {string|null} app id, or null when the collection belongs to no app or is not mapped
+*/
+exports.getCollectionApp = function(collection) {
+    collection = collection + "";
+    if (collection === "events" || collection === "events_data" || collection === "drill_events") {
+        return null;
+    }
+    var hashValue = null;
+    if (collection.indexOf("drill_events") === 0) {
+        hashValue = collection.substring("drill_events".length);
+    }
+    else if (collection.indexOf("events") === 0) {
+        hashValue = collection.substring("events".length);
+    }
+    else if (collection.indexOf("app_viewdata") === 0) {
+        hashValue = collection;
+    }
+    if (hashValue !== null) {
+        return collectionMap[hashValue] && collectionMap[hashValue].a ? collectionMap[hashValue].a + "" : null;
+    }
+    var match = /([0-9a-f]{24})$/i.exec(collection);
+    return match ? match[1].toLowerCase() : null;
+};
+
 exports.getCollectionName = function(hashValue) {
     if (collectionMap[hashValue]) {
         return collectionMap[hashValue].name;

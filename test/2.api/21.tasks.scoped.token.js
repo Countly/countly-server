@@ -83,8 +83,20 @@ describe('Tasks through an app-scoped token', () => {
         const admin = await testUtils.db.collection('members').findOne({ api_key: API_KEY_ADMIN }, { projection: { _id: 1 } });
         const creator = admin._id + '';
         const task = (id, appId, global) => ({
-            _id: id, app_id: appId, creator: creator, global: global, status: 'completed', type: 'drill',
-            report_name: id, name: id, ts: Date.now(), start: Date.now(), end: Date.now(), data: '{}', request: '{}', meta: '{}'
+            _id: id,
+            app_id: appId,
+            creator: creator,
+            global: global,
+            status: 'completed',
+            type: 'drill',
+            report_name: id,
+            name: id,
+            ts: Date.now(),
+            start: Date.now(),
+            end: Date.now(),
+            data: '{}',
+            request: '{}',
+            meta: '{}'
         });
         await testUtils.db.collection('long_tasks').insertMany([
             task(OWN_TASK, APP_ID, false),
