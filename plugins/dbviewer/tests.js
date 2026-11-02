@@ -127,16 +127,19 @@ describe('Testing DBViewer', function() {
          * Runs an aggregation as a saved report and returns the stored long task
          * @param {string} query - query string after /o/db?
          * @param {function} done - callback(err, task)
+         * @param {Array=} pipeline - aggregation pipeline, a plain one by default
          */
-        function aggregateAsTask(query, done) {
+        function aggregateAsTask(query, done, pipeline) {
             request
-                .get('/o/db?' + query + '&dbs=countly&aggregation=' + encodeURIComponent(JSON.stringify([{"$match": {}}, {"$limit": 1}])) + '&save_report=true&report_name=dbviewer-app-' + Date.now() + '&api_key=' + API_KEY_ADMIN)
+                .get('/o/db?' + query + '&dbs=countly&aggregation=' + encodeURIComponent(JSON.stringify(pipeline || [{"$match": {}}, {"$limit": 1}])) + '&save_report=true&report_name=dbviewer-app-' + Date.now() + '&api_key=' + API_KEY_ADMIN)
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
-                    var taskId = JSON.parse(res.text).task_id;
+                    //a saved report answers through outputData, which wraps the task id in aaData
+                    var ob = JSON.parse(res.text);
+                    var taskId = ob.task_id || (ob.aaData && ob.aaData.task_id);
                     should.exist(taskId);
                     taskIds.push(taskId);
                     var attempts = 0;
@@ -160,6 +163,17 @@ describe('Testing DBViewer', function() {
                 task.should.have.property('app_id', APP_ID);
                 done();
             });
+        });
+
+        it('records no app for a per-app collection joined with another collection', function(done) {
+            aggregateAsTask('collection=app_users' + APP_ID, function(err, task) {
+                if (err) {
+                    return done(err);
+                }
+                should.exist(task);
+                task.should.have.property('app_id', 'undefined');
+                done();
+            }, [{"$limit": 1}, {"$unionWith": {"coll": "apps"}}]);
         });
 
         it('records no app for a collection shared by all apps', function(done) {

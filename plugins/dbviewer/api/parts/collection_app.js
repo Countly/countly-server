@@ -37,6 +37,45 @@ function suffixAppId(collection) {
 }
 
 /**
+* Stages that read another collection into the pipeline's result
+* @type {string[]}
+**/
+var JOIN_STAGES = ["$lookup", "$graphLookup", "$unionWith"];
+
+/**
+* Whether an aggregation reads any collection besides its own, at any depth
+* @param {*} value - pipeline, or any part of it
+* @returns {boolean} true if a join stage is present
+**/
+function hasJoin(value) {
+    if (Array.isArray(value)) {
+        return value.some(hasJoin);
+    }
+    if (value && typeof value === "object") {
+        return Object.keys(value).some(function(key) {
+            return JOIN_STAGES.indexOf(key) !== -1 || hasJoin(value[key]);
+        });
+    }
+    return false;
+}
+
+/**
+* Resolve the app an aggregation's result belongs to. A pipeline that joins other
+* collections can hold data of any app, so it belongs to none.
+* @param {params} params - request params, with the member
+* @param {string} collection - collection the aggregation runs on
+* @param {Array} aggregation - aggregation pipeline
+* @param {function} callback - called with the app id, or NO_APP
+**/
+function resolveAggregationApp(params, collection, aggregation, callback) {
+    if (hasJoin(aggregation)) {
+        callback(NO_APP);
+        return;
+    }
+    resolveCollectionApp(params, collection, callback);
+}
+
+/**
 * Resolve the app a collection belongs to, for recording on a long task about it.
 * Collections shared by all apps belong to none.
 * @param {params} params - request params, with the member
@@ -75,5 +114,6 @@ function resolveCollectionApp(params, collection, callback) {
 module.exports = {
     NO_APP: NO_APP,
     suffixAppId: suffixAppId,
-    resolveCollectionApp: resolveCollectionApp
+    resolveCollectionApp: resolveCollectionApp,
+    resolveAggregationApp: resolveAggregationApp
 };

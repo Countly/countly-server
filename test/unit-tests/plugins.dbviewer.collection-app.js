@@ -97,4 +97,16 @@ describe("dbviewer collection app", function() {
         (collectionApp.suffixAppId("events" + "0123456789abcdef0123456789abcdef01234567") === null).should.equal(true);
         (collectionApp.suffixAppId("app_viewdata" + "0123456789abcdef0123456789abcdef01234567") === null).should.equal(true);
     });
+
+    it("records no app for a pipeline that joins other collections", async function() {
+        var join = function(pipeline) {
+            return new Promise(function(res) {
+                collectionApp.resolveAggregationApp({member: {global_admin: true}, qstring: {}}, "app_users" + APP, pipeline, res);
+            });
+        };
+        (await join([{$match: {}}])).should.equal(APP);
+        (await join([{$lookup: {from: "app_users" + OTHER_APP, as: "x"}}])).should.equal(collectionApp.NO_APP);
+        (await join([{$unionWith: {coll: "apps"}}])).should.equal(collectionApp.NO_APP);
+        (await join([{$facet: {a: [{$graphLookup: {from: "apps"}}]}}])).should.equal(collectionApp.NO_APP);
+    });
 });

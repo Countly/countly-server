@@ -23,8 +23,8 @@ const { findDisallowedProjectionValue, escapeRegExp } = require('./parts/query_g
 // module because the same redaction applies in three places (document read,
 // collection read, aggregation) and a per-site list drifts.
 const { hasRedactedFields, redactFields, redactionStage } = require('./parts/redaction.js');
-// The app a collection belongs to, recorded on the long task an aggregation becomes.
-const { resolveCollectionApp } = require('./parts/collection_app.js');
+// The app an aggregation's result belongs to, recorded on the long task it becomes.
+const { resolveAggregationApp } = require('./parts/collection_app.js');
 var spawn = require('child_process').spawn,
     child;
 (function() {
@@ -455,8 +455,8 @@ var spawn = require('child_process').spawn,
                         common.returnOutput(params, { task_id: task_id });
                     }
                     else {
-                        //record the app the collection belongs to, not the app the request was made from
-                        resolveCollectionApp(params, collection, runAggregationTask);
+                        //record the app the result belongs to, not the app the request was made from
+                        resolveAggregationApp(params, collection, aggregation, runAggregationTask);
                     }
                 });
             }
