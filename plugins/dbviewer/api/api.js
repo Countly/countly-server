@@ -18,7 +18,7 @@ const MAX_DBVIEWER_LIMIT = 10000;
 // Allow-list of MongoDB operators and the validator that rejects a pipeline using
 // anything outside it, at any depth. Kept in a dedicated module so it can be
 // unit-tested in isolation.
-const { sanitizeAggregation, ALLOWED_OPERATORS_USER, ALLOWED_OPERATORS_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
+const { sanitizeAggregation, findJoinedCollections, ALLOWED_OPERATORS_USER, ALLOWED_OPERATORS_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
 const { findDisallowedProjectionValue, escapeRegExp } = require('./parts/query_guard.js');
 // Fields the viewer must never return, and the helpers that remove them. Held in one
 // module because the same redaction applies in three places (document read,
@@ -409,16 +409,40 @@ var spawn = require('child_process').spawn,
         /**
         * App the task of an aggregation is filed under: the app whose data the collection
         * holds, not the app selected in the dashboard, so the task is shown to and
-        * authorized for the members of that app. Collections shared by all apps and
-        * global collections belong to no app ("undefined", as longtask records a task
-        * made outside an app).
+        * authorized for the members of that app. A pipeline that joins or unions other
+        * collections keeps that app only when every collection it reads belongs to it.
+        * Collections shared by all apps, global collections, collections of another
+        * database and results mixing apps belong to no app ("undefined", as longtask
+        * records a task made outside an app), which only its creator and global admins reach.
         * @param {string} collection - collection name
+        * @param {Array} aggregation - aggregation pipeline
         * @param {Function} callback - callback(appId)
         */
-        function aggregationTaskApp(collection, callback) {
-            var appId = getCollectionApp(collection);
-            if (appId || collection === "events_data" || collection === "drill_events" || !/^(events|drill_events|app_viewdata)./.test(collection)) {
-                callback(appId || "undefined");
+        function aggregationTaskApp(collection, aggregation, callback) {
+            var refs = [{ coll: collection }].concat(findJoinedCollections(aggregation));
+            if (refs.some(function(ref) {
+                return typeof ref.db !== "undefined" && ref.db !== dbNameOnParam;
+            })) {
+                callback("undefined");
+                return;
+            }
+            var names = refs.map(function(ref) {
+                return ref.coll;
+            });
+            /**
+            * Answer with the one app all collections belong to, or none
+            */
+            function answer() {
+                var apps = names.map(getCollectionApp);
+                callback(apps[0] && apps.every(function(appId) {
+                    return appId === apps[0];
+                }) ? apps[0] : "undefined");
+            }
+            var unmapped = names.some(function(name) {
+                return !getCollectionApp(name) && name !== "events_data" && name !== "drill_events" && /^(events|drill_events|app_viewdata)./.test(name);
+            });
+            if (!unmapped) {
+                answer();
                 return;
             }
             //an event or view collection is mapped to its app by the events data, which the
@@ -431,9 +455,7 @@ var spawn = require('child_process').spawn,
             load.then(function(apps) {
                 //a fresh member object, so the events data is read rather than taken from
                 //the request's cached event list
-                dbLoadEventsData({member: {}}, apps || [], function() {
-                    callback(getCollectionApp(collection) || "undefined");
-                });
+                dbLoadEventsData({member: {}}, apps || [], answer);
             }, function(err) {
                 log.e(err);
                 callback("undefined");
@@ -483,7 +505,7 @@ var spawn = require('child_process').spawn,
                         common.returnOutput(params, { task_id: task_id });
                     }
                     else {
-                        aggregationTaskApp(collection, function(taskAppId) {
+                        aggregationTaskApp(collection, aggregation, function(taskAppId) {
                             runAggregationTask(collection, aggregation, changes, taskAppId);
                         });
                     }

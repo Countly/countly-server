@@ -302,3 +302,31 @@ describe("dbviewer aggregation guard", function() {
         });
     });
 });
+
+// findJoinedCollections(pipeline) -> [{coll, db}]
+//
+// Every collection an aggregation reads besides its own, at any depth, so that a saved
+// aggregation task is filed under an app only when all of its data belongs to that app.
+describe("dbviewer findJoinedCollections", function() {
+    it("finds nothing in a pipeline without joins", function() {
+        guard.findJoinedCollections([{$match: {a: 1}}, {$project: {x: "$lookup"}}]).should.eql([]);
+    });
+    it("finds $lookup, $graphLookup and $unionWith targets in both forms", function() {
+        guard.findJoinedCollections([
+            {$lookup: {from: "app_usersA", localField: "a", foreignField: "b", as: "c"}},
+            {$graphLookup: {from: {db: "countly", coll: "app_usersB"}, startWith: "$a", connectFromField: "a", connectToField: "b", as: "d"}},
+            {$unionWith: "app_usersC"},
+            {$unionWith: {coll: "app_usersD", pipeline: []}}
+        ]).should.eql([
+            {coll: "app_usersA"},
+            {coll: "app_usersB", db: "countly"},
+            {coll: "app_usersC"},
+            {coll: "app_usersD"}
+        ]);
+    });
+    it("finds joins nested in sub-pipelines and $facet", function() {
+        guard.findJoinedCollections([
+            {$facet: {x: [{$unionWith: {coll: "app_usersA", pipeline: [{$lookup: {from: "app_usersB", pipeline: [], as: "y"}}]}}]}}
+        ]).should.eql([{coll: "app_usersA"}, {coll: "app_usersB"}]);
+    });
+});

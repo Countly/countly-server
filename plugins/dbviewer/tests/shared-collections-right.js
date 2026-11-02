@@ -325,15 +325,16 @@ describe('DBViewer shared collections right', () => {
      * Save an aggregation of a collection as a report while APP_B is the selected app,
      * and return the stored task.
      * @param {string} collection collection name
+     * @param {Array} [pipeline] aggregation pipeline, a $match on the marker by default
      * @returns {Promise<object>} long_tasks document
      */
-    async function savedAggregationTask(collection) {
+    async function savedAggregationTask(collection, pipeline) {
         const res = await request.get('/o/db').query({
             api_key: API_KEY_ADMIN,
             app_id: APP_B,
             dbs: 'countly',
             collection,
-            aggregation: JSON.stringify([{ $match: { marker } }]),
+            aggregation: JSON.stringify(pipeline || [{ $match: { marker } }]),
             save_report: true,
             report_name: 'dbv task app ' + uniq,
         });
@@ -347,6 +348,18 @@ describe('DBViewer shared collections right', () => {
     it('should file an aggregation task under the app the collection belongs to, not the selected app', async() => {
         const task = await savedAggregationTask('app_users' + APP_A);
         should(task.app_id).equal(APP_A);
+    });
+
+    it('should keep the app of an aggregation task that joins only that app collections', async() => {
+        const task = await savedAggregationTask('app_users' + APP_A, [{ $match: { marker } }, { $unionWith: { coll: 'app_users' + APP_A, pipeline: [{ $match: { marker } }] } }]);
+        should(task.app_id).equal(APP_A);
+    });
+
+    it('should file an aggregation task that joins another app collection under no app', async() => {
+        const union = await savedAggregationTask('app_users' + APP_A, [{ $match: { marker } }, { $unionWith: { coll: 'app_users' + APP_B, pipeline: [{ $match: { marker } }] } }]);
+        should(union.app_id).equal('undefined');
+        const lookup = await savedAggregationTask('app_users' + APP_A, [{ $match: { marker } }, { $lookup: { from: 'apps', localField: 'uid', foreignField: '_id', as: 'm' } }]);
+        should(lookup.app_id).equal('undefined');
     });
 
     it('should file an aggregation task of a collection all apps share under no app', async() => {
