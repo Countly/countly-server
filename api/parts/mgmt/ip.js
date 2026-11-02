@@ -80,14 +80,30 @@ function stripTrailingSlash(str) {
  * @param  {Function} callback - callback function that returns the ip address
  */
 function getNetworkIP(callback) {
+    var done = false;
+    /**
+     * Call back once, whichever of connect, error or timeout comes first
+     * @param {Error} err - error, if any
+     * @param {string} address - ip address
+     */
+    function finish(err, address) {
+        if (!done) {
+            done = true;
+            callback(err, address);
+        }
+    }
     var socket = net.createConnection(80, 'www.google.com');
     socket.setTimeout(1000);
     socket.on('connect', function() {
-        callback(undefined, socket.address().address);
+        finish(undefined, socket.address().address);
         socket.end();
     });
+    socket.on('timeout', function() {
+        socket.destroy();
+        finish(new Error('Timed out connecting to www.google.com'), 'localhost');
+    });
     socket.on('error', function(e) {
-        callback(e, 'localhost');
+        finish(e, 'localhost');
     });
 }
 

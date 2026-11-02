@@ -1,0 +1,7 @@
+{
+  "name": "bunyan",
+  "version": "1.8.15-countly",
+  "description": "Stand-in for bunyan: copies of extend/mail.debug.example.js require it to build a nodemailer logger",
+  "main": "index.js",
+  "private": true
+}

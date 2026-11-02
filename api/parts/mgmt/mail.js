@@ -11,32 +11,12 @@ var mail = {},
     versionInfo = require('../../../frontend/express/version.info'),
     authorize = require('../../utils/authorizer'),
     config = require('../../config'),
-    log = require('../../utils/log.js')('mail'),
-    util = require('node:util'),
+    createMailLogger = require('../../utils/mailLogger.js'),
     ip = require('./ip.js');
 
-const smtpLogger = {};
-
-// Set up logger wrapper
-for (let level of ['trace', 'debug', 'info', 'warn', 'error', 'fatal']) {
-    smtpLogger[level] = (data, message, ...args) => {
-        if (args && args.length) {
-            message = util.format(message, ...args);
-        }
-        if (level === 'error' || level === 'fatal') {
-            log.e(message, data || '');
-        }
-        else if (level === 'warn') {
-            log.w(message, data || '');
-        }
-        else if (level === 'info') {
-            log.i(message, data || '');
-        }
-        else {
-            log.d(message, data || '');
-        }
-    };
-}
+//nodemailer logger writing through Countly's "mail" logger; extend/mail.js files can use it too
+const smtpLogger = createMailLogger();
+mail.smtpLogger = smtpLogger;
 
 if (config.mail && config.mail.config) {
     config.mail.config.logger = smtpLogger;

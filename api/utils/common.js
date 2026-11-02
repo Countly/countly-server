@@ -144,8 +144,27 @@ function isPlainContainer(value) {
     if (Array.isArray(value)) {
         return true;
     }
+    //stringifyEscaped calls this with whatever a holder happens to contain, unguarded,
+    //and Object.getPrototypeOf(null) throws. The escape_html_entities call site checks
+    //the type first, so this only has to be at least as permissive as that.
+    if (typeof value !== 'object' || value === null) {
+        return false;
+    }
     const proto = Object.getPrototypeOf(value);
     return proto === Object.prototype || proto === null;
+}
+
+/**
+* Check if value is a plain object, excluding arrays
+*
+* The object branch of stringifyEscaped copies into a fresh {}, so an array must
+* not reach it - and does not need to, since an array's keys are indices and can
+* be neither unsafe nor __proto__.
+* @param  {any} value - value to check
+* @returns {boolean} true if plain object and not an array
+**/
+function isPlainObject(value) {
+    return !Array.isArray(value) && isPlainContainer(value);
 }
 
 /**
@@ -198,6 +217,120 @@ function escape_html_entities(key, value, more) {
     }
     return value;
 }
+
+var unsafeHtmlChars = /["'&<>]/;
+
+/**
+* Cheap pre-check for whether a string could possibly parse into a JSON
+* object/array. Only `{` or `[` (after optional whitespace) can, and getJSON
+* only reports valid for objects/arrays, so everything else can skip the
+* JSON.parse + exception entirely.
+* @param  {string} str - string to check
+* @returns {boolean} true if the string may be JSON encoded object/array
+**/
+function couldBeJSON(str) {
+    for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i);
+        if (c === 32 || c === 9 || c === 10 || c === 13) {
+            continue;
+        }
+        return c === 123 || c === 91;
+    }
+    return false;
+}
+
+/**
+* Escape a single string value the same way escape_html_entities does for
+* strings it finds inside objects/arrays (including JSON encoded strings)
+* @param  {string} str - value to escape
+* @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
+* @returns {string} escaped value
+**/
+function escapeStringValue(str, more) {
+    if (couldBeJSON(str)) {
+        var ob = getJSON(str);
+        if (ob.valid) {
+            return JSON.stringify(escape_html_entities("", ob.data, more));
+        }
+    }
+    return common.escape_html(str, more);
+}
+
+/**
+* JSON.stringify with html entities escaped in keys and string values.
+*
+* Equivalent output to the previous JSON.stringify(output, escape_html_entities)
+* but orders of magnitude cheaper: escape_html_entities used as a replacer
+* returned a fully escaped deep copy of every subtree, which JSON.stringify then
+* walked while calling the replacer again on each child - re-copying and
+* re-escaping the whole subtree at every level, so the work was O(nodes * depth)
+* instead of O(nodes). Here every node is visited exactly once, no deep copies
+* are made, and only keys/strings that actually contain unsafe characters are
+* rewritten.
+*
+* @param  {any} output - value to serialize
+* @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
+* @returns {string} JSON string with escaped keys and values
+**/
+function stringifyEscaped(output, more) {
+    var root = true;
+    return JSON.stringify(output, function(key, value) {
+        var isRoot = root;
+        root = false;
+        if (typeof value === 'string') {
+            //strings are only escaped when their holder is a plain object/array,
+            //never the top level value itself
+            if (isRoot || !isPlainContainer(this)) {
+                return value;
+            }
+            //nothing to escape and it cannot be JSON encoded data
+            if (!unsafeHtmlChars.test(value) && !couldBeJSON(value)) {
+                return value;
+            }
+            //a string different from the raw value came out of a toJSON() hook.
+            //For non plain values (Date, ObjectId, ...) the old implementation
+            //never saw the serialized form, so leave those alone. A toJSON hook
+            //on a plain object is escaped: it would otherwise be a way to put
+            //raw markup into a response that promises escaped output.
+            if (this[key] !== value && !isPlainContainer(this[key])) {
+                return value;
+            }
+            return escapeStringValue(value, more);
+        }
+        //by prototype, for the same reason as isPlainContainer: constructor is an
+        //ordinary own key that JSON.parse and BSON will both set from input, so a
+        //document carrying one skipped this branch entirely - its unsafe keys came
+        //out raw and its own __proto__ key survived into the response
+        if (isPlainObject(value)) {
+            //copy only when a key needs escaping or has to be dropped, and then
+            //only shallowly. An own __proto__ key (JSON.parse and BSON can both
+            //produce one) is dropped: the previous implementation copied keys by
+            //assignment onto a fresh object, so the inherited __proto__ setter
+            //swallowed it and it never reached the response.
+            var keys = Object.keys(value), i, needsCopy = false;
+            for (i = 0; i < keys.length; i++) {
+                if (unsafeHtmlChars.test(keys[i]) || keys[i] === '__proto__') {
+                    needsCopy = true;
+                    break;
+                }
+            }
+            if (!needsCopy) {
+                return value;
+            }
+            var escaped = {};
+            for (i = 0; i < keys.length; i++) {
+                if (keys[i] === '__proto__') {
+                    continue;
+                }
+                escaped[common.escape_html(keys[i], more)] = value[keys[i]];
+            }
+            return escaped;
+        }
+        return value;
+    });
+}
+common.stringifyEscaped = stringifyEscaped;
+
 common.getJSON = getJSON;
 
 common.log = logger;
@@ -1508,9 +1641,11 @@ common.returnRaw = function(params, returnCode, body, heads) {
 };
 
 common.returnMessage = function(params, returnCode, message, heads, noResult = false) {
+    //serialized once, here, so that an unserializable value throws before any header is written
+    var body = stringifyEscaped(noResult && typeof message === 'object' ? message : {result: message});
     params.response = {
         code: returnCode,
-        body: JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities)
+        body: body
     };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
@@ -1561,7 +1696,7 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
                 log.e(`Error writing header in 'returnMessage' ${err}`);
                 params.res.writeHead(returnCode, defaultHeaders);
             }
-            params.res.write(JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities));
+            params.res.write(body);
             params.res.end();
         }
         else {
@@ -1588,13 +1723,12 @@ common.returnOutput = function(params, output, noescape, heads) {
     // Keep `noescape` as a function argument for internal callers that
     // intentionally bypass escaping (binary, pre-escaped content); never
     // accept it from the request.
-    var escape = noescape ? undefined : function(k, v) {
-        return escape_html_entities(k, v, true);
-    };
+    //serialized once, here, so that an unserializable value throws before any header is written
+    var body = noescape ? JSON.stringify(output) : stringifyEscaped(output, true);
 
     params.response = {
         code: 200,
-        body: JSON.stringify(output, escape)
+        body: body
     };
 
     if (params && params.APICallback && typeof params.APICallback === 'function') {
@@ -1646,7 +1780,7 @@ common.returnOutput = function(params, output, noescape, heads) {
                 log.e(`Error writing header in 'returnMessage' ${err}`);
                 params.res.writeHead(200, defaultHeaders);
             }
-            params.res.write(JSON.stringify(output, escape));
+            params.res.write(body);
             params.res.end();
         }
         else {

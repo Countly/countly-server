@@ -859,6 +859,19 @@ var pluginManager = function pluginManager() {
     * @param {string} name - filename to extend
     * @param {object} object - object to extend
     **/
+    /**
+     * Whether an error from requiring an extend file means only that the file isn't there
+     * @param {Error} ex - error thrown by require
+     * @returns {boolean} true when the extend file itself is missing
+     */
+    var isMissingExtendFile = function(ex) {
+        if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+            return false;
+        }
+        //when the extend file exists but a module it requires is missing, the extend file is
+        //the first entry of the require stack; that would drop the extension, so it is logged
+        return !(ex.requireStack && ex.requireStack[0] && ex.requireStack[0].indexOf(path.sep + "extend" + path.sep) !== -1);
+    };
     this.extendModule = function(name, object) {
         //plugin specific extend
         for (let i = 0, l = plugins.length; i < l; i++) {
@@ -867,7 +880,7 @@ var pluginManager = function pluginManager() {
             }
             catch (ex) {
                 //silent error, not extending or no module
-                if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+                if (!isMissingExtendFile(ex)) {
                     console.log(ex);
                 }
             }
@@ -879,7 +892,7 @@ var pluginManager = function pluginManager() {
         }
         catch (ex) {
             //silent error, not extending or no module
-            if (!ex.code || ex.code !== "MODULE_NOT_FOUND") {
+            if (!isMissingExtendFile(ex)) {
                 console.log(ex);
             }
         }
@@ -2513,6 +2526,19 @@ var pluginManager = function pluginManager() {
         overwriteDbPromise(countlyDb, "renameCollection");
         overwriteDbPromise(countlyDb, "setProfilingLevel");
         overwriteDbPromise(countlyDb, "stats");
+        //collection wrappers are cached per name for the life of the process (see countlyDb.collection
+        //below); a dropped or renamed collection releases its wrapper, or every per-app collection of
+        //every deleted app stays on the heap
+        var dropCollection = countlyDb.dropCollection;
+        countlyDb.dropCollection = function(name, ...rest) {
+            delete countlyDb._collection_cache[name];
+            return dropCollection.call(countlyDb, name, ...rest);
+        };
+        var renameCollection = countlyDb.renameCollection;
+        countlyDb.renameCollection = function(from, ...rest) {
+            delete countlyDb._collection_cache[from];
+            return renameCollection.call(countlyDb, from, ...rest);
+        };
 
 
         var findOptions = [
@@ -3127,6 +3153,16 @@ var pluginManager = function pluginManager() {
             overwritePromise(ob, "isCapped");
             overwritePromise(ob, "options");
             overwritePromise(ob, "rename");
+            var drop = ob.drop;
+            ob.drop = function(...args) {
+                delete countlyDb._collection_cache[collection];
+                return drop.apply(ob, args);
+            };
+            var rename = ob.rename;
+            ob.rename = function(...args) {
+                delete countlyDb._collection_cache[collection];
+                return rename.apply(ob, args);
+            };
 
             var overwriteBulkPromise = function(obj, name) {
                 obj["_" + name] = obj[name];

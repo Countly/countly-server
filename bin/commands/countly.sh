@@ -111,6 +111,13 @@ countly_upgrade (){
     countly_root ;
     if [ $# -eq 0 ]
     then
+        #installers before 25.03.59 set npm's prefix in the countly user's .npmrc, which is
+        #also this project's .npmrc, and npm 10.9 and later report it as an error on every run
+        NPMRC="$DIR/../../.npmrc";
+        if [ -f "$NPMRC" ] && grep -q '^prefix=.*/bin/\.\./\.local/\?$' "$NPMRC"; then
+            sudo sed -i '/^prefix=.*\/bin\/\.\.\/\.local\/\?$/d' "$NPMRC";
+            echo "Removed the npm prefix setting from $NPMRC";
+        fi
         INOFFLINEMODE=$(countly config 'api.offline_mode' | awk '/=/{print $NF}')
 
         if [ "$INOFFLINEMODE" == "false" ]

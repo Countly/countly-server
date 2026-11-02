@@ -19,9 +19,6 @@
     "plugins",
     "template"
   ],
-  "dependencies": {
-    "ipaddr.js": "^2.3.0"
-  },
   "optionalDependencies": {
     "isolated-vm-5": "npm:isolated-vm@^5.0.4",
     "isolated-vm-6": "npm:isolated-vm@^6.2.0",

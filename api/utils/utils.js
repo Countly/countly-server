@@ -150,6 +150,10 @@ exports.decrypt_old = function(crypted, key, iv, algorithm, input_encoding, outp
         decipher = crypto.createDecipheriv(algorithm, key, iv);
     }
     else {
+        //values encrypted without an IV need crypto.createDecipher, which Node.js 22 removed
+        if (typeof crypto.createDecipher !== "function") {
+            throw new Error("This value was encrypted without an IV by an old Countly version and cannot be decrypted on Node.js " + process.versions.node + "; encrypt it again (for example with countly encrypt) or decrypt it on Node.js 20");
+        }
         decipher = crypto.createDecipher(algorithm, key);
     }
     decrypted = decipher.update(crypted, input_encoding, output_encoding);
