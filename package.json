@@ -87,7 +87,7 @@
     "method-override": "3.0.0",
     "moment": "2.31.0",
     "moment-timezone": "0.6.5",
-    "mongodb": "6.20.0",
+    "mongodb": "7.7.0",
     "mongodb-connection-string-url": "^7.0.1",
     "nodemailer": "10.2.1",
     "object-hash": "3.0.0",
@@ -101,6 +101,9 @@
     "xlsx-write-stream": "^1.0.0"
   },
   "overrides": {
+    "sass": {
+      "chokidar": "^4.0.3"
+    },
     "mocha": {
       "diff": "^8.0.4"
     },
@@ -124,6 +127,12 @@
     "body-parser@^1.0.0": "^1.20.6",
     "js-yaml@^3.0.0": "^3.15.1",
     "js-yaml@^4.0.0": "^4.3.1"
+  },
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "argon2": true,
+    "dtrace-provider": true,
+    "puppeteer": true
   },
   "jshintConfig": {
     "esversion": 6,

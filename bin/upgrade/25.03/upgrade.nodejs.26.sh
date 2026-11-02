@@ -5,8 +5,8 @@
 #
 #   sudo bash bin/upgrade/25.03/upgrade.nodejs.26.sh
 #
-# then restart Countly. Like upgrade.nodejs.22.sh it reinstalls node_modules, because the
-# native addons (argon2, isolated-vm) are built for one Node.js ABI. The hooks plugin
+# then restart Countly. Like upgrade.nodejs.22.sh it reinstalls node_modules, because
+# native addons such as isolated-vm are built for one Node.js ABI. The hooks plugin
 # then picks up isolated-vm 7, the build for Node.js 24 and later.
 #
 # Ubuntu 20.04 is refused: isolated-vm 7 has no binary for its glibc and cannot be built
@@ -31,25 +31,17 @@ if [ -f /etc/lsb-release ]; then
 
     if [[ "$UBUNTU_YEAR" = "20" ]]; then
         echo "Ubuntu 20.04 stays on Node.js 22: hooks custom code needs isolated-vm 7 on Node.js 26,"
-        echo "which cannot be installed there. Upgrade the OS to Ubuntu 22.04 or 24.04 first."
+        echo "which cannot be installed there. Upgrade the OS to Ubuntu 22.04, 24.04 or 26.04 first."
         exit 1
     fi
 
-    if [[ "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24" ]]; then
-        echo "Unsupported OS version, only support Ubuntu 22 and 24."
+    if [[ "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24" && "$UBUNTU_YEAR" != "26" ]]; then
+        echo "Unsupported OS version, only support Ubuntu 22, 24 and 26."
         exit 1
     fi
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
-
-#npm 11 removed --unsafe-perm and --build-from-source, which the commands below still use
-npm install -g npm@10;
-
-if [[ -f /usr/local/bin/npm && -f /usr/bin/npm ]]; then
-    rm /usr/local/bin/npm
-    ln -s /usr/bin/npm /usr/local/bin/npm
-fi
 
 #upgrade nodejs
 if [ -f /etc/redhat-release ]; then
@@ -85,8 +77,9 @@ rm -rf "$DIR/../plugins/hooks/node_modules"
 
 #no sudo: the script runs as root, and sudo would reset PATH and drop
 #npm_config_python, losing the RHEL 8 toolchain set up above
-(cd "$DIR/.." && npm install --unsafe-perm && npm install argon2 --build-from-source)
-(cd "$DIR/../plugins/hooks" && npm install --unsafe-perm)
+#argon2 ships prebuilt Node-API binaries, so it needs no rebuild for a new Node.js
+(cd "$DIR/.." && npm install)
+(cd "$DIR/../plugins/hooks" && npm install)
 
 #isolated-vm (hooks custom code) needs node started with --no-node-snapshot on
 #Node.js 20 and later; add it to the supervisord commands of an existing install

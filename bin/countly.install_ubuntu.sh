@@ -6,8 +6,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
-if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24" ]]; then
-    echo "Unsupported OS version, only support Ubuntu 20 and 22."
+if [[ "$UBUNTU_YEAR" != "20" && "$UBUNTU_YEAR" != "22" && "$UBUNTU_YEAR" != "24" && "$UBUNTU_YEAR" != "26" ]]; then
+    echo "Unsupported OS version, only support Ubuntu 20, 22, 24 and 26."
     exit 1
 fi
 
@@ -25,6 +25,9 @@ if [[ "$UBUNTU_YEAR" = "22" ]]; then
         sudo ln -s /usr/bin/python2.7 /usr/bin/python
         sudo ln -s /usr/bin/python2-config /usr/bin/python-config
     fi
+elif [[ "$UBUNTU_YEAR" = "24" || "$UBUNTU_YEAR" = "26" ]]; then
+    #Ubuntu 24.04 and later have no python 2; python-is-python3 provides /usr/bin/python
+    sudo apt-get install -y python3 python3-dev python-is-python3
 else
     sudo apt-get install -y python
 fi
@@ -34,7 +37,13 @@ sudo apt-get install -y software-properties-common
 sudo apt-get install -y gcc g++ make
 
 #Install dependancies required by the puppeteer
-sudo apt-get install -y libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils
+if [[ "$UBUNTU_YEAR" = "24" || "$UBUNTU_YEAR" = "26" ]]; then
+    #Ubuntu 24.04 renamed several libraries with a t64 suffix and dropped gconf and libappindicator1;
+    #26.04 also dropped the libgdk-pixbuf2.0-0 name, so both use libgdk-pixbuf-2.0-0
+    sudo apt-get install -y libgbm-dev libgbm1 libasound2t64 libatk1.0-0t64 libc6 libcairo2 libcups2t64 libdbus-1-3 libexpat1 libfontconfig1 libgcc-s1 libgdk-pixbuf-2.0-0 libglib2.0-0t64 libgtk-3-0t64 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libnss3 lsb-release xdg-utils
+else
+    sudo apt-get install -y libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils
+fi
 
 if sudo apt-cache pkgnames | grep -q python-software-properties; then
     sudo apt-get install -y python-software-properties
@@ -47,9 +56,10 @@ if ! (command -v apt-add-repository >/dev/null) then
 fi
 
 #install nginx
-echo "deb http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
+#signed-by keyring: apt-key is deprecated, and Ubuntu 26.04 no longer has it
+curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo gpg --batch --yes --dearmor -o /usr/share/keyrings/nginx-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx.list
-curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install -y nginx
 
@@ -99,7 +109,7 @@ sudo apt-get install -y sendmail
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install argon2; npm install; )
+( cd "$DIR/.."; npm install; )
 
 #install mongodb
 if ! command -v mongod &> /dev/null; then

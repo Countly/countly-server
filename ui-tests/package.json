@@ -21,5 +21,8 @@
     "pixelmatch": "^8.0.0",
     "pngjs": "^7.0.0",
     "sharp": "^0.35.0"
+  },
+  "allowScripts": {
+    "cypress": true
   }
 }

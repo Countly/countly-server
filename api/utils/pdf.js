@@ -3,19 +3,7 @@
  * Module for pdf export
  * @module api/utils/pdf
  */
-var puppeteer;
-try {
-    puppeteer = require('puppeteer');
-}
-catch (err) {
-    if (process.env.COUNTLY_CONTAINER !== 'frontend') {
-        console.warn(
-            `Puppeteer not installed. Please install puppeteer if
-              you would like to use api/utils/render.js. \nGracefully skipping
-              any functionality associated with Puppeteer...`, err.stack
-        );
-    }
-}
+var loadPuppeteer = require('./loadPuppeteer.js');
 var log = require('./log.js')('core:pdf');
 var webConfig = {};
 try {
@@ -114,6 +102,10 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
     let browser;
     try {
         log.d('Starting pdf generation', 'puppeteerArgs: ', puppeteerArgs);
+        const puppeteer = await loadPuppeteer();
+        if (!puppeteer) {
+            throw new Error('Puppeteer not installed. Please install Puppeteer to generate PDFs.');
+        }
         if (puppeteerArgs) {
             browser = await puppeteer.launch(puppeteerArgs);
         }
