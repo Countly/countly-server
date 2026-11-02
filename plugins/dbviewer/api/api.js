@@ -594,8 +594,9 @@ var spawn = require('child_process').spawn,
             if (appId) {
                 if (hasReadRight(FEATURE_NAME, appId, parameters.member)) {
                     if (collection === "events_data" || collection === "drill_events") {
-                        //unless the member's app_restrict closes this app's DB Viewer
-                        return callback(getSharedCollectionApps(parameters.member, FEATURE_NAME).indexOf(appId + "") !== -1);
+                        //unless the member's app_restrict closes this app's DB Viewer; a global
+                        //admin reads every app (getSharedCollectionApps lists no apps for one)
+                        return callback(!!parameters.member.global_admin || getSharedCollectionApps(parameters.member, FEATURE_NAME).indexOf(appId + "") !== -1);
                     }
                     else {
                         return dbUserHasAccessToCollection(parameters, collection, appId, callback);

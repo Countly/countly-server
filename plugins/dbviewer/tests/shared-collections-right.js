@@ -259,6 +259,11 @@ describe('DBViewer shared collections right', () => {
         should(names).containEql('events_data');
     });
 
+    it('should list events_data to a global admin with an app selected', async() => {
+        const names = await listedCollections(API_KEY_ADMIN);
+        should(names).containEql('events_data');
+    });
+
     it('should refuse an events_data document without the dbviewer right', async() => {
         const res = await readDocument(noViewerKey, APP_A);
         should(res.status).equal(401);
