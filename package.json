@@ -92,7 +92,7 @@
     "properties-parser": "0.6.0",
     "puppeteer": "^25.7.0",
     "rate-limiter-flexible": "^11.0.0",
-    "sass": "1.106.1",
+    "sass": "1.107.0",
     "semver": "^7.7.1",
     "underscore": "1.13.8",
     "xlsx-write-stream": "^1.0.0"
