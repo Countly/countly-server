@@ -92,7 +92,7 @@
     "properties-parser": "0.6.0",
     "puppeteer": "^25.7.0",
     "rate-limiter-flexible": "^11.0.0",
-    "sass": "1.106.1",
+    "sass": "1.107.0",
     "semver": "^7.7.1",
     "underscore": "1.13.8",
     "xlsx-write-stream": "^1.0.0"
@@ -117,6 +117,7 @@
     "brace-expansion@^1.0.0": "^1.1.18",
     "brace-expansion@^2.0.0": "^2.1.4",
     "minimatch@^3.0.0": "^3.1.4",
+    "minimatch@^10.0.0": "^11.0.4",
     "immutable": "^5.1.8",
     "ip-address": "^10.3.1",
     "brace-expansion@^5.0.0": "^5.0.9",
