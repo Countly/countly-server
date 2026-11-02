@@ -2081,10 +2081,8 @@
                 testUsersRows: initialTestUsersRows,
                 selectedKeyToDelete: null,
                 selectedTestUsersListOption: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID,
-                testUsersListOptions: [
-                    {label: CV.i18n('push-notification.user-id'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID},
-                    {label: CV.i18n('push-notification.cohort-name'), value: countlyPushNotification.service.AddTestUserDefinitionTypeEnum.COHORT}
-                ]
+                isCohortsEnabled: typeof countlyCohorts !== 'undefined',
+                isUserSearchEnabled: countlyPushNotification.service.isUserSearchEnabled()
             };
         },
         computed: {
@@ -2096,6 +2094,13 @@
             },
             selectedTestUsersRows: function() {
                 return this.testUsersRows[this.selectedTestUsersListOption];
+            },
+            testUsersListOptions: function() {
+                var options = [{label: CV.i18n('push-notification.user-id'), value: this.AddTestUserDefinitionTypeEnum.USER_ID}];
+                if (this.isCohortsEnabled) {
+                    options.push({label: CV.i18n('push-notification.cohort-name'), value: this.AddTestUserDefinitionTypeEnum.COHORT});
+                }
+                return options;
             },
             selectedAppId: function() {
                 return this.$store.state.countlyAppManagement.selectedAppId;
@@ -2425,7 +2430,11 @@
             },
             updateTestUsersAppConfig: function(editedObject) {
                 var testDto = countlyPushNotification.mapper.outgoing.mapTestUsersEditedModelToDto(editedObject);
-                countlyGlobal.apps[this.selectedAppId].plugins.push.test = testDto;
+                var app = countlyGlobal.apps[this.selectedAppId];
+                // an app without any push settings yet has no plugins.push
+                app.plugins = app.plugins || {};
+                app.plugins.push = app.plugins.push || {};
+                app.plugins.push.test = testDto;
             },
             onDeleteTestUser: function(row) {
                 var self = this;
