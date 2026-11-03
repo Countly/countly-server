@@ -55,6 +55,34 @@ function getScheduleTextExpression(period, offset) {
     return "on the last day of the month at " + utcClock;
 }
 
+/**
+ * The only fields a client may store on an alert: what the alert drawer sends and
+ * the alert modules read. The config is written with $set or insert, so any other
+ * key, such as createdBy or a dotted path such as "selectedApps.0", would be stored
+ * without the checks the named fields get. createdBy and createdAt are set here.
+ */
+const WRITABLE_ALERT_KEYS = [
+    'alertName', 'alertDataType', 'alertDataSubType', 'alertDataSubType2',
+    'filterKey', 'filterValue', 'compareType', 'compareValue', 'compareValue2',
+    'compareDescribe', 'period', 'selectedApps', 'alertBy', 'alertValues',
+    'allGroups', 'enabled'
+];
+
+/**
+ * Copy only the writable keys that are present, so an update leaves the others as stored.
+ * @param {object} alertConfig - parsed alert config from the request
+ * @returns {object} a copy with only WRITABLE_ALERT_KEYS
+ */
+function pickWritableAlertFields(alertConfig) {
+    const out = {};
+    WRITABLE_ALERT_KEYS.forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(alertConfig, key)) {
+            out[key] = alertConfig[key];
+        }
+    });
+    return out;
+}
+
 (function() {
     /**
 	 * delete alert job
@@ -234,6 +262,8 @@ function getScheduleTextExpression(period, offset) {
                     common.returnMessage(params, 200, 'Not enough args');
                     return true;
                 }
+                const alertId = alertConfig._id;
+                alertConfig = pickWritableAlertFields(alertConfig);
 
                 // Cross-app guard: every entry of selectedApps must be an
                 // app the caller is allowed to create alerts on. Without
@@ -250,15 +280,13 @@ function getScheduleTextExpression(period, offset) {
                         return true;
                     }
                 }
-                if (alertConfig._id) {
-                    const id = alertConfig._id;
-                    delete alertConfig._id;
+                if (alertId) {
+                    const id = alertId;
                     //createdBy is the creator, not the last editor, and it is what
                     //ownership, list visibility and the send-time authorization added
                     //here are all judged by. Setting it to the caller on update handed a
                     //global admin the alerts of anybody whose alert they edited, and it
-                    //is not the request's to set in any case.
-                    delete alertConfig.createdBy;
+                    //is not the request's to set in any case: it is not a writable key.
                     var query = { _id: common.db.ObjectID(id) };
                     //If not global admin, limit update to own alerts only
                     if (params.member.global_admin !== true) {
@@ -307,9 +335,7 @@ function getScheduleTextExpression(period, offset) {
                             });
                     });
                 }
-                if (!alertConfig._id) {
-                    alertConfig.createdAt = new Date().getTime();
-                }
+                alertConfig.createdAt = new Date().getTime();
                 alertConfig.createdBy = params.member._id;
                 return common.db.collection("alerts").insert(
                     alertConfig,
