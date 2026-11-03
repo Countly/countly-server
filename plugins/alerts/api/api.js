@@ -54,6 +54,31 @@ function getScheduleTextExpression(period, offset) {
     return "on the last day of the month at " + utcClock;
 }
 
+/**
+ * The fields a client may store on an alert, the Alert typedef in parts/common-lib.js
+ * minus _id and createdBy, which the server sets. The config is written with $set or
+ * insert, so any other key, or a dotted path such as "selectedApps.0", would be stored
+ * without the checks the named fields get.
+ */
+const WRITABLE_ALERT_KEYS = ['alertName', 'alertDataType', 'alertDataSubType', 'alertDataSubType2',
+    'compareType', 'compareValue', 'filterKey', 'filterValue', 'selectedApps', 'period', 'alertBy',
+    'enabled', 'compareDescribe', 'alertValues', 'allGroups'];
+
+/**
+ * Copy only the writable alert keys that are present, so an update leaves the others as stored
+ * @param {object} alertConfig - parsed alert config from the request
+ * @returns {object} a copy with only WRITABLE_ALERT_KEYS
+ */
+function pickWritableAlertFields(alertConfig) {
+    const out = {};
+    WRITABLE_ALERT_KEYS.forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(alertConfig, key)) {
+            out[key] = alertConfig[key];
+        }
+    });
+    return out;
+}
+
 (function() {
     /**
 	 * delete alert job
@@ -224,6 +249,11 @@ function getScheduleTextExpression(period, offset) {
                 if (!(common.validateArgs(alertConfig, checkProps))) {
                     common.returnMessage(params, 200, 'Not enough args');
                     return true;
+                }
+                const alertId = alertConfig._id;
+                alertConfig = pickWritableAlertFields(alertConfig);
+                if (alertId) {
+                    alertConfig._id = alertId;
                 }
 
                 // Cross-app guard: every entry of selectedApps must be an

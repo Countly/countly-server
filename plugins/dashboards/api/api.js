@@ -1210,6 +1210,7 @@ plugins.setConfigs("dashboards", {
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
             }
+            widget = pickWritableWidgetFields(widget);
 
             if (!dashboardId || dashboardId.length !== 24) {
                 common.returnMessage(params, 400, 'Invalid parameter: dashboard_id');
@@ -1309,6 +1310,11 @@ plugins.setConfigs("dashboards", {
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
+            }
+            widget = pickWritableWidgetFields(widget);
+            if (!Object.keys(widget).length) {
+                common.returnMessage(params, 400, 'Invalid parameter: widget');
+                return true;
             }
 
             if (widget.widget_type === "note") {
@@ -1889,22 +1895,44 @@ plugins.setConfigs("dashboards", {
         return contenthtml;
     }
 
-    // /**
-    //  * Function to sanitize widget
-    //  * @param  {Object} widget - widget object
-    //  * @returns {Object} widget
-    //  */
-    // function sanitizeWidget(widget) {
-    //     var allowedProps = ["widget_type", "data_type", "apps", "title", "position", "size", "events", "breakdowns", "metrics", "bar_color"];
+    /**
+     * The fields a client may store on a widget: the keys every widget type's
+     * drawer sends (its getEmpty()), core and enterprise, plus the grid layout.
+     * The widget is written with insert or $set, so any other key, or a dotted
+     * path such as "apps.0", would be stored without the checks the named
+     * fields get. Fields the server maintains itself (invalid, report ids) are
+     * left out on purpose.
+     */
+    var WRITABLE_WIDGET_KEYS = [
+        "widget_type", "feature", "isPluginWidget", "title", "apps", "app_count", "selectedApp",
+        "data_type", "metrics", "metric", "events", "breakdowns", "visualization", "visualization_type",
+        "visualization_graph_type", "visualitionType", "displaytype", "bar_color", "color", "period",
+        "custom_period", "selectedPeriod", "selected_span", "interval", "bucket", "selectedBucketing",
+        "comparison", "metric_compare_type", "numberOfResults", "visibleColumns", "contenthtml",
+        "drill_query", "selectedQueries", "filter_id", "client_fetch", "cohorts", "cohortName",
+        "selectedCohorts", "selectedFormula", "cmetric_refs", "cmetricName", "selectedFunnel",
+        "funnel_type", "funnel_view_type", "retention_type", "retention_data_type",
+        "retention_data_type_desc", "revenue_type", "revenue_types", "statsMetric",
+        "barChartTotalUsers", "selectedSDK", "position", "size"
+    ];
 
-    //     for (var widgetProp in widget) {
-    //         if (allowedProps.indexOf(widgetProp) == -1) {
-    //             delete widget[widgetProp];
-    //         }
-    //     }
-
-    //     return widget;
-    // }
+    /**
+     * Copy only the writable widget keys that are present
+     * @param  {Object} widget - parsed widget from the request
+     * @returns {Object} a copy with only WRITABLE_WIDGET_KEYS
+     */
+    function pickWritableWidgetFields(widget) {
+        var out = {};
+        if (!widget || typeof widget !== "object") {
+            return out;
+        }
+        WRITABLE_WIDGET_KEYS.forEach(function(key) {
+            if (Object.prototype.hasOwnProperty.call(widget, key)) {
+                out[key] = widget[key];
+            }
+        });
+        return out;
+    }
 
     /**
      * Function to check if member has view access to the dashboard
