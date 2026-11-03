@@ -474,3 +474,81 @@ describe('Dashboards and a scoped token', () => {
         });
     });
 });
+
+describe('Dashboard widget stored fields', function() {
+    var dashboardId = "";
+    var widgetId = "";
+    var otherAppId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+
+    /**
+     * Read a widget from the database
+     * @returns {Promise<object>} stored widget
+     */
+    function storedWidget() {
+        return testUtils.db.collection("widgets").findOne({_id: testUtils.db.ObjectID(widgetId)});
+    }
+
+    /**
+     * Update the widget
+     * @param {object} widget - widget update
+     * @returns {Promise<object>} supertest response
+     */
+    function updateWidget(widget) {
+        return request.get('/i/dashboards/update-widget').query({api_key: testUtils.get('API_KEY_ADMIN'), dashboard_id: dashboardId, widget_id: widgetId, widget: JSON.stringify(widget)});
+    }
+
+    before(async function() {
+        var res = await request.get('/i/dashboards/create').query({api_key: testUtils.get('API_KEY_ADMIN'), name: 'widget fields dashboard', share_with: 'none'});
+        res.status.should.equal(200, res.text);
+        dashboardId = res.body + '';
+    });
+
+    after(async function() {
+        var res = await request.get('/i/dashboards/delete').query({api_key: testUtils.get('API_KEY_ADMIN'), dashboard_id: dashboardId});
+        res.status.should.equal(200, res.text);
+    });
+
+    it('should store only the widget fields on create', async function() {
+        var widget = {widget_type: 'analytics', apps: [testUtils.get('APP_ID')], data_type: 'session', metrics: ['t'], visualization: 'number', invalid: true, "apps.1": otherAppId};
+        var res = await request.get('/i/dashboards/add-widget').query({api_key: testUtils.get('API_KEY_ADMIN'), dashboard_id: dashboardId, widget: JSON.stringify(widget)});
+        res.status.should.equal(200, res.text);
+        widgetId = res.body + '';
+
+        var stored = await storedWidget();
+        stored.apps.should.eql([testUtils.get('APP_ID')]);
+        stored.metrics.should.eql(['t']);
+        should.not.exist(stored.invalid);
+        should.not.exist(stored["apps.1"]);
+    });
+
+    it('should not change apps through a dotted key on update', async function() {
+        var res = await updateWidget({title: 'dotted', "apps.0": otherAppId});
+        res.status.should.equal(200, res.text);
+        var stored = await storedWidget();
+        stored.title.should.equal('dotted');
+        stored.apps.should.eql([testUtils.get('APP_ID')]);
+    });
+
+    it('should reject an update with no widget fields', async function() {
+        var res = await updateWidget({"apps.0": otherAppId});
+        res.status.should.equal(400, res.text);
+        (await storedWidget()).apps.should.eql([testUtils.get('APP_ID')]);
+    });
+
+    it('should save a normal drawer update', async function() {
+        var res = await updateWidget({widget_type: 'analytics', feature: 'core', apps: [testUtils.get('APP_ID')], data_type: 'session', metrics: ['u'], visualization: 'line', title: 'edited', custom_period: null, bar_color: 1});
+        res.status.should.equal(200, res.text);
+        var stored = await storedWidget();
+        stored.metrics.should.eql(['u']);
+        stored.visualization.should.equal('line');
+        stored.title.should.equal('edited');
+    });
+
+    it('should save a grid layout update', async function() {
+        var res = await updateWidget({position: [2, 3], size: [4, 5]});
+        res.status.should.equal(200, res.text);
+        var stored = await storedWidget();
+        stored.position.should.eql([2, 3]);
+        stored.size.should.eql([4, 5]);
+    });
+});
