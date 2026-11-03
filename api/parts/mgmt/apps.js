@@ -1242,7 +1242,9 @@ function appKeyValues(app) {
 * back into updatedApp (the response and the /i/apps/update payload carry them).
 * Removed keys are pulled from the stored array and the current key is added
 * only when absent and still current, so two updates that each retire a key both take effect.
-* A removed key is also dropped from the app-by-key cache straight away.
+* A removed key is also dropped from the app-by-key cache straight away, and
+* recorded in retired_keys, which keeps it reserved: no other app may take it
+* (checkUniqueKey), so SDK clients still sending it never reach another app.
 * @param {object} appId - app _id
 * @param {object} appBefore - app document read before the update
 * @param {object} updatedApp - fields to set; its keys are filled in on success
@@ -1259,6 +1261,14 @@ async function writeAppUpdate(appId, appBefore, updatedApp, keysToRemove, curren
     var update = {$set: updatedApp, "$unset": {"checksum_salt": ""}};
     if (keysToRemove.length) {
         update.$pull = {keys: {key: {$in: keysToRemove, $ne: currentKey}}};
+        //only keys this app actually accepted, so retiring cannot reserve arbitrary values
+        var acceptedBefore = appKeyValues(appBefore);
+        var retired = keysToRemove.filter(function(k) {
+            return acceptedBefore.indexOf(k) !== -1;
+        });
+        if (retired.length) {
+            update.$addToSet = {retired_keys: {$each: retired}};
+        }
     }
     await apps.updateOne({_id: appId}, update);
     //only while it is still the current key: a later rotation that already
@@ -1282,10 +1292,12 @@ function checkUniqueKey(params, callback, update) {
         callback();
     }
     else {
-        //a key must be globally unique across every app's current key AND every
-        //app's set of still-accepted (old) keys
+        //a key must be globally unique across every app's current key, every
+        //app's set of still-accepted (old) keys, and every key an app retired:
+        //a retired key stays reserved, so SDK clients still sending it are
+        //rejected rather than attributed to another app that took it over
         var key = params.qstring.args.key + "";
-        var query = {$or: [{key: key}, {"keys.key": key}]};
+        var query = {$or: [{key: key}, {"keys.key": key}, {retired_keys: key}]};
         if (update) {
             query._id = {$ne: common.db.ObjectID(params.qstring.args.app_id + "")};
         }

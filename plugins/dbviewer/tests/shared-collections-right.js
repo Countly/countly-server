@@ -2,7 +2,9 @@
  * The shared event collections (`events_data`, `drill_events`) need the
  * dbviewer read right like every other collection, and their rows are scoped
  * to the apps the member holds that right on, not to every app they belong to.
- * The DB export (/o/export/db) follows the same rule.
+ * The DB export (/o/export/db) follows the same rule. An app whose DB Viewer a
+ * member's app_restrict closes ("#/manage/db") is left out of that scope, as it
+ * is for the per-app collections.
  *
  * This server has no `countly_drill` database (it is connected only when the
  * drill plugin is installed), so the DB Viewer reads are checked on
@@ -34,7 +36,13 @@ describe('DBViewer shared collections right', () => {
     let drillKey = '';
     /** users read on APP_A, no dbviewer anywhere. */
     let usersKey = '';
+    /** dbviewer read on APP_A and APP_B, DB Viewer closed on APP_B by app_restrict. */
+    let restrictedKey = '';
+    /** dbviewer read on APP_A only, DB Viewer closed on APP_A by app_restrict. */
+    let restrictedOnlyKey = '';
     const memberIds = [];
+    /** Tasks saved by the aggregation cases, removed afterwards. */
+    const taskIds = [];
     /** A token with the dbviewer read on APP_A and no app membership (no `_.u`). */
     let viewerToken = '';
     let countlyDb;
@@ -152,6 +160,9 @@ describe('DBViewer shared collections right', () => {
         if (countlyDb) {
             await countlyDb.collection('events_data').deleteMany({ marker });
         }
+        if (taskIds.length) {
+            await countlyDb.collection('long_tasks').deleteMany({ _id: { $in: taskIds } });
+        }
         if (viewerToken) {
             await request.get('/i/token/delete').query({ api_key: API_KEY_ADMIN, tokenid: viewerToken });
         }
@@ -183,6 +194,11 @@ describe('DBViewer shared collections right', () => {
         viewerKey = await createMember('dbvviewer', readPermission({ [APP_A]: ['dbviewer'], [APP_B]: ['events'] }));
         drillKey = await createMember('dbvdrill', readPermission({ [APP_A]: ['drill'] }));
         usersKey = await createMember('dbvusers', readPermission({ [APP_A]: ['users'] }));
+        restrictedKey = await createMember('dbvrestricted', readPermission({ [APP_A]: ['dbviewer'], [APP_B]: ['dbviewer'] }));
+        restrictedOnlyKey = await createMember('dbvrestrictedonly', readPermission({ [APP_A]: ['dbviewer'] }));
+        //app_restrict is a legacy member field no API sets any more, so it is written directly
+        await countlyDb.collection('members').updateOne({ api_key: restrictedKey }, { $set: { app_restrict: { [APP_B]: ['#/manage/db'] } } });
+        await countlyDb.collection('members').updateOne({ api_key: restrictedOnlyKey }, { $set: { app_restrict: { [APP_A]: ['#/manage/db'] } } });
 
         await countlyDb.collection('events_data').insertMany([
             { _id: APP_A + '_' + marker, marker },
@@ -243,6 +259,11 @@ describe('DBViewer shared collections right', () => {
         should(names).containEql('events_data');
     });
 
+    it('should list events_data to a global admin with an app selected', async() => {
+        const names = await listedCollections(API_KEY_ADMIN);
+        should(names).containEql('events_data');
+    });
+
     it('should refuse an events_data document without the dbviewer right', async() => {
         const res = await readDocument(noViewerKey, APP_A);
         should(res.status).equal(401);
@@ -268,6 +289,126 @@ describe('DBViewer shared collections right', () => {
 
     it('should accept a drill_events export with the users right', async() => {
         should((await exportCollection(usersKey, 'countly_drill', 'drill_events')).status).equal(200);
+    });
+
+    // ── dbviewer right on two apps, DB Viewer closed on one by app_restrict ──
+
+    it('should return no events_data rows of an app whose DB Viewer app_restrict closes', async() => {
+        const res = await readCollection(restrictedKey, 'countly', 'events_data', { filter: JSON.stringify({ marker }) });
+        should(res.status).equal(200);
+        should(res.body.collections.map((row) => row._id)).eql([APP_A + '_' + marker]);
+    });
+
+    it('should aggregate no events_data rows of an app whose DB Viewer app_restrict closes', async() => {
+        const res = await readCollection(restrictedKey, 'countly', 'events_data', { aggregation: JSON.stringify([{ $match: { marker } }]) });
+        should(res.status).equal(200);
+        should(res.body.aaData.map((row) => row._id)).eql([APP_A + '_' + marker]);
+    });
+
+    it('should return no events_data document of an app whose DB Viewer app_restrict closes', async() => {
+        const other = await readDocument(restrictedKey, APP_B);
+        should(other.status).equal(200);
+        should(other.body).eql({});
+    });
+
+    it('should export no events_data rows of an app whose DB Viewer app_restrict closes', async() => {
+        const res = await exportCollection(restrictedKey, 'countly', 'events_data');
+        should(res.status).equal(200);
+        should(JSON.parse(res.text).map((row) => row._id)).eql([APP_A + '_' + marker]);
+    });
+
+    it('should refuse the shared collections when app_restrict closes the DB Viewer on every app with the right', async() => {
+        should((await readCollection(restrictedOnlyKey, 'countly', 'events_data')).status).equal(401);
+        should((await exportCollection(restrictedOnlyKey, 'countly', 'events_data')).status).equal(401);
+        should((await exportCollection(restrictedOnlyKey, 'countly_drill', 'drill_events')).status).equal(401);
+        should(await listedCollections(restrictedOnlyKey)).not.containEql('events_data');
+    });
+
+    // ── The app a saved aggregation task is filed under ──────────────────────
+
+    /**
+     * Save an aggregation of a collection as a report while APP_B is the selected app,
+     * and return the stored task.
+     * @param {string} collection collection name
+     * @param {Array} [pipeline] aggregation pipeline, a $match on the marker by default
+     * @returns {Promise<object>} long_tasks document
+     */
+    async function savedAggregationTask(collection, pipeline) {
+        const res = await request.get('/o/db').query({
+            api_key: API_KEY_ADMIN,
+            app_id: APP_B,
+            dbs: 'countly',
+            collection,
+            aggregation: JSON.stringify(pipeline || [{ $match: { marker } }]),
+            save_report: true,
+            report_name: 'dbv task app ' + uniq,
+        });
+        should(res.status).equal(200, res.text);
+        const taskId = res.body.aaData && res.body.aaData.task_id;
+        should(taskId).be.ok();
+        taskIds.push(taskId);
+        return countlyDb.collection('long_tasks').findOne({ _id: taskId });
+    }
+
+    it('should file an aggregation task under the app the collection belongs to, not the selected app', async() => {
+        const task = await savedAggregationTask('app_users' + APP_A);
+        should(task.app_id).equal(APP_A);
+    });
+
+    it('should keep the app of an aggregation task that joins only that app collections', async() => {
+        const task = await savedAggregationTask('app_users' + APP_A, [{ $match: { marker } }, { $unionWith: { coll: 'app_users' + APP_A, pipeline: [{ $match: { marker } }] } }]);
+        should(task.app_id).equal(APP_A);
+    });
+
+    it('should file an aggregation task that joins another app collection under no app', async() => {
+        const union = await savedAggregationTask('app_users' + APP_A, [{ $match: { marker } }, { $unionWith: { coll: 'app_users' + APP_B, pipeline: [{ $match: { marker } }] } }]);
+        should(union.app_id).equal('undefined');
+        const lookup = await savedAggregationTask('app_users' + APP_A, [{ $match: { marker } }, { $lookup: { from: 'apps', localField: 'uid', foreignField: '_id', as: 'm' } }]);
+        should(lookup.app_id).equal('undefined');
+    });
+
+    it('should file a scoped token aggregation of a shared collection under the token apps, and let the token read it', async() => {
+        const tokenRes = await request.get('/i/token/create').query({
+            api_key: API_KEY_ADMIN,
+            multi: true,
+            ttl: 600,
+            apps: APP_A,
+            permission: JSON.stringify({ _: { a: [], u: [[APP_A]] }, c: {}, r: { [APP_A]: { all: false, allowed: { dbviewer: true, core: true } } }, u: {}, d: {} }),
+        });
+        should(tokenRes.status).equal(200, tokenRes.text);
+        const token = tokenRes.body.result;
+        try {
+            const res = await request.get('/o/db').query({
+                auth_token: token,
+                app_id: APP_A,
+                dbs: 'countly',
+                collection: 'events_data',
+                aggregation: JSON.stringify([{ $match: { marker } }]),
+                save_report: true,
+                report_name: 'dbv scoped task ' + uniq,
+            });
+            should(res.status).equal(200, res.text);
+            const taskId = res.body.aaData && res.body.aaData.task_id;
+            should(taskId).be.ok();
+            taskIds.push(taskId);
+            const task = await countlyDb.collection('long_tasks').findOne({ _id: taskId });
+            should(task.app_id).equal(APP_A);
+            should(task).not.have.property('app_ids');
+
+            const read = await request.get('/o/tasks/task').query({ auth_token: token, app_id: APP_A, task_id: taskId });
+            should(read.status).equal(200, read.text);
+            const list = await request.get('/o/tasks/list').query({ auth_token: token, app_id: APP_A, data_source: 'all', iDisplayStart: 0, iDisplayLength: 100 });
+            should(list.status).equal(200, list.text);
+            should(list.body.aaData.map((row) => row._id)).containEql(taskId);
+        }
+        finally {
+            await request.get('/i/token/delete').query({ api_key: API_KEY_ADMIN, tokenid: token });
+        }
+    });
+
+    it('should file a global admin aggregation task of a collection all apps share under no app', async() => {
+        const task = await savedAggregationTask('events_data');
+        should(task.app_id).equal('undefined');
     });
 
     // ── A token with the dbviewer read on one app and no membership ──────────

@@ -66,7 +66,10 @@ module.exports.getUserMetricByDate = getUserMetricByDate;
 async function getUserMetricByDate(app, metric, date, period) {
     const dateComponents = commonLib.getDateComponents(date, app.timezone);
     const monthFilter = String(dateComponents.years) + ":" + String(dateComponents.months);
-    const records = await common.db.collection("users").find({ m: monthFilter }).toArray();
+    // Scoped to the app. `users` holds one document per app per month (split by
+    // a device-id postfix, hence the several records merged below), so a filter
+    // on the month alone summed every app in the deployment into this app's metric.
+    const records = await common.db.collection("users").find({ m: monthFilter, a: app._id.toString() }).toArray();
 
     // merge splitted records
     let number;
