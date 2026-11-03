@@ -1210,7 +1210,11 @@ plugins.setConfigs("dashboards", {
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
             }
-            widget = pickWritableWidgetFields(widget);
+            widget = cleanWidgetUpdate(widget);
+            if (!widget) {
+                common.returnMessage(params, 400, 'Invalid parameter: widget');
+                return true;
+            }
 
             if (!dashboardId || dashboardId.length !== 24) {
                 common.returnMessage(params, 400, 'Invalid parameter: dashboard_id');
@@ -1311,8 +1315,8 @@ plugins.setConfigs("dashboards", {
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
             }
-            widget = pickWritableWidgetFields(widget);
-            if (!Object.keys(widget).length) {
+            widget = cleanWidgetUpdate(widget);
+            if (!widget || !Object.keys(widget).length) {
                 common.returnMessage(params, 400, 'Invalid parameter: widget');
                 return true;
             }
@@ -1896,41 +1900,35 @@ plugins.setConfigs("dashboards", {
     }
 
     /**
-     * The fields a client may store on a widget: the keys every widget type's
-     * drawer sends (its getEmpty()), core and enterprise, plus the grid layout.
-     * The widget is written with insert or $set, so any other key, or a dotted
-     * path such as "apps.0", would be stored without the checks the named
-     * fields get. Fields the server maintains itself (invalid, report ids) are
-     * left out on purpose.
+     * Widget keys the server maintains itself. A client value for any of them is
+     * dropped before the widget is stored.
      */
-    var WRITABLE_WIDGET_KEYS = [
-        "widget_type", "feature", "isPluginWidget", "title", "apps", "app_count", "selectedApp",
-        "data_type", "metrics", "metric", "events", "breakdowns", "visualization", "visualization_type",
-        "visualization_graph_type", "visualitionType", "displaytype", "bar_color", "color", "period",
-        "custom_period", "selectedPeriod", "selected_span", "interval", "bucket", "selectedBucketing",
-        "comparison", "metric_compare_type", "numberOfResults", "visibleColumns", "contenthtml",
-        "drill_query", "selectedQueries", "filter_id", "client_fetch", "cohorts", "cohortName",
-        "selectedCohorts", "selectedFormula", "cmetric_refs", "cmetricName", "selectedFunnel",
-        "funnel_type", "funnel_view_type", "retention_type", "retention_data_type",
-        "retention_data_type_desc", "revenue_type", "revenue_types", "statsMetric",
-        "barChartTotalUsers", "selectedSDK", "position", "size"
-    ];
+    var SERVER_WIDGET_KEYS = ["_id", "dashboard_id", "owner_id", "createdBy", "created_at", "last_modified", "invalid"];
 
     /**
-     * Copy only the writable widget keys that are present
+     * Prepare a parsed widget for insert or $set. Widget fields are defined per
+     * widget type by each plugin's drawer, so there is no fixed list. Instead a key
+     * that Mongo would read as a path or an operator is refused, and a field such
+     * as apps can only be replaced whole, through the checks below.
      * @param  {Object} widget - parsed widget from the request
-     * @returns {Object} a copy with only WRITABLE_WIDGET_KEYS
+     * @returns {Object|null} the widget without server-managed keys, or null if it is not a plain object or has a dotted or $ key
      */
-    function pickWritableWidgetFields(widget) {
-        var out = {};
-        if (!widget || typeof widget !== "object") {
-            return out;
+    function cleanWidgetUpdate(widget) {
+        if (!widget || typeof widget !== "object" || Array.isArray(widget)) {
+            return null;
         }
-        WRITABLE_WIDGET_KEYS.forEach(function(key) {
-            if (Object.prototype.hasOwnProperty.call(widget, key)) {
+        var out = {};
+        for (var key in widget) {
+            if (!Object.prototype.hasOwnProperty.call(widget, key)) {
+                continue;
+            }
+            if (key.indexOf(".") !== -1 || key.charAt(0) === "$") {
+                return null;
+            }
+            if (SERVER_WIDGET_KEYS.indexOf(key) === -1) {
                 out[key] = widget[key];
             }
-        });
+        }
         return out;
     }
 

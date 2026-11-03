@@ -508,8 +508,14 @@ describe('Dashboard widget stored fields', function() {
         res.status.should.equal(200, res.text);
     });
 
-    it('should store only the widget fields on create', async function() {
-        var widget = {widget_type: 'analytics', apps: [testUtils.get('APP_ID')], data_type: 'session', metrics: ['t'], visualization: 'number', invalid: true, "apps.1": otherAppId};
+    it('should reject a widget with a dotted key on create', async function() {
+        var widget = {widget_type: 'analytics', apps: [testUtils.get('APP_ID')], data_type: 'session', metrics: ['t'], visualization: 'number', "apps.1": otherAppId};
+        var res = await request.get('/i/dashboards/add-widget').query({api_key: testUtils.get('API_KEY_ADMIN'), dashboard_id: dashboardId, widget: JSON.stringify(widget)});
+        res.status.should.equal(400, res.text);
+    });
+
+    it('should drop server-managed keys and keep plugin settings on create', async function() {
+        var widget = {widget_type: 'analytics', apps: [testUtils.get('APP_ID')], data_type: 'session', metrics: ['t'], visualization: 'number', invalid: true, plugin_setting: 'kept'};
         var res = await request.get('/i/dashboards/add-widget').query({api_key: testUtils.get('API_KEY_ADMIN'), dashboard_id: dashboardId, widget: JSON.stringify(widget)});
         res.status.should.equal(200, res.text);
         widgetId = res.body + '';
@@ -517,22 +523,22 @@ describe('Dashboard widget stored fields', function() {
         var stored = await storedWidget();
         stored.apps.should.eql([testUtils.get('APP_ID')]);
         stored.metrics.should.eql(['t']);
+        stored.plugin_setting.should.equal('kept');
         should.not.exist(stored.invalid);
-        should.not.exist(stored["apps.1"]);
     });
 
-    it('should not change apps through a dotted key on update', async function() {
+    it('should reject a dotted key on update', async function() {
         var res = await updateWidget({title: 'dotted', "apps.0": otherAppId});
-        res.status.should.equal(200, res.text);
+        res.status.should.equal(400, res.text);
         var stored = await storedWidget();
-        stored.title.should.equal('dotted');
+        should.not.exist(stored.title);
         stored.apps.should.eql([testUtils.get('APP_ID')]);
     });
 
-    it('should reject an update with no widget fields', async function() {
-        var res = await updateWidget({"apps.0": otherAppId});
+    it('should reject an operator key on update', async function() {
+        var res = await updateWidget({title: 'operator', $inc: {size: 1}});
         res.status.should.equal(400, res.text);
-        (await storedWidget()).apps.should.eql([testUtils.get('APP_ID')]);
+        should.not.exist((await storedWidget()).title);
     });
 
     it('should save a normal drawer update', async function() {
