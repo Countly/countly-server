@@ -129,3 +129,69 @@ describe('Testing Alert', function() {
 });
 
 
+
+describe('Testing Alert stored fields', function() {
+    var alertId = "";
+    var otherAppId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+
+    /**
+     * Read the alert from the database
+     * @returns {Promise<object>} stored alert
+     */
+    function storedAlert() {
+        return testUtils.db.collection("alerts").findOne({_id: testUtils.db.ObjectID(alertId)});
+    }
+
+    /**
+     * Save an alert
+     * @param {object} alertConfig - alert config
+     * @returns {Promise<object>} supertest response
+     */
+    function saveAlert(alertConfig) {
+        return request.get(getRequestURL('/i/alert/save') + "&alert_config=" + encodeURIComponent(JSON.stringify(alertConfig)));
+    }
+
+    after(async function() {
+        if (alertId) {
+            await request.get(getRequestURL('/i/alert/delete') + "&alertID=" + alertId);
+        }
+    });
+
+    it('should store only the alert fields on create', async function() {
+        var alertConfig = Object.assign({}, newAlert, {selectedApps: [testUtils.get("APP_ID")], createdBy: "000000000000000000000000", bogus: 1, "selectedApps.1": otherAppId});
+        var res = await saveAlert(alertConfig);
+        res.status.should.equal(200, res.text);
+        alertId = res.body + "";
+
+        var admin = await testUtils.db.collection("members").findOne({api_key: testUtils.get("API_KEY_ADMIN")});
+        var stored = await storedAlert();
+        (stored.createdBy + "").should.equal(admin._id + "");
+        stored.selectedApps.should.eql([testUtils.get("APP_ID")]);
+        should.not.exist(stored.bogus);
+        should.not.exist(stored["selectedApps.1"]);
+    });
+
+    it('should not change selectedApps through a dotted key on update', async function() {
+        var res = await saveAlert({_id: alertId, alertName: "dotted", "selectedApps.0": otherAppId});
+        res.status.should.equal(200, res.text);
+        var stored = await storedAlert();
+        stored.alertName.should.equal("dotted");
+        stored.selectedApps.should.eql([testUtils.get("APP_ID")]);
+    });
+
+    it('should save a normal update of the listed alert', async function() {
+        var list = await request.get(getRequestURL('/o/alert/list'));
+        list.status.should.equal(200, list.text);
+        var row = list.body.alertsList.find(function(r) {
+            return r._id === alertId;
+        });
+        should.exist(row);
+        var alertConfig = Object.assign({}, row, {alertName: "edited", compareValue: "5", alertValues: ["b@b.com"]});
+        var res = await saveAlert(alertConfig);
+        res.status.should.equal(200, res.text);
+        var stored = await storedAlert();
+        stored.alertName.should.equal("edited");
+        stored.compareValue.should.equal("5");
+        stored.alertValues.should.eql(["b@b.com"]);
+    });
+});

@@ -771,3 +771,137 @@ describe('Testing Hooks trigger configuration validation', function() {
 });
 
 require('./tests/custom_code_sandbox.js');
+
+describe('Testing Hooks stored fields', function() {
+    var API_KEY_ADMIN = "";
+    var APP_ID = "";
+    var adminId = "";
+    var memberApiKey = "";
+    var memberId = "";
+    var hookId = "";
+    var globalHookId = "";
+    var uniq = Date.now();
+    var otherAppId = "aaaaaaaaaaaaaaaaaaaaaaaa";
+
+    /**
+     * Build a hook config
+     * @param {string} name - hook name
+     * @param {object} trigger - hook trigger
+     * @returns {object} hook config
+     */
+    function hookFor(name, trigger) {
+        return {
+            name: name + "-" + uniq,
+            description: "stored fields",
+            apps: [APP_ID],
+            trigger: trigger,
+            effects: [{type: "CustomCodeEffect", configuration: {code: "params.a = 1;"}}],
+            enabled: true
+        };
+    }
+
+    /**
+     * Save a hook
+     * @param {string} apiKey - api key to save with
+     * @param {object} hookConfig - hook to save
+     * @returns {Promise<object>} supertest response
+     */
+    function saveHook(apiKey, hookConfig) {
+        return request.post('/i/hook/save?api_key=' + apiKey + '&app_id=' + APP_ID)
+            .send({hook_config: JSON.stringify(hookConfig)});
+    }
+
+    /**
+     * Read a hook from the database
+     * @param {string} id - hook id
+     * @returns {Promise<object>} stored hook
+     */
+    function storedHook(id) {
+        return testUtils.db.collection("hooks").findOne({_id: testUtils.db.ObjectID(id + "")});
+    }
+
+    before(async function() {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
+        var admin = await testUtils.db.collection("members").findOne({api_key: API_KEY_ADMIN});
+        adminId = admin._id + "";
+
+        var permission = {_: {a: [], u: [[APP_ID]]}, c: {}, r: {}, u: {}, d: {}};
+        ["c", "r", "u", "d"].forEach(function(t) {
+            permission[t][APP_ID] = {all: false, allowed: {hooks: true}};
+        });
+        var userParams = {
+            full_name: "hookfields" + uniq,
+            username: "hookfields" + uniq,
+            password: "p4ssw0rD!",
+            email: "hookfields" + uniq + "@mail.test",
+            permission: permission
+        };
+        var res = await request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)));
+        res.status.should.equal(200, res.text);
+        memberApiKey = res.body.api_key;
+        memberId = res.body._id;
+    });
+
+    after(async function() {
+        for (var id of [hookId, globalHookId].filter(Boolean)) {
+            await request.get('/i/hook/delete?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&hookID=' + id);
+        }
+        if (memberId) {
+            await request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [memberId]})));
+        }
+    });
+
+    it('should store only the hook fields on create', async function() {
+        var config = hookFor("fields", {type: "APIEndPointTrigger", configuration: {path: "fields-" + uniq, method: "get"}});
+        config.createdBy = "000000000000000000000000";
+        config.created_at = 1;
+        config["apps.1"] = otherAppId;
+        var res = await saveHook(API_KEY_ADMIN, config);
+        res.status.should.equal(200, res.text);
+        hookId = res.body + "";
+
+        var hook = await storedHook(hookId);
+        (hook.createdBy + "").should.equal(adminId);
+        hook.created_at.should.not.equal(1);
+        hook.apps.should.eql([APP_ID]);
+        should.not.exist(hook["apps.1"]);
+    });
+
+    it('should not change apps through a dotted key on update', async function() {
+        var res = await saveHook(API_KEY_ADMIN, {_id: hookId, "apps.0": otherAppId});
+        res.status.should.equal(200, res.text);
+        (await storedHook(hookId)).apps.should.eql([APP_ID]);
+    });
+
+    it('should not change the trigger through a dotted key on update', async function() {
+        var res = await saveHook(API_KEY_ADMIN, {_id: hookId, "trigger.type": "InternalEventTrigger", createdBy: "000000000000000000000000"});
+        res.status.should.equal(200, res.text);
+        var hook = await storedHook(hookId);
+        hook.trigger.type.should.equal("APIEndPointTrigger");
+        (hook.createdBy + "").should.equal(adminId);
+    });
+
+    it('should save a normal update of the whole hook', async function() {
+        var config = hookFor("fields-renamed", {type: "APIEndPointTrigger", configuration: {path: "fields-" + uniq, method: "get"}});
+        config._id = hookId;
+        config.description = "renamed";
+        config.enabled = false;
+        var res = await saveHook(memberApiKey, config);
+        res.status.should.equal(200, res.text);
+        var hook = await storedHook(hookId);
+        hook.name.should.equal("fields-renamed-" + uniq);
+        hook.description.should.equal("renamed");
+        hook.enabled.should.equal(false);
+    });
+
+    it('should not let a non-global admin update a stored global event hook', async function() {
+        var res = await saveHook(API_KEY_ADMIN, hookFor("global", {type: "InternalEventTrigger", configuration: {eventType: "/i/apps/create"}}));
+        res.status.should.equal(200, res.text);
+        globalHookId = res.body + "";
+
+        res = await saveHook(memberApiKey, {_id: globalHookId, effects: [{type: "CustomCodeEffect", configuration: {code: "params.b = 1;"}}]});
+        res.status.should.equal(403, res.text);
+        (await storedHook(globalHookId)).effects[0].configuration.code.should.equal("params.a = 1;");
+    });
+});

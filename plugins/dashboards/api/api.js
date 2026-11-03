@@ -1210,6 +1210,11 @@ plugins.setConfigs("dashboards", {
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
             }
+            widget = cleanWidgetUpdate(widget);
+            if (!widget) {
+                common.returnMessage(params, 400, 'Invalid parameter: widget');
+                return true;
+            }
 
             if (!dashboardId || dashboardId.length !== 24) {
                 common.returnMessage(params, 400, 'Invalid parameter: dashboard_id');
@@ -1309,6 +1314,11 @@ plugins.setConfigs("dashboards", {
             }
             catch (SyntaxError) {
                 log.d('Parse widget failed', widget);
+            }
+            widget = cleanWidgetUpdate(widget);
+            if (!widget || !Object.keys(widget).length) {
+                common.returnMessage(params, 400, 'Invalid parameter: widget');
+                return true;
             }
 
             if (widget.widget_type === "note") {
@@ -1889,22 +1899,38 @@ plugins.setConfigs("dashboards", {
         return contenthtml;
     }
 
-    // /**
-    //  * Function to sanitize widget
-    //  * @param  {Object} widget - widget object
-    //  * @returns {Object} widget
-    //  */
-    // function sanitizeWidget(widget) {
-    //     var allowedProps = ["widget_type", "data_type", "apps", "title", "position", "size", "events", "breakdowns", "metrics", "bar_color"];
+    /**
+     * Widget keys the server maintains itself. A client value for any of them is
+     * dropped before the widget is stored.
+     */
+    var SERVER_WIDGET_KEYS = ["_id", "dashboard_id", "owner_id", "createdBy", "created_at", "last_modified", "invalid"];
 
-    //     for (var widgetProp in widget) {
-    //         if (allowedProps.indexOf(widgetProp) == -1) {
-    //             delete widget[widgetProp];
-    //         }
-    //     }
-
-    //     return widget;
-    // }
+    /**
+     * Prepare a parsed widget for insert or $set. Widget fields are defined per
+     * widget type by each plugin's drawer, so there is no fixed list. Instead a key
+     * that Mongo would read as a path or an operator is refused, and a field such
+     * as apps can only be replaced whole, through the checks below.
+     * @param  {Object} widget - parsed widget from the request
+     * @returns {Object|null} the widget without server-managed keys, or null if it is not a plain object or has a dotted or $ key
+     */
+    function cleanWidgetUpdate(widget) {
+        if (!widget || typeof widget !== "object" || Array.isArray(widget)) {
+            return null;
+        }
+        var out = {};
+        for (var key in widget) {
+            if (!Object.prototype.hasOwnProperty.call(widget, key)) {
+                continue;
+            }
+            if (key.indexOf(".") !== -1 || key.charAt(0) === "$") {
+                return null;
+            }
+            if (SERVER_WIDGET_KEYS.indexOf(key) === -1) {
+                out[key] = widget[key];
+            }
+        }
+        return out;
+    }
 
     /**
      * Function to check if member has view access to the dashboard

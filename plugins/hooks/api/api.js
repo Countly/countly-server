@@ -304,6 +304,42 @@ const CheckHookProperties = function(hookConfig) {
     return rules;
 };
 
+/**
+ * The only fields a client may store on a hook, the keys of CheckHookProperties.
+ * validateArgs checks those keys but leaves every other key in place, and the
+ * config is written with $set or insert, so an extra key such as createdBy, or a
+ * dotted path such as "apps.0" or "trigger.type", would be stored without the
+ * checks the named fields get.
+ */
+const WRITABLE_HOOK_KEYS = ['name', 'description', 'apps', 'trigger', 'effects', 'enabled'];
+
+/**
+ * Copy only the writable keys that are present, so an update leaves the others as stored.
+ * @param {object} hookConfig - parsed hook config from the request
+ * @returns {object} a copy with only WRITABLE_HOOK_KEYS
+ */
+function pickWritableHookFields(hookConfig) {
+    const out = {};
+    WRITABLE_HOOK_KEYS.forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(hookConfig, key)) {
+            out[key] = hookConfig[key];
+        }
+    });
+    return out;
+}
+
+/**
+ * Whether a trigger subscribes to a global (non app-scoped) internal event
+ * @param {object} trigger - hook trigger
+ * @returns {boolean} true for a global internal event trigger
+ */
+function isGlobalEventTrigger(trigger) {
+    return !!(trigger
+        && trigger.type === "InternalEventTrigger"
+        && trigger.configuration
+        && InternalEventTrigger.GLOBAL_EVENT_TYPES[trigger.configuration.eventType]);
+}
+
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
 });
@@ -337,6 +373,11 @@ plugins.register("/i/hook/save", function(ob) {
                 common.returnMessage(params, 400, 'Not enough args');
                 return true;
             }
+            const hookId = hookConfig._id;
+            hookConfig = pickWritableHookFields(hookConfig);
+            if (hookId) {
+                hookConfig._id = hookId;
+            }
 
             if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Invalid configuration for effects');
@@ -346,11 +387,7 @@ plugins.register("/i/hook/save", function(ob) {
             // Only global admins may create or update hooks that subscribe
             // to global (non app-scoped) internal events such as
             // /i/users/* or /systemlogs — these carry instance-wide data.
-            if (!params.member.global_admin
-                && hookConfig.trigger
-                && hookConfig.trigger.type === "InternalEventTrigger"
-                && hookConfig.trigger.configuration
-                && InternalEventTrigger.GLOBAL_EVENT_TYPES[hookConfig.trigger.configuration.eventType]) {
+            if (!params.member.global_admin && isGlobalEventTrigger(hookConfig.trigger)) {
                 common.returnMessage(params, 403, "User does not have right to subscribe to this event");
                 return true;
             }
@@ -365,6 +402,12 @@ plugins.register("/i/hook/save", function(ob) {
                     }
                     if (!existingHook) {
                         common.returnMessage(params, 404, "Hook not found");
+                        return;
+                    }
+                    // the global event check above only saw the trigger in the request. An
+                    // update that leaves it out keeps the stored one, so check that too
+                    if (!params.member.global_admin && isGlobalEventTrigger(existingHook.trigger)) {
+                        common.returnMessage(params, 403, "User does not have right to subscribe to this event");
                         return;
                     }
                     // must be allowed to update the hook's current apps, and any
