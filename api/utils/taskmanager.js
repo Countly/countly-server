@@ -40,6 +40,11 @@ taskmanager.isAuthorizedFor = function(member, task) {
     if (member.global_admin) {
         return true;
     }
+    //a scoped credential acts for its owner only on the apps it was given: the creator
+    //shortcut below would otherwise reach the owner's tasks on every app
+    if (!taskmanager.reachesTaskApps(member, task)) {
+        return false;
+    }
     if (task.creator && (task.creator + "") === (member._id + "")) {
         return true;
     }
@@ -57,6 +62,36 @@ taskmanager.isAuthorizedFor = function(member, task) {
         }
     }
     return false;
+};
+
+/**
+ * Apps a scoped credential (rights.applyTokenScope) is limited to.
+ * @param {object} member - params.member from request context
+ * @returns {string[]|null} app ids, or null when the member is not limited to apps
+ */
+taskmanager.scopedCredentialApps = function(member) {
+    if (!member || !member.scoped_credential || member.global_admin) {
+        return null;
+    }
+    var rights = require('./rights.js');
+    return (rights.getUserApps(member) || []).map(function(appId) {
+        return appId + "";
+    });
+};
+
+/**
+ * Whether the member reaches every app of a task. Always true for a member that is not a
+ * scoped credential; a scoped credential never reaches a task that has no app.
+ * @param {object} member - params.member from request context
+ * @param {object} task - long_tasks document
+ * @returns {boolean} true if the member reaches the task's apps
+ */
+taskmanager.reachesTaskApps = function(member, task) {
+    var apps = taskmanager.scopedCredentialApps(member);
+    if (!apps) {
+        return true;
+    }
+    return !!(task && task.app_id) && apps.indexOf(task.app_id + "") !== -1;
 };
 
 /**
@@ -97,6 +132,9 @@ taskmanager.loadIfAuthorized = function(db, id, member, cb) {
  */
 taskmanager.isReadableBy = function(member, task) {
     if (!task) {
+        return false;
+    }
+    if (!taskmanager.reachesTaskApps(member, task)) {
         return false;
     }
     if (task.global !== false) {

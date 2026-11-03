@@ -23,6 +23,8 @@ const { findDisallowedProjectionValue, escapeRegExp } = require('./parts/query_g
 // module because the same redaction applies in three places (document read,
 // collection read, aggregation) and a per-site list drifts.
 const { hasRedactedFields, redactFields, redactionStage } = require('./parts/redaction.js');
+// The app an aggregation's result belongs to, recorded on the long task it becomes.
+const { resolveAggregationApp } = require('./parts/collection_app.js');
 var spawn = require('child_process').spawn,
     child;
 (function() {
@@ -401,6 +403,49 @@ var spawn = require('child_process').spawn,
                 else if (collection === 'auth_tokens') {
                     aggregation.splice(0, 0, {"$addFields": {"_id": "***redacted***"}});
                 }
+                /**
+                * Run the aggregation as a long task recorded for the collection's app
+                * @param {string} collectionAppId - app the collection belongs to
+                **/
+                var runAggregationTask = function(collectionAppId) {
+                    var name = 'Aggregation-' + Date.now();
+                    var taskCb = taskManager.longtask({
+                        db: common.db,
+                        app_id: collectionAppId,
+                        threshold: plugins.getConfig("api").request_threshold,
+                        params: params,
+                        type: "dbviewer",
+                        force: params.qstring.save_report || false,
+                        gridfs: true,
+                        meta: JSON.stringify({
+                            db: dbNameOnParam,
+                            collection: params.qstring.collection,
+                            aggregation: aggregation
+                        }),
+                        view: "#/manage/db/task/",
+                        report_name: params.qstring.report_name || name + "." + params.qstring.type,
+                        report_desc: params.qstring.report_desc,
+                        period_desc: params.qstring.period_desc,
+                        name,
+                        creator: params.member._id + "",
+                        global: params.qstring.global === 'true',
+                        autoRefresh: params.qstring.autoRefresh === 'true',
+                        manually_create: params.qstring.manually_create === 'true',
+                        processData: function(error, result, callback) {
+                            callback(error, result);
+                        },
+                        outputData: function(aggregationErr, result) {
+                            if (!aggregationErr) {
+                                common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
+                            }
+                            else {
+                                log.e(aggregationErr);
+                                common.returnMessage(params, 500, "An unexpected error occurred.");
+                            }
+                        }
+                    });
+                    dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
+                };
                 // check task is already running?
                 taskManager.checkIfRunning({
                     db: dbs[dbNameOnParam],
@@ -410,42 +455,8 @@ var spawn = require('child_process').spawn,
                         common.returnOutput(params, { task_id: task_id });
                     }
                     else {
-                        var name = 'Aggregation-' + Date.now();
-                        var taskCb = taskManager.longtask({
-                            db: common.db,
-                            threshold: plugins.getConfig("api").request_threshold,
-                            params: params,
-                            type: "dbviewer",
-                            force: params.qstring.save_report || false,
-                            gridfs: true,
-                            meta: JSON.stringify({
-                                db: dbNameOnParam,
-                                collection: params.qstring.collection,
-                                aggregation: aggregation
-                            }),
-                            view: "#/manage/db/task/",
-                            report_name: params.qstring.report_name || name + "." + params.qstring.type,
-                            report_desc: params.qstring.report_desc,
-                            period_desc: params.qstring.period_desc,
-                            name,
-                            creator: params.member._id + "",
-                            global: params.qstring.global === 'true',
-                            autoRefresh: params.qstring.autoRefresh === 'true',
-                            manually_create: params.qstring.manually_create === 'true',
-                            processData: function(error, result, callback) {
-                                callback(error, result);
-                            },
-                            outputData: function(aggregationErr, result) {
-                                if (!aggregationErr) {
-                                    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
-                                }
-                                else {
-                                    log.e(aggregationErr);
-                                    common.returnMessage(params, 500, "An unexpected error occurred.");
-                                }
-                            }
-                        });
-                        dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
+                        //record the app the result belongs to, not the app the request was made from
+                        resolveAggregationApp(params, collection, aggregation, runAggregationTask);
                     }
                 });
             }

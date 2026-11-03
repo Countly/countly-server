@@ -848,6 +848,29 @@ function dbLoadEventsData(params, apps, callback) {
 }
 exports.dbLoadEventsData = dbLoadEventsData;
 
+/**
+* App of a hashed per-app collection (events, drill_events or app_viewdata), as known from the
+* events data loaded by dbLoadEventsData
+* @param {string} collection - collection name
+* @returns {string|null} app id, or null when the collection is not a known hashed collection
+**/
+exports.getHashedCollectionAppId = function(collection) {
+    var key = null;
+    if (collection.indexOf("drill_events") === 0) {
+        key = collection.substring(12);
+    }
+    else if (collection.indexOf("events") === 0) {
+        key = collection.substring(6);
+    }
+    else if (collection.indexOf("app_viewdata") === 0) {
+        key = collection;
+    }
+    if (key && collectionMap[key] && collectionMap[key].a) {
+        return collectionMap[key].a + "";
+    }
+    return null;
+};
+
 exports.getCollectionName = function(hashValue) {
     if (collectionMap[hashValue]) {
         return collectionMap[hashValue].name;

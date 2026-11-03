@@ -82,6 +82,7 @@ module.exports.check = async({ alert, app, done, scheduledTo: date }) => {
     done();
 };
 
+module.exports.getSessionMetricByDate = getSessionMetricByDate;
 /**
  * Returns the session metric value by date and metric type.
  * @param   {App}                       app    - app document
@@ -93,7 +94,7 @@ module.exports.check = async({ alert, app, done, scheduledTo: date }) => {
 async function getSessionMetricByDate(app, metric, date, period) {
     const dateComponents = commonLib.getDateComponents(date, app.timezone);
     const monthFilter = String(dateComponents.years) + ":" + String(dateComponents.months);
-    const records = await common.db.collection("users").find({ m: monthFilter }).toArray();
+    const records = await common.db.collection("users").find({ a: app._id.toString(), m: monthFilter }).toArray();
 
     let number;
     for (let record of records) {
