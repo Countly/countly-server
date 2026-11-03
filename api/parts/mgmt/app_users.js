@@ -15,6 +15,8 @@ var countlyFs = require('./../../utils/countlyFs.js');
 var crypto = require('crypto');
 var log = common.log('core:app_users');
 
+var EXPORT_DIR = path.resolve(__dirname, './../../../export/AppUser');
+
 var cohorts;
 try {
     cohorts = require("../../../plugins/cohorts/api/parts/cohorts.js");
@@ -54,6 +56,10 @@ usersApi.create = function(app_id, doc, params, callback) {
             return;
         }
         doc._id = _id;
+        if (typeof doc.uid !== "undefined" && !usersApi.isValidUid(doc.uid)) {
+            callback("Provided uid must be alphanumeric, like the ones the server generates. Do not provide uid if you want api to generate one");
+            return;
+        }
         if (typeof doc.uid === "undefined") {
             usersApi.getUid(app_id, function(err1, uid) {
                 if (uid) {
@@ -133,6 +139,12 @@ usersApi.update = function(app_id, query, update, params, callback) {
                 }
                 return;
             }
+        }
+        if (!isUidUpdateAllowed(update)) {
+            if (callback) {
+                callback("uid can only be changed with $set to an alphanumeric value, like the ones the server generates");
+            }
+            return;
         }
         common.db.collection('app_users' + app_id).updateMany(query, update, function(err, res) {
             if (!err) {
@@ -367,6 +379,56 @@ usersApi.count = function(app_id, query, callback) {
 
     common.db.collection('app_users' + app_id).count(query, callback);
 };
+
+/**
+* Checks that uid has the format usersApi.getUid generates (common.parseSequence output)
+* @param {string} uid - uid to check
+* @returns {boolean} true if uid has the generated format
+*/
+usersApi.isValidUid = function(uid) {
+    return typeof uid === "string" && /^[0-9A-Za-z]+$/.test(uid);
+};
+
+/**
+* Checks that an app_users update object changes uid only through $set to a valid uid
+* @param {object} update - mongodb update object
+* @returns {boolean} true if the update leaves uid alone or sets a valid one
+*/
+function isUidUpdateAllowed(update) {
+    for (var op in update) {
+        var fields = update[op];
+        if (!fields || typeof fields !== "object") {
+            continue;
+        }
+        for (var key in fields) {
+            if (key === "uid" || key.indexOf("uid.") === 0) {
+                if (op !== "$set" || key !== "uid" || !usersApi.isValidUid(fields[key])) {
+                    return false;
+                }
+            }
+            else if (op === "$rename" && (fields[key] === "uid" || (fields[key] + "").indexOf("uid.") === 0)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+/**
+* Resolves an export id to its folder inside export/AppUser
+* @param {string} exportID - export id, like appUser_<app_id>_<uid>
+* @returns {string|null} absolute folder path, or null if the id is not a plain name inside export/AppUser
+*/
+function resolveExportPath(exportID) {
+    if (typeof exportID !== "string" || !exportID || /[^A-Za-z0-9_.-]/.test(exportID) || exportID === "." || exportID === "..") {
+        return null;
+    }
+    var resolved = path.resolve(EXPORT_DIR, exportID);
+    if (path.dirname(resolved) !== EXPORT_DIR) {
+        return null;
+    }
+    return resolved;
+}
 
 /**
 * Returns uid for new users
@@ -780,24 +842,28 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
     //normally there should be only export in gridfs. Cleaning all to be sure.
     //rejects only if there stays any saved data for export
     log.d("deleteMyExport:" + exportID);
+    var exportPath = resolveExportPath(exportID);
+    if (!exportPath) {
+        return Promise.reject(["Invalid export id"]);
+    }
     return new Promise(function(resolve, reject) {
         //remove archive
         var errors = [];
-        if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'))) {
+        if (fs.existsSync(exportPath + '.tar.gz')) {
             try {
-                fs.unlinkSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'));
+                fs.unlinkSync(exportPath + '.tar.gz');
             }
             catch (err) {
                 errors.push(err);
             }
         }
-        countlyFs.gridfs.deleteFile("appUsers", path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'), {id: exportID + '.tar.gz'}, function(error) {
+        countlyFs.gridfs.deleteFile("appUsers", exportPath + '.tar.gz', {id: exportID + '.tar.gz'}, function(error) {
             if (error && error.message && error.message.substring(0, 12) !== "FileNotFound" && error.message.substring(0, 14) !== 'File not found') {
                 log.e(error.message.substring(0, 14));
                 errors.push(error.message);
             }
-            if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID))) {
-                fs.rm(path.resolve(__dirname, './../../../export/AppUser/' + exportID), {recursive: true, force: true},
+            if (fs.existsSync(exportPath)) {
+                fs.rm(exportPath, {recursive: true, force: true},
                     err => {
                         if (err) {
                             errors.push(err.message || err);
@@ -1070,10 +1136,16 @@ usersApi.export = function(app_id, query, params, callback) {
                 single_user = false;
             }
 
-            var export_folder = path.resolve(__dirname, './../../../export');
-            export_folder = path.resolve(__dirname, './../../../export/AppUser/appUser_' + app_id + '_' + eid);
             var export_id = 'appUser_' + app_id + '_' + eid;
             var export_filename = 'appUser_' + app_id + '_' + eid;
+            var export_folder = resolveExportPath(export_id);
+            if (!export_folder || !res[0].uid.every(usersApi.isValidUid)) {
+                callback({
+                    message: "Export failed. Users to export have invalid uids",
+                    filename: ""
+                }, "");
+                return;
+            }
 
             var dbargs = [];
             var export_commands = {};
@@ -1122,14 +1194,14 @@ usersApi.export = function(app_id, query, params, callback) {
                     log.d("collection marked");
                     //export data from metric_changes
 
-                    export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
+                    export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", JSON.stringify({uid: {$in: res[0].uid}}), "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
                         resolve();
                     });
                 });
             }).then(function() {
                 log.d("metric_changes exported");
                 //export data from app_users
-                return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]});
+                return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", JSON.stringify({uid: {$in: res[0].uid}}), "--out", export_folder + "/app_users" + app_id + ".json"]});
 
             }).then(
                 function() {
