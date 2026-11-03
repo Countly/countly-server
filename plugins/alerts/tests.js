@@ -452,3 +452,190 @@ describe('Testing Alert app authorization', function() {
             });
     });
 });
+
+// /i/alert/save stores only the alert's own fields. Any other key the client sends,
+// a dotted path such as "selectedApps.0" included, is dropped, and createdBy and
+// createdAt are always set by the server.
+describe('Testing Alert stored fields', function() {
+    var API_KEY_ADMIN = "";
+    var APP_A = "";
+    var APP_B = "";
+    var memberApiKey = "";
+    var memberId = "";
+    var alertId = "";
+    var uniq = Date.now();
+    var SOME_OTHER_MEMBER_ID = "0123456789abcdef01234567";
+    var WRITABLE = ['alertName', 'alertDataType', 'alertDataSubType', 'alertDataSubType2', 'filterKey', 'filterValue',
+        'compareType', 'compareValue', 'compareValue2', 'compareDescribe', 'period', 'selectedApps', 'alertBy',
+        'alertValues', 'allGroups', 'enabled'];
+    //set by the server, or added by the listing and not stored
+    var SERVER_SET = ['_id', 'createdBy', 'createdAt', 'createdByUser'];
+
+    /**
+     * Read an alert as stored, through the admin
+     * @param {Function} cb - callback(err, alert)
+     */
+    function readAlert(cb) {
+        request.get('/o/alert/list?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_A)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return cb(err);
+                }
+                var list = (res.body && res.body.alertsList) || [];
+                cb(null, list.filter(function(a) {
+                    return a._id + "" === alertId;
+                })[0]);
+            });
+    }
+
+    /**
+     * Check that a stored alert has no key beyond the writable and server-set ones
+     * @param {object} alert - stored alert
+     */
+    function shouldHaveOnlyStoredKeys(alert) {
+        Object.keys(alert).forEach(function(key) {
+            WRITABLE.concat(SERVER_SET).should.containEql(key);
+        });
+    }
+
+    it('should set up two apps and a member with alerts rights on one of them', function(done) {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_A = testUtils.get("APP_ID");
+        request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "alertFieldsB" + uniq})))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                APP_B = res.body._id;
+                var permission = {_: {a: [], u: [[APP_A]]}, c: {}, r: {}, u: {}, d: {}};
+                ["c", "r", "u", "d"].forEach(function(t) {
+                    permission[t][APP_A] = {all: false, allowed: {alerts: true}};
+                });
+                var userParams = {
+                    full_name: "alertfields" + uniq,
+                    username: "alertfields" + uniq,
+                    password: "p4ssw0rD!",
+                    email: "alertfields" + uniq + "@mail.test",
+                    permission: permission
+                };
+                request.get('/i/users/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify(userParams)))
+                    .expect(200)
+                    .end(function(e, r) {
+                        if (e) {
+                            return done(e);
+                        }
+                        memberApiKey = r.body.api_key;
+                        memberId = r.body._id;
+                        should.exist(memberApiKey);
+                        done();
+                    });
+            });
+    });
+
+    it('should store only the writable fields of a new alert', function(done) {
+        var config = Object.assign({}, newAlert, {alertName: "fields-" + uniq, selectedApps: [APP_A], enabled: false, createdBy: SOME_OTHER_MEMBER_ID, createdAt: 1, extraField: "x"});
+        config["selectedApps.1"] = APP_B;
+        request.get('/i/alert/save?api_key=' + memberApiKey + '&app_id=' + APP_A + '&alert_config=' + encodeURIComponent(JSON.stringify(config)))
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    return done(err);
+                }
+                alertId = (res.body && (res.body._id || res.body)) + "";
+                readAlert(function(e, alert) {
+                    if (e) {
+                        return done(e);
+                    }
+                    should.exist(alert);
+                    alert.selectedApps.should.eql([APP_A]);
+                    (alert.createdBy + "").should.equal(memberId + "");
+                    alert.createdAt.should.be.above(1);
+                    shouldHaveOnlyStoredKeys(alert);
+                    done();
+                });
+            });
+    });
+
+    it('should not store a dotted selectedApps path or an extra field on update', function(done) {
+        var update = {_id: alertId, compareValue: "5", extraField: "x", createdBy: SOME_OTHER_MEMBER_ID};
+        update["selectedApps.0"] = APP_B;
+        request.get('/i/alert/save?api_key=' + memberApiKey + '&app_id=' + APP_A + '&alert_config=' + encodeURIComponent(JSON.stringify(update)))
+            .expect(200)
+            .end(function(err) {
+                if (err) {
+                    return done(err);
+                }
+                readAlert(function(e, alert) {
+                    if (e) {
+                        return done(e);
+                    }
+                    should.exist(alert);
+                    alert.compareValue.should.equal("5");
+                    alert.selectedApps.should.eql([APP_A]);
+                    (alert.createdBy + "").should.equal(memberId + "");
+                    shouldHaveOnlyStoredKeys(alert);
+                    done();
+                });
+            });
+    });
+
+    it('should still save every field of a full update as the alert drawer sends it', function(done) {
+        readAlert(function(readErr, stored) {
+            if (readErr) {
+                return done(readErr);
+            }
+            //the drawer sends the record it loaded with its own fields set
+            var record = Object.assign({}, stored, {
+                alertName: "edited-" + uniq,
+                alertDataType: "events",
+                alertDataSubType: "count",
+                alertDataSubType2: "purchase",
+                filterKey: "country",
+                filterValue: "TR",
+                compareType: "decreased by at least",
+                compareValue: "9",
+                compareValue2: "3",
+                compareDescribe: "purchase count decreased by at least 9%",
+                period: "daily",
+                selectedApps: [APP_A],
+                alertBy: "hook",
+                alertValues: ["edited-" + uniq + "@mail.test"],
+                allGroups: ["g1"],
+                enabled: false
+            });
+            request.get('/i/alert/save?api_key=' + memberApiKey + '&app_id=' + APP_A + '&alert_config=' + encodeURIComponent(JSON.stringify(record)))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    readAlert(function(e, alert) {
+                        if (e) {
+                            return done(e);
+                        }
+                        WRITABLE.forEach(function(key) {
+                            should(alert[key]).eql(record[key], key);
+                        });
+                        (alert.createdBy + "").should.equal(memberId + "");
+                        shouldHaveOnlyStoredKeys(alert);
+                        done();
+                    });
+                });
+        });
+    });
+
+    after(function(done) {
+        request.get('/i/alert/delete?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_A + '&alertID=' + alertId)
+            .end(function() {
+                request.get('/i/users/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({user_ids: [memberId]})))
+                    .end(function() {
+                        request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: APP_B})))
+                            .end(function() {
+                                done();
+                            });
+                    });
+            });
+    });
+});

@@ -304,6 +304,30 @@ const CheckHookProperties = function(hookConfig) {
     return rules;
 };
 
+/**
+ * The only fields a client may store on a hook, the keys of CheckHookProperties.
+ * validateArgs checks those keys but leaves every other key in place, and the
+ * config is written with $set or insert, so an extra key such as createdBy, or a
+ * dotted path such as "apps.0" or "trigger.type", would be stored without the
+ * checks the named fields get.
+ */
+const WRITABLE_HOOK_KEYS = ['name', 'description', 'apps', 'trigger', 'effects', 'enabled'];
+
+/**
+ * Copy only the writable keys that are present, so an update leaves the others as stored.
+ * @param {object} hookConfig - parsed hook config from the request
+ * @returns {object} a copy with only WRITABLE_HOOK_KEYS
+ */
+function pickWritableHookFields(hookConfig) {
+    const out = {};
+    WRITABLE_HOOK_KEYS.forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(hookConfig, key)) {
+            out[key] = hookConfig[key];
+        }
+    });
+    return out;
+}
+
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
 });
@@ -343,15 +367,28 @@ plugins.register("/i/hook/save", function(ob) {
                     common.returnMessage(params, 400, 'Not enough args');
                     return true;
                 }
+                const id = hookConfig._id;
+                hookConfig = pickWritableHookFields(hookConfig);
+
+                let existingHook = null;
+                if (id) {
+                    existingHook = await common.db.collection("hooks").findOne({ _id: common.db.ObjectID(id) });
+                    if (!existingHook) {
+                        common.returnMessage(params, 404, "Hook not found");
+                        return true;
+                    }
+                }
+                //the hook as it is after this save: an update keeps every field it does not send
+                const effectiveHook = Object.assign({}, existingHook, hookConfig);
 
                 // Only global admins may create or update hooks that subscribe
                 // to global (non app-scoped) internal events such as
                 // /i/users/* or /systemlogs — these carry instance-wide data.
                 if (!params.member.global_admin
-                    && hookConfig.trigger
-                    && hookConfig.trigger.type === "InternalEventTrigger"
-                    && hookConfig.trigger.configuration
-                    && InternalEventTrigger.GLOBAL_EVENT_TYPES[hookConfig.trigger.configuration.eventType]) {
+                    && effectiveHook.trigger
+                    && effectiveHook.trigger.type === "InternalEventTrigger"
+                    && effectiveHook.trigger.configuration
+                    && InternalEventTrigger.GLOBAL_EVENT_TYPES[effectiveHook.trigger.configuration.eventType]) {
                     common.returnMessage(params, 403, "User does not have right to subscribe to this event");
                     return true;
                 }
@@ -364,14 +401,7 @@ plugins.register("/i/hook/save", function(ob) {
                     }
                 }
 
-                if (hookConfig._id) {
-                    const id = hookConfig._id;
-                    delete hookConfig._id;
-                    const existingHook = await common.db.collection("hooks").findOne({ _id: common.db.ObjectID(id) });
-                    if (!existingHook) {
-                        common.returnMessage(params, 404, "Hook not found");
-                        return true;
-                    }
+                if (existingHook) {
                     // must be allowed to update the hook's current apps, and any
                     // new set of apps it is being retargeted to
                     if (!params.member.global_admin &&
@@ -383,8 +413,8 @@ plugins.register("/i/hook/save", function(ob) {
                     //validate against the effective hook, since an update may
                     //change only the trigger or only the apps
                     const updatedTriggerValidation = await validateTriggerConfiguration(
-                        hookConfig.trigger || existingHook.trigger,
-                        hookConfig.apps || existingHook.apps,
+                        effectiveHook.trigger,
+                        effectiveHook.apps,
                         existingHook._id
                     );
                     if (!updatedTriggerValidation.valid) {
