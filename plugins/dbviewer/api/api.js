@@ -5,7 +5,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, validateGlobalAdmin, hasReadRight, getBaseAppFilter, getUserAppsWithReadRight, getSharedCollectionApps, getCollectionApp, getUserApps } = require('../../../api/utils/rights.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
@@ -18,7 +18,7 @@ const MAX_DBVIEWER_LIMIT = 10000;
 // Allow-list of MongoDB operators and the validator that rejects a pipeline using
 // anything outside it, at any depth. Kept in a dedicated module so it can be
 // unit-tested in isolation.
-const { sanitizeAggregation, ALLOWED_OPERATORS_USER, ALLOWED_OPERATORS_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
+const { sanitizeAggregation, findJoinedCollections, ALLOWED_OPERATORS_USER, ALLOWED_OPERATORS_GLOBAL_ADMIN } = require('./parts/aggregation_guard.js');
 const { findDisallowedProjectionValue, escapeRegExp } = require('./parts/query_guard.js');
 // Fields the viewer must never return, and the helpers that remove them. Held in one
 // module because the same redaction applies in three places (document read,
@@ -407,6 +407,72 @@ var spawn = require('child_process').spawn,
         }
 
         /**
+        * App the task of an aggregation is filed under: the app whose data the collection
+        * holds, not the app selected in the dashboard, so the task is shown to and
+        * authorized for the members of that app. A pipeline that joins or unions other
+        * collections keeps that app only when every collection it reads belongs to it.
+        * A member's aggregation of a collection shared by all apps is filed under the apps
+        * its rows are scoped to (the first as app_id, all of them as app_ids when more than
+        * one), so its creator keeps reaching it through a scoped credential too. A global
+        * admin's unscoped one, global collections, collections of another database and
+        * results mixing apps belong to no app ("undefined", as longtask records a task made
+        * outside an app), which only its creator and global admins reach.
+        * @param {string} collection - collection name
+        * @param {Array} aggregation - aggregation pipeline
+        * @param {Function} callback - callback(appId, appIds)
+        */
+        function aggregationTaskApp(collection, aggregation, callback) {
+            if ((collection === "events_data" || collection === "drill_events") && !params.member.global_admin) {
+                //rows of a collection all apps share are scoped to these apps (getBaseAppFilter),
+                //so the task holds data of exactly them
+                var scopeApps = getSharedCollectionApps(params.member, FEATURE_NAME).map(String);
+                callback(scopeApps[0] || "undefined", scopeApps.length > 1 ? scopeApps : undefined);
+                return;
+            }
+            var refs = [{ coll: collection }].concat(findJoinedCollections(aggregation));
+            if (refs.some(function(ref) {
+                return typeof ref.db !== "undefined" && ref.db !== dbNameOnParam;
+            })) {
+                callback("undefined");
+                return;
+            }
+            var names = refs.map(function(ref) {
+                return ref.coll;
+            });
+            /**
+            * Answer with the one app all collections belong to, or none
+            */
+            function answer() {
+                var apps = names.map(getCollectionApp);
+                callback(apps[0] && apps.every(function(appId) {
+                    return appId === apps[0];
+                }) ? apps[0] : "undefined");
+            }
+            var unmapped = names.some(function(name) {
+                return !getCollectionApp(name) && name !== "events_data" && name !== "drill_events" && /^(events|drill_events|app_viewdata)./.test(name);
+            });
+            if (!unmapped) {
+                answer();
+                return;
+            }
+            //an event or view collection is mapped to its app by the events data, which the
+            //access check loads for a member but not for a global admin: load it here
+            var load = params.member.global_admin
+                ? common.db.collection('apps').find({}, {projection: {_id: 1, name: 1}}).toArray()
+                : Promise.resolve((getUserApps(params.member) || []).map(function(id) {
+                    return {_id: id};
+                }));
+            load.then(function(apps) {
+                //a fresh member object, so the events data is read rather than taken from
+                //the request's cached event list
+                dbLoadEventsData({member: {}}, apps || [], answer);
+            }, function(err) {
+                log.e(err);
+                callback("undefined");
+            });
+        }
+
+        /**
         * Get aggregated result by the parameter on the url
         * @param {string} collection - collection will be applied related query
         * @param {object} aggregation - aggregation object
@@ -449,45 +515,61 @@ var spawn = require('child_process').spawn,
                         common.returnOutput(params, { task_id: task_id });
                     }
                     else {
-                        var name = 'Aggregation-' + Date.now();
-                        var taskCb = taskManager.longtask({
-                            db: common.db,
-                            threshold: plugins.getConfig("api").request_threshold,
-                            params: params,
-                            type: "dbviewer",
-                            force: params.qstring.save_report || false,
-                            gridfs: true,
-                            meta: JSON.stringify({
-                                db: dbNameOnParam,
-                                collection: params.qstring.collection,
-                                aggregation: aggregation
-                            }),
-                            view: "#/manage/db/task/",
-                            report_name: params.qstring.report_name || name + "." + params.qstring.type,
-                            report_desc: params.qstring.report_desc,
-                            period_desc: params.qstring.period_desc,
-                            name,
-                            creator: params.member._id + "",
-                            global: params.qstring.global === 'true',
-                            autoRefresh: params.qstring.autoRefresh === 'true',
-                            manually_create: params.qstring.manually_create === 'true',
-                            processData: function(error, result, callback) {
-                                callback(error, result);
-                            },
-                            outputData: function(aggregationErr, result) {
-                                if (!aggregationErr) {
-                                    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result, "removed": (changes || {}) });
-                                }
-                                else {
-                                    log.e(aggregationErr);
-                                    common.returnMessage(params, 500, "An unexpected error occurred.");
-                                }
-                            }
+                        aggregationTaskApp(collection, aggregation, function(taskAppId, taskAppIds) {
+                            runAggregationTask(collection, aggregation, changes, taskAppId, taskAppIds);
                         });
-                        dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
                     }
                 });
             }
+        }
+
+        /**
+        * Run an aggregation as a long task
+        * @param {string} collection - collection will be applied related query
+        * @param {object} aggregation - aggregation pipeline, already guarded and scoped
+        * @param {object} changes - object referencing removed stages from pipeline
+        * @param {string} taskAppId - app the task is filed under (aggregationTaskApp)
+        * @param {Array<string>=} taskAppIds - every app the task holds data of, when more than one
+        */
+        function runAggregationTask(collection, aggregation, changes, taskAppId, taskAppIds) {
+            var name = 'Aggregation-' + Date.now();
+            var taskCb = taskManager.longtask({
+                db: common.db,
+                app_id: taskAppId,
+                app_ids: taskAppIds,
+                threshold: plugins.getConfig("api").request_threshold,
+                params: params,
+                type: "dbviewer",
+                force: params.qstring.save_report || false,
+                gridfs: true,
+                meta: JSON.stringify({
+                    db: dbNameOnParam,
+                    collection: params.qstring.collection,
+                    aggregation: aggregation
+                }),
+                view: "#/manage/db/task/",
+                report_name: params.qstring.report_name || name + "." + params.qstring.type,
+                report_desc: params.qstring.report_desc,
+                period_desc: params.qstring.period_desc,
+                name,
+                creator: params.member._id + "",
+                global: params.qstring.global === 'true',
+                autoRefresh: params.qstring.autoRefresh === 'true',
+                manually_create: params.qstring.manually_create === 'true',
+                processData: function(error, result, callback) {
+                    callback(error, result);
+                },
+                outputData: function(aggregationErr, result) {
+                    if (!aggregationErr) {
+                        common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result, "removed": (changes || {}) });
+                    }
+                    else {
+                        log.e(aggregationErr);
+                        common.returnMessage(params, 500, "An unexpected error occurred.");
+                    }
+                }
+            });
+            dbs[dbNameOnParam].collection(collection).aggregate(aggregation, { allowDiskUse: true }, taskCb);
         }
 
         /**
@@ -512,7 +594,9 @@ var spawn = require('child_process').spawn,
             if (appId) {
                 if (hasReadRight(FEATURE_NAME, appId, parameters.member)) {
                     if (collection === "events_data" || collection === "drill_events") {
-                        return callback(true);
+                        //unless the member's app_restrict closes this app's DB Viewer; a global
+                        //admin reads every app (getSharedCollectionApps lists no apps for one)
+                        return callback(!!parameters.member.global_admin || getSharedCollectionApps(parameters.member, FEATURE_NAME).indexOf(appId + "") !== -1);
                     }
                     else {
                         return dbUserHasAccessToCollection(parameters, collection, appId, callback);
@@ -524,9 +608,10 @@ var spawn = require('child_process').spawn,
                 var userApps = getUserAppsWithReadRight(parameters.member, FEATURE_NAME);
                 if (collection === "events_data" || collection === "drill_events") {
                     //the shared collections hold every app's rows: readable when the
-                    //member holds the dbviewer read right on at least one app, and the
-                    //rows are then scoped to those apps by getBaseAppFilter
-                    return callback(userApps.length > 0);
+                    //member holds the dbviewer read right on at least one app whose DB
+                    //Viewer their app_restrict leaves open, and the rows are then scoped
+                    //to those apps by getBaseAppFilter
+                    return callback(getSharedCollectionApps(parameters.member, FEATURE_NAME).length > 0);
                 }
                 //go through all apps of user and check if any of them has access to collection
                 var result = await Promise.all(userApps.map(function(id) {

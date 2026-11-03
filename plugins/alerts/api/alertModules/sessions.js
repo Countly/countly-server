@@ -93,7 +93,11 @@ module.exports.check = async({ alert, app, done, scheduledTo: date }) => {
 async function getSessionMetricByDate(app, metric, date, period) {
     const dateComponents = commonLib.getDateComponents(date, app.timezone);
     const monthFilter = String(dateComponents.years) + ":" + String(dateComponents.months);
-    const records = await common.db.collection("users").find({ m: monthFilter }).toArray();
+    // Scoped to the app, for the same reason as `users.js`: `users` holds one
+    // document per app per month (split by a device-id postfix, hence the
+    // several records merged below), so a filter on the month alone summed
+    // every app in the deployment into this app's session count.
+    const records = await common.db.collection("users").find({ m: monthFilter, a: app._id.toString() }).toArray();
 
     let number;
     for (let record of records) {

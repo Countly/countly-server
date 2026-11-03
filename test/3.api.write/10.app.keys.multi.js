@@ -8,6 +8,7 @@ request = request(testUtils.url);
 //  - per-key last_data is recorded on ingestion
 //  - key uniqueness is enforced across current and old keys of all apps
 //  - old keys can be retired; the current key cannot be removed
+//  - a retired key stays reserved: no other app can take it
 //  - two old keys retired at the same time are both removed
 //  - lazy materialization for apps that predate the `keys` array
 
@@ -193,6 +194,49 @@ describe('App multiple keys (rotation grace)', function() {
         });
 
         it('should reject data on the retired key', function(done) {
+            request
+                .get('/i?device_id=' + DEVICE_ID + '&app_key=' + ORIGINAL_KEY + '&begin_session=1&metrics=' + JSON.stringify(METRICS))
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'App does not exist');
+                    done();
+                });
+        });
+
+        it('should keep the retired key reserved for app creation', function(done) {
+            request
+                .get('/i/apps/create?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({name: "Retired Key App", key: ORIGINAL_KEY}))
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'App key already in use');
+                    done();
+                });
+        });
+
+        it('should keep the retired key reserved for another app key change', function(done) {
+            request
+                .get('/i/apps/update?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify({app_id: OTHER_APP_ID, key: ORIGINAL_KEY}))
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'App key already in use');
+                    testUtils.db.collection('apps').findOne({_id: testUtils.db.ObjectID(OTHER_APP_ID)}, function(e, other) {
+                        should.not.exist(e);
+                        other.key.should.not.equal(ORIGINAL_KEY);
+                        done();
+                    });
+                });
+        });
+
+        it('should still reject data on the retired key', function(done) {
             request
                 .get('/i?device_id=' + DEVICE_ID + '&app_key=' + ORIGINAL_KEY + '&begin_session=1&metrics=' + JSON.stringify(METRICS))
                 .expect(400)

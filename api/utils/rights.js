@@ -850,6 +850,36 @@ function dbLoadEventsData(params, apps, callback) {
 }
 exports.dbLoadEventsData = dbLoadEventsData;
 
+/**
+* App whose data a collection holds: the app id a per-app collection name ends with, or,
+* for an event or view collection (events<hash>, drill_events<hash>, app_viewdata<hash>),
+* the app the events data loaded by dbLoadEventsData maps its hash to. Collections shared
+* by all apps (events_data, drill_events) and global collections belong to no app.
+* @param {string} collection - collection name
+* @returns {string|null} app id, or null when the collection belongs to no app or is not mapped
+*/
+exports.getCollectionApp = function(collection) {
+    collection = collection + "";
+    if (collection === "events" || collection === "events_data" || collection === "drill_events") {
+        return null;
+    }
+    var hashValue = null;
+    if (collection.indexOf("drill_events") === 0) {
+        hashValue = collection.substring("drill_events".length);
+    }
+    else if (collection.indexOf("events") === 0) {
+        hashValue = collection.substring("events".length);
+    }
+    else if (collection.indexOf("app_viewdata") === 0) {
+        hashValue = collection;
+    }
+    if (hashValue !== null) {
+        return collectionMap[hashValue] && collectionMap[hashValue].a ? collectionMap[hashValue].a + "" : null;
+    }
+    var match = /([0-9a-f]{24})$/i.exec(collection);
+    return match ? match[1].toLowerCase() : null;
+};
+
 exports.getCollectionName = function(hashValue) {
     if (collectionMap[hashValue]) {
         return collectionMap[hashValue].name;
@@ -1287,6 +1317,47 @@ exports.getUserAppsWithReadRight = function(member, feature) {
 };
 
 /**
+ * Apps whose DB Viewer a member's app_restrict closes ("#/manage/db"), as
+ * dbUserHasAccessToCollection applies it to the per-app collections.
+ * @param {object} member - members object from params
+ * @returns {Array<string>} app ids
+ */
+exports.getDbViewerRestrictedApps = function(member) {
+    var restrict = (member && member.app_restrict) || {};
+    return Object.keys(restrict).filter(function(appId) {
+        return Array.isArray(restrict[appId]) && restrict[appId].indexOf("#/manage/db") !== -1;
+    });
+};
+
+/**
+ * Apps whose rows a member may read from a collection shared by all apps
+ * (events_data, drill_events) through any of the features: those they hold the
+ * feature's read right on. The DB Viewer's own right does not count on an app
+ * whose DB Viewer the member's app_restrict closes, the same exclusion the
+ * per-app collections get from dbUserHasAccessToCollection; another feature
+ * that reads the collection (drill, users) still counts there.
+ * @param {object} member - members object from params
+ * @param {string|Array<string>} feature - feature name, or a list of names any of which grants the read
+ * @returns {Array<string>} app ids
+ */
+exports.getSharedCollectionApps = function(member, feature) {
+    var features = Array.isArray(feature) ? feature : [feature];
+    var restricted = exports.getDbViewerRestrictedApps(member);
+    var others = features.filter(function(f) {
+        return f !== "dbviewer";
+    });
+    var apps = others.length ? exports.getUserAppsWithReadRight(member, others) : [];
+    if (features.indexOf("dbviewer") !== -1) {
+        exports.getUserAppsWithReadRight(member, "dbviewer").forEach(function(appId) {
+            if (restricted.indexOf(appId + "") === -1 && apps.indexOf(appId) === -1) {
+                apps.push(appId);
+            }
+        });
+    }
+    return apps;
+};
+
+/**
  * Features whose read right lets a member export a collection shared by all apps
  * (/o/export/db). These collections are not per-app collections, so
  * dbUserHasAccessToCollection never grants them: the export needs the read right of one
@@ -1313,7 +1384,7 @@ exports.getSharedCollectionExportFeatures = function(dbName, collectionName) {
  * @param {string} collectionName  - collection Name
  * @param {(string|Array<string>)=} feature - when given, only apps the member holds this
  *   feature's read right on (any of them, for a list) are in scope, instead of every app
- *   they belong to
+ *   they belong to (getSharedCollectionApps, which also honours app_restrict)
  * @returns {object} filter object
  */
 exports.getBaseAppFilter = function(member, dbName, collectionName, feature) {
@@ -1323,7 +1394,7 @@ exports.getBaseAppFilter = function(member, dbName, collectionName, feature) {
     // of apps the member may read with the calling feature, not every app the
     // member belongs to. Without a feature the scope stays membership-wide.
     if (feature && !member.global_admin) {
-        apps = exports.getUserAppsWithReadRight(member, feature);
+        apps = exports.getSharedCollectionApps(member, feature);
     }
     // getUserApps() returns [] both for a global admin (meaning "all apps") and
     // for a non-global member that has no app access at all. Those two cases

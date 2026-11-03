@@ -12,7 +12,7 @@ const Promise = require('./promise.js');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getUserAppsWithReadRight, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getSharedCollectionApps, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -1924,6 +1924,10 @@ const processRequest = (params) => {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
                         }
+                        var scopedTaskClause = taskmanager.scopedListClause(params);
+                        if (scopedTaskClause) {
+                            params.qstring.query.$and = [].concat(params.qstring.query.$and || [], scopedTaskClause);
+                        }
                         taskmanager.getResults({
                             db: common.db,
                             query: params.qstring.query
@@ -1954,6 +1958,10 @@ const processRequest = (params) => {
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        var scopedTaskClause = taskmanager.scopedListClause(params);
+                        if (scopedTaskClause) {
+                            params.qstring.query.$and = [].concat(params.qstring.query.$and || [], scopedTaskClause);
                         }
                         taskmanager.getCounts({
                             db: common.db,
@@ -1997,6 +2005,10 @@ const processRequest = (params) => {
                         if (params.qstring.period) {
                             countlyCommon.getPeriodObj(params);
                             params.qstring.query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+                        }
+                        var scopedTaskClause = taskmanager.scopedListClause(params);
+                        if (scopedTaskClause) {
+                            params.qstring.query.$and.push(scopedTaskClause);
                         }
                         const skip = params.qstring.iDisplayStart;
                         const limit = params.qstring.iDisplayLength;
@@ -2220,7 +2232,7 @@ const processRequest = (params) => {
                         //feature that reads them on at least one app, and scoped to those apps below
                         var sharedFeatures = getSharedCollectionExportFeatures(params.qstring.db, params.qstring.collection);
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
-                            if (hasAccess || (sharedFeatures && (params.member.global_admin || getUserAppsWithReadRight(params.member, sharedFeatures).length > 0))) {
+                            if (hasAccess || (sharedFeatures && (params.member.global_admin || getSharedCollectionApps(params.member, sharedFeatures).length > 0))) {
                                 var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
                                 var db = "";
                                 if (params.qstring.db && dbs[params.qstring.db]) {

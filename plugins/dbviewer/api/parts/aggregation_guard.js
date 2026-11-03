@@ -295,6 +295,47 @@ function findProtectedJoin(node) {
 }
 
 /**
+ * Every collection a pipeline joins or unions from, at any depth, with the database
+ * it names in the cross-database form ({ db, coll }). Used to tell which apps' data
+ * an aggregation result can hold, not to authorize: findProtectedJoin and the
+ * operator check do that.
+ * @param {*} node - pipeline / stage / expression node (not mutated)
+ * @param {Array<object>=} found - accumulator
+ * @returns {Array<object>} [{ coll, db }] with db undefined when the stage names none
+ */
+function findJoinedCollections(node, found) {
+    found = found || [];
+    if (Array.isArray(node)) {
+        node.forEach(function(item) {
+            findJoinedCollections(item, found);
+        });
+    }
+    else if (node && typeof node === "object") {
+        ["$lookup", "$graphLookup", "$unionWith"].forEach(function(op) {
+            var ref = node[op];
+            if (op !== "$unionWith" && ref && typeof ref === "object") {
+                ref = ref.from;
+            }
+            else if (op === "$unionWith" && ref && typeof ref === "object") {
+                ref = ref.coll;
+            }
+            if (typeof ref === "string") {
+                found.push({ coll: ref });
+            }
+            else if (ref && typeof ref === "object") {
+                found.push({ coll: ref.coll + "", db: ref.db });
+            }
+        });
+        for (var key in node) {
+            if (Object.prototype.hasOwnProperty.call(node, key)) {
+                findJoinedCollections(node[key], found);
+            }
+        }
+    }
+    return found;
+}
+
+/**
  * Deep-scan for a "$"-prefixed KEY that is neither on the allow-list nor a declared
  * option of the operator it sits directly inside.
  *
@@ -400,5 +441,6 @@ module.exports = {
     ALLOWED_OPERATORS_USER,
     ALLOWED_OPERATORS_GLOBAL_ADMIN,
     PROTECTED_JOIN_COLLECTIONS,
+    findJoinedCollections,
     sanitizeAggregation
 };
