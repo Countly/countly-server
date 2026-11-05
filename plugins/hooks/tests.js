@@ -266,6 +266,7 @@ describe('Testing Hooks internal event app scoping', function() {
     var trigger;
     var delivered;
     var originalUpdateRuleTriggerTime;
+    var originalAddErrorRecord;
 
     // A well-formed object id that is not a real member, so the global-event
     // owner lookup resolves to nothing and fails closed. Deliberately not
@@ -291,10 +292,14 @@ describe('Testing Hooks internal event app scoping', function() {
         // in the test process; the scoping decision is what is under test
         originalUpdateRuleTriggerTime = hookUtils.updateRuleTriggerTime;
         hookUtils.updateRuleTriggerTime = function() {};
+        // a skipped hook records why in its error log, through the same batcher
+        originalAddErrorRecord = hookUtils.addErrorRecord;
+        hookUtils.addErrorRecord = function() {};
     });
 
     after(function() {
         hookUtils.updateRuleTriggerTime = originalUpdateRuleTriggerTime;
+        hookUtils.addErrorRecord = originalAddErrorRecord;
         if (dbWasUnset) {
             commonModule.db = undefined;
         }
