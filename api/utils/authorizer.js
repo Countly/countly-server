@@ -367,6 +367,35 @@ function parseEndpointRestriction(endpointParam, endpointQueryParam) {
 }
 
 /**
+* Whether an endpoint scope matches a request path from its start.
+*
+* Endpoint scopes are regex strings, and most are written without a leading ^. Matched anywhere
+* in the path, they were satisfied by any path that merely ends in the allowed one, while the API
+* routes on the first path segments. The match now has to begin where the path does, or right
+* after the deployment's path prefix.
+* @param {RegExp} regexp - the endpoint scope
+* @param {string} path - request path
+* @returns {boolean} true if the scope matches at the start of the path
+*/
+function matchesFromPathStart(regexp, path) {
+    path = path + "";
+    var starts = [0];
+    var prefix = common.config && common.config.path;
+    if (prefix && prefix !== "/" && path.indexOf(prefix) === 0) {
+        starts.push(prefix.length);
+    }
+    for (var i = 0; i < starts.length; i++) {
+        //sticky, so the match is tried at this position only rather than searched for
+        var sticky = new RegExp(regexp.source, regexp.flags.replace("g", "").replace("y", "") + "y");
+        sticky.lastIndex = starts[i];
+        if (sticky.test(path)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
 * Token validation function called from verify and verify return
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
@@ -424,7 +453,7 @@ var verify_token = function(options, return_owner, return_data) {
                                 }
                                 try {
                                     my_regexp = new RegExp(res.endpoint[p].endpoint);
-                                    if (!missing_param && my_regexp.test(options.req_path)) {
+                                    if (!missing_param && matchesFromPathStart(my_regexp, options.req_path)) {
                                         valid_endpoint = true;
                                     }
                                 }
@@ -435,7 +464,7 @@ var verify_token = function(options, return_owner, return_data) {
                             else {
                                 try {
                                     my_regexp = new RegExp(res.endpoint[p]);
-                                    if (my_regexp.test(options.req_path)) {
+                                    if (matchesFromPathStart(my_regexp, options.req_path)) {
                                         valid_endpoint = true;
                                     }
                                 }
@@ -555,4 +584,6 @@ authorizer.clean = function(options) {
 };
 
 authorizer.parseEndpointRestriction = parseEndpointRestriction;
+//exported for tests
+authorizer.matchesFromPathStart = matchesFromPathStart;
 module.exports = authorizer;
