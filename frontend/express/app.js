@@ -809,7 +809,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     for (let pathPart of ["/login", "/mobile/login"]) {
         const absPath = countlyConfig.path + pathPart;
         preventBruteforce.pathIdentifiers[absPath] = "login";
-        preventBruteforce.userIdentifiers[absPath] = (req) => req.body.username;
+        preventBruteforce.userIdentifiers[absPath] = (req) => preventBruteforce.loginKey(req.body.username);
     }
 
     preventBruteforce.blockHooks.login = function(uid, req, res) { // eslint-disable-line no-unused-vars
@@ -1555,13 +1555,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 }
                 else {
                     res.redirect(countlyConfig.path + '/dashboard');
-                    preventBruteforce.reset("login", req.body.username);
+                    preventBruteforce.reset("login", preventBruteforce.loginKey(req.body.username));
                 }
             }
             else {
                 res.redirect(countlyConfig.path + '/login?message=login.result');
                 if (req.body.username) {
-                    preventBruteforce.fail("login", req.body.username);
+                    preventBruteforce.fail("login", preventBruteforce.loginKey(req.body.username));
                 }
             }
         });
@@ -1579,7 +1579,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         }
         var user = basicAuth(req);
         if (user && user.name && user.pass) {
-            preventBruteforce.isBlocked("login", user.name, function(isBlocked, fails, err) {
+            preventBruteforce.isBlocked("login", preventBruteforce.loginKey(user.name), function(isBlocked, fails, err) {
                 if (isBlocked) {
                     if (err) {
                         res.status(500).send('Server Error');
@@ -1598,14 +1598,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                             }
                             else {
                                 plugins.callMethod("apikeySuccessful", {req: req, res: res, next: next, data: {username: member.username}});
-                                preventBruteforce.reset("login", user.name);
+                                preventBruteforce.reset("login", preventBruteforce.loginKey(user.name));
                                 countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                                 res.status(200).send(member.api_key);
                             }
                         }
                         else {
                             plugins.callMethod("apikeyFailed", {req: req, res: res, next: next, data: {username: user.name}});
-                            preventBruteforce.fail("login", user.name);
+                            preventBruteforce.fail("login", preventBruteforce.loginKey(user.name));
                             unauthorized(res);
                         }
                     });
@@ -1642,14 +1642,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     }
                     else {
                         plugins.callMethod("mobileloginSuccessful", {req: req, res: res, next: next, data: member});
-                        preventBruteforce.reset("login", req.body.username);
+                        preventBruteforce.reset("login", preventBruteforce.loginKey(req.body.username));
                         countlyDb.collection('members').update({_id: member._id}, {$set: {last_login: Math.round(new Date().getTime() / 1000)}}, function() {});
                         res.render('mobile/key', { "key": member.api_key || -1 });
                     }
                 }
                 else {
                     plugins.callMethod("mobileloginFailed", {req: req, res: res, next: next, data: req.body});
-                    preventBruteforce.fail("login", req.body.username);
+                    preventBruteforce.fail("login", preventBruteforce.loginKey(req.body.username));
                     res.render('mobile/login', { "message": "login.result", "csrf": req.csrfToken() });
                 }
             });
@@ -1957,7 +1957,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         membersUtility.loginWithToken(req, function(member) {
             if (member) {
                 var serverSideRendering = req.query.ssr || false;
-                preventBruteforce.reset("login", member.username);
+                preventBruteforce.reset("login", preventBruteforce.loginKey(member.username));
                 var options = "";
                 if (serverSideRendering) {
                     options += "ssr=" + serverSideRendering;

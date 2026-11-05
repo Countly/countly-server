@@ -9,6 +9,7 @@ var usersApi = {},
     mail = require('./mail.js'),
     countlyConfig = require('./../../../frontend/express/config.js'),
     plugins = require('../../../plugins/pluginManager.js'),
+    preventBruteforce = require('../../../frontend/express/libs/preventBruteforce.js'),
     { hasAdminAccess, getUserApps, getAdminApps, hasReadRight } = require('./../../utils/rights.js');
 
 const countlyCommon = require('../../lib/countly.common.js');
@@ -112,7 +113,7 @@ usersApi.getAllUsers = function(params) {
             var membersObj = {};
 
             for (let i = 0; i < members.length; i++) {
-                const result = failedLogins.find(x => (x._id === JSON.stringify(["login", members[i].username]))) || { fails: 0 };
+                const result = failedLogins.find(x => (x._id === JSON.stringify(["login", preventBruteforce.loginKey(members[i].username)]))) || { fails: 0 };
 
                 if (result.fails > 0 && result.fails % bruteforceFails === 0 && Math.floor(new Date().getTime() / 1000) < (((result.fails / bruteforceFails) * bruteforceWait) + result.lastFail)) {
                     members[i].blocked = true;
@@ -144,7 +145,7 @@ usersApi.getAllUsers = function(params) {
 * @returns {boolean} true if timeban reseted
 **/
 usersApi.resetTimeBan = function(params) {
-    common.db.collection('failed_logins').remove({_id: JSON.stringify(["login", params.qstring.username])}, (err) => {
+    common.db.collection('failed_logins').remove({_id: {$in: [JSON.stringify(["login", preventBruteforce.loginKey(params.qstring.username)]), JSON.stringify(["login", params.qstring.username + ""])]}}, (err) => {
         if (err) {
             common.returnMessage(params, 500, 'Remove from collection failed.');
             return false;

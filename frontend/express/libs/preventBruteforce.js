@@ -61,6 +61,18 @@ preventBruteforce.userIdentifiers = {};
 preventBruteforce.blockHooks = {};
 
 /**
+ * The key login failures are counted under for a username or email. Login trims the
+ * identifier and matches an email in lower case, so every spelling that reaches the same
+ * account has to count against the same key, or each one would get its own allowance.
+ * @param {string} identifier - username or email as submitted
+ * @returns {string} normalized key
+ **/
+preventBruteforce.loginKey = function(identifier) {
+    var key = (identifier + "").trim();
+    return key.indexOf("@") !== -1 ? key.toLowerCase() : key;
+};
+
+/**
  * Middleware to listen to specific paths and check if user is blocked
  * @param {object} req - request object
  * @param {object} res - response object
