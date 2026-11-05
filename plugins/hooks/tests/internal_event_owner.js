@@ -5,8 +5,9 @@ request = request(testUtils.url);
 
 // An app-scoped internal event reaches a hook only while the hook's owner may
 // still read hooks on the event's app. A hook saved by an app admin fires; once
-// that member's role on the app is removed, the same event no longer fires it,
-// while a global admin's hook on the same event keeps firing.
+// that member's role on the app is removed, the same event no longer fires it
+// and the hook's error log says why (once, not per event), while a global
+// admin's hook on the same event keeps firing.
 //
 // Timing as in internal_event_delivery.js: rules refresh every 3s and
 // triggerCount is written through writeBatcher (10s), so delivery is observable
@@ -28,11 +29,19 @@ describe('Testing Hooks internal event owner access', function() {
      * @returns {Promise<number>} current triggerCount, 0 when unset
      */
     async function readTriggerCount(hookId) {
+        return ((await readHook(hookId)) || {}).triggerCount || 0;
+    }
+
+    /**
+     * Read a hook as the hooks list returns it
+     * @param {string} hookId - hook id
+     * @returns {Promise<object>} the hook, undefined when not listed
+     */
+    async function readHook(hookId) {
         var res = await request.get('/o/hook/list').query({api_key: API_KEY_ADMIN, app_id: APP_ID, id: hookId}).expect(200);
-        var hook = ((res.body && res.body.hooksList) || []).filter(function(h) {
+        return ((res.body && res.body.hooksList) || []).filter(function(h) {
             return h._id + '' === hookId + '';
         })[0];
-        return (hook && hook.triggerCount) || 0;
     }
 
     /**
@@ -126,7 +135,7 @@ describe('Testing Hooks internal event owner access', function() {
         (await waitForTriggerCount(hooks.admin, 1)).should.be.above(0);
     });
 
-    it('should stop firing the hook once its owner loses the app', async function() {
+    it('should stop firing the hook once its owner loses the app, and record why', async function() {
         this.timeout(DELIVERY_TIMEOUT_MS * 3 * testUtils.testScalingFactor);
         var memberBefore = await readTriggerCount(hooks.member);
         var adminBefore = await readTriggerCount(hooks.admin);
@@ -134,12 +143,21 @@ describe('Testing Hooks internal event owner access', function() {
         await request.get('/i/users/update').query({api_key: API_KEY_ADMIN, args: JSON.stringify(args)}).expect(200);
 
         await createAppUser("hook_owner_second_" + uniq);
-        // the global admin's hook proves the event was delivered and flushed
-        (await waitForTriggerCount(hooks.admin, adminBefore + 1)).should.be.above(adminBefore);
+        await createAppUser("hook_owner_third_" + uniq);
+        // the global admin's hook proves both events were delivered and flushed
+        (await waitForTriggerCount(hooks.admin, adminBefore + 2)).should.be.above(adminBefore + 1);
         await new Promise(function(r) {
             setTimeout(r, 2000);
         });
-        (await readTriggerCount(hooks.member)).should.eql(memberBefore);
+        var hook = await readHook(hooks.member);
+        (hook.triggerCount || 0).should.eql(memberBefore);
+        hook.enabled.should.equal(true);
+        // recorded on the hook itself, once for both skipped events
+        var expected = "Not run: the hook's creator no longer has access to app " + APP_ID;
+        var recorded = (hook.error_logs || []).filter(function(entry) {
+            return typeof entry.e === "string" && entry.e.indexOf(expected) === 0;
+        });
+        recorded.length.should.eql(1, JSON.stringify(hook.error_logs || []));
     });
 
     after(async function() {
@@ -154,7 +172,7 @@ describe('Testing Hooks internal event owner access', function() {
         await request.get('/i/app_users/delete').query({
             api_key: API_KEY_ADMIN,
             app_id: APP_ID,
-            query: JSON.stringify({did: {$in: ["hook_owner_first_" + uniq, "hook_owner_second_" + uniq]}}),
+            query: JSON.stringify({did: {$in: ["hook_owner_first_" + uniq, "hook_owner_second_" + uniq, "hook_owner_third_" + uniq]}}),
             force: true
         });
     });

@@ -102,9 +102,10 @@ function eventApps(eventType, ob) {
 }
 
 /**
- * Whether the hook's owner may still read hooks on the apps an app-scoped event
- * belongs to. Nothing re-checked the owner once a hook was saved, so a hook kept
- * delivering an app's data after its owner lost access to that app.
+ * Why a hook may no longer fire for an app-scoped event: its owner may no longer
+ * read hooks on the apps the event belongs to. Nothing re-checked the owner once a
+ * hook was saved, so a hook kept delivering an app's data after its owner lost
+ * access to that app.
  *
  * Hooks predating the createdBy field cannot be attributed to anybody and keep
  * firing, as alerts do. Members created before the permission object reach apps
@@ -112,21 +113,52 @@ function eventApps(eventType, ob) {
  * @param {object} rule - hook rule
  * @param {Array<string>} apps - apps the event belongs to
  * @param {Map} [cache] - owner cache scoped to one event dispatch
- * @returns {Promise<boolean>} true when the hook may still fire for these apps
+ * @returns {Promise<string|null>} why the hook must not run, null when it may
  */
-async function ruleOwnerMayReadApps(rule, apps, cache) {
+async function ruleOwnerBlockedReason(rule, apps, cache) {
     if (!rule || !rule.createdBy) {
-        return true;
+        return null;
     }
     const owner = await loadRuleOwner(rule, cache);
     if (!owner) {
-        return false;
+        return "Not run: the hook's creator no longer exists. Save the hook again under an account that can read its apps.";
     }
     if (owner.global_admin) {
-        return true;
+        return null;
     }
     const legacy = (typeof owner.permission === "undefined" && Array.isArray(owner.user_of)) ? owner.user_of.map(String) : [];
-    return apps.every((appId) => hasReadRight("hooks", appId, owner) || legacy.indexOf(appId) > -1);
+    const denied = apps.find((appId) => !hasReadRight("hooks", appId, owner) && legacy.indexOf(appId) === -1);
+    if (typeof denied !== "undefined") {
+        return "Not run: the hook's creator no longer has access to app " + denied + ". Save the hook again under an account that can read it.";
+    }
+    return null;
+}
+
+// hook id -> time the last "not run" error was recorded, so a busy app does not fill
+// the hook's error log (it keeps the last 10 entries) with the same entry
+const ownerSkipRecorded = new Map();
+const OWNER_SKIP_RECORD_INTERVAL_MS = 60 * 60 * 1000;
+
+/**
+ * Make a hook skipped for its owner's access visible: a warning in the log every
+ * time, and an entry in the hook's own error log (shown in the Hooks UI) at most
+ * once per hook per OWNER_SKIP_RECORD_INTERVAL_MS in this process. The hook itself
+ * is left as it is, neither disabled nor deleted.
+ * @param {object} rule - hook rule
+ * @param {string} eventType - internal event type
+ * @param {Array<string>} apps - apps the event belongs to
+ * @param {string} reason - why it was not run
+ */
+function recordOwnerSkip(rule, eventType, apps, reason) {
+    log.w("Hook " + (rule._id || "?") + " not run for " + eventType + " on app(s) [" + apps.join(", ") + "]: " + reason);
+    const hookId = rule._id + "";
+    const now = Date.now();
+    const last = ownerSkipRecorded.get(hookId);
+    if (last && now - last < OWNER_SKIP_RECORD_INTERVAL_MS) {
+        return;
+    }
+    ownerSkipRecorded.set(hookId, now);
+    utils.addErrorRecord(rule._id, reason);
 }
 
 //An app document carries credentials: the sdk key, every rotated key, the immutable
@@ -330,10 +362,16 @@ class InternalEventTrigger {
             }
             // app-scoped events reach a hook only while its owner may still read
             // hooks on the event's app
-            if (!GLOBAL_EVENT_TYPES[eventType] && !await ruleOwnerMayReadApps(rule, eventApps(eventType, ob), ownerCache)) {
-                log.d("Not delivering " + eventType + " to hook " + (rule._id || "?")
-                    + ": its owner no longer has access to the event's app");
-                continue;
+            if (!GLOBAL_EVENT_TYPES[eventType]) {
+                // only the event's apps the hook is scoped to: an event from another
+                // app is dropped by the case below as out of scope, not as an error
+                const scopedApps = Array.isArray(rule.apps) ? rule.apps.map(String) : [];
+                const apps = eventApps(eventType, ob).filter((a) => scopedApps.indexOf(a) > -1);
+                const blocked = apps.length ? await ruleOwnerBlockedReason(rule, apps, ownerCache) : null;
+                if (blocked) {
+                    recordOwnerSkip(rule, eventType, apps, blocked);
+                    continue;
+                }
             }
             switch (eventType) {
             case "/cohort/enter":
@@ -588,6 +626,8 @@ class InternalEventTrigger {
 // exposed so the save handler can reject non-global-admins creating/updating
 // hooks that subscribe to these global event types
 InternalEventTrigger.GLOBAL_EVENT_TYPES = GLOBAL_EVENT_TYPES;
+//exported for tests
+InternalEventTrigger.OWNER_SKIP_RECORD_INTERVAL_MS = OWNER_SKIP_RECORD_INTERVAL_MS;
 
 // exposed so the save handler can reject an eventType that is not a real
 // internal event, and can tell which events carry a target id to validate
