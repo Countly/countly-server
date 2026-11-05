@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential, hasReadRight, getUserApps } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -28,6 +28,31 @@ const Handle = require('../../api/parts/jobs/index.js');
 const render = require('../../api/utils/render.js');
 
 var loaded_configs_time = 0;
+
+/**
+* Checks access to a collection the way DB Viewer does: a per-app collection is reachable only
+* through apps on which the member has the dbviewer read right
+* @param {params} params - {@link params} object
+* @param {string} collection - collection name
+* @param {function} callback - called with true if the member may read the collection
+*/
+function dbViewerHasAccessToCollection(params, collection, callback) {
+    if (params.member.global_admin) {
+        return dbUserHasAccessToCollection(params, collection, callback);
+    }
+    var apps = (getUserApps(params.member) || []).filter(function(appId) {
+        return hasReadRight('dbviewer', appId, params.member);
+    });
+    Promise.all(apps.map(function(appId) {
+        return new Promise(function(resolve) {
+            dbUserHasAccessToCollection(params, collection, appId, resolve);
+        });
+    })).then(function(results) {
+        callback(results.some(function(allowed) {
+            return allowed;
+        }));
+    });
+}
 
 const countlyApi = {
     data: {
@@ -1849,31 +1874,54 @@ const processRequest = (params) => {
                         }
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
-                            // Cross-tenant guard: an appUser_<app_id>_<uid> export
-                            // belongs to <app_id>. validateUserForRead only verifies
-                            // the caller has read on params.qstring.app_id (which
-                            // can be any app they have access to), so without this
-                            // check, a member of app A could pull exports owned by
-                            // app B simply by guessing the filename.
-                            if (filename[0].startsWith("appUser_")) {
-                                var nameParts = filename[0].split('_');
-                                if (nameParts.length >= 2 && !params.member.global_admin && (params.qstring.app_id + "") !== (nameParts[1] + "")) {
-                                    common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
-                                    return false;
+                            /**
+                            * Cross-tenant guard: an appUser_<app_id>_<uid> export
+                            * belongs to <app_id>. validateUserForRead only verifies
+                            * the caller has read on params.qstring.app_id (which
+                            * can be any app they have access to), so without this
+                            * check, a member of app A could pull exports owned by
+                            * app B simply by guessing the filename.
+                            * @param {string} name - export file name, without extension
+                            * @returns {boolean} true if the caller may download it
+                            */
+                            var exportAllowed = function(name) {
+                                if (name.startsWith("appUser_")) {
+                                    var nameParts = name.split('_');
+                                    if (nameParts.length >= 2 && !params.member.global_admin && (params.qstring.app_id + "") !== (nameParts[1] + "")) {
+                                        common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
+                                        return false;
+                                    }
                                 }
+                                return true;
+                            };
+                            if (!exportAllowed(filename[0])) {
+                                return false;
                             }
-                            new Promise(function(resolve) {
+                            new Promise(function(resolve, reject) {
                                 if (filename[0].startsWith("appUser_")) {
                                     filename[0] = filename[0] + '.tar.gz';
                                     resolve();
                                 }
                                 else { //we have task result. Try getting from there
-                                    taskmanager.getResult({id: filename[0]}, function(err, res) {
-                                        if (res && res.data) {
-                                            filename[0] = res.data;
-                                            filename[0] = filename[0].replace(/\"/g, '');
+                                    taskmanager.loadIfReadable(common.db, filename[0], params.member, function(loadErr) {
+                                        if (loadErr) {
+                                            common.returnMessage(params, loadErr === 'forbidden' ? 403 : 404, loadErr === 'forbidden' ? 'Not allowed' : 'Export not found');
+                                            return reject();
                                         }
-                                        resolve();
+                                        taskmanager.getResult({id: filename[0]}, function(err, res) {
+                                            if (res && res.data) {
+                                                var resolved = (res.data + "").replace(/\"/g, '');
+                                                if (/[^A-Za-z0-9_.-]/.test(resolved)) {
+                                                    common.returnMessage(params, 400, 'Invalid filename');
+                                                    return reject();
+                                                }
+                                                if (!exportAllowed(resolved.split('.')[0])) {
+                                                    return reject();
+                                                }
+                                                filename[0] = resolved;
+                                            }
+                                            resolve();
+                                        });
                                     });
                                 }
                             }).then(function() {
@@ -1934,6 +1982,8 @@ const processRequest = (params) => {
                                         });
                                     }
                                 });
+                            }, function() {
+                                //already answered
                             });
                         });
                     }
@@ -2339,7 +2389,7 @@ const processRequest = (params) => {
                             }
                         }
 
-                        dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
+                        dbViewerHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
                                 var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
                                 var db = "";
