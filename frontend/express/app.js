@@ -1575,6 +1575,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             else if (err === "User exists") {
                 res.redirect(countlyConfig.path + '/login');
             }
+            else if (err === membersUtility.SETUP_UNAVAILABLE) {
+                // The index that stops two concurrent setups from both creating
+                // an admin is not in place; nothing was created.
+                res.status(503).send('Setup is temporarily unavailable because the database is not ready. Please retry in a moment.');
+            }
             else if (err && err.message) {
                 res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                 res.header('Expires', '0');
@@ -2106,6 +2111,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     });
     countlyDb.collection('members').createIndex({"api_key": 1}, { unique: true }, function() {});
     countlyDb.collection('members').createIndex({ email: 1 }, { unique: true }, function() {});
+    //fences first-run setup: only one setup-created admin can exist
+    membersUtility.ensureSetupAdminIndex(countlyDb);
     countlyDb.collection('jobs').createIndex({ finished: 1 }, function() {});
     countlyDb.collection('jobs').createIndex({ name: 1 }, function() {});
     countlyDb.collection('long_tasks').createIndex({ manually_create: 1, start: -1 }, function() {});

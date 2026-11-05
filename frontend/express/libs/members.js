@@ -20,6 +20,12 @@ var argon2 = require('argon2');
 
 /** @lends module:frontend/express/libs/members */
 var membersUtility = { };
+/**
+ * `setup` callback error when the index that fences concurrent first-run setups
+ * (setup_admin_unique) could not be confirmed, so no admin was created.
+ */
+membersUtility.SETUP_UNAVAILABLE = "Setup unavailable";
+membersUtility.SETUP_ADMIN_INDEX_NAME = "setup_admin_unique";
 //Helper functions
 /**
  * @property {object} db - Data base connection. Needs to be set befoe callng any other function.
@@ -634,6 +640,37 @@ membersUtility.extendSession = function(req) {
  *  });
 **/
 
+/**
+ * Create the index that lets only one first-run setup admin exist.
+ *
+ * Setup counts members, hashes the password, then inserts, so two concurrent
+ * setups could both pass the count. The member setup creates is marked with
+ * `setup_admin: true`, and this unique partial index lets only one such document
+ * exist: the second insert fails with a duplicate key. Partial, so members created
+ * any other way are not in it and the build cannot fail on existing data.
+ *
+ * Never throws; safe to call on every boot and before every setup.
+ * @param {object} db - open database
+ * @returns {Promise<boolean>} true when the index is in place
+ */
+membersUtility.ensureSetupAdminIndex = async function(db) {
+    try {
+        await db.collection('members').createIndex(
+            {"setup_admin": 1},
+            {
+                name: membersUtility.SETUP_ADMIN_INDEX_NAME,
+                unique: true,
+                partialFilterExpression: {"setup_admin": true}
+            }
+        );
+        return true;
+    }
+    catch (err) {
+        console.log("members: could not create the " + membersUtility.SETUP_ADMIN_INDEX_NAME + " index; first-run setup is refused until it exists", (err && err.message) || err);
+        return false;
+    }
+};
+
 membersUtility.setup = function(req, callback) {
     membersUtility.db.collection('members').count(function(err, memberCount) {
         if (!err && memberCount === 0) {
@@ -679,6 +716,9 @@ membersUtility.setup = function(req, callback) {
                     "password": password,
                     "email": req.body.email,
                     "global_admin": true,
+                    // Unique partial index (ensureSetupAdminIndex): only one
+                    // setup-created admin can exist, so a concurrent setup fails.
+                    "setup_admin": true,
                     created_at: Math.floor(((new Date()).getTime()) / 1000),
                     password_changed: Math.floor(((new Date()).getTime()) / 1000),
                     permission: membersUtility.emptyPermission
@@ -688,11 +728,30 @@ membersUtility.setup = function(req, callback) {
                 }
                 crypto.randomBytes(48, function(errorBuff, buffer) {
                     doc.api_key = common.md5Hash(buffer.toString('hex') + Math.random());
-                    membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
-                        member = member.ops;
-                        setLoggedInVariables(req, member[0], membersUtility.db, function() {
-                            req.session.install = true;
-                            callback();
+                    // The marker only fences concurrent setups while its unique
+                    // index exists. Confirm it before inserting (a no-op when it
+                    // is already there); without it, refuse rather than run unguarded.
+                    membersUtility.ensureSetupAdminIndex(membersUtility.db).then(function(indexReady) {
+                        if (!indexReady) {
+                            callback(membersUtility.SETUP_UNAVAILABLE);
+                            return;
+                        }
+                        membersUtility.db.collection('members').insert(doc, {safe: true}, function(err2, member) {
+                            if (err2 && err2.code === 11000) {
+                                // Another setup won the race (duplicate key on
+                                // setup_admin or email); same answer as a count > 0.
+                                callback("User exists");
+                                return;
+                            }
+                            if (err2 || !member) {
+                                callback(err2 || "Setup failed");
+                                return;
+                            }
+                            member = member.ops;
+                            setLoggedInVariables(req, member[0], membersUtility.db, function() {
+                                req.session.install = true;
+                                callback();
+                            });
                         });
                     });
                 });
