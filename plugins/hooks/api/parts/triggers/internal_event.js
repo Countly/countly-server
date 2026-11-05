@@ -2,6 +2,7 @@ const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log('hooks:internalEventTrigger');
+const { hasReadRight } = require('../../../../../api/utils/rights.js');
 
 // Event types that are global (not scoped to a single app): new-member events,
 // the master tick, the system-log stream, and app creation. These carry
@@ -57,6 +58,81 @@ async function isRuleOwnerGlobalAdmin(rule, cache) {
         cache.set(ownerId, result);
     }
     return result;
+}
+
+/**
+ * The app(s) an app-scoped event belongs to, as each dispatch carries them. Global events,
+ * and dispatches that carry no app id (dropped further down), give an empty list.
+ * @param {string} eventType - internal event being processed
+ * @param {object} ob - dispatch payload
+ * @returns {Array<string>} app ids
+ */
+function eventAppIds(eventType, ob) {
+    let ids = [];
+    switch (eventType) {
+    case "/cohort/enter":
+    case "/cohort/exit":
+        ids = [ob && ob.cohort && ob.cohort.app_id];
+        break;
+    case "/crashes/new":
+        ids = [ob && ob.data && ob.data.app && ob.data.app._id];
+        break;
+    case "/i/apps/update":
+    case "/i/apps/delete":
+    case "/i/apps/reset":
+    case "/alerts/trigger":
+        ids = [ob && ob.appId];
+        break;
+    case "/i/app_users/create":
+    case "/i/app_users/update":
+    case "/i/app_users/delete":
+        ids = [ob && ob.app_id];
+        break;
+    case "/hooks/trigger":
+        ids = (ob && ob.rule && Array.isArray(ob.rule.apps)) ? ob.rule.apps : [];
+        break;
+    default:
+        if (eventType.indexOf("/i/remote-config/") === 0) {
+            ids = [ob && ob.params && ob.params.appId];
+        }
+    }
+    return ids.filter(Boolean).map((id) => id + "");
+}
+
+/**
+ * Whether the hook's owner (createdBy) may still read hooks on every app the event belongs
+ * to. The endpoints authorize a member when a hook is saved, but nothing re-checked the
+ * owner afterwards, so a hook kept delivering an app's data after its owner lost access
+ * to that app. A hook whose owner no longer exists is skipped. A hook with no createdBy
+ * predates the field and cannot be attributed, so it is left to fire, as alerts do.
+ * @param {object} rule - hook rule
+ * @param {Array<string>} appIds - apps the event belongs to
+ * @param {Map} cache - owner-id -> member promise, scoped to one event dispatch
+ * @returns {Promise<boolean>} true if the hook may still be delivered this event
+ */
+async function ownerMayReadHookApps(rule, appIds, cache) {
+    if (!rule || !rule.createdBy) {
+        return true;
+    }
+    const ownerId = rule.createdBy + "";
+    if (!cache.has(ownerId)) {
+        cache.set(ownerId, Promise.resolve().then(() => {
+            return common.db.collection("members").findOne({_id: common.db.ObjectID(ownerId)}, {projection: {global_admin: 1, permission: 1, user_of: 1, admin_of: 1}});
+        }).catch((e) => {
+            log.e("Failed to resolve hook owner (hook " + (rule._id || "?") + ", createdBy " + ownerId + ")", e);
+            return null;
+        }));
+    }
+    const owner = await cache.get(ownerId);
+    if (!owner) {
+        return false;
+    }
+    if (owner.global_admin) {
+        return true;
+    }
+    //members created before the permission object reach apps through user_of
+    const legacyApps = !owner.permission && Array.isArray(owner.user_of) ? owner.user_of.map((id) => id + "") : [];
+    return appIds.every((appId) => hasReadRight("hooks", appId, owner) || legacyApps.indexOf(appId) > -1);
 }
 
 //An app document carries credentials: the sdk key, every rotated key, the immutable
@@ -215,6 +291,9 @@ class InternalEventTrigger {
         // cache of owner-id -> isGlobalAdmin, scoped to this dispatch, so a
         // global event reaching many hooks resolves each owner only once
         const ownerGlobalAdminCache = new Map();
+        // owner-id -> member, scoped to this dispatch, for the app-scoped owner check
+        const ownerCache = new Map();
+        const appIds = eventAppIds(eventType, ob);
 
         // App scoping drops events, and a silent drop is hard to tell apart from
         // "nothing was configured". Two different things can happen and they get
@@ -256,6 +335,11 @@ class InternalEventTrigger {
             if (GLOBAL_EVENT_TYPES[eventType] && !await isRuleOwnerGlobalAdmin(rule, ownerGlobalAdminCache)) {
                 log.d("Not delivering global event " + eventType + " to hook " + (rule._id || "?")
                     + ": its owner is not a global admin");
+                continue;
+            }
+            if (appIds.length && !await ownerMayReadHookApps(rule, appIds, ownerCache)) {
+                log.d("Not delivering " + eventType + " to hook " + (rule._id || "?")
+                    + ": its owner may no longer read hooks on app(s) [" + appIds.join(", ") + "]");
                 continue;
             }
             switch (eventType) {
