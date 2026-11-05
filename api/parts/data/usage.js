@@ -400,6 +400,10 @@ usage.returnAllProcessedMetrics = function(params) {
 
             if (recvMetricValue !== undefined && recvMetricValue !== null && recvMetricValue !== "") {
                 var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                //metric values become field names (meta_v2, metric documents); a prototype member name is dropped
+                if (common.isForbiddenFieldName(escapedMetricVal)) {
+                    continue;
+                }
                 processedMetrics[tmpMetric.short_code] = escapedMetricVal;
             }
         }
@@ -769,6 +773,10 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
 
                 if (recvMetricValue !== undefined && recvMetricValue !== null && recvMetricValue !== "") {
                     escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                    //the value becomes a field name in meta_v2 and the metric documents
+                    if (common.isForbiddenFieldName(escapedMetricVal)) {
+                        continue;
+                    }
                     postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
 
                     // Assign properties to app_users document of the current user

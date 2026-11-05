@@ -70,7 +70,10 @@ describe('Testing Hooks internal event app scoping', function() {
     function ruleFor(eventType, apps, extraConfig) {
         return {
             _id: 'hook-under-test',
-            createdBy: UNKNOWN_OWNER_ID,
+            // global events need an owner that is a global admin, so an unknown
+            // one fails closed there; app-scoped events are exercised with a hook
+            // predating createdBy, which the owner check lets through
+            createdBy: InternalEventTrigger.GLOBAL_EVENT_TYPES[eventType] ? UNKNOWN_OWNER_ID : undefined,
             apps: apps,
             trigger: {
                 type: 'InternalEventTrigger',

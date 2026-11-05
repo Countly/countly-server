@@ -59,6 +59,8 @@ const path = require("path");
 const fs = require("fs");
 const ejs = require("ejs");
 const { ObjectId } = require("mongodb");
+const { hasReadRight } = require('../../../../api/utils/rights.js');
+const { memberMayReadApp } = require('./app-authorization.js');
 const EMAIL_TEMPLATE = ejs.compile(
     fs.readFileSync(
         path.resolve(__dirname, '../../frontend/public/templates/email.html'),
@@ -93,6 +95,8 @@ module.exports = {
     getDateComponents,
     determineAudience,
     compileEmail,
+    isAlertEnabled,
+    ownerMayStillReadApp,
     trigger,
     loadAlertAppsWithTimezoneOffsets,
 };
@@ -226,12 +230,73 @@ function formatMetricValue(value) {
 }
 
 /**
+ * Whether an alert is switched on. Status changes may store the flag as a string.
+ * @param {object} alert - the stored alert
+ * @returns {boolean} true when the alert is enabled
+ */
+function isAlertEnabled(alert) {
+    return !!alert && (alert.enabled === true || alert.enabled === "true");
+}
+
+/**
+ * Whether the member who created an alert may still read the app it is about.
+ *
+ * The endpoints authorize a request, but nothing re-checked anything once an alert was
+ * enabled, so one created before access was revoked kept emailing that app's metrics.
+ * Both the scheduled job and the event-triggered alerts come through trigger(), which
+ * runs this check.
+ *
+ * @param {object} alert - the stored alert
+ * @param {string} appID - app the alert is sent for
+ * @param {object} log - logger
+ * @returns {Promise<boolean>} true when the alert may still be sent
+ */
+async function ownerMayStillReadApp(alert, appID, log) {
+    if (!alert.createdBy) {
+        //Alerts predating the createdBy field cannot be attributed to anybody. Refusing
+        //to send them would silently stop alerts that have worked for years, which is a
+        //worse outcome than the exposure closed here, so they are reported and left be.
+        log.w("Alert " + alert._id + " has no createdBy, so its owner's current access cannot be checked. Sending anyway.");
+        return true;
+    }
+    let owner;
+    try {
+        const ownerQuery = { _id: common.db.ObjectID(alert.createdBy + "") };
+        const ownerProjection = { projection: { global_admin: 1, permission: 1, user_of: 1, admin_of: 1 } };
+        owner = await common.db.collection("members").findOne(ownerQuery, ownerProjection);
+    }
+    catch (e) {
+        log.e("Could not resolve the owner of alert " + alert._id + ", not sending", e);
+        return false;
+    }
+    if (!owner) {
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer exists");
+        return false;
+    }
+    if (!memberMayReadApp(hasReadRight, owner, appID)) {
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer has access to that app");
+        return false;
+    }
+    return true;
+}
+
+/**
  * Starts triggering alerts matched with their conditions.
  * @param {MatchedResult} result      - alert and app pair
  * @param {object}        log         - log object for the module e.g.: "alerts:views"
  */
 async function trigger(result, log) {
     const {alert, app, date} = result;
+    // Both paths come through here: the scheduled job and the event-triggered alerts
+    // (triggerByEvent in crashes, nps, rating, survey), which load alerts without
+    // looking at their status or owner.
+    if (!isAlertEnabled(alert)) {
+        return;
+    }
+    //the reason is logged as a warning by ownerMayStillReadApp; the alert is left as it is
+    if (!await ownerMayStillReadApp(alert, app && app._id, log)) {
+        return;
+    }
     // increase counter just by date
     await increaseAlertCounter(app, date);
     if (alert.alertBy === "hook") {

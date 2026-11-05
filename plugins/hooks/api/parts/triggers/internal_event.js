@@ -1,6 +1,7 @@
 const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
+const { hasReadRight } = require('../../../../../api/utils/rights.js');
 const log = common.log('hooks:internalEventTrigger');
 
 // Event types that are global (not scoped to a single app): new-member events,
@@ -24,19 +25,15 @@ const GLOBAL_EVENT_TYPES = {
 };
 
 /**
- * Whether the hook's owner (createdBy) is a global admin. Used to gate the
- * global, non app-scoped event types so an app-scoped hook created by a
- * non-global member cannot receive instance-wide data (e.g. new-member objects
- * or the system-log stream). A hook with no resolvable owner is treated as not
- * authorized.
+ * The member who created a hook (createdBy), resolved once per event dispatch.
  * @param {object} rule - hook rule
- * @param {Map} [cache] - optional owner-id -> boolean cache, scoped to one
- *        event dispatch, so each distinct owner is resolved only once
- * @returns {Promise<boolean>} true if the owner is a global admin
+ * @param {Map} [cache] - optional owner-id -> member cache, scoped to one event
+ *        dispatch, so each distinct owner is resolved only once
+ * @returns {Promise<object|null>} the owner, or null when it cannot be resolved
  */
-async function isRuleOwnerGlobalAdmin(rule, cache) {
+async function loadRuleOwner(rule, cache) {
     if (!rule || !rule.createdBy) {
-        return false;
+        return null;
     }
     const ownerId = rule.createdBy + "";
     // memoize per process() call so each distinct owner is resolved once per
@@ -44,19 +41,124 @@ async function isRuleOwnerGlobalAdmin(rule, cache) {
     if (cache && cache.has(ownerId)) {
         return cache.get(ownerId);
     }
-    let result = false;
+    let owner;
     try {
-        const owner = await common.db.collection("members").findOne({_id: common.db.ObjectID(ownerId)}, {projection: {global_admin: 1}});
-        result = !!(owner && owner.global_admin);
+        owner = await common.db.collection("members").findOne({_id: common.db.ObjectID(ownerId)}, {projection: {global_admin: 1, permission: 1, user_of: 1, admin_of: 1}});
     }
     catch (e) {
-        log.e("Failed to resolve hook owner for global-event scope check (hook " + (rule._id || "?") + ", createdBy " + ownerId + ")", e);
-        result = false;
+        log.e("Failed to resolve hook owner (hook " + (rule._id || "?") + ", createdBy " + ownerId + ")", e);
+        owner = null;
     }
     if (cache) {
-        cache.set(ownerId, result);
+        cache.set(ownerId, owner || null);
     }
-    return result;
+    return owner || null;
+}
+
+/**
+ * Whether the hook's owner (createdBy) is a global admin. Used to gate the
+ * global, non app-scoped event types so an app-scoped hook created by a
+ * non-global member cannot receive instance-wide data (e.g. new-member objects
+ * or the system-log stream). A hook with no resolvable owner is treated as not
+ * authorized.
+ * @param {object} rule - hook rule
+ * @param {Map} [cache] - optional owner-id -> member cache, scoped to one
+ *        event dispatch, so each distinct owner is resolved only once
+ * @returns {Promise<boolean>} true if the owner is a global admin
+ */
+async function isRuleOwnerGlobalAdmin(rule, cache) {
+    const owner = await loadRuleOwner(rule, cache);
+    return !!(owner && owner.global_admin);
+}
+
+/**
+ * The apps an app-scoped event belongs to, as each case in process() reads them
+ * @param {string} eventType - internal event type
+ * @param {object} ob - dispatched object
+ * @returns {Array<string>} app ids, empty when the dispatch names none
+ */
+function eventApps(eventType, ob) {
+    let apps;
+    switch (eventType) {
+    case "/cohort/enter":
+    case "/cohort/exit":
+        apps = [ob && ob.cohort && ob.cohort.app_id];
+        break;
+    case "/crashes/new":
+        apps = [ob && ob.data && ob.data.app && ob.data.app._id];
+        break;
+    case "/i/app_users/create":
+    case "/i/app_users/update":
+    case "/i/app_users/delete":
+        apps = [ob && ob.app_id];
+        break;
+    case "/hooks/trigger":
+        apps = (ob && ob.rule && Array.isArray(ob.rule.apps)) ? ob.rule.apps : [];
+        break;
+    default:
+        apps = [ob && ((ob.params && ob.params.appId) || ob.appId)];
+    }
+    return apps.filter(Boolean).map((a) => a + "");
+}
+
+/**
+ * Why a hook may no longer fire for an app-scoped event: its owner may no longer
+ * read hooks on the apps the event belongs to. Nothing re-checked the owner once a
+ * hook was saved, so a hook kept delivering an app's data after its owner lost
+ * access to that app.
+ *
+ * Hooks predating the createdBy field cannot be attributed to anybody and keep
+ * firing, as alerts do. Members created before the permission object reach apps
+ * through user_of, which the right helpers do not count.
+ * @param {object} rule - hook rule
+ * @param {Array<string>} apps - apps the event belongs to
+ * @param {Map} [cache] - owner cache scoped to one event dispatch
+ * @returns {Promise<string|null>} why the hook must not run, null when it may
+ */
+async function ruleOwnerBlockedReason(rule, apps, cache) {
+    if (!rule || !rule.createdBy) {
+        return null;
+    }
+    const owner = await loadRuleOwner(rule, cache);
+    if (!owner) {
+        return "Not run: the hook's creator no longer exists. Save the hook again under an account that can read its apps.";
+    }
+    if (owner.global_admin) {
+        return null;
+    }
+    const legacy = (typeof owner.permission === "undefined" && Array.isArray(owner.user_of)) ? owner.user_of.map(String) : [];
+    const denied = apps.find((appId) => !hasReadRight("hooks", appId, owner) && legacy.indexOf(appId) === -1);
+    if (typeof denied !== "undefined") {
+        return "Not run: the hook's creator no longer has access to app " + denied + ". Save the hook again under an account that can read it.";
+    }
+    return null;
+}
+
+// hook id -> time the last "not run" error was recorded, so a busy app does not fill
+// the hook's error log (it keeps the last 10 entries) with the same entry
+const ownerSkipRecorded = new Map();
+const OWNER_SKIP_RECORD_INTERVAL_MS = 60 * 60 * 1000;
+
+/**
+ * Make a hook skipped for its owner's access visible: a warning in the log every
+ * time, and an entry in the hook's own error log (shown in the Hooks UI) at most
+ * once per hook per OWNER_SKIP_RECORD_INTERVAL_MS in this process. The hook itself
+ * is left as it is, neither disabled nor deleted.
+ * @param {object} rule - hook rule
+ * @param {string} eventType - internal event type
+ * @param {Array<string>} apps - apps the event belongs to
+ * @param {string} reason - why it was not run
+ */
+function recordOwnerSkip(rule, eventType, apps, reason) {
+    log.w("Hook " + (rule._id || "?") + " not run for " + eventType + " on app(s) [" + apps.join(", ") + "]: " + reason);
+    const hookId = rule._id + "";
+    const now = Date.now();
+    const last = ownerSkipRecorded.get(hookId);
+    if (last && now - last < OWNER_SKIP_RECORD_INTERVAL_MS) {
+        return;
+    }
+    ownerSkipRecorded.set(hookId, now);
+    utils.addErrorRecord(rule._id, reason);
 }
 
 //An app document carries credentials: the sdk key, every rotated key, the immutable
@@ -212,9 +314,9 @@ class InternalEventTrigger {
         if (!rules.length) {
             return;
         }
-        // cache of owner-id -> isGlobalAdmin, scoped to this dispatch, so a
-        // global event reaching many hooks resolves each owner only once
-        const ownerGlobalAdminCache = new Map();
+        // cache of owner-id -> member, scoped to this dispatch, so an event
+        // reaching many hooks resolves each owner only once
+        const ownerCache = new Map();
 
         // App scoping drops events, and a silent drop is hard to tell apart from
         // "nothing was configured". Two different things can happen and they get
@@ -253,10 +355,23 @@ class InternalEventTrigger {
             // global (non app-scoped) events must only reach hooks owned by a
             // global admin: an app-scoped hook from a non-global member must
             // not receive instance-wide member/system data.
-            if (GLOBAL_EVENT_TYPES[eventType] && !await isRuleOwnerGlobalAdmin(rule, ownerGlobalAdminCache)) {
+            if (GLOBAL_EVENT_TYPES[eventType] && !await isRuleOwnerGlobalAdmin(rule, ownerCache)) {
                 log.d("Not delivering global event " + eventType + " to hook " + (rule._id || "?")
                     + ": its owner is not a global admin");
                 continue;
+            }
+            // app-scoped events reach a hook only while its owner may still read
+            // hooks on the event's app
+            if (!GLOBAL_EVENT_TYPES[eventType]) {
+                // only the event's apps the hook is scoped to: an event from another
+                // app is dropped by the case below as out of scope, not as an error
+                const scopedApps = Array.isArray(rule.apps) ? rule.apps.map(String) : [];
+                const apps = eventApps(eventType, ob).filter((a) => scopedApps.indexOf(a) > -1);
+                const blocked = apps.length ? await ruleOwnerBlockedReason(rule, apps, ownerCache) : null;
+                if (blocked) {
+                    recordOwnerSkip(rule, eventType, apps, blocked);
+                    continue;
+                }
             }
             switch (eventType) {
             case "/cohort/enter":
@@ -511,6 +626,8 @@ class InternalEventTrigger {
 // exposed so the save handler can reject non-global-admins creating/updating
 // hooks that subscribe to these global event types
 InternalEventTrigger.GLOBAL_EVENT_TYPES = GLOBAL_EVENT_TYPES;
+//exported for tests
+InternalEventTrigger.OWNER_SKIP_RECORD_INTERVAL_MS = OWNER_SKIP_RECORD_INTERVAL_MS;
 
 // exposed so the save handler can reject an eventType that is not a real
 // internal event, and can tell which events carry a target id to validate

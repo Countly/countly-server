@@ -454,9 +454,6 @@
   "plugins/hooks/api/parts/triggers/internal_event.js": {
     "jsdoc/require-returns": {
       "count": 1
-    },
-    "no-useless-assignment": {
-      "count": 1
     }
   },
   "plugins/hooks/api/parts/triggers/scheduled.js": {
