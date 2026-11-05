@@ -307,8 +307,9 @@ taskmanager.longtask = function(options) {
             delete json.callback;
             //delete jquery param to prevent caching
             delete json._;
-            //delete api_key param
+            //delete credentials; a rerun authenticates as the task's creator
             delete json.api_key;
+            delete json.auth_token;
 
             options.request = {
                 uri: (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + options.params.fullPath,
@@ -806,6 +807,8 @@ taskmanager.checkIfRunning = function(options, callback) {
         //we want to get raw json data without jsonp && api_key
         delete json.callback;
         delete json.api_key;
+        //stored requests never carry credentials, so neither may the one compared to them
+        delete json.auth_token;
 
         //delete jquery param to prevent caching
         delete json._;
