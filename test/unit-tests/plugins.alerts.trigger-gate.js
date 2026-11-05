@@ -97,6 +97,15 @@ describe("alerts trigger gate", function() {
         (await send(alert())).should.be.false();
     });
 
+    it("authorizes the app being reported, not the alert's first app", async function() {
+        owner = member({alerts: true, crashes: true});
+        var multiApp = alert({selectedApps: ["appB", "appA"]});
+        (await send(multiApp)).should.be.true();
+        dispatched = [];
+        await commonLib.trigger({alert: multiApp, app: {_id: "appB", name: "B", timezone: "UTC"}, date: new Date()}, quietLog);
+        dispatched.length.should.equal(0);
+    });
+
     it("sends for a global admin owner", async function() {
         owner = {_id: OWNER_ID, global_admin: true};
         (await send(alert())).should.be.true();

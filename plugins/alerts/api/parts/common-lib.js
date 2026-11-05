@@ -218,15 +218,16 @@ async function compileEmail(result) {
  * enabled, so one created before access was revoked kept emailing that app's metrics
  * indefinitely with no further action by anybody.
  *
- * The alert modules all report on selectedApps[0], so that is the app whose data would
- * be sent and therefore the one to authorize.
+ * An alert can target several apps and is sent per app, so the app being reported is the
+ * one to authorize. Without it, the alert's first selected app is checked.
  *
  * @param {object} alert - the stored alert
  * @param {object} log - logger
+ * @param {string=} reportedAppID - app whose data is being sent
  * @returns {Promise<boolean>} true when the alert may still be sent
  */
-async function ownerMayStillReadApp(alert, log) {
-    const appID = Array.isArray(alert.selectedApps) ? alert.selectedApps[0] : undefined;
+async function ownerMayStillReadApp(alert, log, reportedAppID) {
+    const appID = reportedAppID ? reportedAppID + "" : (Array.isArray(alert.selectedApps) ? alert.selectedApps[0] : undefined);
     if (!appID) {
         return true;
     }
@@ -268,7 +269,7 @@ async function trigger(result, log) {
     if (!alert || (alert.enabled !== true && alert.enabled !== "true")) {
         return;
     }
-    if (!await ownerMayStillReadApp(alert, log || logger)) {
+    if (!await ownerMayStillReadApp(alert, log || logger, app && app._id)) {
         (log || logger).d("Not triggering alert " + alert._id + ": its owner may no longer read what it sends");
         return;
     }
