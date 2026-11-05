@@ -19,11 +19,13 @@ describe("hooks internal event: owner access", function() {
         originalDb = common.db;
         originalWriteBatcher = common.writeBatcher;
         errorRecords = [];
-        common.writeBatcher = {add: function(collection, id, update) {
-            if (collection === "hooks" && update.$push && update.$push.error_logs) {
-                errorRecords.push({hook: id, e: update.$push.error_logs.$each[0].e});
+        common.writeBatcher = {
+            add: function(collection, id, update) {
+                if (collection === "hooks" && update.$push && update.$push.error_logs) {
+                    errorRecords.push({hook: id, e: update.$push.error_logs.$each[0].e});
+                }
             }
-        }};
+        };
         InternalEventTrigger.resetOwnerSkipRecords();
         lookups = 0;
         delivered = [];

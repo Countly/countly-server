@@ -12,9 +12,13 @@ describe("alerts trigger gate", function() {
     var OWNER_ID = "5f0000000000000000000001";
     var originalDb, originalDispatch;
     var owner, dispatched, warnings;
-    var quietLog = {d: function() {}, w: function(msg) {
-        warnings.push(msg);
-    }, e: function() {}};
+    var quietLog = {
+        d: function() {},
+        w: function(msg) {
+            warnings.push(msg);
+        },
+        e: function() {}
+    };
 
     beforeEach(function() {
         originalDb = common.db;
