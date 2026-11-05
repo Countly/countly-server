@@ -7,7 +7,15 @@ var commonLib = require("../../plugins/alerts/api/parts/common-lib.js");
 // current access are checked. The event path loads alerts by app and type only.
 describe("alerts trigger gate", function() {
     var APP = "aaaaaaaaaaaaaaaaaaaaaaaa";
-    var log = { w: function() {}, d: function() {}, e: function() {}, i: function() {} };
+    var warnings = [];
+    var log = {
+        w: function(msg) {
+            warnings.push(msg + "");
+        },
+        d: function() {},
+        e: function() {},
+        i: function() {}
+    };
     var originalDb, originalPlugins, members, dispatched, counted;
 
     /**
@@ -38,6 +46,7 @@ describe("alerts trigger gate", function() {
         members = {};
         dispatched = 0;
         counted = 0;
+        warnings = [];
         common.db = {
             ObjectID: function(id) {
                 return id;
@@ -85,16 +94,30 @@ describe("alerts trigger gate", function() {
         counted.should.equal(0);
     });
 
-    it("does not fire when the owner no longer reads the app's alerts", async function() {
+    it("does not fire when the owner no longer reads the app's alerts, and warns", async function() {
         members.o = owner({ core: true });
         await fire({ enabled: true, createdBy: "o" });
         dispatched.should.equal(0);
         counted.should.equal(0);
+        warnings.length.should.equal(1);
+        warnings[0].should.containEql("Alert a ");
+        warnings[0].should.containEql(APP);
+        warnings[0].should.containEql("no longer has access");
     });
 
-    it("does not fire when the owner is gone", async function() {
+    it("does not fire when the owner is gone, and warns", async function() {
         await fire({ enabled: true, createdBy: "o" });
         dispatched.should.equal(0);
+        warnings.length.should.equal(1);
+        warnings[0].should.containEql("Alert a ");
+        warnings[0].should.containEql(APP);
+        warnings[0].should.containEql("no longer exists");
+    });
+
+    it("does not warn for a disabled alert", async function() {
+        members.o = owner({ alerts: true });
+        await fire({ enabled: false, createdBy: "o" });
+        warnings.length.should.equal(0);
     });
 
     it("keeps firing an alert that predates createdBy", async function() {

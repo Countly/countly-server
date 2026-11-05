@@ -271,10 +271,14 @@ async function ownerMayStillReadApp(alert, appID, log) {
         return false;
     }
     if (!owner) {
-        log.d("Owner of alert " + alert._id + " no longer exists, not sending");
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer exists");
         return false;
     }
-    return memberMayReadApp(hasReadRight, owner, appID);
+    if (!memberMayReadApp(hasReadRight, owner, appID)) {
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer has access to that app");
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -290,8 +294,8 @@ async function trigger(result, log) {
     if (!isAlertEnabled(alert)) {
         return;
     }
+    //the reason is logged as a warning by ownerMayStillReadApp; the alert is left as it is
     if (!await ownerMayStillReadApp(alert, app && app._id, log)) {
-        log.d("Not sending alert " + alert._id + ": its owner no longer has access to that app");
         return;
     }
     // increase counter just by date

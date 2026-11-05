@@ -1,6 +1,6 @@
 'use strict';
 
-const { TRIGGERED_BY_EVENT, ownerMayStillReadApp } = require('../parts/common-lib.js');
+const { TRIGGERED_BY_EVENT } = require('../parts/common-lib.js');
 
 const { Job } = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('alert:monitor'),
@@ -45,10 +45,6 @@ class MonitorJob extends Job {
             log.d("alert job info:", this._json, alert, app);
             if (!alert || !app) {
                 throw new Error("Alert", alertID, "or App", appID, "couldn't be found");
-            }
-            if (!await ownerMayStillReadApp(alert, appID, log)) {
-                log.d("Not sending alert " + alertID + " for app " + appID + ": its owner no longer has access to that app");
-                return;
             }
             if (alert.alertDataType === 'profile_groups') {
                 alert.alertDataType = 'cohorts';
