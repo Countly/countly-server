@@ -12,7 +12,7 @@ const Promise = require('./promise.js');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getSharedCollectionApps, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getSharedCollectionApps, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential, getUserAppsWithReadRight } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -33,6 +33,34 @@ const Handle = require('../../api/parts/jobs/index.js');
 const render = require('../../api/utils/render.js');
 
 var loaded_configs_time = 0;
+
+/**
+* Whether the member may export a collection through /o/export/db. A per-app collection
+* is exportable with the same right DB Viewer reads it with: dbviewer read on the app the
+* collection belongs to. A global admin keeps access to everything.
+* @param {params} params - params object
+* @param {string} collection - collection name
+* @param {Function} callback - called with true when the member may export the collection
+* @returns {void} void
+*/
+function hasDbExportAccess(params, collection, callback) {
+    if (params.member.global_admin) {
+        return dbUserHasAccessToCollection(params, collection, callback);
+    }
+    var apps = getUserAppsWithReadRight(params.member, "dbviewer");
+    var next = function(i) {
+        if (i >= apps.length) {
+            return callback(false);
+        }
+        dbUserHasAccessToCollection(params, collection, apps[i], function(hasAccess) {
+            if (hasAccess) {
+                return callback(true);
+            }
+            next(i + 1);
+        });
+    };
+    next(0);
+}
 
 const countlyApi = {
     data: {
@@ -2231,7 +2259,7 @@ const processRequest = (params) => {
                         //the shared event collections hold every app's rows: exportable with the read right of a
                         //feature that reads them on at least one app, and scoped to those apps below
                         var sharedFeatures = getSharedCollectionExportFeatures(params.qstring.db, params.qstring.collection);
-                        dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
+                        hasDbExportAccess(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess || (sharedFeatures && (params.member.global_admin || getSharedCollectionApps(params.member, sharedFeatures).length > 0))) {
                                 var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
                                 var db = "";
