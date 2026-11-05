@@ -1764,18 +1764,20 @@ const processRequest = (params) => {
                         }
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
-                            // Cross-tenant guard: an appUser_<app_id>_<uid> export
-                            // belongs to <app_id>. validateUserForRead only verifies
-                            // the caller has read on params.qstring.app_id (which
-                            // can be any app they have access to), so without this
-                            // check, a member of app A could pull exports owned by
-                            // app B simply by guessing the filename.
-                            if (filename[0].startsWith("appUser_")) {
-                                var nameParts = filename[0].split('_');
-                                if (nameParts.length >= 2 && !params.member.global_admin && (params.qstring.app_id + "") !== (nameParts[1] + "")) {
-                                    common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
-                                    return false;
-                                }
+                            /**
+                            * Cross-tenant guard: an appUser_<app_id>_<uid> export belongs to
+                            * <app_id>. validateUserForRead only verifies the caller has read on
+                            * params.qstring.app_id, so the export has to belong to that app.
+                            * @param {string} name - export name
+                            * @returns {boolean} true if the caller may download it
+                            */
+                            var exportBelongsToApp = function(name) {
+                                var nameParts = name.split('_');
+                                return !!params.member.global_admin || (nameParts.length >= 2 && (params.qstring.app_id + "") === (nameParts[1] + ""));
+                            };
+                            if (filename[0].startsWith("appUser_") && !exportBelongsToApp(filename[0])) {
+                                common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
+                                return false;
                             }
                             new Promise(function(resolve) {
                                 if (filename[0].startsWith("appUser_")) {
@@ -1783,12 +1785,21 @@ const processRequest = (params) => {
                                     resolve();
                                 }
                                 else { //we have task result. Try getting from there
-                                    taskmanager.getResult({id: filename[0]}, function(err, res) {
-                                        if (res && res.data) {
-                                            filename[0] = res.data;
-                                            filename[0] = filename[0].replace(/\"/g, '');
+                                    taskmanager.loadIfReadable(common.db, filename[0], params.member, function(errTask) {
+                                        if (errTask) {
+                                            common.returnMessage(params, errTask === 'forbidden' ? 403 : 404, errTask === 'forbidden' ? 'Not allowed' : 'Export not found');
+                                            return;
                                         }
-                                        resolve();
+                                        taskmanager.getResult({id: filename[0]}, function(err, res) {
+                                            var resolved = (res && res.data) ? (res.data + "").replace(/\"/g, '') : "";
+                                            //the task names the export to serve: an app user export of the app the request is for
+                                            if (!resolved.startsWith("appUser_") || /[^A-Za-z0-9_.-]/.test(resolved) || !exportBelongsToApp(resolved)) {
+                                                common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
+                                                return;
+                                            }
+                                            filename[0] = resolved;
+                                            resolve();
+                                        });
                                     });
                                 }
                             }).then(function() {
