@@ -12,7 +12,7 @@ const Promise = require('./promise.js');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getSharedCollectionApps, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getExportAppFilter, getSharedCollectionApps, getSharedCollectionExportFeatures, getAdminApps, getUserAppsForFeaturePermission, isPermissionSubset, getPermissionApps, isScopedCredential, getUserAppsWithReadRight } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -33,6 +33,34 @@ const Handle = require('../../api/parts/jobs/index.js');
 const render = require('../../api/utils/render.js');
 
 var loaded_configs_time = 0;
+
+/**
+* Whether the member may export a collection through /o/export/db. A per-app collection
+* is exportable with the same right DB Viewer reads it with: dbviewer read on the app the
+* collection belongs to. A global admin keeps access to everything.
+* @param {params} params - params object
+* @param {string} collection - collection name
+* @param {Function} callback - called with true when the member may export the collection
+* @returns {void} void
+*/
+function hasDbExportAccess(params, collection, callback) {
+    if (params.member.global_admin) {
+        return dbUserHasAccessToCollection(params, collection, callback);
+    }
+    var apps = getUserAppsWithReadRight(params.member, "dbviewer");
+    var next = function(i) {
+        if (i >= apps.length) {
+            return callback(false);
+        }
+        dbUserHasAccessToCollection(params, collection, apps[i], function(hasAccess) {
+            if (hasAccess) {
+                return callback(true);
+            }
+            next(i + 1);
+        });
+    };
+    next(0);
+}
 
 const countlyApi = {
     data: {
@@ -1736,18 +1764,20 @@ const processRequest = (params) => {
                         }
                         validateUserForRead(params, function() {
                             var filename = paths[4].split('.');
-                            // Cross-tenant guard: an appUser_<app_id>_<uid> export
-                            // belongs to <app_id>. validateUserForRead only verifies
-                            // the caller has read on params.qstring.app_id (which
-                            // can be any app they have access to), so without this
-                            // check, a member of app A could pull exports owned by
-                            // app B simply by guessing the filename.
-                            if (filename[0].startsWith("appUser_")) {
-                                var nameParts = filename[0].split('_');
-                                if (nameParts.length >= 2 && !params.member.global_admin && (params.qstring.app_id + "") !== (nameParts[1] + "")) {
-                                    common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
-                                    return false;
-                                }
+                            /**
+                            * Cross-tenant guard: an appUser_<app_id>_<uid> export belongs to
+                            * <app_id>. validateUserForRead only verifies the caller has read on
+                            * params.qstring.app_id, so the export has to belong to that app.
+                            * @param {string} name - export name
+                            * @returns {boolean} true if the caller may download it
+                            */
+                            var exportBelongsToApp = function(name) {
+                                var nameParts = name.split('_');
+                                return !!params.member.global_admin || (nameParts.length >= 2 && (params.qstring.app_id + "") === (nameParts[1] + ""));
+                            };
+                            if (filename[0].startsWith("appUser_") && !exportBelongsToApp(filename[0])) {
+                                common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
+                                return false;
                             }
                             new Promise(function(resolve) {
                                 if (filename[0].startsWith("appUser_")) {
@@ -1755,12 +1785,21 @@ const processRequest = (params) => {
                                     resolve();
                                 }
                                 else { //we have task result. Try getting from there
-                                    taskmanager.getResult({id: filename[0]}, function(err, res) {
-                                        if (res && res.data) {
-                                            filename[0] = res.data;
-                                            filename[0] = filename[0].replace(/\"/g, '');
+                                    taskmanager.loadIfReadable(common.db, filename[0], params.member, function(errTask) {
+                                        if (errTask) {
+                                            common.returnMessage(params, errTask === 'forbidden' ? 403 : 404, errTask === 'forbidden' ? 'Not allowed' : 'Export not found');
+                                            return;
                                         }
-                                        resolve();
+                                        taskmanager.getResult({id: filename[0]}, function(err, res) {
+                                            var resolved = (res && res.data) ? (res.data + "").replace(/\"/g, '') : "";
+                                            //the task names the export to serve: an app user export of the app the request is for
+                                            if (!resolved.startsWith("appUser_") || /[^A-Za-z0-9_.-]/.test(resolved) || !exportBelongsToApp(resolved)) {
+                                                common.returnMessage(params, 403, 'Not allowed (export belongs to a different app)');
+                                                return;
+                                            }
+                                            filename[0] = resolved;
+                                            resolve();
+                                        });
                                     });
                                 }
                             }).then(function() {
@@ -2231,7 +2270,7 @@ const processRequest = (params) => {
                         //the shared event collections hold every app's rows: exportable with the read right of a
                         //feature that reads them on at least one app, and scoped to those apps below
                         var sharedFeatures = getSharedCollectionExportFeatures(params.qstring.db, params.qstring.collection);
-                        dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
+                        hasDbExportAccess(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess || (sharedFeatures && (params.member.global_admin || getSharedCollectionApps(params.member, sharedFeatures).length > 0))) {
                                 var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
                                 var db = "";

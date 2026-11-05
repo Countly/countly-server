@@ -586,6 +586,18 @@ appsApi.updateAppPlugins = function(params) {
         common.returnMessage(params, 400, 'Error: ' + updateAppPluginsValidation.errors);
         return false;
     }
+    if (!params.qstring.args || typeof params.qstring.args !== "object" || Array.isArray(params.qstring.args)) {
+        common.returnMessage(params, 400, 'Error: args must be an object of plugin configurations');
+        return false;
+    }
+    //each key becomes the field "plugins.<key>", so it has to name one configuration section:
+    //a dotted key would write a field nested inside another section, past that section's handler
+    var invalidKey = Object.keys(params.qstring.args).find(k => k.indexOf(".") !== -1 || k.indexOf("$") === 0 || !k.length);
+    if (typeof invalidKey !== "undefined") {
+        log.d("Rejected plugin config key" + common.reqInfo(params) + ": " + invalidKey);
+        common.returnMessage(params, 400, 'Error: invalid configuration section name ' + invalidKey);
+        return false;
+    }
 
     common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.app_id), (err1, app) => {
         if (err1 || !app) {
