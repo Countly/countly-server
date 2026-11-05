@@ -81,6 +81,39 @@ describe('long task rerun signing', function() {
         json.api_key.should.equal('CREATORKEY');
     });
 
+    it('reruns a task stored from a request made with an auth_token, signed with the creator\'s key', async function() {
+        //store the request the way a long task does, from a request that carried both credentials
+        const stored = [];
+        taskmanager.longtask({
+            db: {
+                ObjectID: (id) => id,
+                collection: () => ({
+                    update: (query, update, options, callback) => {
+                        stored.push(update.$set && update.$set.request);
+                        if (typeof callback === 'function') {
+                            callback(null);
+                        }
+                    }
+                })
+            },
+            force: true,
+            params: {
+                qstring: {app_id: APP_ID, api_key: 'CALLERKEY', auth_token: 'CALLERTOKEN'},
+                fullPath: '/o/drill',
+                member: {_id: CREATOR_ID},
+                app_id: APP_ID
+            },
+            type: 'test',
+            outputData: function() {}
+        });
+        const request = stored.filter(Boolean)[0];
+        JSON.parse(request).json.should.not.have.property('auth_token');
+        tasks = [{_id: 't4', creator: CREATOR_ID, global: true, autoRefresh: true, request: request}];
+        const {json} = await rerun('t4');
+        json.api_key.should.equal('CREATORKEY');
+        json.should.not.have.property('auth_token');
+    });
+
     it('does not rerun a global task whose creator is gone', async function() {
         tasks = [task({_id: 't2', creator: GONE_ID, global: true, autoRefresh: true})];
         const result = await rerun('t2');
