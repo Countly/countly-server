@@ -1499,6 +1499,11 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             else if (err === "User exists") {
                 res.redirect(countlyConfig.path + '/login');
             }
+            else if (err === membersUtility.SETUP_UNAVAILABLE) {
+                // The index that stops two concurrent setups from both creating
+                // an admin is not in place; nothing was created.
+                res.status(503).send('Setup is temporarily unavailable because the database is not ready. Please retry in a moment.');
+            }
             else if (err && err.message) {
                 res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
                 res.header('Expires', '0');
