@@ -228,8 +228,8 @@ const { generateQRCode } = require('../lib.js');
                                 }
                                 // 2fa is already set up
                                 else {
-                                    // otp is wrong, increase fails
-                                    preventBruteforce.fail("login", req.body.username);
+                                    // otp is wrong, increase fails under the key the login check reads
+                                    preventBruteforce.fail("login", preventBruteforce.loginKey(req.body.username));
                                     res.render("../../../plugins/two-factor-auth/frontend/public/templates/enter2fa_login", {
                                         cdn: countlyConfig.cdn || "",
                                         countlyFavicon: req.countly.favicon,
