@@ -16,6 +16,61 @@ const fse = require('fs-extra');
 var crypto = require('crypto');
 var log = common.log('core:app_users');
 
+var APP_USER_EXPORT_DIR = path.resolve(__dirname, './../../../export/AppUser');
+
+/**
+* Checks that a uid has the format usersApi.getUid generates (see common.parseSequence)
+* @param {any} uid - uid to check
+* @returns {boolean} true if uid is a non-empty alphanumeric string
+*/
+function isValidUid(uid) {
+    return typeof uid === "string" && /^[0-9a-zA-Z]+$/.test(uid);
+}
+
+/**
+* Checks if an app_users update object changes uid to anything other than a valid uid
+* @param {object} update - mongodb update object
+* @returns {boolean} true if the update must be refused
+*/
+function isInvalidUidUpdate(update) {
+    for (var op in update) {
+        var fields = update[op];
+        if (!fields || typeof fields !== "object") {
+            continue;
+        }
+        for (var key in fields) {
+            var touchesUid = key === "uid" || key.indexOf("uid.") === 0;
+            if (op === "$rename") {
+                var target = fields[key] + "";
+                if (touchesUid || target === "uid" || target.indexOf("uid.") === 0) {
+                    return true;
+                }
+            }
+            else if (touchesUid && !((op === "$set" || op === "$setOnInsert") && key === "uid" && isValidUid(fields[key]))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+* Resolves an app user export id to its path directly inside export/AppUser
+* @param {string} exportID - export id, like appUser_{appid}_{uid}
+* @param {string=} suffix - optional suffix, like .tar.gz
+* @returns {string|null} resolved path, or null if the id is not a plain export name
+*/
+function resolveExportPath(exportID, suffix) {
+    if (typeof exportID !== "string" || !/^[A-Za-z0-9_.-]+$/.test(exportID)) {
+        return null;
+    }
+    var resolved = path.resolve(APP_USER_EXPORT_DIR, exportID + (suffix || ""));
+    if (path.dirname(resolved) !== APP_USER_EXPORT_DIR) {
+        return null;
+    }
+    return resolved;
+}
+
 var cohorts;
 try {
     cohorts = require("../../../plugins/cohorts/api/parts/cohorts.js");
@@ -55,6 +110,10 @@ usersApi.create = function(app_id, doc, params, callback) {
             return;
         }
         doc._id = _id;
+        if (typeof doc.uid !== "undefined" && !isValidUid(doc.uid)) {
+            callback("Invalid uid. Do not provide uid if you want api to generate one");
+            return;
+        }
         if (typeof doc.uid === "undefined") {
             usersApi.getUid(app_id, function(err1, uid) {
                 if (uid) {
@@ -134,6 +193,12 @@ usersApi.update = function(app_id, query, update, params, callback) {
                 }
                 return;
             }
+        }
+        if (isInvalidUidUpdate(update)) {
+            if (callback) {
+                callback("Invalid uid update");
+            }
+            return;
         }
         common.db.collection('app_users' + app_id).updateMany(query, update, function(err, res) {
             if (!err) {
@@ -780,24 +845,29 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
     //normally there should be only export in gridfs. Cleaning all to be sure.
     //rejects only if there stays any saved data for export
     log.d("deleteMyExport:" + exportID);
+    var exportFolder = resolveExportPath(exportID);
+    var exportArchive = resolveExportPath(exportID, '.tar.gz');
+    if (!exportFolder || !exportArchive) {
+        return Promise.reject("Invalid export id");
+    }
     return new Promise(function(resolve, reject) {
         //remove archive
         var errors = [];
-        if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'))) {
+        if (fs.existsSync(exportArchive)) {
             try {
-                fs.unlinkSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'));
+                fs.unlinkSync(exportArchive);
             }
             catch (err) {
                 errors.push(err);
             }
         }
-        countlyFs.gridfs.deleteFile("appUsers", path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'), {id: exportID + '.tar.gz'}, function(error) {
+        countlyFs.gridfs.deleteFile("appUsers", exportArchive, {id: exportID + '.tar.gz'}, function(error) {
             if (error && error.message && error.message.substring(0, 12) !== "FileNotFound" && error.message.substring(0, 14) !== 'File not found') {
                 log.e(error.message.substring(0, 14));
                 errors.push(error.message);
             }
-            if (fs.existsSync(path.resolve(__dirname, './../../../export/AppUser/' + exportID))) {
-                fse.remove(path.resolve(__dirname, './../../../export/AppUser/' + exportID),
+            if (fs.existsSync(exportFolder)) {
+                fse.remove(exportFolder,
                     err => {
                         if (err) {
                             errors.push(error);
@@ -1070,10 +1140,17 @@ usersApi.export = function(app_id, query, params, callback) {
                 single_user = false;
             }
 
-            var export_folder = path.resolve(__dirname, './../../../export');
-            export_folder = path.resolve(__dirname, './../../../export/AppUser/appUser_' + app_id + '_' + eid);
             var export_id = 'appUser_' + app_id + '_' + eid;
             var export_filename = 'appUser_' + app_id + '_' + eid;
+            var export_folder = resolveExportPath(export_id);
+            if (!export_folder) {
+                callback({
+                    message: "Invalid uid for export",
+                    filename: ""
+                }, "");
+                return;
+            }
+            var uidQuery = JSON.stringify({"uid": {"$in": res[0].uid}});
 
             var dbargs = [];
             var export_commands = {};
@@ -1122,14 +1199,14 @@ usersApi.export = function(app_id, query, params, callback) {
                     log.d("collection marked");
                     //export data from metric_changes
 
-                    export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
+                    export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", uidQuery, "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
                         resolve();
                     });
                 });
             }).then(function() {
                 log.d("metric_changes exported");
                 //export data from app_users
-                return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/app_users" + app_id + ".json"]});
+                return export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "app_users" + app_id, "-q", uidQuery, "--out", export_folder + "/app_users" + app_id + ".json"]});
 
             }).then(
                 function() {

@@ -87,9 +87,55 @@ function memberMayReadApp(readRightFn, member, appId) {
     return readRightFn(FEATURE_NAME, appId + "", member) || legacyApps(member).indexOf(appId + "") > -1;
 }
 
+/**
+ * The feature whose data an alert of each type reads and sends out. Receiving an alert
+ * takes read on that feature for the app: holding `alerts` alone would otherwise keep
+ * mailing figures the owner can no longer read. A type not listed here is sent only for
+ * a global admin.
+ */
+const ALERT_DATA_FEATURES = {
+    views: 'views',
+    users: 'core',
+    sessions: 'core',
+    dataPoints: 'core',
+    survey: 'surveys',
+    nps: 'surveys',
+    revenue: 'revenue',
+    events: 'events',
+    rating: 'star_rating',
+    cohorts: 'cohorts',
+    profile_groups: 'cohorts',
+    crashes: 'crashes',
+};
+
+/**
+ * Whether the member may read the data an alert of this type sends, on one app.
+ *
+ * @param {function} readRightFn - hasReadRight from rights.js
+ * @param {object} member - member object
+ * @param {string} dataType - the alert's alertDataType
+ * @param {string} appId - app id
+ * @returns {boolean} true when the member may read that data
+ */
+function memberMayReadAlertData(readRightFn, member, dataType, appId) {
+    if (!member) {
+        return false;
+    }
+    if (member.global_admin) {
+        return true;
+    }
+    const feature = ALERT_DATA_FEATURES[dataType];
+    if (!feature) {
+        return false;
+    }
+    return readRightFn(feature, appId + "", member) || legacyApps(member).indexOf(appId + "") > -1;
+}
+
 module.exports = {
     FEATURE_NAME,
+    ALERT_DATA_FEATURES,
     legacyApps,
     memberHasRightForAllApps,
-    memberMayReadApp
+    memberMayReadApp,
+    memberMayReadAlertData
 };

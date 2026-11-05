@@ -59,6 +59,9 @@ const path = require("path");
 const fs = require("fs");
 const ejs = require("ejs");
 const { ObjectId } = require("mongodb");
+const logger = require('../../../../api/utils/log.js')('alert:common-lib');
+const { hasReadRight } = require('../../../../api/utils/rights.js');
+const { memberMayReadApp, memberMayReadAlertData } = require('./app-authorization.js');
 const EMAIL_TEMPLATE = ejs.compile(
     fs.readFileSync(
         path.resolve(__dirname, '../../frontend/public/templates/email.html'),
@@ -93,6 +96,7 @@ module.exports = {
     getDateComponents,
     determineAudience,
     compileEmail,
+    ownerMayStillReadApp,
     trigger,
     loadAlertAppsWithTimezoneOffsets,
 };
@@ -207,12 +211,73 @@ async function compileEmail(result) {
 }
 
 /**
+ * Whether the member who created an alert may still read the app it reports on, and the
+ * data the alert sends from it.
+ *
+ * The endpoints authorize a request, but nothing re-checked anything once an alert was
+ * enabled, so one created before access was revoked kept emailing that app's metrics
+ * indefinitely with no further action by anybody.
+ *
+ * An alert can target several apps and is sent per app, so the app being reported is the
+ * one to authorize. Without it, the alert's first selected app is checked.
+ *
+ * @param {object} alert - the stored alert
+ * @param {object} log - logger
+ * @param {string=} reportedAppID - app whose data is being sent
+ * @returns {Promise<boolean>} true when the alert may still be sent
+ */
+async function ownerMayStillReadApp(alert, log, reportedAppID) {
+    const appID = reportedAppID ? reportedAppID + "" : (Array.isArray(alert.selectedApps) ? alert.selectedApps[0] : undefined);
+    if (!appID) {
+        return true;
+    }
+    if (!alert.createdBy) {
+        //alerts predating the field cannot be attributed, and refusing to send them would
+        //silently stop alerts that have worked for years, so they are reported and left be
+        log.w("Alert " + alert._id + " has no createdBy, so its owner's current access cannot be checked. Sending anyway.");
+        return true;
+    }
+    let owner;
+    try {
+        owner = await common.db.collection("members").findOne(
+            { _id: common.db.ObjectID(alert.createdBy + "") },
+            { projection: { global_admin: 1, permission: 1, user_of: 1, admin_of: 1 } }
+        );
+    }
+    catch (e) {
+        log.e("Could not resolve the owner of alert " + alert._id + ", not sending", e);
+        return false;
+    }
+    if (!owner) {
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer exists");
+        return false;
+    }
+    if (!memberMayReadApp(hasReadRight, owner, appID) || !memberMayReadAlertData(hasReadRight, owner, alert.alertDataType, appID)) {
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer has access to that app's alerts or " + alert.alertDataType + " data");
+        return false;
+    }
+    return true;
+}
+
+/**
  * Starts triggering alerts matched with their conditions.
  * @param {MatchedResult} result      - alert and app pair
  * @param {object}        log         - log object for the module e.g.: "alerts:views"
  */
 async function trigger(result, log) {
     const {alert, app, date} = result;
+    // Both paths come through here - the scheduled job only runs enabled alerts, but the
+    // event path (triggerByEvent in crashes, nps, rating, survey) reads alerts by type and
+    // app alone, so it also has to check that the alert is enabled and its owner may
+    // still read what it sends.
+    if (!alert || (alert.enabled !== true && alert.enabled !== "true")) {
+        return;
+    }
+    // ownerMayStillReadApp logs a warning with the alert and app id when it refuses;
+    // nothing about the alert is changed, so it resumes once access is restored
+    if (!await ownerMayStillReadApp(alert, log || logger, app && app._id)) {
+        return;
+    }
     // increase counter just by date
     await increaseAlertCounter(app, date);
     if (alert.alertBy === "hook") {

@@ -141,11 +141,11 @@ var metricProps = {
             //the owner, which is what preview and pdf rely on, but that fallback must not
             //be the thing that keeps an app's figures being mailed out.
             if (!owner) {
-                log.d("Owner of report " + report._id + " no longer exists, not sending");
+                log.w("Report " + report._id + " not sent: its creator no longer exists");
                 return cb(false);
             }
             if (!ownerMayStillReadApps(owner, report.apps)) {
-                log.d("Not sending report " + report._id + ": its owner no longer has access to the apps it covers");
+                log.w("Report " + report._id + " not sent: its creator no longer has access to the apps it covers");
                 return cb(false);
             }
             cb(true);

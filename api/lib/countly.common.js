@@ -2564,7 +2564,8 @@ countlyCommon.getTimestampRangeQuery = function(params, inSeconds) {
 *    ]}
 */
 countlyCommon.mergeMetricsByName = function(chartData, metric) {
-    var uniqueNames = {},
+    //no prototype, so a metric value such as "__proto__" is an ordinary key
+    var uniqueNames = Object.create(null),
         data;
     for (var i = 0; i < chartData.length; i++) {
         data = chartData[i];

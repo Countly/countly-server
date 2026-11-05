@@ -266,22 +266,43 @@ describe('Testing Hooks internal event app scoping', function() {
     var trigger;
     var delivered;
     var originalUpdateRuleTriggerTime;
+    var originalAddErrorRecord;
 
     // A well-formed object id that is not a real member, so the global-event
     // owner lookup resolves to nothing and fails closed. Deliberately not
     // stubbing common.db: that is shared state for the whole test process, and
     // replacing it even briefly can break unrelated suites with in-flight work.
     var UNKNOWN_OWNER_ID = '0123456789abcdef01234567';
+    // App-scoped events also need the hook's owner to still exist and read hooks on
+    // the event's app, so those rules are owned by the test's global admin.
+    var ADMIN_OWNER_ID = '';
+    var commonModule = require("../../api/utils/common.js");
+    var dbWasUnset = false;
 
-    before(function() {
+    before(async function() {
+        var admin = await testUtils.db.collection("members").findOne({api_key: testUtils.get("API_KEY_ADMIN")});
+        ADMIN_OWNER_ID = admin._id + "";
+        // the owner lookup reads members through common.db, which the test process
+        // only has if something set it; use the test connection when it is not set
+        if (!commonModule.db) {
+            dbWasUnset = true;
+            commonModule.db = testUtils.db;
+        }
         // updateRuleTriggerTime writes through a db batcher that is not available
         // in the test process; the scoping decision is what is under test
         originalUpdateRuleTriggerTime = hookUtils.updateRuleTriggerTime;
         hookUtils.updateRuleTriggerTime = function() {};
+        // a skipped hook records why in its error log, through the same batcher
+        originalAddErrorRecord = hookUtils.addErrorRecord;
+        hookUtils.addErrorRecord = function() {};
     });
 
     after(function() {
         hookUtils.updateRuleTriggerTime = originalUpdateRuleTriggerTime;
+        hookUtils.addErrorRecord = originalAddErrorRecord;
+        if (dbWasUnset) {
+            commonModule.db = undefined;
+        }
     });
 
     beforeEach(function() {
@@ -303,7 +324,7 @@ describe('Testing Hooks internal event app scoping', function() {
     function ruleFor(eventType, apps, extraConfig) {
         return {
             _id: 'hook-under-test',
-            createdBy: UNKNOWN_OWNER_ID,
+            createdBy: InternalEventTrigger.GLOBAL_EVENT_TYPES[eventType] ? UNKNOWN_OWNER_ID : ADMIN_OWNER_ID,
             apps: apps,
             trigger: {
                 type: 'InternalEventTrigger',
@@ -422,6 +443,14 @@ describe('Testing Hooks internal event app scoping', function() {
         it('should not deliver /crashes/new for another app', async function() {
             trigger._rules = [ruleFor('/crashes/new', ['appA'])];
             await trigger.process({data: {app: {_id: 'appB'}, crash: {}}}, '/crashes/new');
+            delivered.length.should.eql(0);
+        });
+
+        it('should not deliver /crashes/new when the hook owner no longer exists', async function() {
+            var rule = ruleFor('/crashes/new', ['appA']);
+            rule.createdBy = UNKNOWN_OWNER_ID;
+            trigger._rules = [rule];
+            await trigger.process({data: {app: {_id: 'appA'}, crash: {}}}, '/crashes/new');
             delivered.length.should.eql(0);
         });
     });
