@@ -1,6 +1,6 @@
 # Security Policy
 
-Security is very important to us. If you discover a security issue in Countly, please report it privately by email to security@count.ly, not by opening a public GitHub issue or pull request.
+Security is very important to us. If you discover a security issue in Countly, please report it privately by email to security@count.ly, or through GitHub's private vulnerability reporting ("Report a vulnerability" on this repository's Security tab), not by opening a public GitHub issue or pull request.
 
 # No bug bounty
 
