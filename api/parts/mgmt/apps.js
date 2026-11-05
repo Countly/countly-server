@@ -585,6 +585,14 @@ appsApi.updateAppPlugins = function(params) {
         return false;
     }
 
+    //each key names one plugins.<key> section; a dotted or $ key would address a field
+    //inside a section instead, past that plugin's own handler
+    var invalidKey = Object.keys(params.qstring.args || {}).find(k => k.indexOf('.') !== -1 || k.indexOf('$') === 0);
+    if (typeof invalidKey !== "undefined") {
+        common.returnMessage(params, 400, 'Error: Invalid configuration key ' + invalidKey);
+        return false;
+    }
+
     common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.app_id), (err1, app) => {
         if (err1 || !app) {
             log.w('App %s not found %j', params.qstring.app_id, err1 || '');
