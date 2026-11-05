@@ -150,13 +150,42 @@ exports.decrypt_old = function(crypted, key, iv, algorithm, input_encoding, outp
         decipher = crypto.createDecipheriv(algorithm, key, iv);
     }
     else {
-        //values encrypted without an IV need crypto.createDecipher, which Node.js 22 removed
-        if (typeof crypto.createDecipher !== "function") {
-            throw new Error("This value was encrypted without an IV by an old Countly version and cannot be decrypted on Node.js " + process.versions.node + "; encrypt it again (for example with countly encrypt) or decrypt it on Node.js 20");
-        }
-        decipher = crypto.createDecipher(algorithm, key);
+        //values encrypted without an IV were written with crypto.createCipher, which Node.js 22 removed;
+        //derive the key and IV the way it did, so they decrypt the same on every Node.js version
+        var derived = deriveLegacyKeyAndIv(algorithm, key);
+        decipher = crypto.createDecipheriv(algorithm, derived.key, derived.iv);
     }
     decrypted = decipher.update(crypted, input_encoding, output_encoding);
     decrypted += decipher.final(output_encoding);
     return decrypted;
 };
+
+/**
+* Derive the key and IV that the removed crypto.createCipher/createDecipher derived from a password:
+* OpenSSL EVP_BytesToKey with MD5, one iteration and no salt
+* @param {string} algorithm - cipher name, as passed to createDecipheriv
+* @param {string|Buffer} password - the password the value was encrypted with
+* @returns {object} {key: Buffer, iv: Buffer|null}, iv is null for ciphers that take none
+*/
+function deriveLegacyKeyAndIv(algorithm, password) {
+    var info = crypto.getCipherInfo(algorithm);
+    if (!info) {
+        throw new Error("Unknown cipher algorithm: " + algorithm);
+    }
+    var keyLength = info.keyLength;
+    var ivLength = info.ivLength || 0;
+    var passwordBuffer = Buffer.from(password);
+    var blocks = [];
+    var total = 0;
+    var previous = Buffer.alloc(0);
+    while (total < keyLength + ivLength) {
+        previous = crypto.createHash("md5").update(Buffer.concat([previous, passwordBuffer])).digest();
+        blocks.push(previous);
+        total += previous.length;
+    }
+    var material = Buffer.concat(blocks);
+    return {
+        key: material.subarray(0, keyLength),
+        iv: ivLength ? material.subarray(keyLength, keyLength + ivLength) : null
+    };
+}
