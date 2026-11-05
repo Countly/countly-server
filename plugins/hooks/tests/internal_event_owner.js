@@ -155,7 +155,8 @@ describe('Testing Hooks internal event owner access', function() {
         // recorded on the hook itself, once for both skipped events
         var expected = "Not run: the hook's creator no longer has access to app " + APP_ID;
         var recorded = (hook.error_logs || []).filter(function(entry) {
-            return typeof entry.e === "string" && entry.e.indexOf(expected) === 0;
+            //the list answers with text escaped for HTML
+            return typeof entry.e === "string" && entry.e.replace(/&#39;/g, "'").indexOf(expected) === 0;
         });
         recorded.length.should.eql(1, JSON.stringify(hook.error_logs || []));
     });

@@ -261,10 +261,9 @@ async function ownerMayStillReadApp(alert, appID, log) {
     }
     let owner;
     try {
-        owner = await common.db.collection("members").findOne(
-            { _id: common.db.ObjectID(alert.createdBy + "") },
-            { projection: { global_admin: 1, permission: 1, user_of: 1, admin_of: 1 } }
-        );
+        const ownerQuery = { _id: common.db.ObjectID(alert.createdBy + "") };
+        const ownerProjection = { projection: { global_admin: 1, permission: 1, user_of: 1, admin_of: 1 } };
+        owner = await common.db.collection("members").findOne(ownerQuery, ownerProjection);
     }
     catch (e) {
         log.e("Could not resolve the owner of alert " + alert._id + ", not sending", e);
