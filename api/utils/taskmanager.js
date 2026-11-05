@@ -293,6 +293,12 @@ taskmanager.longtask = function(options) {
             };
         }
 
+        //the stored request keeps no credential, and a rerun is signed with the creator's own
+        //key: that would widen a task a scoped token created, so such a task is marked and
+        //not rerun
+        if (options.params && require('./rights.js').isScopedCredential(options.params)) {
+            options.scoped_credential = true;
+        }
         if (!options.id) {
             if (options.params && options.params.member && options.params.member._id) {
                 options.creator = options.params.member._id + "";
@@ -433,6 +439,9 @@ taskmanager.createTask = function(options, callback) {
     update.subtask_key = options.subtask_key || "";
     update.taskgroup = options.taskgroup || false;
     update.linked_to = options.linked_to;
+    if (options.scoped_credential) {
+        update.scoped_credential = true;
+    }
     if (options.subtask && options.subtask !== "") {
         update.subtask = options.subtask;
         var updateSub = {$set: {}};
@@ -844,10 +853,16 @@ taskmanager.checkResult = function(options, callback) {
 * @param {params=} options.params - params object
 * @param {object=} options.request - api request to be able to rerun this task
 * @param {funciton} callback - callback for the result
+* @returns {void} void
 */
 taskmanager.checkIfRunning = function(options, callback) {
     options = options || {};
     options.db = options.db || common.db;
+    //the request is compared without credentials, so requests of differently scoped tokens
+    //would look alike; a scoped request always runs on its own
+    if (options.params && require('./rights.js').isScopedCredential(options.params)) {
+        return callback(false);
+    }
     var query = {};
     if (options.id) {
         query._id = options.id;
@@ -1266,6 +1281,10 @@ taskmanager.rerunTask = function(options, callback) {
     }
     log.d("Fetching from long_tasks to rerun: " + JSON.stringify(qq));
     options.db.collection("long_tasks").findOne(qq, function(err, res) {
+        if (!err && res && res.scoped_credential) {
+            //created with a scoped token, whose scope a rerun signed with the creator's key would not keep
+            return callback(null, "This task cannot be run again");
+        }
         if (!err && res && res.request) {
             var reqData = {};
             try {

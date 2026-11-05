@@ -114,6 +114,13 @@ describe('long task rerun signing', function() {
         json.should.not.have.property('auth_token');
     });
 
+    it('does not rerun a task a scoped token created', async function() {
+        tasks = [task({_id: 't5', creator: CREATOR_ID, global: true, autoRefresh: true, scoped_credential: true})];
+        const result = await rerun('t5');
+        should.not.exist(result.json);
+        result.refused.should.equal('This task cannot be run again');
+    });
+
     it('does not rerun a global task whose creator is gone', async function() {
         tasks = [task({_id: 't2', creator: GONE_ID, global: true, autoRefresh: true})];
         const result = await rerun('t2');
