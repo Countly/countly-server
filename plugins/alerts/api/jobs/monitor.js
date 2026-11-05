@@ -39,7 +39,7 @@ async function ownerMayStillReadApp(alert, appID) {
         return false;
     }
     if (!owner) {
-        log.d("Owner of alert " + alert._id + " no longer exists, not sending");
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer exists");
         return false;
     }
     return memberMayReadApp(hasReadRight, owner, appID);
@@ -83,7 +83,7 @@ class MonitorJob extends Job {
             });
             log.d("alert job info:", this._json, alert, app);
             if (alert && app && !await ownerMayStillReadApp(alert, appID)) {
-                log.d("Not sending alert " + alertID + " for app " + appID + ": its owner no longer has access to that app");
+                log.w("Alert " + alertID + " not sent for app " + appID + ": its creator no longer has access to that app");
                 return;
             }
             if (!alert || !app) {

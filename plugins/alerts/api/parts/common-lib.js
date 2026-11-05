@@ -249,10 +249,14 @@ async function ownerMayStillReadApp(alert, log, reportedAppID) {
         return false;
     }
     if (!owner) {
-        log.d("Owner of alert " + alert._id + " no longer exists, not sending");
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer exists");
         return false;
     }
-    return memberMayReadApp(hasReadRight, owner, appID) && memberMayReadAlertData(hasReadRight, owner, alert.alertDataType, appID);
+    if (!memberMayReadApp(hasReadRight, owner, appID) || !memberMayReadAlertData(hasReadRight, owner, alert.alertDataType, appID)) {
+        log.w("Alert " + alert._id + " not sent for app " + appID + ": its creator no longer has access to that app's alerts or " + alert.alertDataType + " data");
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -269,8 +273,9 @@ async function trigger(result, log) {
     if (!alert || (alert.enabled !== true && alert.enabled !== "true")) {
         return;
     }
+    // ownerMayStillReadApp logs a warning with the alert and app id when it refuses;
+    // nothing about the alert is changed, so it resumes once access is restored
     if (!await ownerMayStillReadApp(alert, log || logger, app && app._id)) {
-        (log || logger).d("Not triggering alert " + alert._id + ": its owner may no longer read what it sends");
         return;
     }
     // increase counter just by date

@@ -11,13 +11,16 @@ var commonLib = require("../../plugins/alerts/api/parts/common-lib.js");
 describe("alerts trigger gate", function() {
     var OWNER_ID = "5f0000000000000000000001";
     var originalDb, originalDispatch;
-    var owner, dispatched;
-    var quietLog = {d: function() {}, w: function() {}, e: function() {}};
+    var owner, dispatched, warnings;
+    var quietLog = {d: function() {}, w: function(msg) {
+        warnings.push(msg);
+    }, e: function() {}};
 
     beforeEach(function() {
         originalDb = common.db;
         originalDispatch = common.plugins.dispatch;
         dispatched = [];
+        warnings = [];
         common.plugins.dispatch = function(event, ob) {
             dispatched.push({event: event, ob: ob});
         };
@@ -74,6 +77,7 @@ describe("alerts trigger gate", function() {
     it("sends an enabled alert whose owner reads the app and its data", async function() {
         owner = member({alerts: true, crashes: true});
         (await send(alert())).should.be.true();
+        warnings.should.eql([]);
     });
 
     it("sends nothing for a disabled alert", async function() {
@@ -82,9 +86,11 @@ describe("alerts trigger gate", function() {
         (await send(alert({enabled: undefined}))).should.be.false();
     });
 
-    it("sends nothing when the owner lost read on the alert's data", async function() {
+    it("sends nothing when the owner lost read on the alert's data, and warns with the alert and app", async function() {
         owner = member({alerts: true});
         (await send(alert())).should.be.false();
+        warnings.length.should.equal(1);
+        warnings[0].should.match(/^Alert alert1 not sent for app appA: its creator no longer has access/);
     });
 
     it("sends nothing when the owner lost read on the app's alerts", async function() {
@@ -92,9 +98,10 @@ describe("alerts trigger gate", function() {
         (await send(alert())).should.be.false();
     });
 
-    it("sends nothing when the owner no longer exists", async function() {
+    it("sends nothing when the owner no longer exists, and warns with the alert and app", async function() {
         owner = null;
         (await send(alert())).should.be.false();
+        warnings.should.eql(["Alert alert1 not sent for app appA: its creator no longer exists"]);
     });
 
     it("authorizes the app being reported, not the alert's first app", async function() {
