@@ -38,7 +38,8 @@ var loaded_configs_time = 0;
 */
 function dbViewerHasAccessToCollection(params, collection, callback) {
     if (params.member.global_admin) {
-        return dbUserHasAccessToCollection(params, collection, callback);
+        dbUserHasAccessToCollection(params, collection, callback);
+        return;
     }
     var apps = (getUserApps(params.member) || []).filter(function(appId) {
         return hasReadRight('dbviewer', appId, params.member);
