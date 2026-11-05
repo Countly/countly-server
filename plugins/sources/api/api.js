@@ -69,7 +69,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
                     var key = item.split("=")[0];
                     var keepIt = false;
                     for (var sKey in searchEngineKeyWord) {
-                        if (searchEngineKeyWord[sKey] === true || path.indexOf(searchEngineKeyWord[sKey]) > 0) {
+                        if (searchEngineKeyWord[sKey] === true || path.indexOf(searchEngineKeyWord[sKey]) !== -1) {
                             if (key === sKey) {
                                 keepIt = true;
                             }
