@@ -1244,6 +1244,18 @@ plugins.setConfigs("dashboards", {
                 return true;
             }
 
+            if (!widget || typeof widget !== "object" || Array.isArray(widget)) {
+                common.returnMessage(params, 400, 'Invalid parameter: widget');
+                return true;
+            }
+            var addPathKey = findWidgetPathKey(widget);
+            if (addPathKey) {
+                log.d("Rejected widget" + common.reqInfo(params) + ": field name " + addPathKey);
+                common.returnMessage(params, 400, 'Invalid parameter: widget field ' + addPathKey);
+                return true;
+            }
+            removeServerWidgetFields(widget);
+
             //Whatever apps value was sent, a note is stored with "*".
             if (isAppLessWidget(widget)) {
                 widget.apps = APP_LESS_WIDGET_APPS;
@@ -1355,6 +1367,18 @@ plugins.setConfigs("dashboards", {
                 common.returnMessage(params, 400, 'Invalid parameter: widget_id');
                 return true;
             }
+
+            if (!widget || typeof widget !== "object" || Array.isArray(widget)) {
+                common.returnMessage(params, 400, 'Invalid parameter: widget');
+                return true;
+            }
+            var updatePathKey = findWidgetPathKey(widget);
+            if (updatePathKey) {
+                log.d("Rejected widget update" + common.reqInfo(params) + ": field name " + updatePathKey);
+                common.returnMessage(params, 400, 'Invalid parameter: widget field ' + updatePathKey);
+                return true;
+            }
+            removeServerWidgetFields(widget);
 
             common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId), widgets: {$in: [common.db.ObjectID(widgetId)]}}, function(err, dashboard) {
                 if (err || !dashboard) {
@@ -1826,6 +1850,30 @@ plugins.setConfigs("dashboards", {
         }
 
         return true;
+    }
+
+    /**
+     * Widget fields are defined by each widget type's plugin, so a widget is not
+     * limited to a fixed list of fields. A top-level key may still never be a
+     * dotted path or an operator: with $set, "apps.0" would change apps without
+     * the apps check. The dashboard UI never sends such a key.
+     * @param  {Object} widget - widget from the request
+     * @returns {String|null} the first such key, or null
+     */
+    function findWidgetPathKey(widget) {
+        return Object.keys(widget).find(function(key) {
+            return key.indexOf(".") !== -1 || key.charAt(0) === "$";
+        }) || null;
+    }
+
+    /**
+     * Remove the fields the server manages: the id, and dashData, which is
+     * attached to a widget when it is read.
+     * @param  {Object} widget - widget from the request
+     */
+    function removeServerWidgetFields(widget) {
+        delete widget._id;
+        delete widget.dashData;
     }
 
     /**

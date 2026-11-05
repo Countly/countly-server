@@ -655,3 +655,130 @@ describe('Dashboards and a scoped token', () => {
         });
     });
 });
+
+// Widget fields belong to each widget type, so add-widget and update-widget store
+// any top-level field, but never one whose name is a dotted path or an operator:
+// with $set, "apps.0" would change apps without the apps check. Such a request is
+// refused. _id and dashData are managed by the server and are not stored from it.
+describe('Testing dashboards widget field names', function() {
+    var API_KEY_ADMIN = "";
+    var APP_A = "";
+    var APP_B = "";
+    var memberApiKey = "";
+    var memberId = "";
+    var dashId = "";
+    var widgetId = "";
+    var uniq = Date.now();
+
+    /**
+     * Call a dashboards endpoint as the member
+     * @param {string} path - endpoint
+     * @param {object} query - query params
+     * @param {number} expected - expected status code
+     * @returns {Promise<object>} supertest response
+     */
+    function memberCall(path, query, expected) {
+        return request.get(path).query(Object.assign({api_key: memberApiKey}, query)).then(function(res) {
+            res.status.should.equal(expected, res.text);
+            return res;
+        });
+    }
+
+    /**
+     * Read the stored widget as the member
+     * @returns {Promise<object>} the widget
+     */
+    async function readWidget() {
+        var res = await memberCall('/o/dashboards/widget', {dashboard_id: dashId, widget_id: widgetId}, 200);
+        res.body.length.should.equal(1);
+        return res.body[0];
+    }
+
+    before(async function() {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_A = testUtils.get("APP_ID");
+        var res = await request.get('/i/apps/create').query({api_key: API_KEY_ADMIN, args: JSON.stringify({name: "WidgetFieldsB" + uniq})});
+        res.status.should.equal(200, res.text);
+        APP_B = res.body._id;
+
+        var perm = {_: {a: [], u: [[APP_A]]}, c: {}, r: {}, u: {}, d: {}};
+        perm.r[APP_A] = {all: true, allowed: {}};
+        var userParams = {
+            full_name: "widgetfields" + uniq,
+            username: "widgetfields" + uniq,
+            password: "p4ssw0rD!",
+            email: "widgetfields" + uniq + "@mail.test",
+            permission: perm
+        };
+        res = await request.get('/i/users/create').query({api_key: API_KEY_ADMIN, args: JSON.stringify(userParams)});
+        res.status.should.equal(200, res.text);
+        memberApiKey = res.body.api_key;
+        memberId = res.body._id;
+
+        res = await memberCall('/i/dashboards/create', {name: "widget fields " + uniq, share_with: "none"}, 200);
+        dashId = res.body + "";
+    });
+
+    it('should refuse a new widget with a dotted field name', async function() {
+        var widget = {widget_type: "analytics", apps: [APP_A], data_type: "session", metrics: ["t"], visualization: "number"};
+        widget["apps.1"] = APP_B;
+        await memberCall('/i/dashboards/add-widget', {dashboard_id: dashId, widget: JSON.stringify(widget)}, 400);
+    });
+
+    it('should add a widget on an app the member can read', async function() {
+        var widget = {widget_type: "analytics", apps: [APP_A], data_type: "session", metrics: ["t"], visualization: "number"};
+        var res = await memberCall('/i/dashboards/add-widget', {dashboard_id: dashId, widget: JSON.stringify(widget)}, 200);
+        widgetId = res.body + "";
+    });
+
+    it('should refuse an update with a dotted apps path', async function() {
+        var update = {title: "dotted-" + uniq};
+        update["apps.0"] = APP_B;
+        await memberCall('/i/dashboards/update-widget', {dashboard_id: dashId, widget_id: widgetId, widget: JSON.stringify(update)}, 400);
+        var widget = await readWidget();
+        widget.apps.should.eql([APP_A]);
+        should(widget.title).not.equal("dotted-" + uniq);
+    });
+
+    it('should refuse an update with an operator field name', async function() {
+        await memberCall('/i/dashboards/update-widget', {dashboard_id: dashId, widget_id: widgetId, widget: JSON.stringify({$where: "1"})}, 400);
+    });
+
+    it('should still save every field of an update as the dashboard UI sends it', async function() {
+        //what the analytics widget drawer sends, plus the fields a client may echo back
+        var settings = {
+            widget_type: "analytics",
+            feature: "core",
+            apps: [APP_A],
+            data_type: "session",
+            metrics: ["t", "u"],
+            breakdowns: ["countries"],
+            visualization: "table",
+            title: "ui-edit-" + uniq,
+            app_count: "single",
+            custom_period: "30days",
+            position: [0, 2],
+            size: [6, 4],
+            pluginOwnedSetting: {nested: "kept"}
+        };
+        var sent = Object.assign({_id: "0123456789abcdef01234567", dashData: {stale: true}}, settings);
+        await memberCall('/i/dashboards/update-widget', {dashboard_id: dashId, widget_id: widgetId, widget: JSON.stringify(sent)}, 200);
+        var widget = await readWidget();
+        (widget._id + "").should.equal(widgetId);
+        Object.keys(settings).forEach(function(key) {
+            should(widget[key]).eql(settings[key], key);
+        });
+    });
+
+    after(async function() {
+        if (dashId) {
+            await request.get('/i/dashboards/delete').query({api_key: API_KEY_ADMIN, dashboard_id: dashId});
+        }
+        if (memberId) {
+            await request.get('/i/users/delete').query({api_key: API_KEY_ADMIN, args: JSON.stringify({user_ids: [memberId]})});
+        }
+        if (APP_B) {
+            await request.get('/i/apps/delete').query({api_key: API_KEY_ADMIN, args: JSON.stringify({app_id: APP_B})});
+        }
+    });
+});
