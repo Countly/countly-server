@@ -50,7 +50,7 @@
     "@breejs/later": "4.2.0",
     "@json2csv/plainjs": "7.0.8",
     "all-the-cities": "3.1.0",
-    "argon2": "0.41.1",
+    "argon2": "0.45.2",
     "async": "3.2.6",
     "body-parser": "2.4.0",
     "bunyan": "file:api/utils/bunyan-compat",
