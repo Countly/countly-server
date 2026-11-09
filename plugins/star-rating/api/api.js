@@ -2001,6 +2001,7 @@ function uploadFile(myfile, id, appId, callback) {
     plugins.register("/email/report", async function(ob) {
         const {params, metric} = ob;
         const {report, app, member} = params;
+        let reportCallbackCalled = false;
         try {
             if (metric !== 'star-rating') {
                 return;
@@ -2102,12 +2103,15 @@ function uploadFile(myfile, id, appId, callback) {
             };
             const templateString = await reportUtils.readReportTemplate(path.resolve(__dirname, '../frontend/public/templates/report.html'));
             const reportString = ejs.render(templateString, {...result});
+            reportCallbackCalled = true;
             ob.reportAPICallback(null, {html: reportString});
             return;
         }
         catch (err) {
             console.log(err);
-            ob.reportAPICallback(err, null);
+            if (!reportCallbackCalled) {
+                ob.reportAPICallback(err, null);
+            }
         }
     });
 

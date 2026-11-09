@@ -90,7 +90,7 @@ class Connector extends DoFinish {
 
                     let promises = [];
                     for (let p in a.plugins.push) {
-                        let id = a.plugins.push[p]._id;
+                        let id = a.plugins.push[p] && a.plugins.push[p]._id;
                         if (id) {
                             this.log.d('Loading credentials %s', id);
                             promises.push(Creds.load(id).then(cred => {
