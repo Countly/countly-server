@@ -386,6 +386,30 @@ describe('Testing views plugin', function() {
         verifyTotals("month");
     });
 
+    describe('Period that is not a JSON array', function() {
+        it('answers with the 30days table instead of failing', function(done) {
+            request
+                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=30days')
+                .expect(200)
+                .end(function(err, expected) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(expected.text).iTotalRecords.should.be.above(0);
+                    request
+                        .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable&period=' + encodeURIComponent((myTime - 1000) + ',' + myTime))
+                        .expect(200)
+                        .end(function(err2, res) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            res.text.should.eql(expected.text);
+                            done();
+                        });
+                });
+        });
+    });
+
     describe('Same user different view', function() {
         it('adding view', function(done) {
             tableResponse.hour.iTotalRecords += 1;

@@ -594,7 +594,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             pipeline.push({$project: p_a});
         }
         else { //two timestamps
-            period = JSON.parse(period);
+            try {
+                period = JSON.parse(period);
+            }
+            catch (error) {
+                period = null;
+            }
+            if (!Array.isArray(period)) {
+                //not a [start, end] pair, use the range countlyCommon.getPeriodObj resolved it to
+                period = [periodObj.start, periodObj.end];
+            }
             var start = moment(period[0]);
             var firstMonth = start.format('YYYY:M');
             var lastMonth = now.format('YYYY:M');
