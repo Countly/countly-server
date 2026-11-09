@@ -386,19 +386,25 @@ class Manager {
     **/
     schedule(job) {
         if (job.scheduleObj) {
-            let strict = job.strict !== null && job.strict !== undefined && job.strict !== false,
-                schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
-                now = new Date(),
-                // for strict jobs we're going to repeat all missed tasks (100 tasks max) up to current date after restart
-                // for non-strict ones, we want to start from current date
-                next = later.schedule(schedule).next(3, strict ? new Date(job.next || now.getTime()) : now);
+            try {
+                let strict = job.strict !== null && job.strict !== undefined && job.strict !== false,
+                    schedule = typeof job.scheduleObj === 'string' ? later.parse.text(job.scheduleObj) : job.scheduleObj,
+                    now = new Date(),
+                    // for strict jobs we're going to repeat all missed tasks (100 tasks max) up to current date after restart
+                    // for non-strict ones, we want to start from current date
+                    next = later.schedule(schedule).next(3, strict ? new Date(job.next || now.getTime()) : now);
 
-            next = next.filter(d => d.getTime() !== job.next && (!job.next || d.getTime() > job.next) && d.getTime() !== now.getTime());
-            if (typeof job.strict === 'number' && job.next) {
-                let s = next.filter(d => Math.abs(d.getTime() - job.next) > job.strict);
-                next = s.length ? s : next;
+                next = next.filter(d => d.getTime() !== job.next && (!job.next || d.getTime() > job.next) && d.getTime() !== now.getTime());
+                if (typeof job.strict === 'number' && job.next) {
+                    let s = next.filter(d => Math.abs(d.getTime() - job.next) > job.strict);
+                    next = s.length ? s : next;
+                }
+                return job.schedule(job.scheduleObj, job.strict, next.shift().getTime());
             }
-            return job.schedule(job.scheduleObj, job.strict, next.shift().getTime());
+            catch (e) {
+                log.e('Cannot compute next run of job %s with schedule %j: %j', job.name, job.scheduleObj, e.stack || e);
+                return Promise.reject(e);
+            }
         }
         return Promise.resolve();
     }
@@ -429,7 +435,7 @@ class Manager {
                                 this.running[job.name].splice(idx, 1);
                             }
                             log.d('cleared manager from job, %s:%s, still running %j', job.name, job.id, this.running[job.name]);
-                            this.schedule(job).catch(e => log.e.bind(log, 'Error when clearing job: %j', e));
+                            this.schedule(job).catch(e => log.e('Error when clearing job %s: %j', job.id, e.message || e));
                         },
                         timeout = setTimeout(clear, THE_VERY_TOP_TIMEOUT);
 
@@ -574,7 +580,7 @@ class Manager {
                 job._json.duration = Date.now() - job._json.started;
                 job._json.error = '' + error;
                 job._json.status = STATUS.DONE;
-                job._save(job._json);
+                job._save(job._json).catch(e => log.w('Could not mark job %s as done: %j', job.id, e.message || e));
             }
             throw error;
         });

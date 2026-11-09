@@ -208,7 +208,7 @@ exports.renderView = function(options, cb) {
                 });
 
                 page.on('pageerror', (error) => {
-                    log.e("Headless chrome page error message", error.message);
+                    log.e("Headless chrome page error message", error && error.message ? error.message : error);
                 });
 
                 page.on('response', (response) => {

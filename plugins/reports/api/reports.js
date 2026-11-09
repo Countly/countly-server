@@ -397,7 +397,13 @@ var metricProps = {
                                     else {
                                         // process outside reports plugin
                                         // set plugin report dispatch max duration to 30s
+                                        // the timeout and the plugin callback may both fire, answer only once
+                                        let reportCallDone = false;
                                         const cancelReportCallTimeout = setTimeout(() => {
+                                            if (reportCallDone) {
+                                                return;
+                                            }
+                                            reportCallDone = true;
                                             done2("cancel report plugin dispatcher:" + metric, null);
                                         }, 30000);
                                         plugins.dispatch("/email/report", {
@@ -411,6 +417,11 @@ var metricProps = {
                                             metric: metric,
                                             reportAPICallback: (callErr, callData) => {
                                                 clearTimeout(cancelReportCallTimeout);
+                                                if (reportCallDone) {
+                                                    log.w('Report plugin %s answered after it already finished or timed out', metric);
+                                                    return;
+                                                }
+                                                reportCallDone = true;
                                                 if (callErr) {
                                                     log.e('Error during report plugin dispatch: %j', callErr);
                                                     done2(callErr, null);

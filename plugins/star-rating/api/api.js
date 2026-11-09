@@ -1469,6 +1469,10 @@ function uploadFile(myfile, id, appId, callback) {
             catch {
                 widgets = [];
             }
+            if (!Array.isArray(widgets)) {
+                common.returnMessage(params, 400, 'Invalid widgets');
+                return true;
+            }
             var widgetIdsArray = widgets.map(function(d) {
                 return common.db.ObjectID(d);
             });
@@ -1718,6 +1722,10 @@ function uploadFile(myfile, id, appId, callback) {
             //unauthorized caller cannot probe the endpoint.
             validateRead(params, FEATURE_NAME, function() {
                 if (params.qstring.period) {
+                    if (typeof params.qstring.period !== 'string') {
+                        common.returnMessage(params, 400, 'Bad request parameter: period');
+                        return true;
+                    }
                     //check if period comes from datapicker
                     if (params.qstring.period.indexOf(",") !== -1) {
                         try {
@@ -2011,6 +2019,7 @@ function uploadFile(myfile, id, appId, callback) {
     plugins.register("/email/report", async function(ob) {
         const {params, metric} = ob;
         const {report, app, member} = params;
+        let reportCallbackCalled = false;
         try {
             if (metric !== 'star-rating') {
                 return;
@@ -2112,12 +2121,15 @@ function uploadFile(myfile, id, appId, callback) {
             };
             const templateString = await reportUtils.readReportTemplate(path.resolve(__dirname, '../frontend/public/templates/report.html'));
             const reportString = ejs.render(templateString, {...result});
+            reportCallbackCalled = true;
             ob.reportAPICallback(null, {html: reportString});
             return;
         }
         catch (err) {
             console.log(err);
-            ob.reportAPICallback(err, null);
+            if (!reportCallbackCalled) {
+                ob.reportAPICallback(err, null);
+            }
         }
     });
 
