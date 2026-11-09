@@ -154,13 +154,15 @@ plugins.register('/cache/init', function() {
 
 plugins.register('/i', async ob => {
     let params = ob.params,
-        la = params.app_user.la;
+        la = params.app_user ? params.app_user.la : undefined;
     if (params.qstring.events && Array.isArray(params.qstring.events)) {
         let events = params.qstring.events,
             keys = events.map(e => e.key);
         keys = keys.filter((k, i) => keys.indexOf(k) === i);
 
-        autoOnEvent(params.app_id, params.app_user.uid, keys, events);
+        if (params.app_user) {
+            autoOnEvent(params.app_id, params.app_user.uid, keys, events);
+        }
 
         let push = events.filter(e => e.key && e.key.indexOf('[CLY]_push_action') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24);
         if (push.length) {
@@ -233,7 +235,7 @@ plugins.register('/i', async ob => {
         }
     }
 
-    if (params.qstring.token_session) {
+    if (params.qstring.token_session && params.app_user) {
         onTokenSession(params.app_user, params);
     }
 });

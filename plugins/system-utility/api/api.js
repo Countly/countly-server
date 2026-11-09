@@ -103,7 +103,7 @@ function stopWithTimeout(type, fromTimeout = false) {
 (function() {
     plugins.register("/i/inspector", function(ob) {
         var params = ob.params,
-            path = ob.paths[3].toLowerCase(),
+            path = (ob.paths[3] || "").toLowerCase(),
             validate = ob.validateUserForGlobalAdmin;
 
         switch (path) {
@@ -144,7 +144,7 @@ function stopWithTimeout(type, fromTimeout = false) {
 
     plugins.register("/i/profiler", function(ob) {
         var params = ob.params,
-            path = ob.paths[3].toLowerCase(),
+            path = (ob.paths[3] || "").toLowerCase(),
             validate = ob.validateUserForGlobalAdmin;
 
         switch (path) {
@@ -243,7 +243,7 @@ function stopWithTimeout(type, fromTimeout = false) {
     plugins.register("/o/system", function(ob) {
 
         var params = ob.params,
-            path = ob.paths[3].toLowerCase(),
+            path = (ob.paths[3] || "").toLowerCase(),
             qstring = ob.params.qstring,
             validate = ob.validateUserForGlobalAdmin;
 

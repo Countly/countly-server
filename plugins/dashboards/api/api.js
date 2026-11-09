@@ -27,9 +27,23 @@ plugins.setConfigs("dashboards", {
 (function() {
 
     plugins.register("/master", function() {
-        setTimeout(() => {
-            require('../../../api/parts/jobs').job('dashboards:refreshDashboards').replace().schedule('every 5 minutes');
-        }, 1000);
+        /**
+         * Schedule the refresh job, waiting for the job manager to find the job classes
+         * @param {number} attempt - attempt number
+         */
+        const scheduleRefresh = (attempt) => {
+            const job = require('../../../api/parts/jobs').job('dashboards:refreshDashboards');
+            if (job) {
+                job.replace().schedule('every 5 minutes');
+            }
+            else if (attempt < 60) {
+                setTimeout(() => scheduleRefresh(attempt + 1), 1000);
+            }
+            else {
+                log.e('Could not schedule dashboards:refreshDashboards, the job class was not found');
+            }
+        };
+        setTimeout(() => scheduleRefresh(1), 1000);
     });
 
     /**

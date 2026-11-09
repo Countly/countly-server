@@ -90,7 +90,7 @@ class Connector extends DoFinish {
 
                     let promises = [];
                     for (let p in a.plugins.push) {
-                        let id = a.plugins.push[p]._id;
+                        let id = a.plugins.push[p] && a.plugins.push[p]._id;
                         if (typeof id === "string") {
                             id = new this.db.ObjectID(id);
                         }

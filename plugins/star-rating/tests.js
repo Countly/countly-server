@@ -166,6 +166,21 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Try to get widgets with a widgets parameter that is not an array', function() {
+        it('should return 400', function(done) {
+            request.get('/o/feedback/multiple-widgets-by-id?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widgets=null')
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.eql({result: 'Invalid widgets'});
+                    done();
+                });
+        });
+    });
+
     describe('Try to get feedback data', function() {
         it('should return 200 and empty object', function(done) {
             APP_ID = testUtils.get("APP_ID") || APP_ID;

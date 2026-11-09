@@ -358,6 +358,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         return groups;
     }
     */
+    /**
+    * Error thrown by createAggregatePipeline when the period cannot be parsed
+    * @returns {Error} error marked with invalidPeriod
+    */
+    function invalidPeriodError() {
+        var err = new Error('Bad request parameter: period');
+        err.invalidPeriod = true;
+        return err;
+    }
+
     /** function returns aggregation pipeline
      * @param {object} params  -  params object(passed from request).
      * @param {string} params.qstring.app_id - app id
@@ -370,8 +380,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         settings = settings || {};
         var pipeline = [];
         var period = params.qstring.period || '30days';
-        if (params.qstring.period && params.qstring.period.indexOf('since') !== -1) {
-            params.qstring.period = JSON.parse(params.qstring.period);
+        if (params.qstring.period && typeof params.qstring.period === 'string' && params.qstring.period.indexOf('since') !== -1) {
+            try {
+                params.qstring.period = JSON.parse(params.qstring.period);
+            }
+            catch {
+                throw invalidPeriodError();
+            }
         }
         var dates = [];
         var calcUvalue = [];
@@ -594,7 +609,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             pipeline.push({$project: p_a});
         }
         else { //two timestamps
-            period = JSON.parse(period);
+            try {
+                period = JSON.parse(period);
+            }
+            catch {
+                throw invalidPeriodError();
+            }
             var start = moment(period[0]);
             var firstMonth = start.format('YYYY:M');
             var lastMonth = now.format('YYYY:M');
@@ -728,12 +748,22 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @param {string} params.qstring.period - period
      * @param {object} settings - settings for select
      * @param {string} settings.segmentVal - segment value. (Segment key is set by collection name)
-     * @param {@Function} callback - callback function
+     * @param {@Function} callback - callback function (data, total, periodErr), periodErr is set when the period cannot be parsed
     */
     function getAggregatedData(collectionName, params, settings, callback) {
         settings = settings || {};
         var app_id = settings.app_id;
-        var pipeline = createAggregatePipeline(params, settings);
+        var pipeline;
+        try {
+            pipeline = createAggregatePipeline(params, settings);
+        }
+        catch (e) {
+            if (!e.invalidPeriod) {
+                throw e;
+            }
+            callback([], 0, e);
+            return;
+        }
 
         if (settings.depends) {
             pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
@@ -948,7 +978,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         }
                     }
 
-                    var pipeline = createAggregatePipeline(params, selOptions);
+                    var pipeline;
+                    try {
+                        pipeline = createAggregatePipeline(params, selOptions);
+                    }
+                    catch (e) {
+                        if (!e.invalidPeriod) {
+                            throw e;
+                        }
+                        common.returnMessage(params, 400, e.message);
+                        return;
+                    }
                     pipeline.push({
                         $lookup: {
                             from: "app_viewsmeta" + params.qstring.app_id,
@@ -1088,7 +1128,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 }
 
 
-                                getAggregatedData(colName, params, selOptions, function(data, total) {
+                                getAggregatedData(colName, params, selOptions, function(data, total, periodErr) {
+                                    if (periodErr) {
+                                        common.returnMessage(params, 400, periodErr.message);
+                                        return;
+                                    }
                                     var values = ["u", "t", "s", "b", "e", "d", "n", "scr", "uvalue", "br", "uvc"];
                                     data = data || [];
 
@@ -1122,7 +1166,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         });
                     }
                     else {
-                        getAggregatedData(colName, params, selOptions, function(data, total) {
+                        getAggregatedData(colName, params, selOptions, function(data, total, periodErr) {
+                            if (periodErr) {
+                                common.returnMessage(params, 400, periodErr.message);
+                                return;
+                            }
                             var values = ["u", "t", "s", "b", "e", "d", "n", "scr", "br", "uvalue", "uvc"];
                             data = data || [];
 
@@ -1221,7 +1269,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 }
                 else if (params.qstring.action === "getTotals") {
                     var settings = {app_id: params.qstring.app_id, startPos: 0, dataLength: 0, sortby: {}, sortcol: 0, segment: segment, segmentVal: segmentVal, unique: "u", levels: {daily: ["s", "u", "t", "b", "uvc"], monthly: ["u", "t", "s", "b", "uvc"] }};
-                    var pipe = createAggregatePipeline(params, settings);
+                    var pipe;
+                    try {
+                        pipe = createAggregatePipeline(params, settings);
+                    }
+                    catch (e) {
+                        if (!e.invalidPeriod) {
+                            throw e;
+                        }
+                        common.returnMessage(params, 400, e.message);
+                        return;
+                    }
                     pipe.push({"$group": {"_id": null, "s": {"$sum": "$s"}, "t": {"$sum": "$t"}, "b": {"$sum": "$b"}, "uvc": {"$sum": "$uvc"}}});
                     var collectionName = "app_viewdata" + crypto.createHash('sha1').update(segment + params.app_id).digest('hex');
                     common.db.collection(collectionName).aggregate(pipe, {allowDiskUse: true}, function(err, res) {
