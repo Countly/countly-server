@@ -1701,6 +1701,10 @@ function uploadFile(myfile, id, appId, callback) {
             //unauthorized caller cannot probe the endpoint.
             validateRead(params, FEATURE_NAME, function() {
                 if (params.qstring.period) {
+                    if (typeof params.qstring.period !== "string") {
+                        common.returnMessage(params, 400, 'Bad request parameter: period');
+                        return true;
+                    }
                     //check if period comes from datapicker
                     if (params.qstring.period.indexOf(",") !== -1) {
                         try {

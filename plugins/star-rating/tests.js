@@ -77,6 +77,21 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Try to get feedback data with a period that is not a string', function() {
+        it('should return 400', function(done) {
+            request.post('/o')
+                .send({method: 'star', period: 30, api_key: API_KEY_ADMIN, app_id: APP_ID})
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.eql({result: 'Bad request parameter: period'});
+                    done();
+                });
+        });
+    });
+
     describe('Creating widget', function() {
         it('should success', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
