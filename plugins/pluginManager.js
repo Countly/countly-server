@@ -750,7 +750,7 @@ var pluginManager = function pluginManager() {
         var pluginName = 'plugins.'.concat(namespace);
         db.collection('apps').updateOne({_id: appId}, {$set: {[pluginName]: config}}, function(error, result) {
             if (error) {
-                log.e('Error updating application level %s plugin configuration.Got error:%j', namespace, error);
+                log('plugins').e('Error updating application level %s plugin configuration.Got error:%j', namespace, error);
             }
             if (callback) {
                 if (error) {
@@ -999,6 +999,16 @@ var pluginManager = function pluginManager() {
             else if (callback) {
                 Promise.allSettled(promises).then(function(results) {
                     callback(null, results);
+                });
+            }
+            else {
+                //nobody waits for these results: log a failed handler instead of leaving an unhandled rejection
+                promises.forEach(function(p) {
+                    if (p && typeof p.catch === "function") {
+                        p.catch(function(error) {
+                            log('plugins').e('Error in handler of %s: %j', event, (error && (error.stack || error.message)) || error);
+                        });
+                    }
                 });
             }
         }
