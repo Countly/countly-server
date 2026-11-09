@@ -112,7 +112,7 @@ countlyEvents.processEvents = function(params) {
                         }
 
                         if (pluginsGetConfig.event_segmentation_limit &&
-                                appSegments[currEvent.key] &&
+                                Array.isArray(appSegments[currEvent.key]) &&
                                 appSegments[currEvent.key].indexOf(segKey) === -1 &&
                                 appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
                             continue;
@@ -337,7 +337,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 }
 
                 if (pluginsGetConfig.event_segmentation_limit &&
-                        appSegments[currEvent.key] &&
+                        Array.isArray(appSegments[currEvent.key]) &&
                         appSegments[currEvent.key].indexOf(segKey) === -1 &&
                         appSegments[currEvent.key].length >= pluginsGetConfig.event_segmentation_limit) {
                     continue;

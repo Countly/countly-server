@@ -34,3 +34,36 @@ describe("plugins.dispatch callback results", function() {
         });
     });
 });
+
+// A dispatch with no callback and no params.promises leaves nobody to consume the handlers'
+// promises. A handler that throws or rejects there is logged; it must not surface as an
+// unhandled rejection, which takes the process down.
+describe("plugins.dispatch without a consumer", function() {
+    var EVENT = "/unit-tests/dispatch-no-consumer";
+    var unhandled = [];
+    var onUnhandled = function(reason) {
+        unhandled.push(reason);
+    };
+
+    before(function() {
+        plugins.register(EVENT, function() {
+            return Promise.reject(new Error("handler failed"));
+        });
+        plugins.register(EVENT, function() {
+            throw new Error("handler threw");
+        });
+        process.on("unhandledRejection", onUnhandled);
+    });
+
+    after(function() {
+        process.removeListener("unhandledRejection", onUnhandled);
+    });
+
+    it("still reports the event as handled and leaves no unhandled rejection", function(done) {
+        plugins.dispatch(EVENT, {params: {}}).should.be.true();
+        setTimeout(function() {
+            unhandled.length.should.equal(0);
+            done();
+        }, 50);
+    });
+});

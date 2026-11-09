@@ -135,7 +135,7 @@ const processRequest = (params) => {
 
     const urlParts = url.parse(params.req.url, true),
         queryString = urlParts.query,
-        paths = urlParts.pathname.split("/");
+        paths = (urlParts.pathname || "/").split("/");
     params.href = urlParts.href;
     params.qstring = params.qstring || {};
     params.res = params.res || {};

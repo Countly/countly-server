@@ -277,6 +277,22 @@ describe('Testing views plugin', function() {
                     done();
                 });
         });
+        ["getTable", "getTotals"].forEach(function(action) {
+            ["]]>", "[1,"].forEach(function(badPeriod) {
+                it(action + ' should answer 400 for period ' + badPeriod, function(done) {
+                    request
+                        .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=' + action + '&period=' + encodeURIComponent(badPeriod))
+                        .expect(400)
+                        .end(function(err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+                            JSON.parse(res.text).should.eql({result: "Bad request parameter: period"});
+                            done();
+                        });
+                });
+            });
+        });
     });
 
     describe('Check adding views', function() {
