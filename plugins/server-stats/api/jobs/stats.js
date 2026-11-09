@@ -140,129 +140,149 @@ class StatsJob extends job.Job {
     * @returns {undefined} Returns nothing, only callback
     **/
     run(db, done) {
-        pluginManager.loadConfigs(db, async function() {
-            let license = {};
-            if (drill) {
-                try {
-                    license = await drill.loadLicense(undefined, db);
-                }
-                catch (error) {
-                    log.e(error);
-                    // do nothing, most likely there is no license
-                }
-            }
-
-            var server = tracker.getBulkServer();
-            var user = tracker.getBulkUser(server);
-            if (!user) {
-                return done();
-            }
-            var days = 30;
-            var current_sync = Date.now();
-
-            // Atomically retrieve old last_sync value and set new one
-            var syncResult = await db.collection("plugins").findOneAndUpdate(
-                {_id: "version"},
-                {$set: {last_dp_sync: current_sync}},
-                {
-                    upsert: true,
-                    returnDocument: 'before',
-                    projection: {last_dp_sync: 1}
-                }
-            );
-
-            var last_dp_sync = syncResult.value ? syncResult.value.last_dp_sync : null;
-            if (last_dp_sync) {
-                days = Math.floor((new Date().getTime() - last_dp_sync) / (1000 * 60 * 60 * 24));
-            }
-            if (days > 0) {
-                //generate dates in YYYY:M:D format for dates from "days" variable back up to today
-                const specificDates = [];
-                const utcMoment = moment.utc();
-                for (let i = 0; i < days; i++) {
-                    specificDates.push(utcMoment.format('YYYY:M:D'));
-                    utcMoment.subtract(1, 'days');
-                }
-
-                // always create a dedicated array for last 30 days
-                const last30Dates = [];
-                const last30Moment = moment.utc();
-                for (let i = 0; i < 30; i++) {
-                    last30Dates.push(last30Moment.format('YYYY:M:D'));
-                    last30Moment.subtract(1, 'days');
-                }
-
-                const options = {
-                    dailyDates: last30Dates,
-                    monthlyBreakdown: true,
-                    license_hosting: license?.license_hosting,
-                };
-                serverStats.fetchDatapoints(db, {}, options, async(allData) => {
-                    const dataMonthly = StatsJob.generateDataMonthly(allData);
-                    if (allData.daily) {
-                        for (var i = 0; i < specificDates.length; i++) {
-                            const key = specificDates[i];
-                            if (!allData.daily[key]) {
-                                continue;
-                            }
-                            //convert date in YYYY:M:D format to timestamp for noon (12:00:00) of that day in UTC
-                            var parts = key.split(':');
-                            const timestamp = moment.tz(parts[0] + '-' + parts[1] + '-' + parts[2] + ' 12:00:00', 'YYYY-M-D HH:mm:ss', 'UTC').valueOf();
-
-                            //send datapoint event with timestamp for noon of that day
-                            user.add_event({key: "DP", count: allData.daily[key], timestamp: timestamp, segmentation: allData.dailybreakdown ? allData.dailybreakdown[key] : {}});
-                        }
-                    }
-                    // Get all apps
-                    const apps = await db.collection('apps').find({}, {projection: {_id: 1}}).toArray();
-
-                    // For each app, sum DP for last 30 days using allData.dailybreakdown and last30Dates
-                    const appDPs = {};
-                    for (const app of apps) {
-                        appDPs[app._id] = 0;
-                        if (allData.apps && allData.apps[app._id]) {
-                            appDPs[app._id] = allData.apps[app._id];
-                        }
-                    }
-
-                    // Count apps in each DP range
-                    dataMonthly.appsLT10KDP = 0;
-                    dataMonthly.apps10Kto100KDP = 0;
-                    dataMonthly.apps100Kto1MDP = 0;
-                    dataMonthly.apps1Mto10MDP = 0;
-                    dataMonthly.apps10Mto100MDP = 0;
-                    dataMonthly.appsGT100MDP = 0;
-                    for (const appId in appDPs) {
-                        const dp = appDPs[appId];
-                        if (dp < 10000) {
-                            dataMonthly.appsLT10KDP++;
-                        }
-                        else if (dp < 100000) {
-                            dataMonthly.apps10Kto100KDP++;
-                        }
-                        else if (dp < 1000000) {
-                            dataMonthly.apps100Kto1MDP++;
-                        }
-                        else if (dp < 10000000) {
-                            dataMonthly.apps1Mto10MDP++;
-                        }
-                        else if (dp < 100000000) {
-                            dataMonthly.apps10Mto100MDP++;
-                        }
-                        else {
-                            dataMonthly.appsGT100MDP++;
-                        }
-                    }
-
-                    user.user_details({'custom': dataMonthly});
-                    server.start(function() {
-                        server.stop();
-                        done();
-                    });
-                });
-            }
-            else {
+        let finished = false;
+        /** Calls done only once, even when an error follows a completed run */
+        const finish = () => {
+            if (!finished) {
+                finished = true;
                 done();
+            }
+        };
+        pluginManager.loadConfigs(db, async function() {
+            try {
+                let license = {};
+                if (drill) {
+                    try {
+                        license = await drill.loadLicense(undefined, db);
+                    }
+                    catch (error) {
+                        log.e(error);
+                        // do nothing, most likely there is no license
+                    }
+                }
+
+                var server = tracker.getBulkServer();
+                var user = tracker.getBulkUser(server);
+                if (!user) {
+                    return finish();
+                }
+                var days = 30;
+                var current_sync = Date.now();
+
+                // Atomically retrieve old last_sync value and set new one
+                var syncResult = await db.collection("plugins").findOneAndUpdate(
+                    {_id: "version"},
+                    {$set: {last_dp_sync: current_sync}},
+                    {
+                        upsert: true,
+                        returnDocument: 'before',
+                        projection: {last_dp_sync: 1}
+                    }
+                );
+
+                var last_dp_sync = syncResult.value ? syncResult.value.last_dp_sync : null;
+                if (last_dp_sync) {
+                    days = Math.floor((new Date().getTime() - last_dp_sync) / (1000 * 60 * 60 * 24));
+                }
+                if (days > 0) {
+                    //generate dates in YYYY:M:D format for dates from "days" variable back up to today
+                    const specificDates = [];
+                    const utcMoment = moment.utc();
+                    for (let i = 0; i < days; i++) {
+                        specificDates.push(utcMoment.format('YYYY:M:D'));
+                        utcMoment.subtract(1, 'days');
+                    }
+
+                    // always create a dedicated array for last 30 days
+                    const last30Dates = [];
+                    const last30Moment = moment.utc();
+                    for (let i = 0; i < 30; i++) {
+                        last30Dates.push(last30Moment.format('YYYY:M:D'));
+                        last30Moment.subtract(1, 'days');
+                    }
+
+                    const options = {
+                        dailyDates: last30Dates,
+                        monthlyBreakdown: true,
+                        license_hosting: license?.license_hosting,
+                    };
+                    serverStats.fetchDatapoints(db, {}, options, async(allData) => {
+                        try {
+                            const dataMonthly = StatsJob.generateDataMonthly(allData);
+                            if (allData.daily) {
+                                for (var i = 0; i < specificDates.length; i++) {
+                                    const key = specificDates[i];
+                                    if (!allData.daily[key]) {
+                                        continue;
+                                    }
+                                    //convert date in YYYY:M:D format to timestamp for noon (12:00:00) of that day in UTC
+                                    var parts = key.split(':');
+                                    const timestamp = moment.tz(parts[0] + '-' + parts[1] + '-' + parts[2] + ' 12:00:00', 'YYYY-M-D HH:mm:ss', 'UTC').valueOf();
+
+                                    //send datapoint event with timestamp for noon of that day
+                                    user.add_event({key: "DP", count: allData.daily[key], timestamp: timestamp, segmentation: allData.dailybreakdown ? allData.dailybreakdown[key] : {}});
+                                }
+                            }
+                            // Get all apps
+                            const apps = await db.collection('apps').find({}, {projection: {_id: 1}}).toArray();
+
+                            // For each app, sum DP for last 30 days using allData.dailybreakdown and last30Dates
+                            const appDPs = {};
+                            for (const app of apps) {
+                                appDPs[app._id] = 0;
+                                if (allData.apps && allData.apps[app._id]) {
+                                    appDPs[app._id] = allData.apps[app._id];
+                                }
+                            }
+
+                            // Count apps in each DP range
+                            dataMonthly.appsLT10KDP = 0;
+                            dataMonthly.apps10Kto100KDP = 0;
+                            dataMonthly.apps100Kto1MDP = 0;
+                            dataMonthly.apps1Mto10MDP = 0;
+                            dataMonthly.apps10Mto100MDP = 0;
+                            dataMonthly.appsGT100MDP = 0;
+                            for (const appId in appDPs) {
+                                const dp = appDPs[appId];
+                                if (dp < 10000) {
+                                    dataMonthly.appsLT10KDP++;
+                                }
+                                else if (dp < 100000) {
+                                    dataMonthly.apps10Kto100KDP++;
+                                }
+                                else if (dp < 1000000) {
+                                    dataMonthly.apps100Kto1MDP++;
+                                }
+                                else if (dp < 10000000) {
+                                    dataMonthly.apps1Mto10MDP++;
+                                }
+                                else if (dp < 100000000) {
+                                    dataMonthly.apps10Mto100MDP++;
+                                }
+                                else {
+                                    dataMonthly.appsGT100MDP++;
+                                }
+                            }
+
+                            user.user_details({'custom': dataMonthly});
+                            server.start(function() {
+                                server.stop();
+                                finish();
+                            });
+                        }
+                        catch (e) {
+                            log.e('Error while sending server stats: %j', e.stack || e.message || e);
+                            finish();
+                        }
+                    });
+                }
+                else {
+                    finish();
+                }
+            }
+            catch (e) {
+                log.e('Error while running server stats job: %j', e.stack || e.message || e);
+                finish();
             }
         });
     }
