@@ -179,6 +179,11 @@ function buildStateCommentBody(state, details) {
  * own `batchSize` slots, so PRs targeting unrelated branches (e.g. `main` and a release
  * branch) never wait on each other. Within a queue, priority-labelled PRs go first (oldest
  * first among themselves), then everything else oldest first.
+ *
+ * Review approval is deliberately not an entry condition. Whether a PR needs one is the base
+ * branch's rule, and GitHub enforces it at merge time: on a branch that requires approval an
+ * unapproved PR stays `blocked` (the bot keeps it up to date and GitHub merges it once it is
+ * approved), and on a branch that requires none it merges without one.
  * @param {object[]} snapshots - PR snapshots (see Task 1 interface notes)
  * @param {number} [batchSize] - max PRs to admit into each base branch's batch (defaults to CONFIG.BATCH_SIZE)
  * @returns {{batch: object[], skipped: {number: number, reason: string}[]}} batch members and skipped PRs with reasons
@@ -201,9 +206,6 @@ function selectBatch(snapshots, batchSize) {
         let reason = null;
         if (pr.isDraft) {
             reason = 'draft';
-        }
-        else if (pr.reviewDecision !== 'APPROVED') {
-            reason = 'not approved';
         }
         else if (pr.unresolvedThreads > 0) {
             reason = 'unresolved conversations';
@@ -887,7 +889,10 @@ async function writeSummary(core, batch, skipped, actions, errors) {
     ]];
     for (const pr of batch) {
         const prActions = actions.filter((a) => a.number === pr.number);
-        const statusNotes = [pr.baseRef ? escapeHtml(pr.baseRef) : null, pr.isPriority ? 'priority' : null].filter(Boolean);
+        // the bot does not gate on approval, so say when GitHub is still holding the merge for one
+        const reviewNote = pr.reviewDecision === 'REVIEW_REQUIRED' ? 'awaiting approval'
+            : (pr.reviewDecision === 'CHANGES_REQUESTED' ? 'changes requested' : null);
+        const statusNotes = [pr.baseRef ? escapeHtml(pr.baseRef) : null, pr.isPriority ? 'priority' : null, reviewNote].filter(Boolean);
         const status = 'in batch' + (statusNotes.length ? ' (' + statusNotes.join(', ') + ')' : '');
         rows.push(['#' + pr.number + ' ' + escapeHtml(pr.title), status, prActions.map((a) => a.type + (a.reason ? ' (' + a.reason + ')' : '')).join(', ') || 'none']);
     }

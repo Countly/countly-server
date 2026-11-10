@@ -7,8 +7,12 @@ passing CI — every merge invalidates every other open PR.
 
 ## Using it (PR authors)
 
-1. Get your PR **approved** and resolve all review conversations.
-2. Add the **`auto-merge` label**.
+1. Resolve all review conversations.
+2. Add the **`auto-merge` label**. The PR does not have to be approved
+   first: the bot picks it up either way. If the base branch requires an
+   approval, GitHub holds the merge until the PR has one, and the bot keeps
+   the branch up to date and CI green in the meantime. If the base branch
+   requires none, the PR merges without one.
 3. Walk away. The bot will keep your branch updated with `master`, re-run
    flaky CI failures (up to 5 retries per head commit), and GitHub merges
    the PR the moment all required checks pass.
@@ -42,7 +46,7 @@ ejection never disables auto-merge) if:
   best-effort sweep on a subsequent bot run (even if the label is never
   re-added) — it may persist briefly until the next run picks it up.
 
-Draft, unapproved, or unresolved-conversation PRs keep the label but are
+Draft or unresolved-conversation PRs keep the label but are
 skipped (and don't block others) until they become eligible. The bot
 **never disables auto-merge**, for any reason — not because a PR became
 ineligible, and not on ejection (conflict or failed-checks). Once auto-merge

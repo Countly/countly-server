@@ -91,8 +91,6 @@ test('selectBatch takes first 3 eligible PRs oldest-first', () => {
 test('selectBatch skips ineligible PRs without consuming batch slots', () => {
     const prs = [
         makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z', isDraft: true }),
-        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', reviewDecision: 'REVIEW_REQUIRED' }),
-        makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', reviewDecision: 'CHANGES_REQUESTED' }),
         makePr({ number: 4, createdAt: '2026-07-04T00:00:00Z', unresolvedThreads: 2 }),
         makePr({ number: 5, createdAt: '2026-07-05T00:00:00Z' }),
     ];
@@ -100,10 +98,21 @@ test('selectBatch skips ineligible PRs without consuming batch slots', () => {
     assert.deepStrictEqual(batch.map((p) => p.number), [5]);
     assert.deepStrictEqual(skipped, [
         { number: 1, reason: 'draft' },
-        { number: 2, reason: 'not approved' },
-        { number: 3, reason: 'not approved' },
         { number: 4, reason: 'unresolved conversations' },
     ]);
+});
+
+test('selectBatch does not require approval: any review state enters the batch', () => {
+    const prs = [
+        makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z', reviewDecision: 'REVIEW_REQUIRED' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', reviewDecision: 'CHANGES_REQUESTED' }),
+        // null is what GitHub reports when the base branch requires no review at all
+        makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', reviewDecision: null }),
+        makePr({ number: 4, createdAt: '2026-07-04T00:00:00Z', reviewDecision: 'APPROVED' }),
+    ];
+    const { batch, skipped } = shepherd.selectBatch(prs, 4);
+    assert.deepStrictEqual(batch.map((p) => p.number), [1, 2, 3, 4]);
+    assert.deepStrictEqual(skipped, []);
 });
 
 test('selectBatch honors a custom batchSize, taking only the oldest eligible PR', () => {
@@ -145,11 +154,11 @@ test('selectBatch gives batch slots to priority PRs before older non-priority on
 test('selectBatch still skips an ineligible priority PR without letting it block others', () => {
     const prs = [
         makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z' }),
-        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', isPriority: true, reviewDecision: 'REVIEW_REQUIRED' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', isPriority: true, isDraft: true }),
     ];
     const { batch, skipped } = shepherd.selectBatch(prs, 1);
     assert.deepStrictEqual(batch.map((p) => p.number), [1]);
-    assert.deepStrictEqual(skipped, [{ number: 2, reason: 'not approved' }]);
+    assert.deepStrictEqual(skipped, [{ number: 2, reason: 'draft' }]);
 });
 
 test('selectBatch gives every base branch its own batch so unrelated branches never block each other', () => {
@@ -200,14 +209,14 @@ test('selectBatch applies priority within a base branch queue, not across queues
 test('selectBatch ineligible PRs on one base branch do not consume slots on another', () => {
     const prs = [
         makePr({ number: 1, createdAt: '2026-07-01T00:00:00Z', baseRef: 'main', isDraft: true }),
-        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', baseRef: 'main', reviewDecision: 'REVIEW_REQUIRED' }),
+        makePr({ number: 2, createdAt: '2026-07-02T00:00:00Z', baseRef: 'main', unresolvedThreads: 1 }),
         makePr({ number: 3, createdAt: '2026-07-03T00:00:00Z', baseRef: 'release.24.05' }),
     ];
     const { batch, skipped } = shepherd.selectBatch(prs, 1);
     assert.deepStrictEqual(batch.map((p) => p.number), [3]);
     assert.deepStrictEqual(skipped, [
         { number: 1, reason: 'draft' },
-        { number: 2, reason: 'not approved' },
+        { number: 2, reason: 'unresolved conversations' },
     ]);
 });
 
@@ -1407,13 +1416,13 @@ test('run() merges a clean PR directly', async() => {
     assert.ok(calls.includes('merge:1'));
 });
 
-test('run() leaves an ineligible (unapproved) PR with auto-merge already armed alone — no disable call', async() => {
+test('run() leaves an ineligible (draft) PR with auto-merge already armed alone — no disable call', async() => {
     const nodes = [
         makeNode({
             id: 'PR_5',
             number: 5,
             createdAt: '2026-07-05T00:00:00Z',
-            reviewDecision: 'REVIEW_REQUIRED',
+            isDraft: true,
             autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' },
         }),
     ];
@@ -1421,6 +1430,40 @@ test('run() leaves an ineligible (unapproved) PR with auto-merge already armed a
     await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
     assert.ok(!calls.some((c) => c.startsWith('graphql:disable-automerge')));
     assert.ok(!calls.some((c) => c.startsWith('updateBranch') || c.startsWith('merge:')));
+});
+
+test('run() shepherds an unapproved PR: keeps a behind branch updated and arms auto-merge', async() => {
+    const nodes = [makeNode({ id: 'PR_5', number: 5, reviewDecision: 'REVIEW_REQUIRED' })];
+    const { github, calls } = makeFakeGithub({ nodes, pullsByNumber: { 5: { mergeable_state: 'behind' } } });
+    const core = makeFakeCore();
+    await shepherd.run({ github, context: fakeContext, core, dryRun: false });
+    assert.ok(calls.includes('updateBranch:5'), 'an unapproved PR is no longer skipped');
+    assert.ok(calls.some((c) => c.startsWith('graphql:enable-automerge')), 'auto-merge is armed so GitHub merges on approval');
+    assert.ok(!calls.includes('merge:5'));
+    const row = core.summary.tables[0].find((r) => typeof r[0] === 'string' && r[0].startsWith('#5 '));
+    assert.strictEqual(row[1], 'in batch (main, awaiting approval)');
+});
+
+test('run() never merges an unapproved PR itself while GitHub reports it blocked', async() => {
+    const nodes = [makeNode({ id: 'PR_5', number: 5, reviewDecision: 'CHANGES_REQUESTED' })];
+    const { github, calls } = makeFakeGithub({ nodes, pullsByNumber: { 5: { mergeable_state: 'blocked' } } });
+    const core = makeFakeCore();
+    await shepherd.run({ github, context: fakeContext, core, dryRun: false });
+    assert.ok(!calls.includes('merge:5'), 'the approval rule is GitHub\'s to enforce: blocked means wait');
+    assert.ok(!calls.includes('updateBranch:5'));
+    assert.ok(calls.some((c) => c.startsWith('graphql:enable-automerge')));
+    const row = core.summary.tables[0].find((r) => typeof r[0] === 'string' && r[0].startsWith('#5 '));
+    assert.strictEqual(row[1], 'in batch (main, changes requested)');
+});
+
+test('run() merges a PR with no review at all when the base branch requires none', async() => {
+    const nodes = [makeNode({ id: 'PR_5', number: 5, baseRefName: 'staging', reviewDecision: null })];
+    const { github, calls } = makeFakeGithub({ nodes, pullsByNumber: { 5: { mergeable_state: 'clean' } } });
+    const core = makeFakeCore();
+    await shepherd.run({ github, context: fakeContext, core, dryRun: false });
+    assert.ok(calls.includes('merge:5'));
+    const row = core.summary.tables[0].find((r) => typeof r[0] === 'string' && r[0].startsWith('#5 '));
+    assert.strictEqual(row[1], 'in batch (staging)');
 });
 
 test('run() with batchSize: 1 mutates only the older of two eligible behind PRs', async() => {
