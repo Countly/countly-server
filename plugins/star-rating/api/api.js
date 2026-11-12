@@ -893,7 +893,7 @@ function uploadFile(myfile, id, appId, callback) {
             //a widget must not be reassigned to another app via edit
             delete changes.app_id;
 
-            if (changes.status) {
+            if (typeof changes.status !== "undefined") {
                 changes.is_active = changes.status ? "true" : "false";
             }
 
@@ -1221,7 +1221,7 @@ function uploadFile(myfile, id, appId, callback) {
                     common.returnMessage(params, 400, 'Invalid widget id: ' + key);
                     return false;
                 }
-                bulk.find({ _id: widgetObjectId, app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue } });
+                bulk.find({ _id: widgetObjectId, app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue, 'is_active': newStatusValue ? "true" : "false" } });
             }
 
             bulk.execute(function(error) {
