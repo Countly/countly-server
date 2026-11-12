@@ -984,14 +984,6 @@ function transformAppVersion(inpVersion) {
             });
         };
 
-        _crashgroupSubmodule.actions.share = function(context) {
-            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "share");
-        };
-
-        _crashgroupSubmodule.actions.unshare = function(context) {
-            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "unshare");
-        };
-
         _crashgroupSubmodule.actions.show = function(context) {
             return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "show").then(function() {
                 context.state.crashgroup.is_hidden = false;
@@ -1006,10 +998,6 @@ function transformAppVersion(inpVersion) {
 
         _crashgroupSubmodule.actions.delete = function(context) {
             return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "delete");
-        };
-
-        _crashgroupSubmodule.actions.modifyShare = function(context, args) {
-            return countlyCrashes.manipulateCrashgroup(context.state.crashgroup._id, "modify_share", args);
         };
 
         _crashgroupSubmodule.actions.addComment = function(context, body) {
