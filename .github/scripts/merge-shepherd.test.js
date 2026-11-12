@@ -329,6 +329,7 @@ test('evaluateRequiredChecks: required CheckRun FAILURE is failed with run id/ur
     ]);
     assert.deepStrictEqual(result, {
         failed: true,
+        pending: false,
         failedRunIds: [42],
         failedRunUrls: ['https://github.com/Countly/countly-platform/actions/runs/42'],
         failedRuns: [{ id: 42, url: 'https://github.com/Countly/countly-platform/actions/runs/42' }],
@@ -367,19 +368,129 @@ test('evaluateRequiredChecks: non-required failure alongside required success is
             checkSuite: { workflowRun: { databaseId: 100, url: 'https://example.test/runs/100' } },
         },
     ]);
-    assert.deepStrictEqual(result, { failed: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
+    assert.deepStrictEqual(result, { failed: false, pending: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
 });
 
 test('evaluateRequiredChecks: required StatusContext ERROR is failed with its context name', () => {
     const result = shepherd.evaluateRequiredChecks([
         { __typename: 'StatusContext', context: 'ci/legacy', state: 'ERROR', isRequired: true },
     ]);
-    assert.deepStrictEqual(result, { failed: true, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: ['ci/legacy'] });
+    assert.deepStrictEqual(result, { failed: true, pending: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: ['ci/legacy'] });
 });
 
 test('evaluateRequiredChecks: empty or missing contexts is not failed', () => {
-    assert.deepStrictEqual(shepherd.evaluateRequiredChecks([]), { failed: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
-    assert.deepStrictEqual(shepherd.evaluateRequiredChecks(undefined), { failed: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
+    assert.deepStrictEqual(shepherd.evaluateRequiredChecks([]), { failed: false, pending: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
+    assert.deepStrictEqual(shepherd.evaluateRequiredChecks(undefined), { failed: false, pending: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
+});
+
+// A commit can carry two CI runs (the branch update and a label/approval event both start one);
+// the concurrency group cancels the older. Its CANCELLED copies of each required check are
+// superseded, and re-running that run cancels the live one (#1728 burned all 5 retries so).
+const checkRun = (databaseId, name, conclusion, runId) => ({
+    __typename: 'CheckRun',
+    databaseId,
+    name,
+    conclusion,
+    isRequired: true,
+    checkSuite: { workflowRun: { databaseId: runId, url: 'https://example.test/runs/' + runId } },
+});
+
+test('evaluateRequiredChecks: a CANCELLED copy superseded by a newer SUCCESS is not failed', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(10, 'lint', 'CANCELLED', 1),
+        checkRun(20, 'lint', 'SUCCESS', 2),
+    ]);
+    assert.deepStrictEqual(result, { failed: false, pending: false, failedRunIds: [], failedRunUrls: [], failedRuns: [], failedNames: [] });
+});
+
+test('evaluateRequiredChecks: a CANCELLED copy superseded by a newer run still in progress is pending, not failed', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(20, 'lint', null, 2),
+        checkRun(10, 'lint', 'CANCELLED', 1),
+    ]);
+    assert.strictEqual(result.failed, false);
+    assert.strictEqual(result.pending, true);
+});
+
+test('evaluateRequiredChecks: ranks digit-string ids numerically, not lexically', () => {
+    // GitHub returns databaseId as a JSON number today; a BigInt-style string id must rank
+    // the same way ("9" < "10"), including ids past Number.MAX_SAFE_INTEGER.
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun('90', 'lint', 'SUCCESS', '10'),
+        checkRun('80', 'lint', 'CANCELLED', '9'),
+        checkRun('9007199254740993', 'unit-tests', 'SUCCESS', '9007199254740993'),
+        checkRun('9007199254740992', 'unit-tests', 'CANCELLED', '9007199254740992'),
+    ]);
+    assert.strictEqual(result.failed, false);
+    assert.strictEqual(result.pending, false);
+});
+
+test('evaluateRequiredChecks: a failure waits while another required check is still running', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(10, 'lint', 'FAILURE', 1),
+        checkRun(11, 'unit-tests', null, 1),
+    ]);
+    assert.strictEqual(result.failed, false, 're-running now would cancel the run that is still going');
+    assert.strictEqual(result.pending, true);
+    assert.deepStrictEqual(result.failedNames, ['lint']);
+});
+
+test('evaluateRequiredChecks: only the run holding the newest failure is re-run', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(10, 'lint', 'CANCELLED', 1),
+        checkRun(11, 'unit-tests', 'CANCELLED', 1),
+        checkRun(20, 'lint', 'SUCCESS', 2),
+        checkRun(21, 'unit-tests', 'FAILURE', 2),
+    ]);
+    assert.strictEqual(result.failed, true);
+    assert.deepStrictEqual(result.failedRunIds, [2]);
+    assert.deepStrictEqual(result.failedNames, ['unit-tests']);
+});
+
+test('evaluateRequiredChecks: a late CANCELLED copy from a stale run loses to the newer run even with a higher check id', () => {
+    // run 1 (older) finalizes its cancelled job after run 2 (newer) already started it
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(30, 'ui-mock-e2e', 'CANCELLED', 1),
+        checkRun(25, 'ui-mock-e2e', null, 2),
+    ]);
+    assert.strictEqual(result.failed, false);
+    assert.strictEqual(result.pending, true);
+});
+
+test('evaluateRequiredChecks: within one workflow run, a re-run (higher check id) is the newest copy', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(10, 'lint', 'CANCELLED', 1),
+        checkRun(40, 'lint', 'SUCCESS', 1),
+    ]);
+    assert.strictEqual(result.failed, false);
+    assert.strictEqual(result.pending, false);
+});
+
+test('evaluateRequiredChecks: a CANCELLED check with no newer copy still counts as failed', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(10, 'lint', 'CANCELLED', 1),
+        checkRun(11, 'unit-tests', 'SUCCESS', 1),
+    ]);
+    assert.strictEqual(result.failed, true);
+    assert.deepStrictEqual(result.failedRunIds, [1]);
+});
+
+test('evaluateRequiredChecks: a required StatusContext still PENDING holds off a retry', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(10, 'lint', 'FAILURE', 1),
+        { __typename: 'StatusContext', context: 'ci/legacy', state: 'PENDING', isRequired: true },
+    ]);
+    assert.strictEqual(result.failed, false);
+    assert.strictEqual(result.pending, true);
+});
+
+test('evaluateRequiredChecks: an EXPECTED status that never reported does not hold off a retry', () => {
+    const result = shepherd.evaluateRequiredChecks([
+        checkRun(10, 'lint', 'FAILURE', 1),
+        { __typename: 'StatusContext', context: 'ci/removed', state: 'EXPECTED', isRequired: true },
+    ]);
+    assert.strictEqual(result.failed, true);
+    assert.strictEqual(result.pending, false);
 });
 
 const PASSING_CONCLUSIONS = ['SUCCESS', 'SKIPPED', 'NEUTRAL'];
@@ -467,7 +578,9 @@ function resolveFailure(fixture) {
  * @param {object} [opts.pullsByNumber] - REST pulls.get fixtures keyed by PR number
  * @param {object} [opts.commentsByNumber] - listComments fixtures keyed by PR number
  * @param {object} [opts.requiredChecksByNumber] - REQUIRED_CHECKS_QUERY contexts.nodes fixtures keyed by PR number
+ * @param {object} [opts.requiredChecksPagesByNumber] - paginated fixtures: PR number -> array of contexts.nodes pages
  * @param {object} [opts.requiredChecksFails] - REQUIRED_CHECKS_QUERY failure fixtures keyed by PR number
+ * @param {object} [opts.requiredChecksOidsByNumber] - head oid per REQUIRED_CHECKS_QUERY page, keyed by PR number (default: 'abc1234', the snapshot's headRefOid, on every page)
  * @param {boolean} [opts.updateBranchFails] - make updateBranch throw a 422
  * @param {string} [opts.updateBranchFailMessage] - message for the updateBranch 422 (default 'merge conflict')
  * @param {boolean|Error} [opts.preflightRollupFails] - make the preflight rollup probe throw (true = permission-shaped)
@@ -480,6 +593,8 @@ function resolveFailure(fixture) {
  * @param {boolean|Error} [opts.addLabelsFails] - make issues.addLabels throw
  * @param {boolean|Error} [opts.createCommentFails] - make issues.createComment throw
  * @param {boolean|Error} [opts.rerunFails] - make reRunWorkflowFailedJobs throw
+ * @param {object} [opts.headRunsBySha] - REST workflow runs served for a head_sha lookup, keyed by sha
+ * @param {boolean|Error} [opts.headRunsFails] - make the head_sha workflow-run lookup throw
  * @param {boolean|Error} [opts.automergeFails] - make the enablePullRequestAutoMerge mutation throw
  * @returns {{github: object, calls: string[]}} fake client and recorded call log
  */
@@ -534,11 +649,40 @@ function makeFakeGithub(opts) {
                 if (err) {
                     throw err;
                 }
+                // requiredChecksPagesByNumber serves several pages, keyed by cursor order
+                const pages = opts.requiredChecksPagesByNumber && opts.requiredChecksPagesByNumber[vars.number];
+                const oids = (opts.requiredChecksOidsByNumber && opts.requiredChecksOidsByNumber[vars.number]) || [];
+                const pageIndex = vars.cursor ? Number(vars.cursor.replace('page-', '')) : 0;
+                const oid = oids[pageIndex] || oids[oids.length - 1] || 'abc1234';
+                if (pages) {
+                    const index = pageIndex;
+                    const hasNextPage = index + 1 < pages.length;
+                    calls.push('required-checks-page:' + vars.number + ':' + index);
+                    return {
+                        repository: {
+                            pullRequest: {
+                                commits: {
+                                    nodes: [{
+                                        commit: {
+                                            oid,
+                                            statusCheckRollup: {
+                                                contexts: {
+                                                    nodes: pages[index],
+                                                    pageInfo: { hasNextPage, endCursor: hasNextPage ? 'page-' + (index + 1) : null },
+                                                }
+                                            }
+                                        }
+                                    }]
+                                },
+                            },
+                        },
+                    };
+                }
                 const contexts = (opts.requiredChecksByNumber && opts.requiredChecksByNumber[vars.number]) || null;
                 return {
                     repository: {
                         pullRequest: {
-                            commits: { nodes: [{ commit: { statusCheckRollup: contexts ? { contexts: { nodes: contexts } } : null } }] },
+                            commits: { nodes: [{ commit: { oid, statusCheckRollup: contexts ? { contexts: { nodes: contexts } } : null } }] },
                         },
                     },
                 };
@@ -632,7 +776,15 @@ function makeFakeGithub(opts) {
                     }
                     return { data: {} };
                 },
-                listWorkflowRunsForRepo: async() => {
+                listWorkflowRunsForRepo: async(p) => {
+                    if (p && p.head_sha) {
+                        calls.push('head-runs:' + p.head_sha);
+                        const headErr = resolveFailure(opts.headRunsFails);
+                        if (headErr) {
+                            throw headErr;
+                        }
+                        return { data: { workflow_runs: (opts.headRunsBySha && opts.headRunsBySha[p.head_sha]) || [] } };
+                    }
                     const err = resolveFailure(opts.preflightRunsFails);
                     if (err) {
                         throw err;
@@ -796,6 +948,220 @@ test('run() retries only the workflow run behind the failed required check', asy
     assert.ok(calls.includes('rerunFailedJobs:42'));
     assert.ok(!calls.includes('rerunFailedJobs:43'));
     assert.ok(calls.includes('createComment:1'));
+});
+
+test('run() reads every page of contexts before picking the newest copy of a check', async() => {
+    // two CI runs on one commit overflow one page: the live run's passing copy is on page 2
+    const stale = (name) => ({ __typename: 'CheckRun', databaseId: 10, name, conclusion: 'CANCELLED', isRequired: true, checkSuite: { workflowRun: { databaseId: 1, url: 'https://example.test/runs/1' } } });
+    const live = (name) => ({ __typename: 'CheckRun', databaseId: 20, name, conclusion: 'SUCCESS', isRequired: true, checkSuite: { workflowRun: { databaseId: 2, url: 'https://example.test/runs/2' } } });
+    const { github, calls } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksPagesByNumber: { 1: [[stale('lint'), stale('unit-tests')], [live('lint'), live('unit-tests')]] },
+    });
+    const actions = await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(calls.includes('required-checks-page:1:1'), 'the second page was requested');
+    assert.ok(!calls.some((c) => c.startsWith('rerunFailedJobs')), 'the superseded run is not re-run');
+    assert.ok(!actions.some((a) => a.type === 'retry'));
+});
+
+// #1853, 2026-10-01: an approval started CI run 2 while run 1 was cancelled. Before run 2 had
+// any jobs, the only copies of the required checks were run 1's CANCELLED ones, so the bot
+// re-ran run 1, which cancelled run 2, which was then re-run and cancelled run 1: all five
+// retries went in one minute.
+const workflowRun = (id, status, workflowId = 7) => ({ id, status, workflow_id: workflowId });
+
+test('findRerunBlocker: a newer run of the same workflow still queued blocks the re-run', () => {
+    const blocker = shepherd.findRerunBlocker([workflowRun(1, 'completed'), workflowRun(2, 'queued')], [1]);
+    assert.deepStrictEqual(blocker, { runId: 2, reason: 'run 2 of the same workflow is still queued' });
+});
+
+test('findRerunBlocker: a re-run already underway on the failed run blocks another one', () => {
+    const blocker = shepherd.findRerunBlocker([workflowRun(1, 'in_progress')], [1]);
+    assert.deepStrictEqual(blocker, { runId: 1, reason: 'run 1 is already being re-run' });
+});
+
+test('findRerunBlocker: an older run of the same workflow still going also blocks it', () => {
+    // re-running run 2 now would cancel run 1's live re-run through the same concurrency group
+    const blocker = shepherd.findRerunBlocker([workflowRun(1, 'in_progress'), workflowRun(2, 'completed')], [2]);
+    assert.strictEqual(blocker.runId, 1);
+});
+
+test('findRerunBlocker: matches a digit-string failed run id against the numeric REST id', () => {
+    // GraphQL ids may be digit strings (latestCheckRuns accepts them); REST ids are numbers
+    const blocker = shepherd.findRerunBlocker([workflowRun(36850286689, 'completed'), workflowRun(36850447627, 'queued')], ['36850286689']);
+    assert.deepStrictEqual(blocker, { runId: 36850447627, reason: 'run 36850447627 of the same workflow is still queued' });
+    assert.strictEqual(shepherd.findRerunBlocker([workflowRun(42, 'in_progress')], ['42']).reason, 'run 42 is already being re-run');
+});
+
+test('findRerunBlocker: allows the re-run when every run of that workflow has finished', () => {
+    assert.strictEqual(shepherd.findRerunBlocker([workflowRun(1, 'completed'), workflowRun(2, 'completed')], [2]), null);
+});
+
+test('findRerunBlocker: a different workflow still running does not block the re-run', () => {
+    assert.strictEqual(shepherd.findRerunBlocker([workflowRun(1, 'completed', 7), workflowRun(2, 'in_progress', 8)], [1]), null);
+});
+
+test('findRerunBlocker: a failed run missing from the listing does not block (previous behaviour)', () => {
+    assert.strictEqual(shepherd.findRerunBlocker([], [1]), null);
+    assert.strictEqual(shepherd.findRerunBlocker(undefined, [1]), null);
+});
+
+test('run() waits instead of re-running while a newer CI run on the head has no jobs yet', async() => {
+    const cancelled = (name) => ({ __typename: 'CheckRun', databaseId: 10, name, conclusion: 'CANCELLED', isRequired: true, checkSuite: { workflowRun: { databaseId: 1, url: 'https://example.test/runs/1' } } });
+    const { github, calls } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksByNumber: { 1: [cancelled('lint'), cancelled('unit-tests')] },
+        headRunsBySha: { abc1234: [workflowRun(1, 'completed'), workflowRun(2, 'queued')] },
+    });
+    const actions = await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(calls.includes('head-runs:abc1234'), 'the head commit runs were looked up');
+    assert.ok(!calls.some((c) => c.startsWith('rerunFailedJobs')), 'no re-run while run 2 is queued');
+    assert.ok(!calls.includes('createComment:1'), 'no retry is counted');
+    assert.ok(actions.some((a) => a.type === 'wait' && a.number === 1 && a.reason === 'checks running'));
+    assert.ok(!actions.some((a) => a.type === 'retry'));
+});
+
+test('run() does not spend a second retry while its first re-run is still going', async() => {
+    const failed = { __typename: 'CheckRun', databaseId: 11, name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } };
+    const { github, calls } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksByNumber: { 1: [failed] },
+        headRunsBySha: { abc1234: [workflowRun(42, 'queued')] },
+    });
+    const actions = await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(!calls.some((c) => c.startsWith('rerunFailedJobs')));
+    assert.ok(!actions.some((a) => a.type === 'retry'));
+});
+
+test('run() re-runs the failure once every run of that workflow on the head has finished', async() => {
+    const failed = { __typename: 'CheckRun', databaseId: 11, name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } };
+    const { github, calls } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksByNumber: { 1: [failed] },
+        headRunsBySha: { abc1234: [workflowRun(41, 'completed'), workflowRun(42, 'completed')] },
+    });
+    await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(calls.includes('rerunFailedJobs:42'));
+    assert.ok(calls.includes('createComment:1'));
+});
+
+test('run() takes no action on a PR when the head-commit run lookup fails', async() => {
+    const failed = { __typename: 'CheckRun', databaseId: 11, name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } };
+    const core = makeFakeCore();
+    const { github, calls } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksByNumber: { 1: [failed] },
+        headRunsFails: new Error('boom'),
+    });
+    const actions = await shepherd.run({ github, context: fakeContext, core, dryRun: false });
+    assert.ok(!calls.some((c) => c.startsWith('rerunFailedJobs')), 'unsure whether a re-run is safe, so none');
+    assert.ok(!actions.some((a) => a.number === 1));
+});
+
+test('fetchRequiredContexts follows endCursor and stops at the last page', async() => {
+    const seen = [];
+    const github = {
+        graphql: async(query, vars) => {
+            seen.push(vars.cursor);
+            const pages = { null: ['a', 'b'], c1: ['c'], c2: ['d'] };
+            const next = { null: 'c1', c1: 'c2', c2: null };
+            const key = String(vars.cursor);
+            return {
+                repository: {
+                    pullRequest: {
+                        commits: {
+                            nodes: [{
+                                commit: {
+                                    oid: 'abc1234',
+                                    statusCheckRollup: {
+                                        contexts: {
+                                            nodes: pages[key].map((name) => ({ name })),
+                                            pageInfo: { hasNextPage: !!next[key], endCursor: next[key] },
+                                        }
+                                    }
+                                }
+                            }]
+                        }
+                    }
+                }
+            };
+        },
+    };
+    const result = await shepherd.fetchRequiredContexts(github, 'o', 'r', 1);
+    assert.deepStrictEqual(result.nodes.map((n) => n.name), ['a', 'b', 'c', 'd']);
+    assert.strictEqual(result.oid, 'abc1234');
+    assert.strictEqual(result.consistent, true);
+    assert.deepStrictEqual(seen, [null, 'c1', 'c2']);
+});
+
+test('fetchRequiredContexts returns no contexts when the head has no rollup', async() => {
+    const github = { graphql: async() => ({ repository: { pullRequest: { commits: { nodes: [{ commit: { oid: 'abc1234', statusCheckRollup: null } }] } } } }) };
+    assert.deepStrictEqual(await shepherd.fetchRequiredContexts(github, 'o', 'r', 1), { oid: 'abc1234', consistent: true, nodes: [] });
+});
+
+test('fetchRequiredContexts flags a head that moved between pages', async() => {
+    const github = {
+        graphql: async(query, vars) => ({
+            repository: {
+                pullRequest: {
+                    commits: {
+                        nodes: [{
+                            commit: {
+                                oid: vars.cursor ? 'def5678' : 'abc1234',
+                                statusCheckRollup: {
+                                    contexts: {
+                                        nodes: [{ name: vars.cursor ? 'b' : 'a' }],
+                                        pageInfo: { hasNextPage: !vars.cursor, endCursor: vars.cursor ? null : 'c1' },
+                                    }
+                                }
+                            }
+                        }]
+                    }
+                }
+            }
+        }),
+    };
+    const result = await shepherd.fetchRequiredContexts(github, 'o', 'r', 1);
+    assert.strictEqual(result.consistent, false);
+    assert.strictEqual(result.oid, 'def5678');
+    assert.deepStrictEqual(result.nodes.map((n) => n.name), ['a'], 'the new commit\'s page is not mixed in');
+});
+
+// A push between the queue snapshot and the required-checks read: the contexts and the run
+// lookup would describe the new commit while retries are keyed to the old one.
+test('run() takes no action when the head moved after the queue snapshot', async() => {
+    const failed = { __typename: 'CheckRun', databaseId: 11, name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } };
+    const { github, calls } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksByNumber: { 1: [failed] },
+        requiredChecksOidsByNumber: { 1: ['def5678'] },
+        headRunsBySha: { abc1234: [workflowRun(42, 'completed')], def5678: [workflowRun(42, 'completed')] },
+    });
+    const actions = await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(!calls.some((c) => c.startsWith('rerunFailedJobs')), 'no re-run against a commit the snapshot does not describe');
+    assert.ok(!calls.some((c) => c.startsWith('head-runs:')), 'no run lookup either');
+    assert.ok(!calls.includes('createComment:1'), 'no retry counted against the old sha');
+    assert.deepStrictEqual(actions.filter((a) => a.number === 1), [{ type: 'wait', number: 1, reason: 'head moved since the queue snapshot' }]);
+});
+
+test('run() takes no action when the head moved between pages of contexts', async() => {
+    const failed = { __typename: 'CheckRun', databaseId: 11, name: 'build', conclusion: 'FAILURE', isRequired: true, checkSuite: { workflowRun: { databaseId: 42, url: 'https://example.test/runs/42' } } };
+    const { github, calls } = makeFakeGithub({
+        nodes: [makeNode({ autoMergeRequest: { enabledAt: '2026-07-01T00:00:00Z' } })],
+        pullsByNumber: { 1: { mergeable_state: 'blocked' } },
+        requiredChecksPagesByNumber: { 1: [[failed], [failed]] },
+        requiredChecksOidsByNumber: { 1: ['abc1234', 'def5678'] },
+        headRunsBySha: { abc1234: [workflowRun(42, 'completed')] },
+    });
+    const actions = await shepherd.run({ github, context: fakeContext, core: makeFakeCore(), dryRun: false });
+    assert.ok(!calls.some((c) => c.startsWith('rerunFailedJobs')));
+    assert.ok(actions.some((a) => a.type === 'wait' && a.number === 1 && a.reason === 'head moved since the queue snapshot'));
 });
 
 test('run() retry comment names the failing checks and links the runs it re-ran', async() => {
