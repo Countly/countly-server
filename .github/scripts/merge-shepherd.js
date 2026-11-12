@@ -32,6 +32,7 @@ const PERMISSION_HINTS = {
     'comments': 'Issues: Read & write',
     'preflight-runs': 'Actions: Read (write is verified at first retry)',
     'rerun': 'Actions: Read & write',
+    'head-runs': 'Actions: Read (workflow runs for the head commit, checked before a re-run)',
     'preflight-contents': 'Contents: Read & write (probe verifies read)',
     'queue-query': 'Pull requests: Read & write',
     'automerge': 'Pull requests: Read & write',
@@ -298,17 +299,20 @@ query($owner: String!, $repo: String!, $label: String!) {
 }`;
 
 const REQUIRED_CHECKS_QUERY = `
-query($owner: String!, $repo: String!, $number: Int!) {
+query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
     repository(owner: $owner, name: $repo) {
         pullRequest(number: $number) {
             commits(last: 1) {
                 nodes {
                     commit {
+                        oid
                         statusCheckRollup {
-                            contexts(first: 100) {
+                            contexts(first: 100, after: $cursor) {
+                                pageInfo { hasNextPage endCursor }
                                 nodes {
                                     __typename
                                     ... on CheckRun {
+                                        databaseId
                                         name
                                         conclusion
                                         isRequired(pullRequestNumber: $number)
@@ -379,10 +383,103 @@ function toSnapshot(node) {
     };
 }
 
+// Upper bound on status-context pages read per PR (100 contexts each), so a
+// malformed pageInfo cannot loop forever.
+const MAX_CONTEXT_PAGES = 20;
+
+/**
+ * Reads every status/check context of the PR head, following pagination. Two CI runs on one
+ * commit easily exceed one page (main.yml fans out into dozens of matrix checks), and the
+ * newest copy of a check can sit on a later page. Each page is a separate query against the
+ * PR's current head, which can move between pages or after the queue snapshot was taken, so
+ * the commit the contexts describe is returned too: a decision built from one commit's
+ * contexts must not be applied to another.
+ * @param {object} github - octokit client (github-script)
+ * @param {string} owner - repo owner
+ * @param {string} repo - repo name
+ * @param {number} number - PR number
+ * @returns {Promise<{oid: string|null, consistent: boolean, nodes: object[]}>} the head commit the contexts belong to, whether every page came from that same commit, and the contexts
+ */
+async function fetchRequiredContexts(github, owner, repo, number) {
+    const nodes = [];
+    let oid = null;
+    let consistent = true;
+    let cursor = null;
+    for (let page = 0; page < MAX_CONTEXT_PAGES; page++) {
+        const data = await github.graphql(REQUIRED_CHECKS_QUERY, { owner, repo, number, cursor });
+        const pr = data.repository.pullRequest;
+        const commit = pr && pr.commits.nodes[0] && pr.commits.nodes[0].commit;
+        const pageOid = (commit && commit.oid) || null;
+        if (page === 0) {
+            oid = pageOid;
+        }
+        else if (pageOid !== oid) {
+            // the head moved mid-read: these pages describe two commits
+            consistent = false;
+            oid = pageOid;
+            break;
+        }
+        const contexts = commit && commit.statusCheckRollup && commit.statusCheckRollup.contexts;
+        if (!contexts) {
+            break;
+        }
+        nodes.push(...(contexts.nodes || []));
+        const pageInfo = contexts.pageInfo;
+        if (!pageInfo || !pageInfo.hasNextPage || !pageInfo.endCursor) {
+            break;
+        }
+        cursor = pageInfo.endCursor;
+    }
+    return { oid, consistent, nodes };
+}
+
+/**
+ * Keeps only the newest CheckRun per check name. A commit can carry several workflow runs
+ * (a push and a label event both start CI), and the concurrency group cancels the older one:
+ * its CANCELLED copies are superseded by the newer run's copies and must not count.
+ * Newest means the newest workflow run first, then the newest check within that run (a
+ * re-run of the same run). The CheckRun id alone is not enough: a superseded run can create
+ * or finalize a job after its successor started, giving the stale copy the higher id.
+ * @param {object[]} nodes - required CheckRun nodes
+ * @returns {object[]} newest CheckRun per name
+ */
+function latestCheckRuns(nodes) {
+    // databaseId is a GraphQL Int today (returned as a JSON number, already past 2^31).
+    // Accept a digit string too, so a later switch to a BigInt-style string id keeps the
+    // ranking instead of silently collapsing every copy to -1.
+    const toId = (value) => {
+        if (typeof value === 'number') {
+            return BigInt(Math.trunc(value));
+        }
+        if (typeof value === 'string' && /^\d+$/.test(value)) {
+            return BigInt(value);
+        }
+        return -1n;
+    };
+    const rank = (node) => {
+        const run = node.checkSuite && node.checkSuite.workflowRun;
+        return [toId(run && run.databaseId), toId(node.databaseId)];
+    };
+    const byName = new Map();
+    for (const node of nodes) {
+        const prev = byName.get(node.name);
+        if (!prev) {
+            byName.set(node.name, node);
+            continue;
+        }
+        const [runId, checkId] = rank(node);
+        const [prevRunId, prevCheckId] = rank(prev);
+        if (runId > prevRunId || (runId === prevRunId && checkId >= prevCheckId)) {
+            byName.set(node.name, node);
+        }
+    }
+    return [...byName.values()];
+}
+
 /**
  * Evaluates required-only check/status contexts from REQUIRED_CHECKS_QUERY for failure
  * @param {object[]} contextNodes - contexts.nodes from the query (CheckRun/StatusContext union, may be undefined)
- * @returns {{failed: boolean, failedRunIds: number[], failedRunUrls: string[], failedRuns: {id: number, url: string|null}[], failedNames: string[]}} required-check failure summary
+ * @returns {{failed: boolean, pending: boolean, failedRunIds: number[], failedRunUrls: string[], failedRuns: {id: number, url: string|null}[], failedNames: string[]}} required-check failure summary; `failed` stays false while any required check is still running (`pending`), because re-running then would cancel the run that is still going
  */
 function evaluateRequiredChecks(contextNodes) {
     const failedRunIds = [];
@@ -390,12 +487,17 @@ function evaluateRequiredChecks(contextNodes) {
     const failedRuns = [];
     const failedNames = [];
     let failed = false;
-    for (const node of (contextNodes || [])) {
-        if (!node || !node.isRequired) {
-            continue;
-        }
+    let pending = false;
+    const required = (contextNodes || []).filter((node) => node && node.isRequired);
+    const checkRuns = latestCheckRuns(required.filter((node) => node.__typename === 'CheckRun'));
+    const statuses = required.filter((node) => node.__typename !== 'CheckRun');
+    for (const node of [...checkRuns, ...statuses]) {
         if (node.__typename === 'CheckRun') {
-            if (node.conclusion !== null && node.conclusion !== undefined && !CONFIG.PASSING_CHECK_CONCLUSIONS.includes(node.conclusion)) {
+            if (node.conclusion === null || node.conclusion === undefined) {
+                pending = true;
+                continue;
+            }
+            if (!CONFIG.PASSING_CHECK_CONCLUSIONS.includes(node.conclusion)) {
                 failed = true;
                 if (node.name && !failedNames.includes(node.name)) {
                     failedNames.push(node.name);
@@ -411,7 +513,12 @@ function evaluateRequiredChecks(contextNodes) {
             }
         }
         else if (node.__typename === 'StatusContext') {
-            if (node.state === 'FAILURE' || node.state === 'ERROR') {
+            // PENDING only: EXPECTED means the status never reported (e.g. a removed
+            // integration), and waiting on it would hold a failed PR in the queue forever
+            if (node.state === 'PENDING') {
+                pending = true;
+            }
+            else if (node.state === 'FAILURE' || node.state === 'ERROR') {
                 failed = true;
                 if (node.context && !failedNames.includes(node.context)) {
                     failedNames.push(node.context);
@@ -419,7 +526,41 @@ function evaluateRequiredChecks(contextNodes) {
             }
         }
     }
-    return { failed, failedRunIds, failedRunUrls, failedRuns, failedNames };
+    return { failed: failed && !pending, pending, failedRunIds, failedRunUrls, failedRuns, failedNames };
+}
+
+/**
+ * Decides whether re-running a failed required check now would cancel CI that is still going.
+ * The required-check contexts only show check runs that already exist: a workflow run that was
+ * just started (by an approval, a label or a branch update) has no jobs for a while, and during
+ * that window the only copies of its checks are the CANCELLED ones from the run it replaced.
+ * Re-running that older run cancels the new one through CI's concurrency group, and the new one,
+ * re-run in turn, cancels it back. So while any run of the failed run's workflow is still queued
+ * or in progress on the head commit (including a re-run of the failed run itself), wait.
+ * @param {object[]} workflowRuns - REST workflow runs for the PR head commit
+ * @param {number[]} failedRunIds - workflow run ids holding the failed required checks
+ * @returns {{runId: number, reason: string}|null} the run that blocks a re-run, or null when a re-run is safe
+ */
+function findRerunBlocker(workflowRuns, failedRunIds) {
+    const runs = Array.isArray(workflowRuns) ? workflowRuns : [];
+    // GraphQL run ids may arrive as digit strings (see latestCheckRuns) while REST ids are
+    // numbers, so match on the string form
+    for (const failedId of failedRunIds) {
+        const failed = runs.find((r) => String(r.id) === String(failedId));
+        if (!failed) {
+            continue;
+        }
+        const active = runs.find((r) => r.workflow_id === failed.workflow_id && r.status !== 'completed');
+        if (active) {
+            return {
+                runId: active.id,
+                reason: active.id === failed.id
+                    ? 'run ' + active.id + ' is already being re-run'
+                    : 'run ' + active.id + ' of the same workflow is still ' + active.status,
+            };
+        }
+    }
+    return null;
 }
 
 /**
@@ -981,18 +1122,47 @@ async function run({ github, context, core, dryRun, batchSize }) {
                 }
                 pr.state = pr.stateComment ? parseStateComment(pr.stateComment.body) : null;
 
-                let requiredData;
+                let requiredContexts;
                 try {
-                    requiredData = await github.graphql(REQUIRED_CHECKS_QUERY, { owner, repo, number: pr.number });
+                    requiredContexts = await fetchRequiredContexts(github, owner, repo, pr.number);
                 }
                 catch (err) {
                     tagContext(err, 'required-checks');
                 }
-                const requiredPr = requiredData.repository.pullRequest;
-                const requiredCommit = requiredPr && requiredPr.commits.nodes[0] && requiredPr.commits.nodes[0].commit;
-                const rollup = requiredCommit && requiredCommit.statusCheckRollup;
-                const requiredResult = evaluateRequiredChecks(rollup ? rollup.contexts.nodes : []);
+                // Retries, the run lookup and the state comment are all keyed to pr.headSha from
+                // the queue snapshot. If the contexts describe a different commit (a push landed
+                // in between, or mid-read), acting on them would re-run the wrong commit's CI and
+                // count the retry against the wrong sha, so skip this PR until the next cycle.
+                if (!requiredContexts.consistent || (requiredContexts.oid && requiredContexts.oid !== pr.headSha)) {
+                    const reason = 'head moved since the queue snapshot';
+                    core.info('#' + pr.number + ': ' + reason + ' (' + pr.headSha + ' -> ' + requiredContexts.oid + ') — re-evaluated next cycle');
+                    allActions.push({ type: 'wait', number: pr.number, reason });
+                    continue;
+                }
+                const requiredResult = evaluateRequiredChecks(requiredContexts.nodes);
+                if (requiredResult.failed && requiredResult.failedRunIds.length > 0) {
+                    let headRuns;
+                    try {
+                        // one page: a single commit carries a handful of runs, far below 100
+                        headRuns = (await github.rest.actions.listWorkflowRunsForRepo({
+                            owner, repo, head_sha: pr.headSha, per_page: 100,
+                        })).data.workflow_runs;
+                    }
+                    catch (err) {
+                        // without the runs we cannot tell whether a re-run would cancel live CI,
+                        // so this PR takes no action this cycle rather than risk the cancel loop
+                        tagContext(err, 'head-runs');
+                    }
+                    const blocker = findRerunBlocker(headRuns, requiredResult.failedRunIds);
+                    if (blocker) {
+                        core.info('#' + pr.number + ': required check(s) failed but ' + blocker.reason
+                            + ' — waiting for it instead of re-running');
+                        requiredResult.failed = false;
+                        requiredResult.pending = true;
+                    }
+                }
                 pr.checksFailed = requiredResult.failed;
+                pr.checksPending = pr.checksPending || requiredResult.pending;
                 pr.failedRunIds = requiredResult.failedRunIds;
                 pr.failedRunUrls = requiredResult.failedRunUrls;
                 pr.failedRuns = requiredResult.failedRuns;
@@ -1051,6 +1221,8 @@ module.exports = {
     selectBatch,
     planForBatchMember,
     evaluateRequiredChecks,
+    findRerunBlocker,
+    fetchRequiredContexts,
     isPermissionError,
     explainPermissionError,
     run,
