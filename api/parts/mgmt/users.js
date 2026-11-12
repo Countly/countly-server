@@ -891,11 +891,12 @@ usersApi.deleteOwnAccount = function(params) {
 module.exports = usersApi;
 /**
  * Check update or delete note permission.
- *  @param {params} params - params object 
+ *  @param {params} params - params object
+ *  @param {string} noteId - id of the note the caller is about to change; the caller must
+ *  act on this same id, so the note that is checked is the note that is changed
  *  @returns {boolean} true
  */
-usersApi.checkNoteEditPermission = async function(params) {
-    let noteId = params.qstring.note_id;
+usersApi.checkNoteEditPermission = async function(params, noteId) {
     /**
      * get note
      *  @returns {object} promise
@@ -907,6 +908,9 @@ usersApi.checkNoteEditPermission = async function(params) {
                 function(error, note) {
                     if (error) {
                         return reject(false);
+                    }
+                    if (!note) {
+                        return resolve(false);
                     }
                     const globalAdmin = params.member.global_admin;
                     // Permission is checked against the NOTE's stored app_id, not the
@@ -920,9 +924,13 @@ usersApi.checkNoteEditPermission = async function(params) {
             );
         });
     };
-    if (params.qstring.args && params.qstring.args._id) {
-        noteId = params.qstring.args._id;
+    try {
+        common.db.ObjectID(noteId + "");
     }
+    catch (e) {
+        return false;
+    }
+    noteId = noteId + "";
     const permit = await checkPermission();
     return permit;
 };
@@ -983,7 +991,7 @@ usersApi.saveNote = async function(params) {
     };
 
     if (args._id) {
-        const editPermission = await usersApi.checkNoteEditPermission(params);
+        const editPermission = await usersApi.checkNoteEditPermission(params, args._id);
         if (!editPermission) {
             common.returnMessage(params, 403, 'Not allow to edit note');
         }
@@ -1031,12 +1039,13 @@ usersApi.saveNote = async function(params) {
 **/
 usersApi.deleteNote = async function(params) {
 
-    const editPermission = await usersApi.checkNoteEditPermission(params);
+    // check and delete the same id: only note_id names the note to delete
+    const noteId = params.qstring.note_id + "";
+    const editPermission = await usersApi.checkNoteEditPermission(params, noteId);
     if (!editPermission) {
         common.returnMessage(params, 403, 'Not allow to delete this note');
     }
     else {
-        const noteId = params.qstring.note_id;
         const query = {
             '_id': common.db.ObjectID(noteId),
         };

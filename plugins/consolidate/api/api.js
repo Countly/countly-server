@@ -96,17 +96,23 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({params, a
     if (!addedSourceApps || !initialSourceApps) {
         return "Nothing changed";
     }
+    if (!Array.isArray(addedSourceApps) || !Array.isArray(initialSourceApps)) {
+        throw new Error('selectedApps and initialApps must be arrays');
+    }
 
     // Apply the config only to source apps the member has access to (the same set the
-    // App Management UI offers: admin_of + user_of). Global admins pass. Kept outside the
-    // try below so the reason propagates instead of being masked as a generic failure.
+    // App Management UI offers: admin_of + user_of). Global admins pass. Both lists are
+    // checked: an app in initialApps only is one the update removes the config from.
+    // Kept outside the try below so the reason propagates instead of being masked as a
+    // generic failure.
     const member = params && params.member;
     if (!member || !member.global_admin) {
         const allowedApps = new Set(
             [].concat(rights.getUserApps(member) || [], rights.getAdminApps(member) || [])
                 .map((id) => id + "")
         );
-        const unauthorized = addedSourceApps.filter((id) => !allowedApps.has(id + ""));
+        const unauthorized = [...new Set([].concat(addedSourceApps, initialSourceApps).map((id) => id + ""))]
+            .filter((id) => !allowedApps.has(id));
         if (unauthorized.length) {
             throw new Error('No access to source app(s): ' + unauthorized.join(', '));
         }
@@ -130,9 +136,10 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({params, a
             {$addToSet: {'plugins.consolidate': app._id + ""}}
         );
 
-        // get all updated app documents
+        // get the updated apps, only the fields this setting changes
         const apps = await common.db.collection('apps').find(
-            {_id: {$in: [...addedSourceApps, ...removedSourceApps].map(id => common.db.ObjectID(id)) }}
+            {_id: {$in: [...addedSourceApps, ...removedSourceApps].map(id => common.db.ObjectID(id)) }},
+            {projection: {_id: 1, name: 1, 'plugins.consolidate': 1}}
         ).toArray();
 
         console.log('App %s updated successfully', app._id);

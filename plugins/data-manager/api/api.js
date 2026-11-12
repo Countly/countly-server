@@ -153,16 +153,30 @@ plugins.register("/i/data-manager/category/edit", function(ob) {
         try {
             let appId = ob.params.qstring.app_id;
             let categories = JSON.parse(ob.params.qstring.categories);
+            if (!Array.isArray(categories)) {
+                throw new Error('categories must be an array');
+            }
+            // ids of categories that belong to another app are ignored, so the rest of
+            // the batch is still applied and no other app's category is changed
+            const givenIds = categories.filter(category => category && category._id).map(category => common.db.ObjectID(category._id + ""));
+            const foreignIds = new Set();
+            if (givenIds.length) {
+                const foreign = await common.db.collection("event_categories")
+                    .find({_id: {$in: givenIds}, app: {$ne: appId}}, {projection: {_id: 1}}).toArray();
+                foreign.forEach(doc => foreignIds.add(doc._id + ""));
+            }
+            categories = categories.filter(category => category && !(category._id && foreignIds.has(category._id + "")));
             const bulkArray = [];
             categories.forEach(category=> {
                 let id = common.db.ObjectID();
                 if (category._id) {
-                    id = common.db.ObjectID(category._id) ;
+                    id = common.db.ObjectID(category._id + "");
                 }
                 bulkArray.push({
                     'updateOne': {
                         'filter': {
-                            '_id': id
+                            '_id': id,
+                            app: appId
                         },
                         'update': {
                             '$set': {
@@ -174,7 +188,9 @@ plugins.register("/i/data-manager/category/edit", function(ob) {
                     }
                 });
             });
-            await common.db.collection("event_categories").bulkWrite(bulkArray);
+            if (bulkArray.length) {
+                await common.db.collection("event_categories").bulkWrite(bulkArray);
+            }
             plugins.dispatch("/systemlogs", {params: ob.params, action: "dm-category-edit", data: { categories: categories}});
             common.returnOutput(ob.params, "Success");
         }

@@ -877,7 +877,6 @@ plugins.setConfigs("crashes", {
                                 if (result) {
                                     trace.postprocessCrash(result);
                                     result.total = total;
-                                    result.url = common.crypto.createHash('sha1').update(params.app_id + result._id + "").digest('hex');
                                     if (result.comments) {
                                         for (var i = 0; i < result.comments.length; i++) {
                                             if (result.comments[i].author_id === params.member._id + "") {
@@ -1227,10 +1226,10 @@ plugins.setConfigs("crashes", {
                     if (params.res.writeHead) {
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
-                            'Content-Length': crash.error.length,
+                            'Content-Length': Buffer.byteLength(crash.error + ""),
                             'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
                         });
-                        params.res.write(crash.error);
+                        params.res.write(crash.error + "");
                         params.res.end();
                     }
                 });
@@ -1411,45 +1410,6 @@ plugins.setConfigs("crashes", {
                         common.returnMessage(params, 404, 'Not found');
                     }
                 });
-            });
-            break;
-        case 'share':
-            validateUpdate(obParams, FEATURE_NAME, function(params) {
-                var crashId = params.qstring.args.crash_id + "";
-                var id = common.crypto.createHash('sha1').update(params.qstring.app_id + crashId).digest('hex');
-                common.db.collection('crash_share').insert({_id: id, app_id: params.qstring.app_id + "", crash_id: crashId}, function() {
-                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': crashId }, {"$set": {is_public: true}}, function() {});
-                    plugins.dispatch("/systemlogs", {params: params, action: "crash_shared", data: {app_id: params.qstring.app_id, crash_id: crashId}});
-                    common.returnMessage(params, 200, 'Success');
-                    return true;
-                });
-            });
-            break;
-        case 'unshare':
-            validateUpdate(obParams, FEATURE_NAME, function(params) {
-                var crashId = params.qstring.args.crash_id + "";
-                var id = common.crypto.createHash('sha1').update(params.qstring.app_id + crashId).digest('hex');
-                common.db.collection('crash_share').remove({'_id': id }, function() {
-                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': crashId }, {"$set": {is_public: false}}, function() {});
-                    plugins.dispatch("/systemlogs", {params: params, action: "crash_unshared", data: {app_id: params.qstring.app_id, crash_id: crashId}});
-                    common.returnMessage(params, 200, 'Success');
-                    return true;
-                });
-            });
-            break;
-        case 'modify_share':
-            validateUpdate(obParams, FEATURE_NAME, function(params) {
-                if (params.qstring.args.data) {
-                    var crashId = params.qstring.args.crash_id + "";
-                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': crashId }, {"$set": {share: params.qstring.args.data}}, function() {
-                        plugins.dispatch("/systemlogs", {params: params, action: "crash_modify_share", data: {app_id: params.qstring.app_id, crash_id: crashId, data: params.qstring.args.data}});
-                        common.returnMessage(params, 200, 'Success');
-                        return true;
-                    });
-                }
-                else {
-                    common.returnMessage(params, 400, 'No data to save');
-                }
             });
             break;
         case 'hide':
