@@ -151,31 +151,52 @@ plugins.register("/i/data-manager/category/create", function(ob) {
 plugins.register("/i/data-manager/category/edit", function(ob) {
     validateUpdate(ob.params, FEATURE_NAME, async function() {
         try {
-            let appId = ob.params.qstring.app_id;
+            let appId = ob.params.qstring.app_id + "";
             let categories = JSON.parse(ob.params.qstring.categories);
+            // An entry with an _id renames that category of this app; an _id that is not
+            // one of this app's categories is skipped. An entry without _id adds a category.
+            const requestedIds = categories.filter(category => category._id).map(category => common.db.ObjectID(category._id + ""));
+            const ownIds = new Set();
+            if (requestedIds.length) {
+                const own = await common.db.collection("event_categories").find({_id: {$in: requestedIds}, app: appId}, {projection: {_id: 1}}).toArray();
+                own.forEach(category => ownIds.add(category._id + ""));
+            }
             const bulkArray = [];
             categories.forEach(category=> {
-                let id = common.db.ObjectID();
                 if (category._id) {
-                    id = common.db.ObjectID(category._id) ;
+                    const id = common.db.ObjectID(category._id + "");
+                    if (!ownIds.has(id + "")) {
+                        return;
+                    }
+                    bulkArray.push({
+                        'updateOne': {
+                            'filter': {
+                                '_id': id,
+                                app: appId
+                            },
+                            'update': {
+                                '$set': {
+                                    'name': category.name
+                                }
+                            }
+                        }
+                    });
                 }
-                bulkArray.push({
-                    'updateOne': {
-                        'filter': {
-                            '_id': id,
-                            app: appId
-                        },
-                        'update': {
-                            '$set': {
+                else {
+                    bulkArray.push({
+                        'insertOne': {
+                            'document': {
+                                '_id': common.db.ObjectID(),
                                 'name': category.name,
                                 app: appId
                             }
-                        },
-                        "upsert": true
-                    }
-                });
+                        }
+                    });
+                }
             });
-            await common.db.collection("event_categories").bulkWrite(bulkArray);
+            if (bulkArray.length) {
+                await common.db.collection("event_categories").bulkWrite(bulkArray);
+            }
             plugins.dispatch("/systemlogs", {params: ob.params, action: "dm-category-edit", data: { categories: categories}});
             common.returnOutput(ob.params, "Success");
         }

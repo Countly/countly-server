@@ -1,3 +1,5 @@
+require('./categories.js');
+
 try {
     require('./index.ee.js');
 }
