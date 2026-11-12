@@ -251,7 +251,7 @@
       "count": 2
     },
     "jsdoc/valid-types": {
-      "count": 3
+      "count": 2
     },
     "no-useless-assignment": {
       "count": 45
@@ -292,9 +292,6 @@
     },
     "jsdoc/require-returns-check": {
       "count": 1
-    },
-    "jsdoc/valid-types": {
-      "count": 3
     },
     "no-useless-assignment": {
       "count": 10
@@ -679,11 +676,6 @@
       "count": 5
     }
   },
-  "plugins/remote-config/api/parts/rc.js": {
-    "jsdoc/valid-types": {
-      "count": 1
-    }
-  },
   "plugins/reports/api/api.js": {
     "no-useless-assignment": {
       "count": 1
@@ -716,11 +708,6 @@
     },
     "no-useless-assignment": {
       "count": 2
-    }
-  },
-  "plugins/star-rating/api/input-utils.js": {
-    "jsdoc/valid-types": {
-      "count": 1
     }
   },
   "plugins/times-of-day/api/api.js": {
