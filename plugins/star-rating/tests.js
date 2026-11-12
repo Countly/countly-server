@@ -441,6 +441,62 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Widget status and is_active', function() {
+        /**
+         * Read the widget's status fields from the database
+         * @returns {Promise<object>} status and is_active
+         */
+        function readStatus() {
+            return testUtils.db.collection('feedback_widgets').findOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {projection: {status: 1, is_active: 1}});
+        }
+
+        /**
+         * Set the widget's status through the bulk endpoint
+         * @param {boolean} status - new status
+         * @returns {Promise<object>} response
+         */
+        function bulkStatus(status) {
+            return request.get('/i/feedback/widgets/status')
+                .query({api_key: API_KEY_ADMIN, app_id: APP_ID, data: JSON.stringify({[WIDGET_ID]: status})});
+        }
+
+        before(function() {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            APP_ID = testUtils.get("APP_ID");
+            WIDGET_ID = testUtils.get("WIDGET_ID");
+        });
+
+        after(async function() {
+            await testUtils.db.collection('feedback_widgets').updateOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {$set: {status: true, is_active: "true"}});
+        });
+
+        it('bulk disable sets status and is_active to false', async function() {
+            await testUtils.db.collection('feedback_widgets').updateOne({_id: testUtils.db.ObjectID(WIDGET_ID)}, {$set: {status: true, is_active: "true"}});
+            var res = await bulkStatus(false);
+            res.status.should.equal(200, res.text);
+            var widget = await readStatus();
+            widget.should.have.property('status', false);
+            widget.should.have.property('is_active', "false");
+        });
+
+        it('bulk enable sets status and is_active to true', async function() {
+            var res = await bulkStatus(true);
+            res.status.should.equal(200, res.text);
+            var widget = await readStatus();
+            widget.should.have.property('status', true);
+            widget.should.have.property('is_active', "true");
+        });
+
+        it('single edit with status false sets is_active to false', async function() {
+            var res = await request.get('/i/feedback/widgets/edit')
+                .query({api_key: API_KEY_ADMIN, app_id: APP_ID, widget_id: WIDGET_ID, status: false});
+            res.status.should.equal(200, res.text);
+            var widget = await readStatus();
+            widget.should.have.property('status', false);
+            widget.should.have.property('is_active', "false");
+        });
+    });
+
     describe('Creating feedback event with widget_id', function() {
         it('should success', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");

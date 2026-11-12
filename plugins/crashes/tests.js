@@ -1,5 +1,6 @@
 var request = require('supertest');
 var should = require('should');
+var crypto = require('crypto');
 var testUtils = require("../../test/testUtils");
 const common = require('../../api/utils/common');
 request = request(testUtils.url);
@@ -10,7 +11,6 @@ var APP_ID = "";
 var DEVICE_ID = "1234567890";
 var COMMENT_ID = "";
 var CRASHES = [];
-var CRASH_URL = "";
 var RE = /^-{0,1}\d*\.{0,1}\d+$/;
 
 function verifyMetrics(ob, correct) {
@@ -357,7 +357,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 20, "count": 1, "min": 20, "max": 20});
                     ob.should.have.property("run", {"total": 60, "count": 1, "min": 60, "max": 60});
                     ob.should.have.property("total", 1);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(1);
                     var report = ob.data[0];
                     report.should.have.property("_id");
@@ -539,7 +539,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 40, "count": 2, "min": 20, "max": 20});
                     ob.should.have.property("run", {"total": 120, "count": 2, "min": 60, "max": 60});
                     ob.should.have.property("total", 2);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(2);
                     var report = ob.data[0];
                     report.should.have.property("_id");
@@ -750,7 +750,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 240, "count": 3, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 1, "count": 1, "min": 1, "max": 1});
                     ob.should.have.property("total", 2);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(3);
 
                     var report = ob.data[0];
@@ -937,7 +937,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 25, "count": 1, "min": 25, "max": 25});
                     ob.should.have.property("run", {"total": 120, "count": 1, "min": 120, "max": 120});
                     ob.should.have.property("total", 2);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(1);
 
                     var report = ob.data[0];
@@ -1109,7 +1109,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 25, "count": 1, "min": 25, "max": 25});
                     ob.should.have.property("run", {"total": 120, "count": 1, "min": 120, "max": 120});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(1);
 
                     var report = ob.data[0];
@@ -1205,7 +1205,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 25, "count": 1, "min": 25, "max": 25});
                     ob.should.have.property("run", {"total": 120, "count": 1, "min": 120, "max": 120});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(1);
 
                     var report = ob.data[0];
@@ -1301,10 +1301,8 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 25, "count": 1, "min": 25, "max": 25});
                     ob.should.have.property("run", {"total": 120, "count": 1, "min": 120, "max": 120});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(1);
-                    CRASH_URL = ob.url;
-
                     var report = ob.data[0];
                     report.should.have.property("_id");
                     report.should.have.property("os", "Windows Phone");
@@ -1337,30 +1335,40 @@ describe('Testing Crashes', function() {
         });
     });
 
-    describe('Check public crash', function() {
-        it('should not found', function(done) {
-            request
-                .get('/crash/' + CRASH_URL)
-                .expect(404, done);
-        });
-    });
-
-    describe('Make crash public', function() {
-        it('should success', function(done) {
+    describe('Crash sharing', function() {
+        var shareCode = function() {
+            return crypto.createHash('sha1').update(APP_ID + CRASHES[2]).digest('hex');
+        };
+        it('should not offer a share endpoint', function(done) {
             var args = {
                 crash_id: CRASHES[2]
             };
             request
                 .get('/i/crashes/share?args=' + JSON.stringify(args) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
-                .expect(200)
+                .expect(400)
                 .end(function(err, res) {
                     if (err) {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    ob.should.have.property('result', 'Invalid path');
+                    done();
                 });
+        });
+        it('should not serve a crash page for a stored share code', function(done) {
+            testUtils.db.collection('crash_share').insertOne({_id: shareCode(), app_id: APP_ID + "", crash_id: CRASHES[2]}, function(insertErr) {
+                if (insertErr) {
+                    return done(insertErr);
+                }
+                request
+                    .get('/crashes/' + shareCode())
+                    .expect(404)
+                    .end(function(err) {
+                        testUtils.db.collection('crash_share').deleteOne({_id: shareCode()}, function() {
+                            done(err);
+                        });
+                    });
+            });
         });
     });
 
@@ -1383,100 +1391,6 @@ describe('Testing Crashes', function() {
         });
     });
 
-    /*
-    describe('Check public crash', function() {
-        it('should be found', function(done) {
-            request
-                .get('/crash/' + CRASH_URL)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var parts = res.text.split("var crash_data = ");
-                    parts.should.have.lengthOf(2);
-                    var data = parts[1].split(";\nwindow.CrashgroupView")[0];
-                    var ob = JSON.parse(data);
-                    ob.should.not.have.property('loss');
-                    ob.should.not.have.property('users');
-                    ob.should.not.have.property('data');
-                    done();
-                });
-        });
-    });
-
-    describe('Publish specfic properties', function() {
-        it('should success', function(done) {
-            var args = {
-                crash_id: CRASHES[2],
-                data: {
-                    reports: 1,
-                    loss: 1,
-                    users: 1
-                }
-            };
-            request
-                .get('/i/crashes/modify_share?args=' + JSON.stringify(args) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
-                });
-        });
-    });
-
-    describe('Check published properties', function() {
-        it('should be found', function(done) {
-            request
-                .get('/crash/' + CRASH_URL)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var parts = res.text.split("var crash_data = ");
-                    parts.should.have.lengthOf(2);
-                    var data = parts[1].split(";\nwindow.CrashgroupView")[0];
-                    var ob = JSON.parse(data);
-                    ob.should.have.property('share', {"reports": 1, "loss": 1, "users": 1});
-                    ob.should.have.property('users');
-                    ob.should.have.property('data');
-                    done();
-                });
-        });
-    });
-
-    describe('Unmake crash public', function() {
-        it('should success', function(done) {
-            var args = {
-                crash_id: CRASHES[2]
-            };
-            request
-                .get('/i/crashes/unshare?args=' + JSON.stringify(args) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
-                .expect(200)
-                .end(function(err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
-                });
-        });
-    });
-
-    describe('Check public crash', function() {
-        it('should not found', function(done) {
-            request
-                .get('/crash/' + CRASH_URL)
-                .expect(404, done);
-        });
-    });
-    */
 
     describe('Add comment', function() {
         it('should success', function(done) {
@@ -1541,7 +1455,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 25, "count": 1, "min": 25, "max": 25});
                     ob.should.have.property("run", {"total": 120, "count": 1, "min": 120, "max": 120});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("comments").with.lengthOf(1);
                     var comment = ob.comments[0];
                     comment.should.have.property("text", "Test comment");
@@ -1621,7 +1535,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 25, "count": 1, "min": 25, "max": 25});
                     ob.should.have.property("run", {"total": 120, "count": 1, "min": 120, "max": 120});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("comments").with.lengthOf(1);
                     var comment = ob.comments[0];
                     comment.should.have.property("text", "Test comment edited");
@@ -1699,7 +1613,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 25, "count": 1, "min": 25, "max": 25});
                     ob.should.have.property("run", {"total": 120, "count": 1, "min": 120, "max": 120});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("comments").with.lengthOf(0);
 
                     done();
@@ -1782,7 +1696,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 240, "count": 3, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 1, "count": 1, "min": 1, "max": 1});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(3);
 
                     done();
@@ -1862,7 +1776,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 240, "count": 3, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 1, "count": 1, "min": 1, "max": 1});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(3);
 
                     done();
@@ -1942,7 +1856,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 240, "count": 3, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 1, "count": 1, "min": 1, "max": 1});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(3);
 
                     done();
@@ -2071,7 +1985,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 300, "count": 4, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 1, "count": 1, "min": 1, "max": 1});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(4);
 
                     done();
@@ -2215,7 +2129,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 360, "count": 5, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 3, "count": 2, "min": 1, "max": 2});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(5);
 
                     done();
@@ -2297,7 +2211,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 360, "count": 5, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 3, "count": 2, "min": 1, "max": 2});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(5);
 
                     done();
@@ -2379,7 +2293,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("run", {"total": 360, "count": 5, "min": 60, "max": 120});
                     ob.should.have.property("session", {"total": 3, "count": 2, "min": 1, "max": 2});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(5);
 
                     done();
@@ -2548,7 +2462,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 20, "count": 1, "min": 20, "max": 20});
                     ob.should.have.property("run", {"total": 60, "count": 1, "min": 60, "max": 60});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(1);
 
                     done();
@@ -2716,7 +2630,7 @@ describe('Testing Crashes', function() {
                     ob.should.have.property("disk", {"total": 40, "count": 2, "min": 20, "max": 20});
                     ob.should.have.property("run", {"total": 120, "count": 2, "min": 60, "max": 60});
                     ob.should.have.property("total", 3);
-                    ob.should.have.property("url");
+                    ob.should.not.have.property("url");
                     ob.should.have.property("data").with.lengthOf(2);
 
                     done();
@@ -3465,5 +3379,44 @@ describe('Testing Crashes', function() {
                     done();
                 });
         });
+    });
+});
+
+describe('Crash stacktrace download', function() {
+    var CRASH_ID = null;
+    var STACK = "java.lang.IllegalStateException: Überprüfung fehlgeschlagen — 日本語のメッセージ 🚀\n" +
+        "at com.domain.app.Ärger.run(Activity.java:32)\n" +
+        "at com.domain.app.end(Activity.java:12)";
+
+    before(async function() {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
+        CRASH_ID = testUtils.db.ObjectID();
+        await testUtils.db.collection('app_crashes' + APP_ID).insertOne({_id: CRASH_ID, group: 'stacktrace_download_test', error: STACK});
+    });
+
+    after(async function() {
+        await testUtils.db.collection('app_crashes' + APP_ID).deleteOne({_id: CRASH_ID});
+    });
+
+    it('returns the whole stacktrace with a byte-accurate Content-Length', async function() {
+        var res = await request
+            .get('/o/crashes/download_stacktrace')
+            .query({api_key: API_KEY_ADMIN, app_id: APP_ID, crash_id: CRASH_ID + ""})
+            .buffer(true)
+            .parse(function(response, cb) {
+                var chunks = [];
+                response.on('data', function(chunk) {
+                    chunks.push(chunk);
+                });
+                response.on('end', function() {
+                    cb(null, Buffer.concat(chunks));
+                });
+            });
+        res.status.should.equal(200);
+        res.body.toString('utf8').should.equal(STACK);
+        if (typeof res.headers['content-length'] !== 'undefined') {
+            parseInt(res.headers['content-length'], 10).should.equal(Buffer.byteLength(STACK));
+        }
     });
 });
