@@ -132,10 +132,9 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({params, a
         );
 
         // return the updated apps' consolidate setting only, not the whole app documents
-        const apps = await common.db.collection('apps').find(
-            {_id: {$in: [...addedSourceApps, ...removedSourceApps].map(id => common.db.ObjectID(id)) }},
-            {projection: {_id: 1, name: 1, 'plugins.consolidate': 1}}
-        ).toArray();
+        const updatedAppIds = [...addedSourceApps, ...removedSourceApps].map(id => common.db.ObjectID(id));
+        const appsProjection = {_id: 1, name: 1, 'plugins.consolidate': 1};
+        const apps = await common.db.collection('apps').find({_id: {$in: updatedAppIds}}, {projection: appsProjection}).toArray();
 
         console.log('App %s updated successfully', app._id);
 
