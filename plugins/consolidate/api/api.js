@@ -98,13 +98,18 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({params, a
         if (!addedSourceApps || !initialSourceApps) {
             return "Nothing changed";
         }
+        if (!Array.isArray(addedSourceApps) || !Array.isArray(initialSourceApps)) {
+            throw new Error('selectedApps and initialApps must be arrays');
+        }
 
         // Apply the config only to source apps the member has access to (the same set
-        // the App Management UI offers). Global admins pass.
+        // the App Management UI offers). Both lists are checked: every app in either
+        // of them can be written below. Global admins pass.
         const member = params && params.member;
         if (!member || !member.global_admin) {
             const allowedApps = (member && rights.getUserApps(member)) || [];
-            const unauthorized = addedSourceApps.filter((id) => allowedApps.indexOf(id + "") === -1);
+            const unauthorized = addedSourceApps.concat(initialSourceApps)
+                .filter((id) => allowedApps.indexOf(id + "") === -1);
             if (unauthorized.length) {
                 throw new Error('No access to source app(s): ' + unauthorized.join(', '));
             }
@@ -126,10 +131,10 @@ plugins.register('/i/apps/update/plugins/consolidate', async function({params, a
             {$addToSet: {'plugins.consolidate': app._id + ""}}
         );
 
-        // get all updated app documents
-        const apps = await common.db.collection('apps').find(
-            {_id: {$in: [...addedSourceApps, ...removedSourceApps].map(id => common.db.ObjectID(id)) }}
-        ).toArray();
+        // return the updated apps' consolidate setting only, not the whole app documents
+        const updatedAppIds = [...addedSourceApps, ...removedSourceApps].map(id => common.db.ObjectID(id));
+        const appsProjection = {_id: 1, name: 1, 'plugins.consolidate': 1};
+        const apps = await common.db.collection('apps').find({_id: {$in: updatedAppIds}}, {projection: appsProjection}).toArray();
 
         console.log('App %s updated successfully', app._id);
 
