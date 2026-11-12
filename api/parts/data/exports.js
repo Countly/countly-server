@@ -547,7 +547,8 @@ function isObjectId(id) {
 */
 var EXPORT_REDACTIONS = {
     "members": ["password", "api_key", "two_factor_auth"],
-    "auth_tokens": ["_id"]
+    "auth_tokens": ["_id"],
+    "password_reset": ["prid"]
 };
 
 /**
