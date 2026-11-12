@@ -1204,7 +1204,7 @@ function uploadFile(myfile, id, appId, callback) {
                     common.returnMessage(params, 400, 'Invalid widget id: ' + key);
                     return false;
                 }
-                bulk.find({ _id: widgetObjectId, app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue } });
+                bulk.find({ _id: widgetObjectId, app_id: params.app_id + "" }).updateOne({ $set: { 'status': newStatusValue, 'is_active': newStatusValue ? "true" : "false" } });
             }
 
             bulk.execute(function(error) {

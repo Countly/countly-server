@@ -728,6 +728,114 @@ describe('Testing Rating plugin', function() {
         });
     });
 
+    describe('Bulk widget status', function() {
+        var statusAppId = "";
+        var statusWidgetId = "";
+
+        /**
+         * Read the widget as stored
+         * @param {function} callback - (err, widget)
+         */
+        function readWidget(callback) {
+            request.get('/o/feedback/widget?app_id=' + statusAppId + '&api_key=' + API_KEY_ADMIN + '&widget_id=' + statusWidgetId)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback(null, JSON.parse(res.text));
+                });
+        }
+
+        /**
+         * Set the status of the widget through the bulk endpoint
+         * @param {boolean} value - new status
+         * @param {function} done - mocha callback
+         */
+        function setStatus(value, done) {
+            request.get('/i/feedback/widgets/status?api_key=' + API_KEY_ADMIN + '&app_id=' + statusAppId + '&data=' + encodeURIComponent(JSON.stringify({[statusWidgetId]: value})))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    readWidget(function(err2, w) {
+                        if (err2) {
+                            return done(err2);
+                        }
+                        w.should.have.property('status', value);
+                        w.should.have.property('is_active', value ? "true" : "false");
+                        done();
+                    });
+                });
+        }
+
+        it('creates an app with an active widget', function(done) {
+            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            request.get('/i/apps/create?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({name: "SRStatusApp" + Date.now(), type: "mobile"})))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    statusAppId = res.body._id;
+                    request.get('/i/feedback/widgets/create?api_key=' + API_KEY_ADMIN + '&app_id=' + statusAppId + '&popup_header_text=status&popup_comment_callout=c&popup_email_callout=e&popup_button_callout=s&popup_thanks_message=t&trigger_position=mleft&trigger_bg_color=%23123456&trigger_font_color=%23122333&trigger_button_text=fb&target_devices={desktop:false,phone:true,tablet:true}&target_page=selected&target_pages=["/"]&is_active=true&hide_sticker=false')
+                        .expect(201)
+                        .end(function(err2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            request.get('/o/feedback/widgets?app_id=' + statusAppId + '&api_key=' + API_KEY_ADMIN)
+                                .expect(200)
+                                .end(function(err3, res3) {
+                                    if (err3) {
+                                        return done(err3);
+                                    }
+                                    statusWidgetId = JSON.parse(res3.text)[0]._id;
+                                    should.exist(statusWidgetId);
+                                    done();
+                                });
+                        });
+                });
+        });
+
+        it('turns the widget off, status and is_active together', function(done) {
+            setStatus(false, done);
+        });
+
+        it('turns the widget on again, status and is_active together', function(done) {
+            setStatus(true, done);
+        });
+
+        it('lists the widget under is_active=false once turned off', function(done) {
+            request.get('/i/feedback/widgets/status?api_key=' + API_KEY_ADMIN + '&app_id=' + statusAppId + '&data=' + encodeURIComponent(JSON.stringify({[statusWidgetId]: false})))
+                .expect(200)
+                .end(function(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    request.get('/o/feedback/widgets?app_id=' + statusAppId + '&api_key=' + API_KEY_ADMIN + '&is_active=false')
+                        .expect(200)
+                        .end(function(err2, res2) {
+                            if (err2) {
+                                return done(err2);
+                            }
+                            JSON.parse(res2.text).map(function(w) {
+                                return w._id;
+                            }).should.eql([statusWidgetId]);
+                            done();
+                        });
+                });
+        });
+
+        after(function(done) {
+            request.get('/i/apps/delete?api_key=' + API_KEY_ADMIN + '&args=' + encodeURIComponent(JSON.stringify({app_id: statusAppId})))
+                .end(function() {
+                    done();
+                });
+        });
+    });
+
     describe('Try to get feedback data after reset', function() {
         it('should return 200 and empty object', function(done) {
             APP_ID = testUtils.get("APP_ID") || APP_ID;
