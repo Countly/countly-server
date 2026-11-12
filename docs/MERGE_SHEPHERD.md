@@ -76,6 +76,29 @@ PR page.
   workflow runs whose failed jobs were just re-run (and any GitHub refused
   to re-run), so you can jump straight to the failure without hunting
   through the Checks tab.
+- A retry only happens once every required check has finished. While any is
+  still running the bot waits: re-running then would cancel the run that is
+  still going (CI's concurrency group cancels the older run). A commit can
+  carry more than one CI run (a branch update and a label or approval event
+  each start one), so for each required check only its newest copy counts:
+  the one from the newest workflow run, and within a run its latest re-run.
+  A `CANCELLED` copy superseded by a newer run is ignored, and only the run
+  holding a check's newest failure is re-run.
+- Before re-running, the bot also lists the workflow runs on the head
+  commit. While any run of the failed run's workflow is still queued or in
+  progress, it waits instead and counts no retry. A run that was just started
+  (by an approval, a label or a branch update) has no jobs for a while, so
+  during that window the only copies of its checks are the cancelled ones
+  from the run it replaced. Re-running that older run would cancel the new
+  one, and the two would keep cancelling each other (Countly/countly-platform#1853 burned all five
+  retries in one minute this way). The same check stops a second retry
+  while the first re-run is still going. If the lookup itself fails, the PR
+  is left untouched for that cycle.
+- Every decision in a cycle uses the commit the required checks were read
+  from. If a push moves the head after the queue snapshot, or between pages
+  of the checks query, the bot takes no action on that PR that cycle. It
+  re-reads everything on the next cycle instead of re-running CI, or
+  counting a retry, against a commit the snapshot does not describe.
 - Logic lives in `.github/scripts/merge-shepherd.js`; unit tests in
   `.github/scripts/merge-shepherd.test.js` — run with `npm run
   test:merge-shepherd` (or directly:
