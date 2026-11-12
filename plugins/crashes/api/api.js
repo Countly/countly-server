@@ -1226,10 +1226,10 @@ plugins.setConfigs("crashes", {
                     if (params.res.writeHead) {
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
-                            'Content-Length': crash.error.length,
+                            'Content-Length': Buffer.byteLength(crash.error + ""),
                             'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
                         });
-                        params.res.write(crash.error);
+                        params.res.write(crash.error + "");
                         params.res.end();
                     }
                 });

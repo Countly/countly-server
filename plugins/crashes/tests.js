@@ -3055,6 +3055,44 @@ describe('Testing Crashes', function() {
         });
     });
 
+    describe('Download stacktrace', function() {
+        var stackCrashId = null;
+        var stacktrace = "Ошибка: ничего не найдено ✓\n  at Ünïcödé.render (app.js:12)\n  at 日本語 (main.js:3)";
+
+        before(async function() {
+            var inserted = await testUtils.db.collection('app_crashes' + APP_ID).insertOne({group: "download_stacktrace_test", error: stacktrace, ts: Math.round(Date.now() / 1000)});
+            stackCrashId = inserted.insertedId + "";
+        });
+
+        after(async function() {
+            await testUtils.db.collection('app_crashes' + APP_ID).deleteOne({_id: testUtils.db.ObjectID(stackCrashId)});
+        });
+
+        it('sends the whole stacktrace when it has multi-byte characters', function(done) {
+            request
+                .get('/o/crashes/download_stacktrace?crash_id=' + stackCrashId + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
+                .buffer(true)
+                .parse(function(res, callback) {
+                    var chunks = [];
+                    res.on('data', function(chunk) {
+                        chunks.push(chunk);
+                    });
+                    res.on('end', function() {
+                        callback(null, Buffer.concat(chunks));
+                    });
+                })
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    parseInt(res.headers['content-length'], 10).should.equal(Buffer.byteLength(stacktrace));
+                    res.body.toString('utf8').should.equal(stacktrace);
+                    done();
+                });
+        });
+    });
+
     describe('Reset app', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};
