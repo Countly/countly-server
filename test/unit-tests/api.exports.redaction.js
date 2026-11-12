@@ -6,6 +6,7 @@ describe("export credential redaction", function() {
         it("flags privileged collections", function() {
             exporter.redactsExportCollection("members").should.equal(true);
             exporter.redactsExportCollection("auth_tokens").should.equal(true);
+            exporter.redactsExportCollection("password_reset").should.equal(true);
         });
         it("does not flag ordinary collections", function() {
             exporter.redactsExportCollection("app_users5f0000000000000000000000").should.equal(false);
@@ -36,6 +37,13 @@ describe("export credential redaction", function() {
             var out = exporter.redactExportDoc("auth_tokens", doc);
             out.should.have.property("_id", "***redacted***");
             out.should.have.property("owner", "u1");
+        });
+        it("strips the reset token from password_reset docs", function() {
+            var doc = {_id: "r1", prid: "reset-token", user_id: "u1", timestamp: 1};
+            var out = exporter.redactExportDoc("password_reset", doc);
+            out.should.not.have.property("prid");
+            out.should.have.property("_id", "r1");
+            out.should.have.property("user_id", "u1");
         });
         it("leaves ordinary collections untouched", function() {
             var doc = {_id: "x", did: "device-1", uid: "1", custom: {plan: "pro"}};
