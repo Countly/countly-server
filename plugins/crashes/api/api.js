@@ -1252,12 +1252,14 @@ plugins.setConfigs("crashes", {
                         return;
                     }
                     if (params.res.writeHead) {
+                        var stacktrace = crash.error + "";
                         params.res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
-                            'Content-Length': crash.error.length,
+                            // the header counts bytes, not characters
+                            'Content-Length': Buffer.byteLength(stacktrace),
                             'Content-Disposition': "attachment;filename=" + encodeURIComponent(params.qstring.crash_id) + "_stacktrace.txt"
                         });
-                        params.res.write(crash.error);
+                        params.res.write(stacktrace);
                         params.res.end();
                     }
                 });

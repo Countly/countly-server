@@ -3381,3 +3381,42 @@ describe('Testing Crashes', function() {
         });
     });
 });
+
+describe('Crash stacktrace download', function() {
+    var CRASH_ID = null;
+    var STACK = "java.lang.IllegalStateException: Überprüfung fehlgeschlagen — 日本語のメッセージ 🚀\n" +
+        "at com.domain.app.Ärger.run(Activity.java:32)\n" +
+        "at com.domain.app.end(Activity.java:12)";
+
+    before(async function() {
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
+        CRASH_ID = testUtils.db.ObjectID();
+        await testUtils.db.collection('app_crashes' + APP_ID).insertOne({_id: CRASH_ID, group: 'stacktrace_download_test', error: STACK});
+    });
+
+    after(async function() {
+        await testUtils.db.collection('app_crashes' + APP_ID).deleteOne({_id: CRASH_ID});
+    });
+
+    it('returns the whole stacktrace with a byte-accurate Content-Length', async function() {
+        var res = await request
+            .get('/o/crashes/download_stacktrace')
+            .query({api_key: API_KEY_ADMIN, app_id: APP_ID, crash_id: CRASH_ID + ""})
+            .buffer(true)
+            .parse(function(response, cb) {
+                var chunks = [];
+                response.on('data', function(chunk) {
+                    chunks.push(chunk);
+                });
+                response.on('end', function() {
+                    cb(null, Buffer.concat(chunks));
+                });
+            });
+        res.status.should.equal(200);
+        res.body.toString('utf8').should.equal(STACK);
+        if (typeof res.headers['content-length'] !== 'undefined') {
+            parseInt(res.headers['content-length'], 10).should.equal(Buffer.byteLength(STACK));
+        }
+    });
+});
