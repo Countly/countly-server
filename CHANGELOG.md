@@ -1,6 +1,7 @@
 ## Version 25.03.59
 Upgrade Notes:
-- Node.js 26 and MongoDB 9.0 are the new defaults for Docker and clean installs; existing servers on Node.js 20.18+/22 and MongoDB 5.2+ keep working (optional scripts: `bin/upgrade/25.03/upgrade.nodejs.26.sh`, `bin/upgrade/mongodb9/upgrade.mongo.90.sh`)
+- Node.js 26 is the default for Docker images and clean installs; Node.js 20.18+ and 22 keep working, and `bin/upgrade/25.03/upgrade.nodejs.26.sh` is optional
+- MongoDB 9.0 is now supported and installed on clean installs; MongoDB 5.2 to 8.0 keep working, and `bin/upgrade/mongodb9/upgrade.mongo.90.sh` (8.0 to 9.0) is optional
 
 Security Fixes:
 - [core] App scoping tightened for scoped tokens, tasks, retired app keys, legacy endpoint scopes, notes, app user exports and `/o/export/db`
