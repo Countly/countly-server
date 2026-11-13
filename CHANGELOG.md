@@ -1,9 +1,6 @@
 ## Version 25.03.59
 Upgrade Notes:
 - Node.js 26 and MongoDB 9.0 are the new defaults for Docker and clean installs; existing servers on Node.js 20.18+/22 and MongoDB 5.2+ keep working (optional scripts: `bin/upgrade/25.03/upgrade.nodejs.26.sh`, `bin/upgrade/mongodb9/upgrade.mongo.90.sh`)
-- `countly upgrade` loads bundled GeoNames data into MongoDB; sqlite3 is no longer needed
-- With crash smart preprocessing on, new reports of an existing crash may open a new group once
-- The security proxy also applies to plain http requests; `uid` in `/i/app_users/create|update` must be alphanumeric; crash share actions are removed
 
 Security Fixes:
 - [core] App scoping tightened for scoped tokens, tasks, retired app keys, legacy endpoint scopes, notes, app user exports and `/o/export/db`
