@@ -1,3 +1,48 @@
+## Version 25.03.59
+Upgrade Notes:
+- Node.js 26 and MongoDB 9.0 are the new defaults for Docker and clean installs; existing servers on Node.js 20.18+/22 and MongoDB 5.2+ keep working (optional scripts: `bin/upgrade/25.03/upgrade.nodejs.26.sh`, `bin/upgrade/mongodb9/upgrade.mongo.90.sh`)
+- `countly upgrade` loads bundled GeoNames data into MongoDB; sqlite3 is no longer needed
+- With crash smart preprocessing on, new reports of an existing crash may open a new group once
+- The security proxy also applies to plain http requests; `uid` in `/i/app_users/create|update` must be alphanumeric; crash share actions are removed
+
+Security Fixes:
+- [core] App scoping tightened for scoped tokens, tasks, retired app keys, legacy endpoint scopes, notes, app user exports and `/o/export/db`
+- [core] Hardened inputs: mongoexport queries, metric values (`__proto__`), app plugin config keys, single admin on first-run `/setup`, no `auth_token` stored with long tasks
+- [alerts, hooks, dashboards] Saves store only known fields; alerts and hooks run only while their owner can still read the app
+- [consolidate, data-manager, dbviewer, populator] Changes and reads limited to the member's own apps
+- [two-factor-auth] Wrong one-time codes count toward the login lockout
+- [frontend] CSRF protection moved off the archived `csurf`
+- [journey_engine] Survey responses accepted only from the journey's own user
+- [okta, crash_symbolication] uuid and basic-ftp updated for published advisories
+
+Features:
+- [docker] api and frontend images for linux/arm64
+- [install] Ubuntu 26.04 support
+- [push] Push test users in Countly Lite
+
+Fixes:
+- [core] Fixed server crashes reported by 25.03 servers (jobs, push, reports, star-rating, views, dashboards, server-stats, system-utility)
+- [core] Old two-factor secrets work again on Node.js 22+
+- [core] Drill keeps array segment values; device list updated; external IP looked up over https
+- [crashes] Better grouping of partially symbolicated crashes; custom `smart_regexes` fixed; full non-ASCII stacktrace downloads
+- [dashboards] Events widget breakdowns for event keys with a dot
+- [frontend] Static files no longer count toward the dashboard rate limit
+- [install] RHEL 8, Ubuntu 22.04 and npm installer fixes; hooks picks the isolated-vm build for the running Node.js
+- [populator, push, reports, sources, star-rating] Smaller fixes
+
+Enterprise Features:
+- [retention_segments] Retention saved queries as custom dashboard widgets
+
+Enterprise Fixes:
+- Fixed plugin crashes reported by 25.03 servers (drill, surveys, funnels, cognito, oidc, formulas, cohorts, concurrent_users, performance-monitoring)
+- [journey_engine] Closed surveys complete their block and are not served again; flow builder no longer opens blank
+- [cognito, okta] Requests use the configured proxy
+- [ab-testing, content, data-manager, geo] Smaller fixes and compatibility with the new core libraries
+
+Dependencies:
+- MongoDB driver 7.8.0, argon2 0.45.2, express 4.22.3, express-rate-limit 8.7.4, lru-cache 11, nodemailer 10.4.0, node-forge 1.4.3 (push) and other updates
+- Removed bluebird, got, sqlite3, csurf, json2csv, later and other unused or deprecated packages
+
 ## Version 25.03.58
 Security Fixes:
 - [core] A token restricted to apps must state the permissions it grants; existing app-restricted tokens without permissions are limited to their owner's rights on those apps, and endpoint restrictions match exact API paths
