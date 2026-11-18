@@ -78,7 +78,7 @@ Countly can collect and visualize data from mobile, web and desktop applications
 
 * [List of Countly SDKs, documentation and download information](https://support.countly.com/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
 * [SDK development guide to build your own SDK](https://support.countly.com/hc/en-us/articles/360037753291-SDK-development-guide)
-* [Countly Server Write API to send data into Countly from any source](https://api.count.ly/reference/i)
+* [Countly Server Write API to send data into Countly from any source](https://api.count.ly/api/core/bulk)
 
 ## 🛠️ Installing and upgrading Countly server
 
