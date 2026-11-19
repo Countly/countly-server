@@ -29,6 +29,57 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
     "appUserExport": 1
 });
 
+/**
+ * Fields a /o/app_users/consents query may filter on: the columns the endpoint
+ * returns (CONSENT_TABLE_PROJECTION) plus _id, which Mongo returns unless it is
+ * excluded. A dotted path is accepted when its first segment is one of these,
+ * so consent.<feature> works.
+ */
+const CONSENT_QUERY_FIELDS = Object.freeze(["_id"].concat(Object.keys(CONSENT_TABLE_PROJECTION)));
+
+/**
+ * Logical operators that may combine conditions in a consents query. Each holds
+ * an array of sub-queries, which are checked by the same rules.
+ */
+const CONSENT_QUERY_LOGICAL_OPERATORS = Object.freeze(["$and", "$or", "$nor"]);
+
+/**
+ * Find the first key in a consents query that is not a condition on a consent
+ * table column, at any depth inside $and/$or/$nor.
+ *
+ * The count and the result set are both driven by the query, so a condition on
+ * a field the table does not show would let the count reveal that field's value.
+ * Such a query is rejected rather than having the condition removed.
+ * @param {object} query - parsed query object
+ * @returns {string|null} offending key, or null when every condition is allowed
+ */
+function findDisallowedConsentQueryKey(query) {
+    if (!query || typeof query !== "object" || Array.isArray(query)) {
+        return "query";
+    }
+    for (var key in query) {
+        if (!Object.prototype.hasOwnProperty.call(query, key)) {
+            continue;
+        }
+        if (CONSENT_QUERY_LOGICAL_OPERATORS.indexOf(key) !== -1) {
+            if (!Array.isArray(query[key])) {
+                return key;
+            }
+            for (var i = 0; i < query[key].length; i++) {
+                var nested = findDisallowedConsentQueryKey(query[key][i]);
+                if (nested) {
+                    return nested;
+                }
+            }
+            continue;
+        }
+        if (CONSENT_QUERY_FIELDS.indexOf(key.split(".")[0]) === -1) {
+            return key;
+        }
+    }
+    return null;
+}
+
 (function() {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -300,18 +351,23 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
                 return true;
             }
             validateRead(params, FEATURE_NAME, function() {
+                var parsedC = common.parseUserQuery(params.qstring.query || params.qstring.filter || {});
+                if (parsedC.error) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedC.error);
+                    common.returnMessage(params, 400, parsedC.error);
+                    return;
+                }
+                var disallowedKey = findDisallowedConsentQueryKey(parsedC.query);
+                if (disallowedKey) {
+                    log.d("Rejected user query" + common.reqInfo(params) + ": Query field not allowed: " + disallowedKey);
+                    common.returnMessage(params, 400, "Query field not allowed: " + disallowedKey);
+                    return;
+                }
                 appUsers.count(params.qstring.app_id, {}, function(err, total) {
                     if (err) {
                         common.returnMessage(params, 400, err);
                     }
                     else if (total > 0) {
-                        params.qstring.query = params.qstring.query || params.qstring.filter || {};
-                        var parsedC = common.parseUserQuery(params.qstring.query);
-                        if (parsedC.error) {
-                            log.d("Rejected user query" + common.reqInfo(params) + ": " + parsedC.error);
-                            common.returnMessage(params, 400, parsedC.error);
-                            return;
-                        }
                         params.qstring.query = parsedC.query;
                         //The consent table is a fixed set of columns, so the
                         //projection is fixed server side and any project/projection
