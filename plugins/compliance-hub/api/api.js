@@ -29,6 +29,79 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
     "appUserExport": 1
 });
 
+/**
+ * Fields a /o/app_users/consents query or sort may reference: the columns the
+ * endpoint returns (CONSENT_TABLE_PROJECTION) plus _id, which Mongo returns
+ * unless excluded. A dotted path is allowed when its first segment is one of
+ * these, e.g. "consent.sessions".
+ */
+const CONSENT_TABLE_QUERY_FIELDS = Object.freeze(Object.keys(CONSENT_TABLE_PROJECTION).concat(["_id"]));
+
+const CONSENT_TABLE_LOGICAL_OPERATORS = ["$and", "$or", "$nor"];
+
+/**
+ * Check whether a field path refers to one of the consent table columns
+ * @param {string} path - field path from a query or sort, e.g. "consent.sessions"
+ * @returns {boolean} true if the path is inside an allowed column
+ */
+function isConsentTableField(path) {
+    return CONSENT_TABLE_QUERY_FIELDS.indexOf((path + "").split(".")[0]) !== -1;
+}
+
+/**
+ * Check that a query for /o/app_users/consents only filters on the consent
+ * table columns. Conditions may be combined with $and/$or/$nor at any depth;
+ * any other top-level operator ($expr, $text, $jsonSchema, ...) or any other
+ * field is reported. The query is never modified.
+ * @param {object} query - parsed query
+ * @returns {string|null} error message, or null if the query is allowed
+ */
+function findConsentTableQueryError(query) {
+    if (!query || typeof query !== "object" || Array.isArray(query)) {
+        return "Query must be an object";
+    }
+    for (var key in query) {
+        if (!Object.prototype.hasOwnProperty.call(query, key)) {
+            continue;
+        }
+        if (CONSENT_TABLE_LOGICAL_OPERATORS.indexOf(key) !== -1) {
+            if (!Array.isArray(query[key])) {
+                return "Operator " + key + " expects an array";
+            }
+            for (var i = 0; i < query[key].length; i++) {
+                var nestedError = findConsentTableQueryError(query[key][i]);
+                if (nestedError) {
+                    return nestedError;
+                }
+            }
+        }
+        else if (key.charAt(0) === "$") {
+            return "Query operator " + key + " is not allowed here. Allowed fields: " + CONSENT_TABLE_QUERY_FIELDS.join(", ");
+        }
+        else if (!isConsentTableField(key)) {
+            return "Query field " + key + " is not allowed here. Allowed fields: " + CONSENT_TABLE_QUERY_FIELDS.join(", ");
+        }
+    }
+    return null;
+}
+
+/**
+ * Check that a sort for /o/app_users/consents only uses the consent table columns
+ * @param {object} sort - parsed sort object
+ * @returns {string|null} error message, or null if the sort is allowed
+ */
+function findConsentTableSortError(sort) {
+    if (!sort || typeof sort !== "object" || Array.isArray(sort)) {
+        return "Sort must be an object";
+    }
+    for (var key in sort) {
+        if (Object.prototype.hasOwnProperty.call(sort, key) && !isConsentTableField(key)) {
+            return "Sort field " + key + " is not allowed here. Allowed fields: " + CONSENT_TABLE_QUERY_FIELDS.join(", ");
+        }
+    }
+    return null;
+}
+
 (function() {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -313,6 +386,15 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
                             return;
                         }
                         params.qstring.query = parsedC.query;
+                        //count and search run the query against whole app_users
+                        //documents, so it may only reference the columns this
+                        //endpoint returns.
+                        var queryFieldError = findConsentTableQueryError(params.qstring.query);
+                        if (queryFieldError) {
+                            log.d("Rejected user query" + common.reqInfo(params) + ": " + queryFieldError);
+                            common.returnMessage(params, 400, queryFieldError);
+                            return;
+                        }
                         //The consent table is a fixed set of columns, so the
                         //projection is fixed server side and any project/projection
                         //supplied by the caller is ignored. Previously the default
@@ -333,7 +415,26 @@ const CONSENT_TABLE_PROJECTION = Object.freeze({
                             checkOb = {};
                             checkOb[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
                         }
-                        params.qstring.sort = checkOb || params.qstring.sort || {};
+                        if (!checkOb && params.qstring.sort) {
+                            var sortOb = params.qstring.sort;
+                            if (typeof sortOb === "string") {
+                                try {
+                                    sortOb = JSON.parse(sortOb);
+                                }
+                                catch {
+                                    common.returnMessage(params, 400, "Could not parse parameter \"sort\"");
+                                    return;
+                                }
+                            }
+                            var sortFieldError = findConsentTableSortError(sortOb);
+                            if (sortFieldError) {
+                                log.d("Rejected sort" + common.reqInfo(params) + ": " + sortFieldError);
+                                common.returnMessage(params, 400, sortFieldError);
+                                return;
+                            }
+                            checkOb = sortOb;
+                        }
+                        params.qstring.sort = checkOb || {};
                         params.qstring.limit = parseInt(params.qstring.limit) || parseInt(params.qstring.iDisplayLength) || 0;
                         params.qstring.skip = parseInt(params.qstring.skip) || parseInt(params.qstring.iDisplayStart) || 0;
                         appUsers.count(params.qstring.app_id, params.qstring.query, function(countErr, countTotal) {

@@ -169,6 +169,153 @@ describe('Testing Compliance Hub', function() {
         });
     });
 
+    describe('app_users consents query fields', function() {
+        // count and search run the query against whole app_users documents, so
+        // a query or sort may only reference the columns the endpoint returns.
+        // Uses its own app and a member holding only compliance_hub read on it.
+        var adminKey = "";
+        var appId = "";
+        var memberKey = "";
+        var memberId = "";
+        var uidA = "";
+        var uniq = Date.now();
+
+        /**
+         * Call /o/app_users/consents as the compliance_hub-only member
+         * @param {object} qs - extra query string parameters
+         * @returns {Promise} supertest response
+         */
+        function consents(qs) {
+            return request.get('/o/app_users/consents')
+                .query(Object.assign({api_key: memberKey, app_id: appId}, qs));
+        }
+
+        /**
+         * Create an app user on the test app
+         * @param {object} data - app user document
+         * @returns {Promise<object>} the created document
+         */
+        async function createAppUser(data) {
+            var res = await request.get('/i/app_users/create')
+                .query({api_key: adminKey, app_id: appId, data: JSON.stringify(data)})
+                .expect(200);
+            return JSON.parse(res.body.result.replace(/^User Created: /, ""));
+        }
+
+        before(async function() {
+            adminKey = testUtils.get("API_KEY_ADMIN");
+            var appRes = await request.get('/i/apps/create')
+                .query({api_key: adminKey, args: JSON.stringify({name: "ConsentQueryApp" + uniq, type: "mobile"})})
+                .expect(200);
+            appId = appRes.body._id;
+
+            var perm = {_: {a: [], u: [[appId]]}, c: {}, r: {}, u: {}, d: {}};
+            ["c", "u", "d"].forEach(function(t) {
+                perm[t][appId] = {all: false, allowed: {}};
+            });
+            perm.r[appId] = {all: false, allowed: {compliance_hub: true}};
+            var userRes = await request.get('/i/users/create')
+                .query({api_key: adminKey, args: JSON.stringify({full_name: "consentquery" + uniq, username: "consentquery" + uniq, password: testUtils.password, email: "consentquery" + uniq + "@test.test", permission: perm})})
+                .expect(200);
+            memberKey = userRes.body.api_key;
+            memberId = userRes.body._id;
+            should.exist(memberKey);
+
+            var userA = await createAppUser({did: "consent-a", consent: {sessions: true, crashes: true}, loc: {gps: true, geo: {type: "Point", coordinates: [24.1, 56.9]}}, custom: {plan: "gold"}});
+            uidA = userA.uid;
+            should.exist(uidA);
+            await createAppUser({did: "consent-b", consent: {sessions: true, crashes: false}, custom: {plan: "free"}});
+            await createAppUser({did: "consent-c", consent: {sessions: false}});
+        });
+
+        after(async function() {
+            if (memberId) {
+                await request.get('/i/users/delete').query({api_key: adminKey, args: JSON.stringify({user_ids: [memberId]})});
+            }
+            if (appId) {
+                await request.get('/i/apps/delete').query({api_key: adminKey, args: JSON.stringify({app_id: appId})});
+            }
+        });
+
+        it('should list all users without a query', async function() {
+            var res = await consents({}).expect(200);
+            res.body.iTotalRecords.should.equal(3);
+            res.body.aaData.length.should.equal(3);
+        });
+
+        it('should filter on did', async function() {
+            var res = await consents({query: JSON.stringify({did: "consent-a"})}).expect(200);
+            res.body.iTotalRecords.should.equal(1);
+            res.body.aaData[0].did.should.equal("consent-a");
+        });
+
+        it('should filter on uid', async function() {
+            var res = await consents({query: JSON.stringify({uid: uidA})}).expect(200);
+            res.body.iTotalRecords.should.equal(1);
+            res.body.aaData[0].uid.should.equal(uidA);
+        });
+
+        it('should filter on consent fields', async function() {
+            var res = await consents({query: JSON.stringify({"consent.sessions": true})}).expect(200);
+            res.body.iTotalRecords.should.equal(2);
+            res = await consents({query: JSON.stringify({"consent.crashes": false})}).expect(200);
+            res.body.iTotalRecords.should.equal(1);
+            res.body.aaData[0].did.should.equal("consent-b");
+        });
+
+        it('should accept table columns inside $and/$or/$nor', async function() {
+            var res = await consents({query: JSON.stringify({$or: [{did: "consent-a"}, {$and: [{"consent.sessions": false}]}]})}).expect(200);
+            res.body.iTotalRecords.should.equal(2);
+            res = await consents({query: JSON.stringify({$nor: [{did: "consent-a"}]})}).expect(200);
+            res.body.iTotalRecords.should.equal(2);
+        });
+
+        it('should reject a query on first_req_post', async function() {
+            var res = await consents({query: JSON.stringify({first_req_post: ""})}).expect(400);
+            res.body.result.should.match(/first_req_post/);
+        });
+
+        it('should reject a query on loc.geo.coordinates', async function() {
+            var res = await consents({query: JSON.stringify({"loc.geo.coordinates.1": {$gt: 50}})}).expect(400);
+            res.body.result.should.match(/loc\.geo\.coordinates\.1/);
+        });
+
+        it('should reject a hidden field nested inside $and/$or', async function() {
+            var res = await consents({query: JSON.stringify({$and: [{did: "consent-a"}, {$or: [{"custom.plan": "gold"}]}]})}).expect(400);
+            res.body.result.should.match(/custom\.plan/);
+        });
+
+        it('should reject the filter alias with a hidden field', async function() {
+            await consents({filter: JSON.stringify({"custom.plan": "gold"})}).expect(400);
+        });
+
+        it('should reject top-level operators other than $and/$or/$nor', async function() {
+            await consents({query: JSON.stringify({$expr: {$gt: ["$loc.geo.coordinates", 0]}})}).expect(400);
+        });
+
+        it('should reject sorting on a hidden field', async function() {
+            await consents({sort: JSON.stringify({"custom.plan": 1})}).expect(400);
+        });
+
+        it('should accept sorting on a table column', async function() {
+            var res = await consents({sort: JSON.stringify({did: -1})}).expect(200);
+            res.body.aaData.map(function(row) {
+                return row.did;
+            }).should.eql(["consent-c", "consent-b", "consent-a"]);
+        });
+
+        it('should serve the dashboard table request (search, sort, paging)', async function() {
+            var res = await request.post('/o/app_users/consents')
+                .type('form')
+                .send({api_key: memberKey, app_id: appId, sEcho: 1, iDisplayStart: 0, iDisplayLength: 10, iSortCol_0: 0, sSortDir_0: "asc", sSearch: "consent-"})
+                .expect(200);
+            res.body.iTotalRecords.should.equal(3);
+            res.body.aaData.map(function(row) {
+                return row.did;
+            }).should.eql(["consent-a", "consent-b", "consent-c"]);
+        });
+    });
+
     describe('Reset App', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};
