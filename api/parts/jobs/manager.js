@@ -559,7 +559,7 @@ class Manager {
                 job._json.duration = Date.now() - job._json.started;
                 job._json.error = '' + error;
                 job._json.status = STATUS.DONE;
-                job._save(job._json);
+                job._save(job._json).catch(e => log.w('Could not mark job %s as done: %j', job.id, e.message || e));
             }
             throw error;
         });
