@@ -1452,6 +1452,10 @@ function uploadFile(myfile, id, appId, callback) {
             catch (jsonParseError) {
                 widgets = [];
             }
+            if (!Array.isArray(widgets)) {
+                common.returnMessage(params, 400, 'Invalid widgets');
+                return true;
+            }
             var widgetIdsArray = widgets.map(function(d) {
                 return common.db.ObjectID(d);
             });
