@@ -32,6 +32,60 @@ var pluginConfig = {};
 //value, so it is obvious in a UI and in a bug report.
 const SECRET_CONFIG_MASK = "********";
 
+const OBSERVED = Symbol("countlyObservedPromise");
+
+/**
+ * Promise returned by wrapped database operations called without a callback. It marks
+ * itself when somebody subscribes to it (await, then, catch, finally, Promise.all,
+ * returning it from an async function), so a rejection nobody subscribed to can be
+ * logged instead of surfacing as an unhandled rejection.
+ */
+class ObservedPromise extends global.Promise {
+    /**
+     * Promises derived from this one (then, catch, finally) are plain promises
+     * @returns {Function} native Promise constructor
+     */
+    static get [Symbol.species]() {
+        return global.Promise;
+    }
+
+    /**
+     * Record the subscription, then behave like Promise.prototype.then
+     * @param {Function} onFulfilled - fulfillment handler
+     * @param {Function} onRejected - rejection handler
+     * @returns {Promise} derived promise
+     */
+    then(onFulfilled, onRejected) {
+        this[OBSERVED] = true;
+        return super.then(onFulfilled, onRejected);
+    }
+}
+
+/**
+ * Return a promise that settles like the given one. Callers that await or chain it get
+ * the rejection as before; when nobody does (a fire-and-forget call), the rejection is
+ * passed to onUnobserved instead of becoming an unhandled rejection.
+ * @param {Promise} inner - promise of the database operation
+ * @param {Function} onUnobserved - called with the error when the operation failed and nobody subscribed
+ * @returns {Promise} promise settling like inner
+ */
+function observeRejection(inner, onUnobserved) {
+    var observed = new ObservedPromise(function(resolve, reject) {
+        inner.then(resolve, reject);
+    });
+    global.Promise.prototype.then.call(observed, undefined, function(err) {
+        if (!observed[OBSERVED]) {
+            try {
+                onUnobserved(err);
+            }
+            catch (ex) {
+                console.log("Could not log a failed database operation", err, ex);
+            }
+        }
+    });
+    return observed;
+}
+
 /**
 * This module handles communicaton with plugins
 * @module "plugins/pluginManager"
@@ -214,13 +268,20 @@ var pluginManager = function pluginManager() {
             pluginConfig = res.plugins || {}; //currently enabled plugins
             //list of plugin folders
             var pluginNames = [];
-            var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
-            //filter out just folders
-            for (var z = 0; z < pluginsList.length; z++) {
-                var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
-                if (p.isDirectory() || p.isSymbolicLink()) {
-                    pluginNames.push(pluginsList[z]);
+            try {
+                var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
+                //filter out just folders
+                for (var z = 0; z < pluginsList.length; z++) {
+                    var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+                    if (p.isDirectory() || p.isSymbolicLink()) {
+                        pluginNames.push(pluginsList[z]);
+                    }
                 }
+            }
+            catch (scanErr) {
+                // e.g. EMFILE when the process is out of file descriptors: this runs inside a
+                // database callback, where a throw became an unhandled rejection
+                console.log("Could not list the plugin directory", scanErr);
             }
             for (var zz = 0; zz < pluginNames.length; zz++) {
                 if (typeof pluginConfig[pluginNames[zz]] === 'undefined') {
@@ -291,12 +352,19 @@ var pluginManager = function pluginManager() {
                 console.log(err);
             }
             var pluginNames = [];
-            var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
-            for (var z = 0; z < pluginsList.length; z++) {
-                var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
-                if (p.isDirectory() || p.isSymbolicLink()) {
-                    pluginNames.push(pluginsList[z]);
+            try {
+                var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
+                for (var z = 0; z < pluginsList.length; z++) {
+                    var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+                    if (p.isDirectory() || p.isSymbolicLink()) {
+                        pluginNames.push(pluginsList[z]);
+                    }
                 }
+            }
+            catch (scanErr) {
+                // e.g. EMFILE when the process is out of file descriptors: this runs inside a
+                // database callback, where a throw became an unhandled rejection
+                console.log("Could not list the plugin directory", scanErr);
             }
 
             for (let i = 0, l = pluginNames.length; i < l; i++) {
@@ -347,7 +415,9 @@ var pluginManager = function pluginManager() {
 					}*/
 
                     if (self.getConfig("data-manager").enableDataMasking) {
-                        self.fetchMaskingConf({"db": db});
+                        self.fetchMaskingConf({"db": db}).catch(function(maskingErr) {
+                            logDbRead.e("Failed to load the data masking configuration", maskingErr);
+                        });
                     }
                 });
 
@@ -2519,8 +2589,13 @@ var pluginManager = function pluginManager() {
                             callback(err, null);
                         }
                     });
+                    return promise;
                 }
-                return promise;
+                //without a callback the caller owns the rejection; one that neither awaits nor
+                //chains the promise (fire-and-forget) gets it logged instead of an unhandled rejection
+                return observeRejection(promise, function(err) {
+                    logDbRead.e("Unhandled failure of database " + name + " %j %s", args, err, err && err.stack);
+                });
             };
         };
         overwriteDbPromise(countlyDb, "aggregate");
@@ -2629,6 +2704,29 @@ var pluginManager = function pluginManager() {
             }
 
             /**
+             *  Whether the caller declared this error code as expected, through the operation's
+             *  ignore_errors list or the ignore_errors option of its options argument
+             *  @param {Error} err - error of the operation
+             *  @param {Object} data - arguments and calling method
+             *  @param {Array} ignore_errors - error codes the operation ignores
+             *  @returns {boolean} true when the error is expected
+             */
+            function isExpectedError(err, data, ignore_errors) {
+                var code = err && err.code;
+                if (ignore_errors && ignore_errors.indexOf(code) !== -1) {
+                    return true;
+                }
+                var args = (data && data.args) || [];
+                //options follow the first argument (query or documents); findAndModify(query, sort, doc, options)
+                for (var i = 1; i < args.length; i++) {
+                    if (args[i] && typeof args[i] === "object" && Array.isArray(args[i].ignore_errors) && args[i].ignore_errors.indexOf(code) !== -1) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            /**
              *  Method to log promise errors
              *  @param {Promise} promise - Promise object
              *  @param {Error} e - Error for tracing
@@ -2644,7 +2742,7 @@ var pluginManager = function pluginManager() {
                             callback(undefined, res);
                         });
                     }
-                    return promise.catch(function(err) {
+                    var handled = promise.catch(function(err) {
                         if (typeof callback === "function") {
                             callback(err, null);
                         }
@@ -2657,6 +2755,23 @@ var pluginManager = function pluginManager() {
                                 }
                             }
                             throw err;
+                        }
+                    });
+                    if (typeof callback === "function") {
+                        return handled;
+                    }
+                    //Without a callback the caller owns the rejection. A caller that neither awaits
+                    //nor chains the promise (fire-and-forget) gets it logged here instead of an
+                    //unhandled rejection.
+                    return observeRejection(handled, function(err) {
+                        if (isExpectedError(err, data, ignore_errors)) {
+                            logDbWrite.d("Ignoring expected error of unawaited operation on " + collection + " %j %s", data, err);
+                        }
+                        else {
+                            logDbWrite.e("Unhandled failure of unawaited operation on " + collection + " %j %s", data, err, err && err.stack);
+                            if (e) {
+                                logDbWrite.e(e.stack);
+                            }
                         }
                     });
                 }
