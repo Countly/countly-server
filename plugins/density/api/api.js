@@ -14,6 +14,11 @@ const FEATURE_NAME = 'density';
         common.dbUserMap.density = 'dnst';
     });
     plugins.register("/o/method/total_users", function(ob) {
+        // requestProcessor's fullPath fallback also dispatches this event for a
+        // literal GET /o/method/total_users, without shortcodesForMetrics.
+        if (!ob.shortcodesForMetrics) {
+            return;
+        }
         ob.shortcodesForMetrics.densities = "dnst";
     });
     plugins.register("/session/metrics", function(ob) {

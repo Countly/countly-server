@@ -105,6 +105,11 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
         common.dbUserMap.source = 'src';
     });
     plugins.register("/o/method/total_users", function(ob) {
+        // requestProcessor's fullPath fallback also dispatches this event for a
+        // literal GET /o/method/total_users, without shortcodesForMetrics.
+        if (!ob.shortcodesForMetrics) {
+            return;
+        }
         ob.shortcodesForMetrics.sources = "src";
     });
     plugins.register("/metric/collection", function(ob) {

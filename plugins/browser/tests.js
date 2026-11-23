@@ -27,6 +27,24 @@ describe('Testing Browser metrics', function() {
                 });
         });
     });
+    describe('Internal total_users hook as a URL path', function() {
+        // The /o/method/total_users plugin event is internal (fetch.js). A
+        // literal request to that path reaches it through the fullPath
+        // fallback without shortcodesForMetrics; it must answer Invalid path,
+        // not throw in the hook and leave the request unanswered.
+        it('should answer 400 Invalid path', function(done) {
+            request
+                .get('/o/method/total_users?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+                .expect(400)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    JSON.parse(res.text).should.have.property('result', 'Invalid path');
+                    done();
+                });
+        });
+    });
     describe('Writing Browser', function() {
         it('should success', function(done) {
             var params = {"_browser": "Chrome"};

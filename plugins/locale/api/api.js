@@ -16,6 +16,11 @@ const FEATURE_NAME = 'locale';
         common.dbUserMap.lang = 'la'; // language extracted from locale
     });
     plugins.register("/o/method/total_users", function(ob) {
+        // requestProcessor's fullPath fallback also dispatches this event for a
+        // literal GET /o/method/total_users, without shortcodesForMetrics.
+        if (!ob.shortcodesForMetrics) {
+            return;
+        }
         ob.shortcodesForMetrics.languages = "la";
         ob.shortcodesForMetrics.langs = "la";
     });
