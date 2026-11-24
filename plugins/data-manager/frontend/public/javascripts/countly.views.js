@@ -415,7 +415,7 @@
                         sort: false
                     },
                     {
-                        label: "Category",
+                        label: CV.i18n("data-manager.category"),
                         value: 'category',
                         default: true,
                         sort: 'custom'
@@ -578,10 +578,11 @@
             filterFields: function() {
                 if (this.isDrill) {
                     return [{
-                        label: "Category",
+                        label: CV.i18n("data-manager.category"),
+                        testIdSuffix: "category",
                         key: "category",
                         options: [
-                            {value: "all", label: "All Categories"},
+                            {value: "all", label: CV.i18n("data-manager.all-categories")},
                         ].concat(this.categories.map(function(c) {
                             return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
@@ -589,11 +590,12 @@
                         action: true
                     },
                     {
-                        label: "Status",
+                        label: CV.i18n("data-manager.status"),
+                        testIdSuffix: "status",
                         key: "status",
                         options: [
-                            {value: "all", label: "All Statuses"},
-                            {value: "unplanned", label: "Unplanned"},
+                            {value: "all", label: CV.i18n("data-manager.all-statuses")},
+                            {value: "unplanned", label: CV.i18n("data-manager.unplanned")},
                             {
                                 label: CV.i18n("data-manager.created"),
                                 value: 'created'
@@ -615,12 +617,13 @@
                         action: false
                     },
                     {
-                        label: "Visibility",
+                        label: CV.i18n("data-manager.visibility"),
+                        testIdSuffix: "visibility",
                         key: "visibility",
                         options: [
-                            {value: "all", label: "All Visibilities"},
-                            {value: "true", label: "Visible"},
-                            {value: "false", label: "Hidden"},
+                            {value: "all", label: CV.i18n("data-manager.all-visibilities")},
+                            {value: "true", label: CV.i18n("data-manager.visible")},
+                            {value: "false", label: CV.i18n("data-manager.hidden")},
                         ],
                         default: "all",
                         action: false
@@ -628,22 +631,24 @@
                 }
                 else {
                     return [{
-                        label: "Category",
+                        label: CV.i18n("data-manager.category"),
+                        testIdSuffix: "category",
                         key: "category",
                         options: [
-                            {value: "all", label: "All Categories"},
+                            {value: "all", label: CV.i18n("data-manager.all-categories")},
                         ].concat(this.categories.map(function(c) {
                             return {value: c.name, label: countlyCommon.unescapeHtml(c.name)};
                         })),
                         default: "all",
                         action: true
                     }, {
-                        label: "Visibility",
+                        label: CV.i18n("data-manager.visibility"),
+                        testIdSuffix: "visibility",
                         key: "visibility",
                         options: [
-                            {value: "all", label: "All Visibilities"},
-                            {value: "true", label: "Visible"},
-                            {value: "false", label: "Hidden"},
+                            {value: "all", label: CV.i18n("data-manager.all-visibilities")},
+                            {value: "true", label: CV.i18n("data-manager.visible")},
+                            {value: "false", label: CV.i18n("data-manager.hidden")},
                         ],
                         default: "all",
                         action: false
@@ -810,9 +815,9 @@
                 selectedFilter: 'all',
                 trackedFields: ['isSelected'],
                 eventGroupFilters: [
-                    {value: 'all', label: 'All Event Groups'},
-                    {value: true, label: 'Visible'},
-                    {value: false, label: 'Hidden'},
+                    {value: 'all', label: CV.i18n("events.blueprint-event-group-show.all")},
+                    {value: true, label: CV.i18n("data-manager.visible")},
+                    {value: false, label: CV.i18n("data-manager.hidden")},
                 ],
                 showDeleteDialog: false,
                 deleteElement: null,

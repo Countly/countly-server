@@ -708,9 +708,9 @@ function isSafeConsentLink(value) {
                 avg: 0,
                 count: 0,
                 comments: [],
-                platformOptions: [{label: 'All Platforms', value: ''}],
-                widgetOptions: [{label: 'All Widgets', value: ''}],
-                versionOptions: [{label: 'All Versions', value: ''}],
+                platformOptions: [{label: CV.i18n("star.all-platforms"), value: ''}],
+                widgetOptions: [{label: CV.i18n("star.all-widgets"), value: ''}],
+                versionOptions: [{label: CV.i18n("star.all-versions"), value: ''}],
                 isLoading: false
             };
         },
@@ -836,7 +836,7 @@ function isSafeConsentLink(value) {
             },
             prepareVersions: function(newValue) {
                 var self = this;
-                self.versionOptions = [{label: 'All Versions', value: ''}];
+                self.versionOptions = [{label: CV.i18n("star.all-versions"), value: ''}];
                 if (newValue.platform !== '') {
                     for (var i = 0; i < self.platform_version[newValue.platform].length; i++) {
                         self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
@@ -851,8 +851,8 @@ function isSafeConsentLink(value) {
         computed: {
             activeFilterFields: function() {
                 var self = this;
-                self.platformOptions = [{label: 'All Platforms', value: ''}];
-                self.widgetOptions = [{label: 'All Widgets', value: ''}];
+                self.platformOptions = [{label: CV.i18n("star.all-platforms"), value: ''}];
+                self.widgetOptions = [{label: CV.i18n("star.all-widgets"), value: ''}];
 
                 for (var platform in self.platform_version) {
                     self.platformOptions.push({ label: platform, value: platform });
@@ -864,21 +864,24 @@ function isSafeConsentLink(value) {
 
                 return [
                     {
-                        label: "Platform",
+                        label: CV.i18n("common.platform"),
+                        testIdSuffix: "platform",
                         key: "platform",
                         items: self.platformOptions,
                         dataTestId: {label: "ratings-filter-parameters-platform-label", dropdown: "ratings-filter-parameters-platform-dropdown"},
                         default: ""
                     },
                     {
-                        label: "App Version",
+                        label: CV.i18n("app-versions.table.app-version"),
+                        testIdSuffix: "app-version",
                         key: "version",
                         items: self.versionOptions,
                         dataTestId: {label: "ratings-filter-parameters-version-label", dropdown: "ratings-filter-parameters-version-dropdown"},
                         default: ""
                     },
                     {
-                        label: "Widget",
+                        label: CV.i18n("star.filter-widget"),
+                        testIdSuffix: "widget",
                         key: "widget",
                         items: self.widgetOptions,
                         dataTestId: {label: "ratings-filter-parameters-widget-label", dropdown: "ratings-filter-parameters-widget-dropdown"},
@@ -1150,8 +1153,8 @@ function isSafeConsentLink(value) {
                     createButtonLabel: CV.i18n('common.create'),
                     isEditMode: true
                 },
-                platformOptions: [{label: 'All Platforms', value: ''}],
-                versionOptions: [{label: 'All Versions', value: ''}],
+                platformOptions: [{label: CV.i18n("star.all-platforms"), value: ''}],
+                versionOptions: [{label: CV.i18n("star.all-versions"), value: ''}],
                 platform_version: {},
                 isLoading: false
             };
@@ -1430,7 +1433,7 @@ function isSafeConsentLink(value) {
             },
             prepareVersions: function(newValue) {
                 var self = this;
-                self.versionOptions = [{label: 'All Versions', value: ''}];
+                self.versionOptions = [{label: CV.i18n("star.all-versions"), value: ''}];
                 if (newValue.platform !== '') {
                     for (var i = 0; i < self.platform_version[newValue.platform].length; i++) {
                         self.versionOptions.push({ label: self.platform_version[newValue.platform][i], value: self.platform_version[newValue.platform][i] });
@@ -1466,7 +1469,7 @@ function isSafeConsentLink(value) {
         computed: {
             activeFilterFields: function() {
                 var self = this;
-                self.platformOptions = [{label: 'All Platforms', value: ''}];
+                self.platformOptions = [{label: CV.i18n("star.all-platforms"), value: ''}];
 
                 for (var platform in self.platform_version) {
                     self.platformOptions.push({ label: platform, value: platform });
@@ -1474,13 +1477,15 @@ function isSafeConsentLink(value) {
 
                 return [
                     {
-                        label: "Platform",
+                        label: CV.i18n("common.platform"),
+                        testIdSuffix: "platform",
                         key: "platform",
                         items: self.platformOptions,
                         default: ""
                     },
                     {
-                        label: "App Version",
+                        label: CV.i18n("app-versions.table.app-version"),
+                        testIdSuffix: "app-version",
                         key: "version",
                         items: self.versionOptions,
                         default: ""

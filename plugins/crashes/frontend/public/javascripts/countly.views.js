@@ -492,31 +492,34 @@
                 }
             },
             activeFilterFields: function() {
-                var platforms = [{value: "all", label: "All Platforms"}];
+                var platforms = [{value: "all", label: CV.i18n("crashes.filter.all-platforms")}];
                 this.$store.getters["countlyCrashes/overview/platforms"].forEach(function(platform) {
                     platforms.push({value: platform, label: platform});
                 });
 
-                var appVersions = [{value: "all", label: "All Versions"}];
+                var appVersions = [{value: "all", label: CV.i18n("crashes.filter.all-versions")}];
                 this.$store.getters["countlyCrashes/overview/appVersions"].forEach(function(appVersion) {
                     appVersions.push({value: appVersion, label: appVersion.replace(/:/g, ".")});
                 });
 
                 return [
                     {
-                        label: "Fatality",
+                        label: CV.i18n("crashes.fatality-label"),
+                        testIdSuffix: "fatality",
                         key: "fatality",
-                        items: [{value: "both", label: "Both"}, {value: "fatal", label: "Fatal"}, {value: "nonfatal", label: "Nonfatal"}],
+                        items: [{value: "both", label: CV.i18n("crashes.filter.all-fatalities")}, {value: "fatal", label: CV.i18n("crashes.fatal")}, {value: "nonfatal", label: CV.i18n("crashes.nonfatal")}],
                         default: "both"
                     },
                     {
-                        label: "Platforms",
+                        label: CV.i18n("platforms.title"),
+                        testIdSuffix: "platforms",
                         key: "platform",
                         options: platforms,
                         default: "all"
                     },
                     {
-                        label: "Versions",
+                        label: CV.i18n("app-versions.title"),
+                        testIdSuffix: "versions",
                         key: "version",
                         items: appVersions,
                         default: "all"
@@ -831,25 +834,27 @@
                 }
             },
             userFilterFields: function() {
-                var platforms = [{value: "all", label: "All Platforms"}];
+                var platforms = [{value: "all", label: CV.i18n("crashes.filter.all-platforms")}];
                 this.$store.getters["countlyCrashes/crashgroup/platforms"].forEach(function(platform) {
                     platforms.push({value: platform, label: platform});
                 });
 
-                var appVersions = [{value: "all", label: "All Versions"}];
+                var appVersions = [{value: "all", label: CV.i18n("crashes.filter.all-versions")}];
                 this.$store.getters["countlyCrashes/crashgroup/appVersions"].forEach(function(appVersion) {
                     appVersions.push({value: appVersion, label: appVersion.replace(/:/g, ".")});
                 });
 
                 return [
                     {
-                        label: "Platforms",
+                        label: CV.i18n("platforms.title"),
+                        testIdSuffix: "platforms",
                         key: "platform",
                         options: platforms,
                         default: "all"
                     },
                     {
-                        label: "Versions",
+                        label: CV.i18n("app-versions.title"),
+                        testIdSuffix: "versions",
                         key: "version",
                         items: appVersions,
                         default: "all"

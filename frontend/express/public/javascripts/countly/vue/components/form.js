@@ -1,4 +1,4 @@
-/* global Vue, app */
+/* global Vue, app, CV */
 
 (function(countlyVue) {
 
@@ -480,7 +480,12 @@
                 }
             },
             searchable: { type: Boolean, default: true },
-            searchPlaceholder: { type: String, default: 'Search' }
+            searchPlaceholder: {
+                type: String,
+                default: function() {
+                    return CV.i18n('common.search');
+                }
+            }
         },
         methods: {
             deleteValue: function(item) {
