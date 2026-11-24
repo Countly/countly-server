@@ -1,6 +1,17 @@
-## Version 25.03.xx
+## Version 25.03.60
+Security Fixes:
+- [compliance-hub] `/o/app_users/consents` accepts filters and sorting only on the columns the consents table shows
+- [surveys] NPS and survey popup pages answer an unknown widget id with a fixed plain-text message
+
+Fixes:
+- [core] `/o/method/total_users` requests no longer crash the server; they are answered with `400 Invalid path`
+
 Enterprise Fixes:
+- [drill] Cross-app saved query listing accepts a single app id and rejects an invalid `apps` parameter with `400` instead of failing
 - [surveys] NPS and Survey detail tables show only the selected dates for custom date ranges (before, browsers outside UTC got one extra day)
+
+Dependencies:
+- MongoDB driver 7.9.0, mongodb-connection-string-url 7.0.3, nodemailer 10.6.0, rate-limiter-flexible 11.5.0, puppeteer 25.17.0, @microsoft/microsoft-graph-client 3.1.0 (active_directory) and other updates
 
 ## Version 25.03.59
 Upgrade Notes:
