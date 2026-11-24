@@ -1,3 +1,7 @@
+## Version 25.03.xx
+Enterprise Fixes:
+- [surveys] NPS and Survey detail tables show only the selected dates for custom date ranges (before, browsers outside UTC got one extra day)
+
 ## Version 25.03.59
 Upgrade Notes:
 - Node.js 26 is the default for Docker images and clean installs; Node.js 20.18+ and 22 keep working, and `bin/upgrade/25.03/upgrade.nodejs.26.sh` is optional
