@@ -40,7 +40,7 @@ describe('Testing Browser metrics', function() {
                     if (err) {
                         return done(err);
                     }
-                    JSON.parse(res.text).should.have.property('result', 'Invalid path');
+                    JSON.parse(res.text).should.eql({result: 'Invalid path'});
                     done();
                 });
         });
