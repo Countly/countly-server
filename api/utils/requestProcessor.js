@@ -35,6 +35,44 @@ const render = require('../../api/utils/render.js');
 var loaded_configs_time = 0;
 
 /**
+* Unknown request paths are dispatched to plugins by name. Plugin events that core or plugins fire
+* themselves, with their own data instead of a request, must not be: their hooks would run without
+* that data, throw or return a value, the dispatch would count as handled, and the request would
+* never be answered. Such a path answers 400 Invalid path instead.
+*
+* Request routes are under /i and /o only, so every other name (/master, /sdk/user_properties,
+* /session/begin, /systemlogs, ...) is refused. Internal events named under /i or /o are listed
+* here, with where core fires them:
+* - /i/device_id and /i/user_merge: api/parts/mgmt/app_users.js and api/jobs/userMerge.js, when users merge
+* - /o/method/total_users: api/parts/data/fetch.js, to collect metric short codes
+* - /i/event/delete: this file, when events are deleted
+* - /i/events: api/parts/data/events.js, for each incoming event
+* - /o/validate: api/utils/rights.js, after an app is validated
+*/
+const REQUEST_ROUTE_PATH = /^\/[io](\/|$)/;
+const INTERNAL_EVENTS = new Set([
+    "/i/device_id",
+    "/i/user_merge",
+    "/o/method/total_users",
+    "/i/event/delete",
+    "/i/events",
+    "/o/validate"
+]);
+
+/**
+* Dispatch a request path to the plugins that handle it, unless it is outside /i and /o or names an internal event
+* @param {string} requestPath - the request's apiPath or fullPath
+* @param {object} ob - dispatch params
+* @returns {boolean} true if a plugin handles the path
+*/
+function dispatchRequestPath(requestPath, ob) {
+    if (!REQUEST_ROUTE_PATH.test(requestPath) || INTERNAL_EVENTS.has(requestPath)) {
+        return false;
+    }
+    return plugins.dispatch(requestPath, ob);
+}
+
+/**
 * Whether the member may export a collection through /o/export/db. A per-app collection
 * is exportable with the same right DB Viewer reads it with: dbviewer read on the app the
 * collection belongs to. A global admin keeps access to everything.
@@ -362,7 +400,7 @@ const processRequest = (params) => {
                     validateUserForWriteAPI(countlyApi.mgmt.users.ackNotification, params);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -728,7 +766,7 @@ const processRequest = (params) => {
                     break;
                 }
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -776,7 +814,7 @@ const processRequest = (params) => {
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.resetApp);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -918,7 +956,7 @@ const processRequest = (params) => {
                     });
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -1575,7 +1613,7 @@ const processRequest = (params) => {
                     break;
                 }
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -1711,7 +1749,7 @@ const processRequest = (params) => {
                     });
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -1869,7 +1907,7 @@ const processRequest = (params) => {
                     break;
                 }
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -1898,7 +1936,7 @@ const processRequest = (params) => {
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.apps.getAppPlugins);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -2137,7 +2175,7 @@ const processRequest = (params) => {
                     });
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -2168,7 +2206,7 @@ const processRequest = (params) => {
                     });
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -2578,7 +2616,7 @@ const processRequest = (params) => {
                     }, params);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -3174,7 +3212,7 @@ const processRequest = (params) => {
                     validateRead(params, 'core', countlyApi.mgmt.users.fetchNotes);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -3225,7 +3263,7 @@ const processRequest = (params) => {
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchEvents);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -3354,7 +3392,7 @@ const processRequest = (params) => {
                     validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -3377,7 +3415,7 @@ const processRequest = (params) => {
                     validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getById, params);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -3403,7 +3441,7 @@ const processRequest = (params) => {
                     validateUserForWrite(params, countlyApi.mgmt.datePresets.delete);
                     break;
                 default:
-                    if (!plugins.dispatch(apiPath, {
+                    if (!dispatchRequestPath(apiPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -3418,7 +3456,7 @@ const processRequest = (params) => {
                 break;
             }
             default:
-                if (!plugins.dispatch(apiPath, {
+                if (!dispatchRequestPath(apiPath, {
                     params: params,
                     validateUserForDataReadAPI: validateUserForDataReadAPI,
                     validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
@@ -3427,7 +3465,7 @@ const processRequest = (params) => {
                     validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                     validateUserForGlobalAdmin: validateUserForGlobalAdmin
                 })) {
-                    if (!plugins.dispatch(params.fullPath, {
+                    if (!dispatchRequestPath(params.fullPath, {
                         params: params,
                         validateUserForDataReadAPI: validateUserForDataReadAPI,
                         validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
