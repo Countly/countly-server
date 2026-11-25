@@ -17,7 +17,8 @@ var pluginOb = {},
 var ejs = require("ejs");
 
 plugins.setConfigs("dashboards", {
-    sharing_status: true
+    sharing_status: true,
+    refresh_concurrency: 2
 });
 
 (function() {
