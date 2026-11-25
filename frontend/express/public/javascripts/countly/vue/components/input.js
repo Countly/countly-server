@@ -377,7 +377,12 @@
     var SearchableOptionsMixin = {
         props: {
             searchable: {type: Boolean, default: true},
-            searchPlaceholder: {type: String, default: 'Search'}
+            searchPlaceholder: {
+                type: String,
+                default: function() {
+                    return CV.i18n('common.search');
+                }
+            }
         },
         data: function() {
             return {
@@ -976,7 +981,12 @@
         template: CV.T('/javascripts/countly/vue/templates/selectx.html'),
         props: {
             title: {type: String, default: ''},
-            placeholder: {type: String, default: 'Select'},
+            placeholder: {
+                type: String,
+                default: function() {
+                    return CV.i18n('common.select');
+                }
+            },
             noMatchFoundPlaceholder: {default: CV.i18n('common.search.no-match-found'), required: false },
             value: { type: [String, Number, Array, Boolean] },
             mode: {type: String, default: 'single-list'}, // multi-check,

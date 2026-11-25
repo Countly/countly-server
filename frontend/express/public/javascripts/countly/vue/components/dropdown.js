@@ -259,7 +259,7 @@
                             <div>\
                             <div>\
                             <span class="cly-fields-select__title">{{title}}</span>\
-                            <el-button class="cly-fields-select__reset" @click="reset" type="text">Reset Filters</el-button>\
+                            <el-button class="cly-fields-select__reset" @click="reset" type="text">{{i18n(\'common.reset-filters\')}}</el-button>\
                             </div>\
                             <table  \
                                 v-for="field in fields" :key="field.key">\
@@ -382,9 +382,9 @@
                                         <el-button class="cly-multi-select__reset" :data-test-id="testId + \'-reset\'" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
-                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
+                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + fieldTestIdSuffix(field) + \'-label\'">{{field.label}}</span></tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :disabledOptions="field.disabled" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
+                                            <cly-select-x :test-id="testId + \'-\' + fieldTestIdSuffix(field) + \'-input\'" :options="field.items" :disabledOptions="field.disabled" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                             </cly-select-x>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
@@ -412,7 +412,12 @@
         props: {
             cancelLabel: {type: String, default: CV.i18n("events.general.cancel")},
             confirmLabel: {type: String, default: CV.i18n("events.general.confirm")},
-            resetLabel: {type: String, default: "Reset Filters"},
+            resetLabel: {
+                type: String,
+                default: function() {
+                    return CV.i18n("common.reset-filters");
+                }
+            },
             adaptiveLength: {type: Boolean, default: true},
             selectXWidth: {type: Number, default: 320},
             emptyValue: {
@@ -441,7 +446,12 @@
                     return [];
                 }
             },
-            title: {type: String, default: "Filter Parameters"},
+            title: {
+                type: String,
+                default: function() {
+                    return CV.i18n("common.filter-parameters");
+                }
+            },
             testId: {type: String, default: 'cly-multi-select-test-id'}
         },
         computed: {
@@ -498,6 +508,9 @@
             },
         },
         methods: {
+            fieldTestIdSuffix: function(field) {
+                return field.testIdSuffix || field.label.toString().replaceAll(' ', '-').toLowerCase();
+            },
             close: function(dontSync) {
                 if (!dontSync) {
                     this.unsavedValue = Object.assign({}, this.value);

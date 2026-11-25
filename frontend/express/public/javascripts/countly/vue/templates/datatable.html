@@ -10,9 +10,9 @@
                 <div class="bu-level-item">
                     <cly-select-x
                         v-if="hasDynamicCols"
-                        search-placeholder="Search in Columns"
-                        placeholder="Edit columns"
-                        title="Edit columns"
+                        :search-placeholder="i18n('placeholder.search-columns')"
+                        :placeholder="i18n('common.edit-columns')"
+                        :title="i18n('common.edit-columns')"
                         mode="multi-check-sortable"
                         placement="bottom-end"
                         :test-id="testId + '-edit-columns-container'"
@@ -65,7 +65,7 @@
                                                 ref="searchBox"
                                                 autocomplete="off"
                                                 v-model="searchQuery"
-                                                placeholder="Search Columns">
+                                                :placeholder="i18n('placeholder.search-columns')">
                                                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
                                             </el-input>
                                         </div>
@@ -147,7 +147,7 @@
                     </div>
                 </div>
                 <div class="bu-level-item text-smallish">
-                    <span :test-id="testId + '-page-number-of-pages'">of {{formatNumber(totalPages)}} pages</span>
+                    <span :test-id="testId + '-page-number-of-pages'">{{ i18n("common.total-pages", formatNumber(totalPages)) }}</span>
                 </div>
                 <div :data-test-id="testId + '-first-page-arrow-button'" :class="{'bu-level-item': true, 'cursor-pointer': true, 'color-cool-gray-100': prevAvailable, 'cool-gray-30': !prevAvailable}">
                     <span :class="{disabled: !prevAvailable}" @click="goToFirstPage"><i class="ion-ios-arrow-back"></i><i class="ion-ios-arrow-back"></i></span>

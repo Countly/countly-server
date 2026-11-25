@@ -966,7 +966,12 @@
                 type: [Array, Boolean],
                 default: false
             },
-            placeholder: {type: String, default: 'Select'},
+            placeholder: {
+                type: String,
+                default: function() {
+                    return CV.i18n('common.select');
+                }
+            },
             disabled: { type: Boolean, default: false},
             size: {type: String, default: 'small'},
             showRelativeModes: {type: Boolean, default: true },

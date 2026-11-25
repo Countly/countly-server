@@ -984,7 +984,9 @@
             },
             searchPlaceholder: {
                 type: String,
-                default: 'Search'
+                default: function() {
+                    return CV.i18n('common.search');
+                }
             },
             border: {
                 type: Boolean,

@@ -28,6 +28,7 @@ Fixes:
 - [core] Drill keeps array segment values; device list updated; external IP looked up over https
 - [crashes] Better grouping of partially symbolicated crashes; custom `smart_regexes` fixed; full non-ASCII stacktrace downloads
 - [dashboards] Events widget breakdowns for event keys with a dot
+- [frontend] Localize shared dashboard controls and filters in ratings, crashes and Data Manager
 - [frontend] Static files no longer count toward the dashboard rate limit
 - [install] RHEL 8, Ubuntu 22.04 and npm installer fixes; hooks picks the isolated-vm build for the running Node.js
 - [populator, push, reports, sources, star-rating] Smaller fixes
