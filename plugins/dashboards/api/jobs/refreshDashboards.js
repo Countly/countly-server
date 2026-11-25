@@ -1,94 +1,100 @@
+'use strict';
+/*
+ * dashboards:refreshDashboards runs as an IPCJob, i.e. in a forked executor
+ * subprocess (its own process/core) rather than inline in the single master
+ * process. This stops the (potentially heavy) dashboard refresh from blocking
+ * the master event loop and starving light jobs. Within the job, dashboards are
+ * refreshed with bounded, configurable concurrency and per-dashboard error
+ * isolation. getConcurrency()=1 guarantees at most one refresh pass at a time.
+ */
+
 const job = require('../../../../api/parts/jobs/job.js');
+const res = require('../../../../api/parts/jobs/resource.js');
 const log = require('../../../../api/utils/log.js')('job:dashboards:refreshDashboards');
 const pluginManager = require('../../../pluginManager.js');
 var customDashboards = require('./../parts/dashboards.js');
 
+/**
+ * Minimal lifecycle resource. The job only needs a DB connection (via this.db()),
+ * so the resource owns no external handle - it just satisfies the IPCJob contract.
+ */
+class DashboardsRefreshResource extends res.Resource {
+    /** open @returns {Promise} resolved once marked open */
+    open() {
+        this.opened();
+        return Promise.resolve();
+    }
+    /** close @returns {Promise} resolved once marked closed */
+    close() {
+        this.closed();
+        return Promise.resolve();
+    }
+    /** checkActive @returns {Promise} resolves true so the resource can be reused */
+    checkActive() {
+        return Promise.resolve(true);
+    }
+}
 
-/** class RefreshDashboardsJob */
-class RefreshDashboardsJob extends job.Job {
-    /** function run
-     * @param {object} countlyDb - db connection object
-     * @param {function} doneJob - function to call when finishing Job
-     * @param {function} progressJob - fnction to call while running job
-    */
-    run(countlyDb, doneJob, progressJob) {
-        var total = 0;
-        var current = 0;
-        var bookmark = '';
-        log.d('Starting dashboards refresh job');
+/** class RefreshDashboardsJob - runs in a forked executor subprocess */
+class RefreshDashboardsJob extends job.IPCJob {
+    /** resourceName @returns {string} non-unique resource type name */
+    resourceName() {
+        return 'dashboards:refresh';
+    }
+    /** createResource @param {string} _id id @param {string} name name @returns {Resource} resource */
+    createResource(_id, name) {
+        return new DashboardsRefreshResource(_id, name);
+    }
+    /** releaseResource @param {object} resource resource to release @returns {Promise} promise */
+    releaseResource(resource) {
+        return resource.close();
+    }
+    /** getConcurrency @returns {number} at most one refresh pass at a time */
+    getConcurrency() {
+        return 1;
+    }
 
-        /**
-         * check job status periodically
-         */
-        function ping() {
-            log.d('Pinging dashboards refresh job');
-            if (pingTimeout) {
-                progressJob(total, current, bookmark);
-                pingTimeout = setTimeout(ping, 10000);
-            }
-        }
-        var pingTimeout = setTimeout(ping, 10000);
+    /** run - executes inside the forked executor subprocess @returns {Promise} promise */
+    async run() {
+        const db = this.db();
+        log.d('[%d] Starting dashboards refresh job', process.pid);
 
-        /**
-         * end job
-         * @param {Error=} err - optional error to pass to the job framework
-         * @returns {varies} job done
-         */
-        function endJob(err) {
-            log.d('Ending dashboards refresh job');
-            clearTimeout(pingTimeout);
-            pingTimeout = 0;
-            return doneJob(err);
-        }
-
-        pluginManager.loadConfigs(countlyDb, async() => {
-            // Fetch all dashboards, refresh the ones that have an auto refresh rate set.
-            // Reliability/stability notes:
-            //  - Dashboards are refreshed with BOUNDED concurrency so we never fan out an
-            //    unbounded number of heavy aggregations against mongod (which, unbounded,
-            //    can starve live customer queries / tip a small instance over).
-            //  - Concurrency is configurable (dashboards.refresh_concurrency) with a small,
-            //    safe default so resource-constrained instances stay safe out of the box.
-            //  - Per-dashboard failures are isolated: one broken dashboard must not abort the
-            //    whole pass (the previous sequential version aborted every remaining dashboard
-            //    on the first throw).
-            try {
-                var dashboards = await countlyDb.collection('dashboards').find({}).toArray();
-
-                var toRefresh = dashboards.filter(function(d) {
-                    return d.refreshRate && d.refreshRate > 0;
-                });
-                total = toRefresh.length;
-
-                var cfg = pluginManager.getConfig('dashboards') || {};
-                var LIMIT = parseInt(cfg.refresh_concurrency, 10);
-                if (!LIMIT || LIMIT < 1) {
-                    LIMIT = 2; // conservative default; safe on small instances, tune up on large ones
-                }
-
-                for (var i = 0; i < toRefresh.length; i += LIMIT) {
-                    var batch = toRefresh.slice(i, i + LIMIT);
-                    // eslint-disable-next-line no-await-in-loop
-                    await Promise.all(batch.map(async function(dashboard) {
-                        if (dashboard.refreshRate < 300) {
-                            dashboard.refreshRate = 300;
-                        }
-                        try {
-                            log.d('Refreshing dashboard: ' + dashboard._id);
-                            await customDashboards.refreshDashboard(countlyDb, dashboard);
-                        }
-                        catch (e) {
-                            log.e('Error refreshing dashboard ' + dashboard._id + ': ' + e);
-                        }
-                        current++;
-                    }));
-                }
-            }
-            catch (error) {
-                log.e('Error while refreshing dashboards: ' + error);
-            }
-            return endJob();
+        // Ensure plugin configs are loaded in this subprocess before reading them.
+        await new Promise(function(resolve) {
+            pluginManager.loadConfigs(db, resolve);
         });
+
+        var dashboards = await db.collection('dashboards').find({}).toArray();
+        var toRefresh = dashboards.filter(function(d) {
+            return d.refreshRate && d.refreshRate > 0;
+        });
+
+        // Bounded, configurable concurrency; conservative default keeps small instances safe.
+        var cfg = pluginManager.getConfig('dashboards') || {};
+        var LIMIT = parseInt(cfg.refresh_concurrency, 10);
+        if (!LIMIT || LIMIT < 1) {
+            LIMIT = 2;
+        }
+
+        for (var i = 0; i < toRefresh.length; i += LIMIT) {
+            var batch = toRefresh.slice(i, i + LIMIT);
+            // eslint-disable-next-line no-await-in-loop
+            await Promise.all(batch.map(async function(dashboard) {
+                if (dashboard.refreshRate < 300) {
+                    dashboard.refreshRate = 300;
+                }
+                try {
+                    log.d('[%d] Refreshing dashboard: %s', process.pid, dashboard._id);
+                    await customDashboards.refreshDashboard(db, dashboard);
+                }
+                catch (e) {
+                    // Isolate per-dashboard failures so one bad dashboard can't abort the pass.
+                    log.e('Error refreshing dashboard ' + dashboard._id + ': ' + e);
+                }
+            }));
+        }
+
+        log.d('[%d] Dashboards refresh job done', process.pid);
     }
 }
 
