@@ -1,3 +1,39 @@
+## Version 24.05.56
+Security Fixes:
+- [core] App user uids must be in the generated format on create and update, and app user exports stay inside their export folder
+- [core] Export endpoints check DB Viewer read access and access to the task they export
+- [core] Long tasks no longer store the request's auth_token; rerunning a stored request without credentials runs it as the task's creator
+- [core] A token limited to some apps reaches its owner's long tasks only on those apps, in the task list and count as well
+- [core] Keys removed from an app are retired and, with the app's id_key, can no longer be taken by another app
+- [core] Login failures, including wrong two-factor codes, are counted under one key per account
+- [core] First-run setup creates at most one admin
+- [core] A legacy token's endpoint scope is matched from the start of the path
+- [core] App plugin configuration keys containing `.` or starting with `$` are refused
+- [core] Metric values that name built-in object properties are not recorded
+- [dbviewer] An aggregation long task is filed under the app of the collection it ran on, and under no app when it reads shared collections or joins other collections
+- [alerts] Alerts are sent only while enabled and while their owner can read the alert's app; session and user metric alerts read only that app's data
+- [hooks] An app event reaches a hook only while the hook's owner can read hooks on that app; a hook that did not run records why
+- [hooks][dashboards][alerts] Only the writable fields are stored on save; dashboards refuse widget keys containing `.` or starting with `$`
+- [compliance-hub] `/o/app_users/consents` queries are limited to the consent table columns
+- [crashes] The public crash page and the crash share endpoints are removed
+- [export] Exported password reset documents leave out the reset id
+- [consolidate] Every app in both the selected and the initial app list must be one of the member's apps, and the answer lists only the changed fields
+- [notes] Deleting a note deletes the note whose permission was checked
+- [data-manager] Category edit changes only the app's own categories
+
+Fixes:
+- [api] The API exits with a numeric code when stopped by a signal
+- [views] A period that is not a JSON array falls back to the resolved date range
+- [star-rating] A star period that is not a string is answered with 400
+- [star-rating] The bulk status update sets the widget's active flag along with its status
+- [crashes] Stack trace downloads send the byte length as Content-Length
+
+Enterprise Fixes:
+- [licensing] When datapoint usage this billing period exceeds the licence tier, every member sees a "Datapoint limit exceeded" bar on every page, replacing the overage notice only global admins got
+- [drill] The cross-app saved query listing accepts a single app id and answers 400 for an invalid app list instead of failing
+- [surveys] NPS and survey popup requests for an unknown widget are answered with 400 instead of hanging
+- [active_directory] A failed Azure AD token request redirects to the login page instead of leaving the request hanging
+
 ## Version 24.05.55
 Security Fixes:
 - [docker] Node.js 24.22.1 in the api and frontend images (Brotli decoder fix, CVE-2026-111497)
