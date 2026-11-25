@@ -1,9 +1,13 @@
 /**
- * Plugin events that core fires itself with its own data are not request paths:
- * the internal events named under /i and /o (requestProcessor's INTERNAL_EVENTS),
- * and every event outside /i and /o. A request to one answers 400 Invalid path
- * without running the hooks, instead of running them without that data and never
- * answering. Plugin routes dispatched by request path keep working.
+ * Plugin events that core fires itself with its own data are not request paths.
+ * A request to one of the internal events named under /i and /o (requestProcessor's
+ * INTERNAL_EVENTS) answers 400 Invalid path without running the hooks, instead of
+ * running them without that data and never answering. Plugin routes dispatched by
+ * request path keep working.
+ *
+ * requestProcessor also refuses every name outside /i and /o, but these requests go
+ * through the proxy, which sends only /i and /o to the API, so that part is not
+ * reachable from here.
  */
 
 require('should');
@@ -22,9 +26,7 @@ const INTERNAL_EVENT_PATHS = [
     "/o/method/total_users",
     "/i/event/delete",
     "/i/events",
-    "/o/validate",
-    // outside /i and /o: fired by requestProcessor with the user property updates
-    "/sdk/user_properties"
+    "/o/validate"
 ];
 
 describe('Internal plugin events requested as URL paths', function() {
