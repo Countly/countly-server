@@ -1,10 +1,8 @@
 ## Version 25.03.60
 Security Fixes:
+- [core] Internal plugin events can no longer be requested as URL paths; such requests are answered with `400 Invalid path` instead of running plugin hooks (also fixes server crashes on `/o/method/total_users`)
 - [compliance-hub] `/o/app_users/consents` accepts filters and sorting only on the columns the consents table shows
 - [surveys] NPS and survey popup pages answer an unknown widget id with a fixed plain-text message
-
-Fixes:
-- [core] `/o/method/total_users` requests no longer crash the server; they are answered with `400 Invalid path`
 
 Enterprise Fixes:
 - [drill] Cross-app saved query listing accepts a single app id and rejects an invalid `apps` parameter with `400` instead of failing
