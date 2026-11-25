@@ -1732,7 +1732,7 @@ const processRequest = (params) => {
                         validateUserForDataWriteAPI: validateUserForDataWriteAPI,
                         validateUserForGlobalAdmin: validateUserForGlobalAdmin
                     })) {
-                        common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /change_visibility, /delete_events, /edit_map or /whitelist_segments');
                     }
                     break;
                 }
