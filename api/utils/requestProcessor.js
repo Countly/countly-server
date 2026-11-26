@@ -3389,7 +3389,7 @@ const processRequest = (params) => {
                     validateUserForGlobalAdmin(params, countlyApi.mgmt.cms.saveEntries);
                     break;
                 case 'clear':
-                    validateUserForWrite(countlyApi.mgmt.cms.clearCache, params);
+                    validateUserForWrite(params, countlyApi.mgmt.cms.clearCache);
                     break;
                 default:
                     if (!dispatchRequestPath(apiPath, {
