@@ -2015,4 +2015,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     countlyDb.collection('long_tasks').createIndex({ manually_create: 1, start: -1 }, function() {});
 
     app.listen(countlyConfig.web.port, countlyConfig.web.host || '');
+}).catch(function(err) {
+    log.e('Could not start the dashboard', err);
 });
