@@ -2146,4 +2146,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     else {
         app.listen(serverOptions.port, serverOptions.host);
     }
+}).catch(function(err) {
+    log.e('Could not start the dashboard', err);
 });
