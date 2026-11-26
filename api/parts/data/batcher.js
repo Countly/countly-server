@@ -668,11 +668,15 @@ class ReadBatcher {
  */
 function promiseOrCallback(promise, callback) {
     if (typeof callback === "function") {
+        // The callback runs once: a throw inside it is logged, not passed back to it as the error
+        // (that called it twice, and async's "Callback was already called" became an unhandled rejection)
         return promise.then(function(data) {
             callback(null, data);
+        }, function(err) {
+            callback(err, null);
         })
             .catch(function(err) {
-                callback(err, null);
+                log.e("Callback of a batched read failed", err);
             });
     }
     return promise;

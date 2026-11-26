@@ -29,6 +29,13 @@ function multicast(log, frame, payload, recipients, callback, time_out = 300000)
 
     payload = payload || Math.random();
 
+    // a pool can be closed while a batch is in flight, there is nobody to reply then
+    let gone = recipients.filter(id => !pools.pools[id]);
+    if (gone.length) {
+        log.w('multicast %s: no connection pool for %j, skipping', FRAME_NAME[frame], gone);
+        recipients = recipients.filter(id => pools.pools[id]);
+    }
+
     for (let id of recipients) {
         pools.pools[id].on('data', listeners[id] = function(data) {
             if (data.frame === frame && data.payload === payload) {
@@ -221,6 +228,14 @@ class Batcher extends DoFinish {
                     count--;
                 }
             };
+
+        // a pool can be closed while a batch is in flight, fail the batch instead of writing to nothing
+        let gone = Object.keys(this.buffers).filter(id => this.buffers[id].length && !pools.pools[id]);
+        if (gone.length) {
+            this.log.e('flush: no connection pool for %j', gone);
+            callback(new PushError('Connection pool closed while sending', ERROR.EXCEPTION));
+            return;
+        }
 
         for (let id in this.buffers) {
             if (this.buffers[id].length) {

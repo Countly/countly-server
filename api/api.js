@@ -212,6 +212,21 @@ plugins.connectToAllDatabases().then(function() {
     });
 
     /**
+    * stdout/stderr closed by their reader (a supervisor or log pipe gone, typically while
+    * shutting down): console ignores the failed write, but the EPIPE arrives later as an
+    * 'error' event nothing listens to, which turns a log line into an uncaught exception.
+    * Nothing can be written there any more, so only that error is dropped.
+    */
+    [process.stdout, process.stderr].forEach(function(stream) {
+        stream.on('error', function(err) {
+            if (err && err.code === 'EPIPE') {
+                return;
+            }
+            throw err;
+        });
+    });
+
+    /**
     * Uncaught Exception Handler
     */
     process.on('uncaughtException', (err) => {

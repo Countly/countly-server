@@ -1,4 +1,4 @@
-const { ERROR, SendError, FCM_SDK_ERRORS } = require('../data/error'),
+const { ERROR, PushError, SendError, FCM_SDK_ERRORS } = require('../data/error'),
     logger = require('../../../../../api/utils/log'),
     { Splitter } = require('./utils/splitter'),
     { util } = require('../std'),
@@ -72,6 +72,12 @@ class FCM extends Splitter {
 
         this.log = logger(log).sub(`${threadId}-a`);
 
+        if (this.legacyApi) {
+            // legacy FCM server keys are not supported anymore, send() answers with a credentials error
+            this.log.e('FCM credentials have no service account file, legacy server keys are not supported');
+            return;
+        }
+
         const serviceAccountJSON = FORGE.util.decode64(
             creds._data.serviceAccountFile.substring(creds._data.serviceAccountFile.indexOf(',') + 1)
         );
@@ -97,6 +103,9 @@ class FCM extends Splitter {
      * @returns {Promise} sending promise
      */
     send(data, length) {
+        if (this.legacyApi) {
+            return Promise.reject(new PushError('Legacy FCM server keys are not supported, upload a Firebase service account JSON file', ERROR.INVALID_CREDENTIALS));
+        }
         // CONNECTION TEST data (push document)
         // [
         //     {

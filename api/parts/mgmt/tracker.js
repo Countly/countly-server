@@ -101,6 +101,8 @@ tracker.enable = function() {
                 if (Object.keys(custom).length) {
                     Countly.user_details({"custom": custom });
                 }
+            }).catch((err) => {
+                logger("tracker:server").e("Could not collect server data for telemetry", err);
             });
         }, 20000);
     }
