@@ -17,56 +17,87 @@ const taskmanager = require('../utils/taskmanager.js');
 const { processRequest } = require('../utils/requestProcessor');
 common.processRequest = processRequest;
 
-/** Minimal lifecycle resource */
+/**
+ * Minimal lifecycle resource.
+ */
 class TaskMonitorResource extends res.Resource {
-    /** open @returns {Promise} promise */
+    /**
+     * Open the resource.
+     * @returns {Promise} resolved once marked open
+     */
     open() {
         this.opened();
         return Promise.resolve();
     }
-    /** close @returns {Promise} promise */
+
+    /**
+     * Close the resource.
+     * @returns {Promise} resolved once marked closed
+     */
     close() {
         this.closed();
         return Promise.resolve();
     }
-    /** checkActive - keep the resource alive only while busy; close (and exit the executor)
-     * when idle so it does not hold memory. @returns {Promise} true while busy, false when idle */
+
+    /**
+     * Keep the resource alive only while busy; close (and exit the executor) when
+     * idle so it does not hold memory.
+     * @returns {Promise} resolves true while busy, false when idle
+     */
     checkActive() {
         return Promise.resolve(this.isBusy);
     }
 }
 
 /**
- *  Task Monitor Job - runs in a forked executor subprocess
+ * Task Monitor Job - runs in a forked executor subprocess.
  */
 class MonitorJob extends job.IPCJob {
-    /** resourceName @returns {string} resource type name */
+    /**
+     * Resource type name.
+     * @returns {string} resource type name
+     */
     resourceName() {
         return 'api:task';
     }
-    /** createResource @param {string} _id id @param {string} name name @returns {Resource} resource */
+
+    /**
+     * Create the lifecycle resource for this job.
+     * @param {string} _id - resource id
+     * @param {string} name - resource name
+     * @returns {TaskMonitorResource} resource instance
+     */
     createResource(_id, name) {
         return new TaskMonitorResource(_id, name);
     }
-    /** releaseResource @param {object} resource resource @returns {Promise} promise */
+
+    /**
+     * Release the resource once the job is done.
+     * @param {object} resource - resource to release
+     * @returns {Promise} promise resolved once closed
+     */
     releaseResource(resource) {
         return resource.close();
     }
-    /** getConcurrency @returns {number} at most one monitor pass at a time */
+
+    /**
+     * At most one monitor pass at a time.
+     * @returns {number} concurrency limit
+     */
     getConcurrency() {
         return 1;
     }
 
     /**
-     * Run the job in the forked subprocess
+     * Run the job in the forked subprocess.
      * @returns {Promise} promise resolved when the monitor pass completes
      */
     run() {
         const self = this;
         /**
-         * Filter tasks to run base on job run time
+         * Filter tasks to run based on job run time.
          * @param {object} task object from db
-         * @return {boolean} return true if can run now
+         * @returns {boolean} return true if can run now
          */
         function tasksFilter(task) {
             //dont run task if running or is a subtask

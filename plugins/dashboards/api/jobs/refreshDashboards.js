@@ -19,45 +19,78 @@ var customDashboards = require('./../parts/dashboards.js');
  * so the resource owns no external handle - it just satisfies the IPCJob contract.
  */
 class DashboardsRefreshResource extends res.Resource {
-    /** open @returns {Promise} resolved once marked open */
+    /**
+     * Open the resource.
+     * @returns {Promise} resolved once marked open
+     */
     open() {
         this.opened();
         return Promise.resolve();
     }
-    /** close @returns {Promise} resolved once marked closed */
+
+    /**
+     * Close the resource.
+     * @returns {Promise} resolved once marked closed
+     */
     close() {
         this.closed();
         return Promise.resolve();
     }
-    /** checkActive - keep the resource (and its executor process) alive only while a job
-     * is actually running; when idle it resolves false so the framework closes it and the
-     * executor exits, freeing memory (important on small instances).
-     * @returns {Promise} resolves true while busy, false when idle */
+
+    /**
+     * Keep the resource (and its executor process) alive only while a job is
+     * actually running; when idle it resolves false so the framework closes it and
+     * the executor exits, freeing memory (important on small instances).
+     * @returns {Promise} resolves true while busy, false when idle
+     */
     checkActive() {
         return Promise.resolve(this.isBusy);
     }
 }
 
-/** class RefreshDashboardsJob - runs in a forked executor subprocess */
+/**
+ * RefreshDashboardsJob - runs in a forked executor subprocess.
+ */
 class RefreshDashboardsJob extends job.IPCJob {
-    /** resourceName @returns {string} non-unique resource type name */
+    /**
+     * Non-unique resource type name.
+     * @returns {string} resource type name
+     */
     resourceName() {
         return 'dashboards:refresh';
     }
-    /** createResource @param {string} _id id @param {string} name name @returns {Resource} resource */
+
+    /**
+     * Create the lifecycle resource for this job.
+     * @param {string} _id - resource id
+     * @param {string} name - resource name
+     * @returns {DashboardsRefreshResource} resource instance
+     */
     createResource(_id, name) {
         return new DashboardsRefreshResource(_id, name);
     }
-    /** releaseResource @param {object} resource resource to release @returns {Promise} promise */
+
+    /**
+     * Release the resource once the job is done.
+     * @param {object} resource - resource to release
+     * @returns {Promise} promise resolved once closed
+     */
     releaseResource(resource) {
         return resource.close();
     }
-    /** getConcurrency @returns {number} at most one refresh pass at a time */
+
+    /**
+     * At most one refresh pass at a time.
+     * @returns {number} concurrency limit
+     */
     getConcurrency() {
         return 1;
     }
 
-    /** run - executes inside the forked executor subprocess @returns {Promise} promise */
+    /**
+     * Executes inside the forked executor subprocess.
+     * @returns {Promise} promise resolved when the refresh pass completes
+     */
     async run() {
         const db = this.db();
         log.d('[%d] Starting dashboards refresh job', process.pid);
