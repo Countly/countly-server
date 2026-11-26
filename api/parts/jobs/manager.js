@@ -128,17 +128,44 @@ class Manager {
                             });
                         };
                         let promise = toCancel && toCancel.length ? sequence(toCancel, async j => {
-                                let job = this.create(j);
-                                if (job) {
-                                    await job.cancel(this.db).catch(() => log.e.bind(log));
-                                }
-                                else {
+                                // RELIABILITY FIX: a recurring job (one that carries a schedule) that was
+                                // RUNNING at restart must be RESCHEDULED, not just cancelled. Otherwise it is
+                                // left CANCELLED with no future occurrence and silently stops forever (orphaned).
+                                if (j.schedule) {
+                                    let nextTime = Date.now();
+                                    try {
+                                        let parsed = typeof j.schedule === 'string' ? later.parse.text(j.schedule) : j.schedule;
+                                        let n = later.schedule(parsed).next(1);
+                                        if (n) {
+                                            nextTime = (n instanceof Date) ? n.getTime() : n;
+                                        }
+                                    }
+                                    catch (e) {
+                                        log.e('Could not parse schedule %j for %s; rescheduling to now: %j', j.schedule, j.name, e);
+                                    }
                                     await JOB.Job.update(this.db, {_id: j._id}, {
                                         $set: {
-                                            status: JOB.STATUS.CANCELLED,
-                                            error: 'cancelled on restart'
+                                            status: JOB.STATUS.SCHEDULED,
+                                            next: nextTime,
+                                            started: null,
+                                            error: null
                                         }
                                     });
+                                    log.i('Rescheduled interrupted recurring job %s (%s) to %j', j.name, j._id, new Date(nextTime));
+                                }
+                                else {
+                                    let job = this.create(j);
+                                    if (job) {
+                                        await job.cancel(this.db).catch(() => log.e.bind(log));
+                                    }
+                                    else {
+                                        await JOB.Job.update(this.db, {_id: j._id}, {
+                                            $set: {
+                                                status: JOB.STATUS.CANCELLED,
+                                                error: 'cancelled on restart'
+                                            }
+                                        });
+                                    }
                                 }
                             }) : Promise.resolve(),
                             /** Resume processing job **/
