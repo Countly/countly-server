@@ -6,7 +6,8 @@
 /** @lends module:api/parts/mgmt/cms */
 var cmsApi = {},
     common = require('./../../utils/common.js'),
-    config = require('./../../config.js');
+    config = require('./../../config.js'),
+    _ = require('lodash');
 
 var current_processes = {},
     log = common.log('core:cms');
@@ -341,7 +342,7 @@ cmsApi.getEntries = function(params) {
 cmsApi.clearCache = function(params) {
     var query = {};
     if (params.qstring._id) {
-        query = {'_id': {'$regex': `^${params.qstring._id}`}};
+        query = {'_id': {'$regex': '^' + _.escapeRegExp(params.qstring._id + '')}};
     }
     common.db.collection('cms_cache').deleteMany(query, function(err) {
         if (err) {
