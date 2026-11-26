@@ -29,9 +29,12 @@ class DashboardsRefreshResource extends res.Resource {
         this.closed();
         return Promise.resolve();
     }
-    /** checkActive @returns {Promise} resolves true so the resource can be reused */
+    /** checkActive - keep the resource (and its executor process) alive only while a job
+     * is actually running; when idle it resolves false so the framework closes it and the
+     * executor exits, freeing memory (important on small instances).
+     * @returns {Promise} resolves true while busy, false when idle */
     checkActive() {
-        return Promise.resolve(true);
+        return Promise.resolve(this.isBusy);
     }
 }
 

@@ -29,9 +29,10 @@ class TaskMonitorResource extends res.Resource {
         this.closed();
         return Promise.resolve();
     }
-    /** checkActive @returns {Promise} promise resolving true */
+    /** checkActive - keep the resource alive only while busy; close (and exit the executor)
+     * when idle so it does not hold memory. @returns {Promise} true while busy, false when idle */
     checkActive() {
-        return Promise.resolve(true);
+        return Promise.resolve(this.isBusy);
     }
 }
 

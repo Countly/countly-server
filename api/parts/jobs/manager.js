@@ -148,7 +148,7 @@ class Manager {
                                             status: JOB.STATUS.SCHEDULED,
                                             next: nextTime,
                                             started: null,
-                                            error: 'rescheduled after restart'
+                                            error: null
                                         }
                                     });
                                     log.i('Rescheduled interrupted recurring job %s (%s) to %j', j.name, j._id, new Date(nextTime));
