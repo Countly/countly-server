@@ -3610,6 +3610,15 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
 };
 
 /**
+ * Whether an $addToSet / $push value is the {$each: [...]} modifier rather than a single value
+ * @param {*} value - value of the field in the update
+ * @returns {boolean} true for an object whose $each is an array
+ */
+function isEachModifier(value) {
+    return !!value && typeof value === 'object' && Array.isArray(value.$each);
+}
+
+/**
 * Own enumerable keys of a source object that may be used as a field name on a merge
 * target. for...in also yields inherited keys, and a key naming an Object.prototype
 * member resolves to the target's prototype instead of an own slot when the target is
@@ -3639,11 +3648,16 @@ common.mergeQuery = function(ob1, ob2) {
             }
             else if (key === "$addToSet") {
                 for (let val of mergeableKeys(ob2[key])) {
-                    if (typeof ob1[key][val] !== 'object') {
-                        ob1[key][val] = {'$each': [ob1[key][val]]}; //create as object if it is single value
+                    if (typeof ob1[key][val] === 'undefined') {
+                        // a field only the later update sets; wrapping undefined would store null
+                        ob1[key][val] = {'$each': []};
+                    }
+                    else if (!isEachModifier(ob1[key][val])) {
+                        // a single value, including null or an object value: wrap it
+                        ob1[key][val] = {'$each': [ob1[key][val]]};
                     }
 
-                    if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
+                    if (isEachModifier(ob2[key][val])) {
                         for (let p = 0; p < ob2[key][val].$each.length; p++) {
                             if (ob1[key][val].$each.indexOf(ob2[key][val].$each[p]) === -1) {
                                 ob1[key][val].$each.push(ob2[key][val].$each[p]);
@@ -3660,11 +3674,14 @@ common.mergeQuery = function(ob1, ob2) {
             }
             else if (key === "$push") {
                 for (let val of mergeableKeys(ob2[key])) {
-                    if (typeof ob1[key][val] !== 'object') {
+                    if (typeof ob1[key][val] === 'undefined') {
+                        ob1[key][val] = {'$each': []};
+                    }
+                    else if (!isEachModifier(ob1[key][val])) {
                         ob1[key][val] = {'$each': [ob1[key][val]]};
                     }
 
-                    if (typeof ob2[key][val] === 'object' && ob2[key][val].$each) {
+                    if (isEachModifier(ob2[key][val])) {
                         for (let p = 0; p < ob2[key][val].$each.length; p++) {
                             ob1[key][val].$each.push(ob2[key][val].$each[p]);
                         }
